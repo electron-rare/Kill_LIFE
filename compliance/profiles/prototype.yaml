@@ -1,0 +1,25 @@
+version: 1
+name: prototype
+label: "Prototype interne"
+intent: "Démonstrateur / tests atelier, pas de mise sur le marché."
+required_standards:
+  - IPC-2221C-2023
+  - IPC-7351B-2010
+  - IPC-A-610J-2024
+  - IPC-J-STD-001J-2024
+  - IPC-A-600M-2025
+recommended_standards:
+  - RFC-8446
+pcb_rules:
+  min_track_width_mm: 0.15
+  min_clearance_mm: 0.15
+  min_via_drill_mm: 0.30
+  min_annular_ring_mm: 0.12
+evidence_required:
+  - artifacts/hw_previews/**/erc.json
+  - artifacts/hw_previews/**/drc.json
+  - artifacts/hw_previews/**/bom.csv
+  - artifacts/hw_previews/**/netlist.xml
+policy:
+  allow_tbd_fields: true
+  require_ce_marking: false

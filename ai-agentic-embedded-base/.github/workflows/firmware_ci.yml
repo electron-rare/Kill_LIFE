@@ -1,0 +1,37 @@
+name: Firmware CI
+
+on:
+  push:
+    paths: ["firmware/**", "specs/**", "standards/**", ".github/workflows/firmware_ci.yml"]
+  pull_request:
+    paths: ["firmware/**", "specs/**", "standards/**", ".github/workflows/firmware_ci.yml"]
+
+jobs:
+  pio:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        env: [esp32s3_arduino, esp32_arduino, native]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio
+          key: pio-${{ runner.os }}-${{ matrix.env }}-${{ hashFiles('firmware/platformio.ini') }}
+      - name: Install PlatformIO
+        run: |
+          python -m pip install -U pip
+          python -m pip install -U platformio
+      - name: Build
+        working-directory: firmware
+        run: pio run -e ${{ matrix.env }}
+      - name: Test
+        if: matrix.env == 'native'
+        working-directory: firmware
+        run: pio test -e native

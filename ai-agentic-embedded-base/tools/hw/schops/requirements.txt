@@ -1,0 +1,4 @@
+kicad-sch-api>=0.5.5
+PyYAML>=6.0
+
+watchfiles>=0.21.0

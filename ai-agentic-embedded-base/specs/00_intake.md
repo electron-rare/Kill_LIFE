@@ -1,0 +1,16 @@
+# Intake
+
+## Problème
+- ...
+
+## Utilisateurs / contexte
+- ...
+
+## Hypothèses
+- ...
+
+## Risques
+- ...
+
+## Définition du “done”
+- ...

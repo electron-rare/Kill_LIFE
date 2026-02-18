@@ -1,0 +1,95 @@
+# Compliance standards catalog (metadata only)
+# Note: Do NOT paste copyrighted full text. Keep IDs + short notes + links.
+version: 1
+
+standards:
+  # --- EU / CE-marking (typical for EU Wi‑Fi products) ---
+  EU-RED-2014-53:
+    title: "Directive 2014/53/EU (Radio Equipment Directive - RED)"
+    type: "eu_directive"
+    notes: "CE marking for radio equipment in EU/EEA."
+  EU-RED-CYBER-2022-30:
+    title: "Commission Delegated Regulation (EU) 2022/30 (RED cybersecurity articles 3.3 d/e/f)"
+    type: "eu_delegated_regulation"
+    notes: "Activates cybersecurity/privacy/fraud essential requirements for certain radio equipment."
+  EU-RED-CYBER-2023-2444:
+    title: "Commission Delegated Regulation (EU) 2023/2444 (postpones applicability of 2022/30 to 1 Aug 2025)"
+    type: "eu_delegated_regulation"
+    notes: "Postponement of the application date."
+  EU-RED-EN18031-OJEU-2025-138:
+    title: "OJEU Implementing Decision (EU) 2025/138 (EN 18031-1/2/3 referenced with restrictions)"
+    type: "eu_implementing_decision"
+    notes: "Publishes references of EN 18031 series as harmonised standards (with restrictions)."
+
+  EU-RoHS-2011-65:
+    title: "Directive 2011/65/EU (RoHS)"
+    type: "eu_directive"
+    notes: "Restriction of hazardous substances in EEE."
+  EU-WEEE-2012-19:
+    title: "Directive 2012/19/EU (WEEE)"
+    type: "eu_directive"
+    notes: "Waste electrical and electronic equipment responsibilities."
+  EU-REACH-1907-2006:
+    title: "Regulation (EC) No 1907/2006 (REACH)"
+    type: "eu_regulation"
+    notes: "Chemicals registration and restrictions (SVHC declarations, etc.)."
+
+  # --- Radio / EMC (Wi‑Fi/BLE typical references) ---
+  ETSI-EN-300-328-V2-2-2:
+    title: "ETSI EN 300 328 V2.2.2 (2.4 GHz wideband systems - Wi‑Fi/Bluetooth/Zigbee)"
+    type: "etsi_en"
+    notes: "Radio spectrum access requirements for 2.4 GHz ISM."
+  ETSI-EN-301-489-17-V3-3-1:
+    title: "ETSI EN 301 489-17 V3.3.1 (EMC for radio equipment - wideband data transmission)"
+    type: "etsi_en"
+    notes: "EMC requirements for Wi‑Fi/Bluetooth class of equipment."
+
+  NF-EN-55032-A11-2020:
+    title: "NF EN 55032/A11:2020 (MME emissions) — national adoption of EN 55032:2015/A11:2020"
+    type: "nf_en"
+    notes: "EMC emissions for multimedia equipment (often used for end products)."
+  EN-55035-A11-2020:
+    title: "EN 55035:2017/A11:2020 (MME immunity)"
+    type: "en"
+    notes: "EMC immunity for multimedia equipment."
+
+  IEC-62368-1-2023:
+    title: "IEC 62368-1:2023 (AV/ICT equipment safety) / EN IEC 62368-1:2024 national adoptions"
+    type: "iec"
+    notes: "Product safety for AV/ICT equipment (risk-based)."
+
+  # --- IPC (manufacturing / acceptability) ---
+  IPC-A-610J-2024:
+    title: "IPC-A-610J (2024) Acceptability of Electronic Assemblies"
+    type: "ipc"
+    notes: "Assembly acceptability criteria (Class 1/2/3)."
+  IPC-J-STD-001J-2024:
+    title: "IPC J-STD-001J (2024) Requirements for Soldered Electrical and Electronic Assemblies"
+    type: "ipc"
+    notes: "Soldering requirements and process criteria."
+  IPC-A-600M-2025:
+    title: "IPC-A-600M (2025) Acceptability of Printed Boards"
+    type: "ipc"
+    notes: "Bare PCB acceptability criteria."
+  IPC-2221C-2023:
+    title: "IPC-2221C (2023) Generic Standard on Printed Board Design"
+    type: "ipc"
+    notes: "Foundational PCB design guidance (clearance, materials, etc.)."
+  IPC-6012F-2024:
+    title: "IPC-6012F (2024) Qualification and Performance Specification for Rigid Printed Boards"
+    type: "ipc"
+    notes: "Rigid PCB performance specification."
+  IPC-7351B-2010:
+    title: "IPC-7351B (2010) Generic Requirements for Surface Mount Design and Land Pattern Standard"
+    type: "ipc"
+    notes: "Footprint/land pattern guidance and naming conventions."
+
+  # --- RFC (protocols commonly referenced in IoT security architecture) ---
+  RFC-8446:
+    title: "RFC 8446 (TLS 1.3)"
+    type: "rfc"
+    notes: "Transport security."
+  RFC-7252:
+    title: "RFC 7252 (CoAP)"
+    type: "rfc"
+    notes: "Constrained Application Protocol."

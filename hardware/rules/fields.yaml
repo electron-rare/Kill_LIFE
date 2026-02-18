@@ -1,0 +1,22 @@
+defaults:
+  fields:
+    Manufacturer: ""
+    MPN: ""
+    Supplier: ""
+    SKU: ""
+    DNP: "0"
+    Variant: ""
+
+rules:
+  - match:
+      lib_id_prefix: "Device:R"
+    set:
+      fields:
+        Tolerance: "1%"
+        Package: "0603"
+  - match:
+      ref_prefix: "C"
+    set:
+      fields:
+        Package: "0603"
+        Voltage: "16V"

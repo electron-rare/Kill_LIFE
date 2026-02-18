@@ -1,0 +1,21 @@
+site_name: AI Agentic Embedded Base
+theme:
+  name: mkdocs
+nav:
+  - Home: docs/index.md
+  - Specs:
+      - Overview: specs/README.md
+      - Intake: specs/00_intake.md
+      - Spec: specs/01_spec.md
+      - Arch: specs/02_arch.md
+      - Plan: specs/03_plan.md
+      - Tasks: specs/04_tasks.md
+      - Constraints: specs/constraints.yaml
+  - Standards: standards/README.md
+  - BMAD: bmad/README.md
+  - Hardware: docs/HARDWARE_QUICKSTART.md
+  - KiCad Previews: docs/KICAD_PREVIEWS.md
+  - MCP setup: docs/MCP_SETUP.md
+  - Design Blocks: docs/BLOCKS.md
+  - AI Workflows: docs/AI_WORKFLOWS.md
+  - Agentic Landscape: docs/AGENTIC_LANDSCAPE.md

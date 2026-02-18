@@ -1,0 +1,22 @@
+name: Docs (MkDocs)
+
+on:
+  push:
+    branches: [main]
+    paths: ["docs/**", "specs/**", "standards/**", "bmad/**", "mkdocs.yml"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install MkDocs
+        run: |
+          python -m pip install -U pip
+          python -m pip install mkdocs
+      - name: Build
+        run: mkdocs build --strict

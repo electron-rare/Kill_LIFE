@@ -1,0 +1,41 @@
+name: Hardware Previews (SVG + reports)
+
+on:
+  pull_request:
+    paths:
+      - "hardware/**"
+      - "tools/hw/**"
+      - ".github/workflows/hardware_previews.yml"
+  workflow_dispatch:
+
+jobs:
+  previews:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install -U pip
+          python -m pip install -r tools/hw/schops/requirements.txt
+
+      - name: Pull KiCad docker image
+        run: |
+          docker pull kicad/kicad:9.0.7-full
+
+      - name: Run hardware gate (exports + reports)
+        env:
+          KICAD_DOCKER_IMAGE: kicad/kicad:9.0.7-full
+        run: |
+          bash tools/hw/hw_gate.sh hardware/kicad
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: hw-previews
+          path: |
+            artifacts/hw_previews/**
+            hardware/blocks/REGISTRY.md
