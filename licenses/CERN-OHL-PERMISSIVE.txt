@@ -1,0 +1,13 @@
+CERN Open Hardware Licence v2 – Permissive
+
+This hardware design is licensed under the CERN Open Hardware Licence Version 2
+(Permissive variant). You may copy, distribute and modify the licensed
+documentation files and make, use, sell and otherwise distribute products
+incorporating the licensed documentation. You must retain notices and marks
+associated with the licensed documentation and provide recipients with a
+copy of this licence. Any modifications must be documented. There is no
+obligation to license your modifications under the same terms.
+
+For the full licence text and detailed terms, see the CERN OHL Version 2
+Permissive licence at:
+https://ohwr.org/project/cernohl/wikis/Documents/CERN-OHL-v2

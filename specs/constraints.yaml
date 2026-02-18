@@ -1,0 +1,36 @@
+project:
+  name: "ai-agentic-embedded-base"
+  orientation: "esp-first"
+  targets:
+    - esp32s3
+    - esp32
+    - native
+
+ai:
+  triggers:
+    issue_label_required: "ai:codex"
+  safety:
+    forbid_secrets: true
+    no_network_assumption: true
+  outputs:
+    artifacts_root: "artifacts"
+
+firmware:
+  toolchain: platformio
+  tests:
+    runner: unity
+    required: true
+
+hardware:
+  kicad:
+    version_min: 9
+  schematic_ops:
+    allow_bulk_edits: true
+    require_erc_green: true
+
+repo_rules:
+  formatting:
+    markdown_wrap: 100
+
+compliance:
+  profile: prototype

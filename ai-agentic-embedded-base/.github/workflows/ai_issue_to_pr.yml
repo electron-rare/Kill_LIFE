@@ -1,0 +1,74 @@
+name: AI Issue → PR (Codex)
+
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  codex:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'ai:codex'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build prompt (sanitized issue)
+        if: github.event_name != 'workflow_dispatch'
+        run: |
+          mkdir -p .codex
+          printf "TITLE: %s\n\nBODY:\n%s\n" "${{ github.event.issue.title }}" "${{ github.event.issue.body }}" > .codex/issue_raw.txt
+          python tools/ai/sanitize_issue.py .codex/issue_raw.txt .codex/issue_sanitized.txt
+          python tools/ai/compose_codex_prompt.py .codex/issue_sanitized.txt .codex/prompt.md
+
+      - name: Run Codex
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: .codex/prompt.md
+          output-file: .codex/codex-output.md
+          safety-strategy: drop-sudo
+          sandbox: workspace-write
+          model: gpt-5.3-codex
+          codex-args: '["--full-auto"]'
+
+      - name: Post-check (firmware native)
+        run: |
+          python -m pip install -U pip
+          python -m pip install -U platformio
+          cd firmware
+          pio test -e native
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          title: "AI: ${{ github.event_name == 'workflow_dispatch' && 'manual run' || github.event.issue.title }}"
+          body: |
+            PR générée par Codex.
+            Source: ${{ github.event_name == 'workflow_dispatch' && 'workflow_dispatch' || format('Issue #{0}', github.event.issue.number) }}
+            Logs: `.codex/codex-output.md`
+          branch: codex/issue-${{ github.event.issue.number || 'manual' }}
+          commit-message: "chore(ai): implement issue via codex"
+          labels: |
+            ai
+            automated
+          add-paths: |
+            specs/**
+            standards/**
+            bmad/**
+            agents/**
+            firmware/**
+            hardware/**
+            tools/**
+            docs/**
+            .github/**

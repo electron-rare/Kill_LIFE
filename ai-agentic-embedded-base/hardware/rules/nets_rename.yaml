@@ -1,0 +1,4 @@
+rename:
+  VCC: "3V3"
+  SCL: "I2C_SCL"
+  SDA: "I2C_SDA"

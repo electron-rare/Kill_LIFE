@@ -1,0 +1,44 @@
+version: 1
+name: iot_wifi_eu
+label: "Produit UE Wi‑Fi/BLE (CE/RED)"
+intent: "Mise sur le marché UE/EEE, radio Wi‑Fi/BLE."
+required_standards:
+  - EU-RED-2014-53
+  - EU-RED-CYBER-2022-30
+  - EU-RED-CYBER-2023-2444
+  - EU-RED-EN18031-OJEU-2025-138
+  - ETSI-EN-300-328-V2-2-2
+  - ETSI-EN-301-489-17-V3-3-1
+  - EU-RoHS-2011-65
+  - EU-REACH-1907-2006
+  - EU-WEEE-2012-19
+  - IEC-62368-1-2023
+  - IPC-2221C-2023
+  - IPC-6012F-2024
+  - IPC-7351B-2010
+  - IPC-A-610J-2024
+  - IPC-J-STD-001J-2024
+  - IPC-A-600M-2025
+recommended_standards:
+  - NF-EN-55032-A11-2020
+  - EN-55035-A11-2020
+  - RFC-8446
+  - RFC-7252
+pcb_rules:
+  # Slightly more conservative defaults (adjust per fab stackup / creepage needs)
+  min_track_width_mm: 0.20
+  min_clearance_mm: 0.20
+  min_via_drill_mm: 0.30
+  min_annular_ring_mm: 0.15
+evidence_required:
+  - artifacts/hw_previews/**/erc.json
+  - artifacts/hw_previews/**/drc.json
+  - artifacts/hw_previews/**/bom.csv
+  - artifacts/hw_previews/**/netlist.xml
+  - compliance/evidence/risk_assessment.md
+  - compliance/evidence/security_architecture.md
+  - compliance/evidence/test_plan_radio_emc.md
+  - compliance/evidence/supply_chain_declarations.md
+policy:
+  allow_tbd_fields: true
+  require_ce_marking: true

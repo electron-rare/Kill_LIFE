@@ -1,0 +1,9 @@
+.pio/
+.piolibdeps/
+.pioenvs/
+__pycache__/
+.venv/
+.DS_Store
+artifacts/
+site/
+.vscode/*.log

@@ -1,0 +1,21 @@
+version: 1
+product:
+  name: "TBD"
+  description: "TBD"
+  intended_market: "TBD (prototype / EU)"
+  radio:
+    technologies: ["TBD"]  # e.g. ["Wi-Fi 2.4GHz", "BLE"]
+    bands: ["TBD"]
+    max_tx_power_dbm: "TBD"
+  power:
+    source: "TBD"  # USB / battery / mains adapter
+    nominal_voltage_v: "TBD"
+compliance:
+  profile: "${ACTIVE_PROFILE}"  # resolved by tools/compliance/validate.py
+  standards_applied: []         # optional explicit list (otherwise from profile)
+evidence:
+  # Map "requirement -> evidence path" for regulated profiles.
+  risk_assessment: "compliance/evidence/risk_assessment.md"
+  security_architecture: "compliance/evidence/security_architecture.md"
+  test_plan_radio_emc: "compliance/evidence/test_plan_radio_emc.md"
+  supply_chain_declarations: "compliance/evidence/supply_chain_declarations.md"

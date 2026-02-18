@@ -1,0 +1,30 @@
+name: Compliance Gate
+
+on:
+  push:
+    paths:
+      - "compliance/**"
+      - "tools/compliance/**"
+      - ".github/workflows/compliance_gate.yml"
+  pull_request:
+    paths:
+      - "compliance/**"
+      - "tools/compliance/**"
+      - ".github/workflows/compliance_gate.yml"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: |
+          python -m pip install -U pip
+          python -m pip install -r tools/compliance/requirements.txt
+      - name: Validate compliance
+        run: |
+          python tools/compliance/validate.py --strict
