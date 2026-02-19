@@ -240,14 +240,29 @@ Voir [KIKIFOU/mapping.md](KIKIFOU/mapping.md) pour une synthèse des dossiers et
 
 ### Installation rapide
 
-```bash
-git clone https://github.com/electron-rare/Kill_LIFE.git
-cd Kill_LIFE
-bash install_kill_life.sh
-```
-> 🚀 Pour démarrer rapidement, consultez le guide [docs/QUICKSTART.md](docs/QUICKSTART.md)
+Pour démarrer sur Kill_LIFE :
 
-Voir [INSTALL.md](INSTALL.md) pour les détails.
+1. **Créer et activer l’environnement virtuel Python**
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
+2. **Installer les dépendances principales**
+   ```bash
+   pip install -r requirements-mistral.txt
+   pip install -r tools/compliance/requirements.txt
+   ```
+3. **Vérifier l’installation**
+   ```bash
+   pip list
+   pip-audit
+   ```
+4. **Exécuter les scripts critiques**
+   ```bash
+   PYTHONPATH="$(pwd)" .venv/bin/python tools/compliance/use_profile.py prototype
+   ```
+
+> Voir aussi : [INSTALL.md](docs/INSTALL.md), [RUNBOOK.md](docs/RUNBOOK.md), [SECURITY.md](docs/SECURITY.md)
 
 ---
 
@@ -432,6 +447,44 @@ R : Voir [docs/index.md](docs/index.md), [RUNBOOK.md](RUNBOOK.md), [INSTALL.md](
    > _RtFM: Les agents QA écoutent le paysage du repo, à la recherche d’un bug caché dans le souffle._
    > Trouve la phrase supprimée par le sanitizer, score affiché.
    > _« Un evidence pack peut-il rêver de conformité ? »_
+````
+This is the description of what the code block changes:
+<changeDescription>
+Ajout d'une section 'Installation rapide' au README pour faciliter l'onboarding et la maintenance.
+</changeDescription>
+
+This is the code block that represents the suggested code change:
+````markdown
+---
+
+## 🚀 Installation rapide
+
+Pour démarrer sur Kill_LIFE :
+
+1. **Créer et activer l’environnement virtuel Python**
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
+2. **Installer les dépendances principales**
+   ```bash
+   pip install -r requirements-mistral.txt
+   pip install -r tools/compliance/requirements.txt
+   ```
+3. **Vérifier l’installation**
+   ```bash
+   pip list
+   pip-audit
+   ```
+4. **Exécuter les scripts critiques**
+   ```bash
+   PYTHONPATH="$(pwd)" .venv/bin/python tools/compliance/use_profile.py prototype
+   ```
+
+> Voir aussi : [INSTALL.md](docs/INSTALL.md), [RUNBOOK.md](docs/RUNBOOK.md), [SECURITY.md](docs/SECURITY.md)
+
+---
+````
 
 
 

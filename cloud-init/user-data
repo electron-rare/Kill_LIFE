@@ -1,0 +1,8 @@
+#cloud-config
+users:
+  - name: openclaw
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: sudo
+    shell: /bin/bash
+    lock_passwd: false
+    passwd: .yOzMcLgHaeMMH/yjtYeqQvdYZSlyXN5ihj3oijJvbG2QEql2X0n0ni.FNZ1R.

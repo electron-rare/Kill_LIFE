@@ -15,7 +15,7 @@ jobs:
         run: |
           python tools/benchmarks/run_benchmarks.py > docs/performance-report.json
       - name: Upload performance report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: performance
           path: docs/performance-report.json
@@ -27,7 +27,7 @@ jobs:
         run: |
           python tools/hil/run_hil_tests.py > docs/hil-report.json
       - name: Upload HIL report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: hil
           path: docs/hil-report.json

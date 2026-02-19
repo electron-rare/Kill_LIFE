@@ -33,7 +33,7 @@ jobs:
           git commit -m "Update badge JSONs [CI]" || echo "Nothing to commit"
           git push origin badges --force
       - name: Upload badge JSON as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: badge-json
           path: docs/*.json

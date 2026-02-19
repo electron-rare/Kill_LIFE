@@ -18,30 +18,29 @@ elif command -v brew &> /dev/null; then
   brew install python git docker docker-compose
 fi
 
-# 2. Cloner le repo
 if [ ! -d Kill_LIFE ]; then
   git clone https://github.com/electron-rare/Kill_LIFE.git
 fi
 cd Kill_LIFE
 
+# 5. Environnement Python (création AVANT activation)
+if [ ! -d .venv ]; then
+  python3 -m venv .venv
+fi
+source .venv/bin/activate
+python3 -m pip install -U pip
+
 # 3. Initialiser la spec
 if [ ! -d specs ]; then
   echo "[INFO] Initialisation du dossier specs..."
-  python3 tools/ai/specify_init.py --name "$FEATURE"
+  PYTHONPATH="$(pwd)" .venv/bin/python tools/ai/specify_init.py --name "$FEATURE"
 else
   echo "[INFO] Dossier specs déjà présent."
 fi
 
 # 4. Profil compliance
 echo "[INFO] Activation du profil compliance ($PROFILE)..."
-python3 tools/compliance/use_profile.py --profile "$PROFILE"
-
-# 5. Environnement Python
-if [ ! -d .venv ]; then
-  python3 -m venv .venv
-fi
-source .venv/bin/activate
-python3 -m pip install -U pip
+PYTHONPATH="$(pwd)" .venv/bin/python tools/compliance/use_profile.py --profile "$PROFILE"
 
 # 6. Dépendances AI & hardware
 if [ -f tools/ai/requirements.txt ]; then

@@ -15,7 +15,7 @@ jobs:
         run: |
           python tools/api/run_contract_tests.py > docs/api-contract-report.json
       - name: Upload API contract report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: api-contract
           path: docs/api-contract-report.json

@@ -15,7 +15,7 @@ jobs:
         run: |
           python tools/ai/validate_model.py > docs/model-validation-report.json
       - name: Upload model validation report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: model-validation
           path: docs/model-validation-report.json

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "validate-specs": {
+      "type": "local",
+      "command": "python3",
+      "args": ["tools/validate_specs.py"],
+      "tools": ["*"]
+    }
+  }
+}

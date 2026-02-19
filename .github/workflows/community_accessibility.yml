@@ -18,7 +18,7 @@ jobs:
         run: |
           python tools/accessibility/a11y_linter.py docs/ > docs/accessibility-report.json
       - name: Upload reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: community-accessibility
           path: docs/community-health-report.json

@@ -15,7 +15,7 @@ jobs:
         run: |
           python tools/security/check_policy.py > docs/security-policy-report.json
       - name: Upload security policy report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: security-policy
           path: docs/security-policy-report.json

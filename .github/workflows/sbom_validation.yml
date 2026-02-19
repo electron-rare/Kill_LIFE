@@ -24,7 +24,7 @@ jobs:
         run: |
           snyk test --file=docs/sbom-cyclonedx.json --json > docs/sbom-snyk-report.json || true
       - name: Upload SBOM & reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sbom-validation
           path: docs/sbom-cyclonedx.json
