@@ -36,6 +36,36 @@ artifacts/
 *.swo
 *.orig
 
+# Fichiers et dossiers de machines virtuelles
+*.iso
+*.qcow2
+*.qcow
+*.vmdk
+*.vdi
+*.vbox
+*.vbox-prev
+*.ova
+*.ovf
+*.img
+*.img.gz
+*.vhd
+*.vhdx
+*.vagrant
+*.vmem
+*.nvram
+*.vmss
+*.vmsd
+*.vmsn
+*.vmx
+*.vmxf
+*.acpi
+*.lck
+*.swap
+*.vmwarevm/
+*.VirtualBox/
+openclaw/vm/
+debian-openclaw.qcow2
+
 # Documentation générée
 site/
 
