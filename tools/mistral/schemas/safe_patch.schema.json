@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SafePatch",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "summary",
+    "edits"
+  ],
+  "properties": {
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "edits": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "action"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "create",
+              "update",
+              "delete"
+            ]
+          },
+          "content": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "action": {
+                  "const": "delete"
+                }
+              }
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "content"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "action": {
+                  "enum": [
+                    "create",
+                    "update"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "content"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Suggested verification commands ONLY. Never executed automatically."
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}

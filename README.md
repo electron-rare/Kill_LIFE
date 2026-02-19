@@ -1,6 +1,6 @@
 # Kill_LIFE 🚀 — AI-Native Embedded Project Template
 
-![Kill_LIFE Banner](https://raw.githubusercontent.com/electron-rare/Kill_LIFE/main/docs/assets/banner_kill_life.png)
+![Kill_LIFE Banner](docs/assets/banner_kill_life_generated.png)
 
 Bienvenue dans **Kill_LIFE**, le template open source pour systèmes embarqués IA, où les specs rêvent d’électron-ironique, les agents QA se prennent pour des réplicants (voir [Le Réplicant](https://fr.wikipedia.org/wiki/Blade_Runner)), et le pipeline ne panique jamais grâce à sa serviette (voir [Don’t Panic](https://hitchhikers.fandom.com/wiki/Don%27t_Panic)), même en cas d’apocalypse. Ici, chaque commit est validé, chaque gate est passé, et chaque evidence pack est rangé comme dans [le meilleur des mondes](https://fr.wikipedia.org/wiki/Le_Meilleur_des_mondes). Si tu cherches la réponse à la question ultime du développement embarqué IA, c’est probablement [42](https://fr.wikipedia.org/wiki/42_(nombre))… ou un bulk edit réussi ([Bulk Edit Party FX](https://www.youtube.com/watch?v=dQw4w9WgXcQ)).
 
@@ -265,15 +265,21 @@ A : Ajoute des profils, améliore les scripts, enrichis les standards, et suis l
 
 ---
 
+
 ## 🥚 Easter Eggs Kill_LIFE
 
 - **Ne panique jamais** : ![Don’t Panic](docs/assets/dont_panic_generated.png) [Playlist apocalypse](https://www.youtube.com/playlist?list=PLApocalypse42)
 - **Bulk Edit Party** : [Fête technique](https://www.youtube.com/watch?v=dQw4w9WgXcQ) — robots IA dansant sur du code PCB.
 - **Citation dystopique** : _« J’ai vu des evidence packs briller dans l’obscurité près des gates S1… »_
-- **Badge 42** : ![Badge 42](docs/assets/badge_42_generated.png) — clique pour une blague mathématique.
+- **Badge 42** : ![Badge 42](docs/assets/badge_42_generated.gif) — clique pour une blague mathématique.
 - **Mini-jeu Gate Runner** : [Gate Runner](https://gate-runner.example.com) — passe les gates, évite les bugs.
 - **Le meilleur des mondes** : Générateur de phrases dystopiques pour motiver les contributeurs.
-- **OpenClaw interactif** : ![OpenClaw](docs/assets/openclaw_interactif_generated.png) — change de couleur selon le statut CI/CD.
+- **OpenClaw interactif** :
+  - ![OpenClaw CI/CD Success](docs/assets/openclaw_cicd_success.png)
+  - ![OpenClaw CI/CD Running](docs/assets/openclaw_cicd_running.png)
+  - ![OpenClaw CI/CD Error](docs/assets/openclaw_cicd_error.png)
+  - ![OpenClaw CI/CD Cancel](docs/assets/openclaw_cicd_cancel.png)
+  - ![OpenClaw CI/CD Inactive](docs/assets/openclaw_cicd_inactive.png)
 - **Spec Generator FX** : [Spec aléatoire](https://spec-generator.example.com) — science-fiction automatisée.
 - **Sanitizer Challenge** : Trouve la phrase supprimée par le sanitizer, score affiché.
 - **Agent QA Replicant** : _« Un evidence pack peut-il rêver de conformité ? »_

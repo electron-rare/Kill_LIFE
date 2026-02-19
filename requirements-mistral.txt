@@ -1,0 +1,4 @@
+mistralai>=1.0.0
+jsonschema>=4.21.0
+pydantic>=2.6.0
+numpy>=1.26.0

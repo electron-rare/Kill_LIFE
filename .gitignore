@@ -1,0 +1,75 @@
+
+# Fichiers et dossiers à ignorer pour Kill_LIFE
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+venv/
+ENV/
+
+# PlatformIO
+.pio/
+.pioenvs/
+.build/
+
+# VSCode
+.vscode/
+.history/
+
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Logs et artefacts
+*.log
+artifacts/
+
+# Fichiers générés ou temporaires
+*.tmp
+*.bak
+*.swp
+*.swo
+*.orig
+
+# Documentation générée
+site/
+
+# Assets prompts (spécifique projet)
+KIKIFOU/assets_prompts.md
+
+# Secrets (à adapter si besoin)
+.env.local
+.env.*.local
+
+# Node/npm (si utilisé)
+node_modules/
+
+# Docker
+*.pid
+docker-compose.override.yml
+
+# Autres outils CI/CD
+coverage/
+*.cover
+*.coverage
+
+# Fichiers de patchs temporaires
+*.patch
+*.rej
+
+# Fichiers de configuration utilisateur
+*.user
+*.sublime-workspace
+*.sublime-project
+
+# Fichiers de sauvegarde d'éditeurs
+*~
+
+# Fichiers de test
+firmware/test/.pioenvs/
+firmware/test/.pio/
