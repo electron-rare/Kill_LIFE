@@ -19,6 +19,10 @@
 <div align="center">
   <img src="docs/assets/banner_kill_life_generated.png" alt="Kill_LIFE Banner" width="600" />
 </div>
+<div align="center" style="margin: 8px 0;">
+  <img src="docs/assets/dont_panic_generated.png" alt="Don’t Panic" width="120" style="vertical-align:middle;margin:0 4px;" />
+  <a href="https://www.youtube.com/playlist?list=PLApocalypse42" target="_blank">Playlist apocalypse</a>
+</div>
 
 
 Bienvenue dans **Kill_LIFE**, le template open source pour systèmes embarqués IA, où chaque étape est traçable, chaque evidence pack est rangé, et chaque agent suit un workflow sécurisé. Ce projet vise la reproductibilité, la conformité, et l’automatisation pour l’embarqué IA multi-cibles.
@@ -121,7 +125,21 @@ Voir [KIKIFOU/diagramme.md](KIKIFOU/diagramme.md) pour un diagramme complet du p
 
 Voir [KIKIFOU/mapping.md](KIKIFOU/mapping.md) pour une synthèse des dossiers et dépendances.
 
+---
 
+## 🥚 Easter Eggs Kill_LIFE
+
+> **Pierre Schaeffer** : _« Les agents du pipeline écoutent le bruit des specs comme une symphonie de sons trouvés. »_
+> **Éliane Radigue** : _« Ici, chaque evidence pack vibre lentement, comme une onde analogique dans le silence du hardware. »_
+> **Luc Ferrari** : _« Parfois, le firmware improvise, et c’est toute la machine qui devient paysage sonore. »_
+> **Daphne Oram** : _« Les gates sont modulés par l’Oramics de la conformité. »_
+> **Bernard Parmegiani** : _« Un bulk edit, c’est une métamorphose électronique, un peu comme un pack d’évidence qui se transforme en nuage de sons. »_
+> **François Bayle** : _« L’espace du repo est acousmatique : on ne sait jamais d’où viendra la prochaine spec. »_
+> **Annea Lockwood** : _« Les tests hardware sont parfois submergés, comme un piano brûlé dans le sandbox. »_
+> **Kiyoshi Yamaya** : _« Les artefacts du pipeline sont des fragments d’un rêve sonore, dispersés dans le code. »_
+> **Zbigniew Karkowski** : _« La conformité, c’est parfois bruitiste : il faut oser saturer les scripts. »_
+> **Hildegard Westerkamp** : _« Les agents QA écoutent le paysage du repo, à la recherche d’un bug caché dans le souffle. »_
+> **Yoshi Wada** : _« Parfois, le README résonne comme un drone, et tout le projet s’accorde. »_
 
 ---
 
@@ -206,6 +224,13 @@ Pour toute question, consulte la [FAQ](docs/FAQ.md) ou ouvre une issue.
 - **hardware/** : KiCad, bulk edits, exports.
 - **openclaw/** : Labels, commentaires, sandbox.
 <div align="center" style="margin: 8px 0;">
+  <img src="docs/assets/openclaw_cicd_success.png" alt="OpenClaw CI/CD Success" width="100" style="vertical-align:middle;margin:0 4px;" />
+  <img src="docs/assets/openclaw_cicd_running.png" alt="OpenClaw CI/CD Running" width="100" style="vertical-align:middle;margin:0 4px;" />
+  <img src="docs/assets/openclaw_cicd_error.png" alt="OpenClaw CI/CD Error" width="100" style="vertical-align:middle;margin:0 4px;" />
+  <img src="docs/assets/openclaw_cicd_cancel.png" alt="OpenClaw CI/CD Cancel" width="100" style="vertical-align:middle;margin:0 4px;" />
+  <img src="docs/assets/openclaw_cicd_inactive.png" alt="OpenClaw CI/CD Inactive" width="100" style="vertical-align:middle;margin:0 4px;" />
+</div>
+<div align="center" style="margin: 8px 0;">
   <img src="docs/assets/badge_42_generated.gif" alt="Badge 42" width="100" style="vertical-align:middle;margin:0 4px;" />
   <a href="https://docs/assets/badge_42_generated.gif" target="_blank">Clique pour une blague mathématique</a>
 </div>
@@ -232,15 +257,16 @@ Pour toute question, consulte la [FAQ](docs/FAQ.md) ou ouvre une issue.
   1. Ouvre une issue avec le label `ai:docs` ou `ai:qa`.
   2. L’agent Doc met à jour `docs/` et le README.
   3. L’agent Compliance valide le profil et génère le rapport.> Trouve la phrase supprimée par le sanitizer, score affiché.
-« Un evidence pack peut-il rêver de conformité ? »_
+> _« Un evidence pack peut-il rêver de conformité ? »_
 ---
 
 ## 📝 Installation & Sécurité
 
-- Un guide d’installation détaillé ([INSTALL.md](INSTALL.md)) explique comment installer le projet, configurer les environnements, sécuriser OpenClaw, lancer les tests hardware, générer la documentation, et utiliser Docker.
-- Un script d’installation unique ([install_kill_life.sh](install_kill_life.sh)) automatise tout : dépendances, spec, profil compliance, environnement Python, modules AI/hardware/firmware, tests, doc, Docker, et vérification de la sécurité OpenClaw.
-- Sécurité OpenClaw : sandbox obligatoire, jamais d’accès aux secrets ou au code source.
-ests hardware reproductibles via scripts documentés.
+Un guide d’installation détaillé ([INSTALL.md](INSTALL.md)) explique comment installer le projet, configurer les environnements, sécuriser OpenClaw, lancer les tests hardware, générer la documentation, et utiliser Docker.
+Un script d’installation unique ([install_kill_life.sh](install_kill_life.sh)) automatise tout : dépendances, spec, profil compliance, environnement Python, modules AI/hardware/firmware, tests, doc, Docker, et vérification de la sécurité OpenClaw.
+Sécurité OpenClaw : sandbox obligatoire, jamais d’accès aux secrets ou au code source.
+Tests hardware reproductibles via scripts documentés.
+
 ---
 
 ## 🧬 Architecture agentique avancée
@@ -249,41 +275,35 @@ ests hardware reproductibles via scripts documentés.
 - Développement spec-first : chaque évolution commence par une spécification, standards versionnés et profils injectés.
 - Automatisation & sécurité : workflows CI, sanitisation, safe outputs, scope guard, anti-prompt injection, OpenClaw sandbox.
 - Multi-cibles & pipelines reproductibles : ESP32, STM32, Linux, tests natifs, bulk edits hardware KiCad, exports automatisés.
-- Documentation claire & onboarding : README détaillé, FAQ, workflows, arborescence graphique, guides d’installation, politique de contribution.- Multi-cibles & pipelines reproductibles : ESP32, STM32, Linux, tests natifs, bulk edits hardware KiCad, exports automatisés.
-ocumentation claire & onboarding : README détaillé, FAQ, workflows, arborescence graphique, guides d’installation, politique de contribution.
+- Documentation claire & onboarding : README détaillé, FAQ, workflows, arborescence graphique, guides d’installation, politique de contribution.
+
 ---
 
 ## 🚀 Conventions, contribution & cross-platform
 
-- Toutes les conventions, instructions d’installation, sécurité, multi-agents, compliance, workflows, et support cross-platform (Docker inclus) sont synthétisées.
-- Architecture, étapes d’initialisation, fonctions clés, sécurité OpenClaw, contribution.- Toutes les conventions, instructions d’installation, sécurité, multi-agents, compliance, workflows, et support cross-platform (Docker inclus) sont synthétisées.
-rchitecture, étapes d’initialisation, fonctions clés, sécurité OpenClaw, contribution.
----
----
+Toutes les conventions, instructions d’installation, sécurité, multi-agents, compliance, workflows, et support cross-platform (Docker inclus) sont synthétisées.
+Architecture, étapes d’initialisation, fonctions clés, sécurité OpenClaw, contribution.
 
 ---
 
 ## ❓ FAQ
-## ❓ FAQ
-
 **Q : Comment démarrer rapidement ?**
-A : Suis la section "Installation & initialisation" ou le guide INSTALL.md.**Q : Comment démarrer rapidement ?**
-on" ou le guide INSTALL.md.
+A : Suis la section "Installation & initialisation" ou le guide INSTALL.md.
+
 **Q : Comment installer tout automatiquement ?**
-A : Utilise le script `install_kill_life.sh`.**Q : Comment installer tout automatiquement ?**
-life.sh`.
+A : Utilise le script `install_kill_life.sh`.
+
 **Q : Comment sécuriser OpenClaw ?**
-A : Sandbox obligatoire, jamais d’accès aux secrets ou au code source.**Q : Comment sécuriser OpenClaw ?**
- secrets ou au code source.
+A : Sandbox obligatoire, jamais d’accès aux secrets ou au code source.
+
 **Q : Comment lancer les tests hardware ?**
-A : Suis les scripts documentés dans le README et INSTALL.md.**Q : Comment lancer les tests hardware ?**
-tés dans le README et INSTALL.md.
+A : Suis les scripts documentés dans le README et INSTALL.md.
+
 **Q : Comment contribuer ?**
-A : Ajoute des profils, améliore les scripts, enrichis les standards, et suis la politique anti-injection.**Q : Comment contribuer ?**
-enrichis les standards, et suis la politique anti-injection.
+A : Ajoute des profils, améliore les scripts, enrichis les standards, et suis la politique anti-injection.
+
 **Q : Où trouver la documentation complète ?**
-A : Voir [docs/index.md](docs/index.md), [RUNBOOK.md](RUNBOOK.md), [INSTALL.md](INSTALL.md).**Q : Où trouver la documentation complète ?**
- Voir [docs/index.md](docs/index.md), [RUNBOOK.md](RUNBOOK.md), [INSTALL.md](INSTALL.md).
+A : Voir [docs/index.md](docs/index.md), [RUNBOOK.md](RUNBOOK.md), [INSTALL.md](INSTALL.md).
 ---
 
 ---
@@ -291,62 +311,24 @@ A : Voir [docs/index.md](docs/index.md), [RUNBOOK.md](RUNBOOK.md), [INSTALL.md](
 ## 🦾 Workflows détaillés
 
 ### 1. Spécification → Implémentation Firmware
-1. Rédige la spec dans `specs/`.are
+1. Rédige la spec dans `specs/`.
 2. Ouvre une issue avec le label `ai:spec`.
 3. L’agent PM/Architect génère le plan et l’architecture.
-4. L’agent Firmware implémente le code dans `firmware/`.n et l’architecture.
-5. L’agent QA ajoute des tests Unity.ans `firmware/`.
+4. L’agent Firmware implémente le code dans `firmware/`.
+5. L’agent QA ajoute des tests Unity.
 6. Evidence pack généré automatiquement.
-> [Spec Generator](https://webkaoss.herokuapp.com/) — science-fiction automatisée.6. Evidence pack généré automatiquement.
-aoss.herokuapp.com/) — science-fiction automatisée.
+> [Spec Generator](https://webkaoss.herokuapp.com/) — science-fiction automatisée.
+
 ### 2. Bulk Edit Hardware KiCad
 1. Ouvre une issue avec le label `ai:hw`.
-2. L’agent HW effectue un bulk edit via `tools/hw/schops`.`ai:hw`.
-3. Exporte ERC/DRC, BOM, netlist..
-4. Snapshot avant/après dans `artifacts/hw/<timestamp>/`.3. Exporte ERC/DRC, BOM, netlist.
-ifacts/hw/<timestamp>/`.
+2. L’agent HW effectue un bulk edit via `tools/hw/schops`.
+3. Exporte ERC/DRC, BOM, netlist.
+4. Snapshot avant/après dans `artifacts/hw/<timestamp>/`.
+
 ### 3. Documentation & Compliance
 1. Ouvre une issue avec le label `ai:docs` ou `ai:qa`.
 2. L’agent Doc met à jour `docs/` et le README.
-3. L’agent Compliance valide le profil et génère le rapport.2. L’agent Doc met à jour `docs/` et le README.
-L’agent Compliance valide le profil et génère le rapport.
----> Trouve la phrase supprimée par le sanitizer, score affiché.
+3. L’agent Compliance valide le profil et génère le rapport.
+> Trouve la phrase supprimée par le sanitizer, score affiché.
 > _« Un evidence pack peut-il rêver de conformité ? »_
-
-
-## 🥚 Easter Eggs Kill_LIFE
-
-- **Ne panique jamais** : ![Don’t Panic](docs/assets/dont_panic_generated.png) [Playlist apocalypse](https://www.youtube.com/playlist?list=PLApocalypse42)
-- **Bulk Edit Party** : [Fête technique](https://www.youtube.com/watch?v=dQw4w9WgXcQ) — robots IA dansant sur du code PCB.
-- **Citation dystopique** : _« J’ai vu des evidence packs briller dans l’obscurité près des gates S1… »_
-- **Badge 42** : ![Badge 42](docs/assets/badge_42_generated.gif) — clique pour une blague mathématique.ttps://www.youtube.com/playlist?list=PLApocalypse42)
-- **Mini-jeu Gate Runner** : [Gate Runner](https://gate-runner.com) — passe les gates, évite les bugs.A dansant sur du code PCB.
-- **Le meilleur des mondes** : Générateur de phrases dystopiques pour motiver les contributeurs. : _« J’ai vu des evidence packs briller dans l’obscurité près des gates S1… »_
-**OpenClaw interactif** :dge_42_generated.gif) — clique pour une blague mathématique.
-<div align="center" style="margin: 8px 0;">
-  <img src="docs/assets/dont_panic_generated.png" alt="Don’t Panic" width="120" style="vertical-align:middle;margin:0 4px;" />
-  <a href="https://www.youtube.com/playlist?list=PLApocalypse42" target="_blank">Playlist apocalypse</a>
-</div>
-- **Spec Generator FX** : [Spec Generator](https://webkaoss.herokuapp.com/) — science-fiction automatisée.
----- **Sanitizer Challenge** : Trouve la phrase supprimée par le sanitizer, score affiché.
-t-il rêver de conformité ? »_### 🥚 Easter Eggs musique concrète & expérimental
-### 🥚 Easter Eggs musique concrète & expérimental
-
-- **Pierre Schaeffer** : _« Les agents du pipeline écoutent le bruit des specs comme une symphonie de sons trouvés. »_
-- **Éliane Radigue** : _« Ici, chaque evidence pack vibre lentement, comme une onde analogique dans le silence du hardware. »_
-- **Luc Ferrari** : _« Parfois, le firmware improvise, et c’est toute la machine qui devient paysage sonore. »_
-- **Daphne Oram** : _« Les gates sont modulés par l’Oramics de la conformité. »_
-- **Bernard Parmegiani** : _« Un bulk edit, c’est une métamorphose électronique, un peu comme un pack d’évidence qui se transforme en nuage de sons. »_
-- **François Bayle** : _« L’espace du repo est acousmatique : on ne sait jamais d’où viendra la prochaine spec. »_»_
-- **Annea Lockwood** : _« Les tests hardware sont parfois submergés, comme un piano brûlé dans le sandbox. »_
-- **Kiyoshi Yamaya** : _« Les artefacts du pipeline sont des fragments d’un rêve sonore, dispersés dans le code. »_
-- **Zbigniew Karkowski** : _« La conformité, c’est parfois bruitiste : il faut oser saturer les scripts. »_
-- **Hildegard Westerkamp** : _« Les agents QA écoutent le paysage du repo, à la recherche d’un bug caché dans le souffle. »_
-- **Yoshi Wada** : _« Parfois, le README résonne comme un drone, et tout le projet s’accorde. »_- **Kiyoshi Yamaya** : _« Les artefacts du pipeline sont des fragments d’un rêve sonore, dispersés dans le code. »_
-*Zbigniew Karkowski** : _« La conformité, c’est parfois bruitiste : il faut oser saturer les scripts. »_
----- **Hildegard Westerkamp** : _« Les agents QA écoutent le paysage du repo, à la recherche d’un bug caché dans le souffle. »_
-- **Yoshi Wada** : _« Parfois, le README résonne comme un drone, et tout le projet s’accorde. »_
-
-
----
 
