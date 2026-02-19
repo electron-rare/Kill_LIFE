@@ -1,3 +1,5 @@
+# Easter Egg musique expérimentale
+# "Le script d’installation module le pipeline comme un Oramics : chaque étape, chaque evidence pack, est une invention sonore." — Daphne Oram
 #!/bin/bash
 # install_kill_life.sh — Installation complète pour Kill_LIFE
 # Usage : ./install_kill_life.sh [feature-or-epic] [profile]

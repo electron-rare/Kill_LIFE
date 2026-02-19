@@ -1,3 +1,6 @@
+# Easter Egg musique concrète
+
+_« Les tâches sont des sons trouvés : chaque action, chaque gate, est une pièce du puzzle acousmatique. »_ — Pierre Schaeffer
 # Tasks (Backlog exécutable)
 
 Format conseillé (copiable en GitHub Issues) :

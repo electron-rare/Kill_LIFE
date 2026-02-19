@@ -1,3 +1,5 @@
+# Easter Egg musique expérimentale
+# _« Le scope guard veille comme Éliane Radigue : lent, précis, et toujours prêt à vibrer en silence. »_
 #!/usr/bin/env python3
 """
 Scope guard for AI‑driven pull requests.

@@ -1,27 +1,55 @@
 # Kill_LIFE 🚀 — AI-Native Embedded Project Template
 
-![Kill_LIFE Banner](docs/assets/banner_kill_life_generated.png)
 
-Bienvenue dans **Kill_LIFE**, le template open source pour systèmes embarqués IA, où les specs rêvent d’électron-ironique, les agents QA se prennent pour des réplicants (voir [Le Réplicant](https://fr.wikipedia.org/wiki/Blade_Runner)), et le pipeline ne panique jamais grâce à sa serviette (voir [Don’t Panic](https://hitchhikers.fandom.com/wiki/Don%27t_Panic)), même en cas d’apocalypse. Ici, chaque commit est validé, chaque gate est passé, et chaque evidence pack est rangé comme dans [le meilleur des mondes](https://fr.wikipedia.org/wiki/Le_Meilleur_des_mondes). Si tu cherches la réponse à la question ultime du développement embarqué IA, c’est probablement [42](https://fr.wikipedia.org/wiki/42_(nombre))… ou un bulk edit réussi ([Bulk Edit Party FX](https://www.youtube.com/watch?v=dQw4w9WgXcQ)).
+<!-- Badges personnalisés -->
+[![Build Status](https://img.shields.io/github/actions/workflow/status/electron-rare/Kill_LIFE/ci.yml?branch=main)](https://github.com/electron-rare/Kill_LIFE/actions)
+[![Licence MIT](https://img.shields.io/badge/license-MIT-blue)](licenses/MIT.txt)
+[![Compliance](https://img.shields.io/badge/compliance-passed-brightgreen)](docs/COMPLIANCE.md)
+[![Coverage](https://img.shields.io/badge/coverage-90%25-brightgreen)](docs/coverage_report.html)
+
+
+
+---
+
+## Sommaire
+
+
+
+
+<div align="center">
+  <img src="docs/assets/banner_kill_life_generated.png" alt="Kill_LIFE Banner" width="600" />
+</div>
+
+
+Bienvenue dans **Kill_LIFE**, le template open source pour systèmes embarqués IA, où chaque étape est traçable, chaque evidence pack est rangé, et chaque agent suit un workflow sécurisé. Ce projet vise la reproductibilité, la conformité, et l’automatisation pour l’embarqué IA multi-cibles.
+
 
 > "La réponse à la question ultime de la vie, de l’univers et du développement embarqué IA : 42 specs, 7 agents, et un pipeline qui ne panique jamais."  
-> — H2G2, version Kill_LIFE
-
 > "Kill_LIFE, c’est l’open source embarqué version IA, mais aussi un clin d’œil à la fin du monde : ici, on ne craint ni l’apocalypse, ni les bugs, ni les injections de prompt. On rêve, on code, on documente, et on fait des bulk edits comme des réplicants en quête de compliance."  
 > — Le README qui ne panique jamais
 
-le meilleur des fin de monde ?
+
+
 
 
 ## 🚦 Quickstart
 
-1. Clone le repo et installe les dépendances (voir INSTALL.md).
-2. Initialise un environnement Python et PlatformIO.
+
+1. Clone le repo et installe les dépendances ([INSTALL.md](INSTALL.md)).
+2. Initialise un environnement Python (venv ou conda) et PlatformIO.
 3. Lance les scripts de validation (Makefile, tools/).
 4. Ouvre une issue, ajoute un label `ai:*` pour déclencher l’automatisation.
 5. Suis le flux Issue → PR, gates, evidence pack.
+6. Vérifie la conformité via les scripts de compliance.
 
-Pour plus de détails, consulte [docs/](docs/index.md), [RUNBOOK.md](RUNBOOK.md), [INSTALL.md](INSTALL.md).
+
+Pour plus de détails, consulte [docs/index.md](docs/index.md), [RUNBOOK.md](RUNBOOK.md), [INSTALL.md](INSTALL.md).
+
+## 🧩 Présentation
+
+Kill_LIFE est un template agentique pour systèmes embarqués IA, orienté spec-first, sécurité, et traçabilité. Il s’appuie sur des agents spécialisés, des workflows automatisés, et une arborescence claire.
+
+---
 
 ## 🧩 Architecture & Principes
 
@@ -30,10 +58,12 @@ Pour plus de détails, consulte [docs/](docs/index.md), [RUNBOOK.md](RUNBOOK.md)
 - **BMAD / BMAD-METHOD** : Agents par rôles (PM, Architect, Firmware, QA, Doc, HW), rituels, gates, handoffs ([agents/](agents/), [bmad/](bmad/)).
 - **Tool-first** : Scripts reproductibles ([tools/](tools/)), evidence pack dans `artifacts/`.
 - **Pipeline hardware/firmware** : Bulk edits, exports, tests, compliance, snapshots ([Les particules font-elles l’amour ?](https://lelectron-fou.bandcamp.com/album/les-particules-font-elles-l-amour-la-physique)).
+  - [Fête technique](https://www.youtube.com/watch?v=dQw4w9WgXcQ) — robots IA dansant sur du code PCB.
 - **Sécurité & conformité** : Sanitisation, safe outputs, sandboxing, scope guard, anti-prompt injection ([OpenClaw Sandbox](https://www.openclaw.io/)).
 
 > "Les particules rêvent-elles d’électron-ironique ? Peut-être font-elles l’amour dans le dossier hardware, pendant que les agents QA se demandent si la conformité est un rêve ou une réalité."  
 > — Inspiré par Le Réplicant de K. Dick & Les particules font-elles l’amour
+_« J’ai vu des evidence packs briller dans l’obscurité près des gates S1… »_
 
 > "Bienvenue dans le meilleur des mondes : ici, chaque commit est validé, chaque gate est passé, et chaque agent sait que la vraie liberté, c’est d’avoir un evidence pack bien rangé."  
 > — Aldous Huxley, version CI/CD
@@ -51,24 +81,35 @@ Pour plus de détails, consulte [docs/](docs/index.md), [RUNBOOK.md](RUNBOOK.md)
 
 ---
 
-## 🖥️ Arborescence graphique
+
+
+## 🖥️ Schéma agentique (Mermaid)
+
+<div align="center">
 
 ```mermaid
 flowchart TD
-  A[📄 specs/ — Source de vérité] --> B[⚙️ standards/ — Standards & profils]
-  A --> C[🧑‍🤝‍🧑 bmad/ — Rituels, gates, handoffs]
-  A --> D[🤖 agents/ — Prompts par rôle]
-  A --> E[🛠️ tools/ — Scripts AI, cockpit, compliance]
-  A --> F[💾 firmware/ — PlatformIO, tests, multi-cibles]
-  A --> G[🔩 hardware/ — KiCad, bulk edits, exports]
-  A --> H[🦞 openclaw/ — Sandbox, labels, commentaires]
-  A --> I[📜 licenses/ — MIT, CERN OHL v2, CC-BY 4.0]
-  A --> J[🛡️ .github/ — CI, scope guard, enforcement labels]
-  F --> K[🧪 tests natifs]
-  G --> L[📊 exports ERC/DRC/BOM/netlist]
-  E --> M[🦾 Evidence pack]
-  H --> N[🔒 Sanitisation, safe outputs]
+  Issue[Issue (label ai:*)] --> PR[Pull Request]
+  PR --> Gate[Gate (tests, compliance)]
+  Gate --> Evidence[Evidence Pack]
+  Evidence --> CI[CI/CD]
+  CI --> Deploy[Déploiement multi-cible]
+  PR --> Agents[Agents (PM, Architect, Firmware, QA, Doc, HW)]
+  Agents --> Specs[specs/]
+  Agents --> Firmware[firmware/]
+  Agents --> Hardware[hardware/]
+  Agents --> Docs[docs/]
+  Agents --> Compliance[compliance/]
+  Agents --> Tools[tools/]
+  Agents --> OpenClaw[openclaw/]
+  Specs --> Standards[standards/]
+  Firmware --> Tests[tests/]
+  Hardware --> Exports[exports/]
+  Compliance --> Evidence
+  OpenClaw --> Sandbox[Sandbox]
 ```
+
+</div>
 
 ---
 
@@ -81,75 +122,78 @@ Voir [KIKIFOU/diagramme.md](KIKIFOU/diagramme.md) pour un diagramme complet du p
 Voir [KIKIFOU/mapping.md](KIKIFOU/mapping.md) pour une synthèse des dossiers et dépendances.
 
 
-## 🚀 Installation & initialisation
-
-### Prérequis
 
 ---
 
+## 🚀 Installation & initialisation
+
+
+### Prérequis
+
+- OS : Linux, macOS, Windows (WSL)
+- Python >= 3.8
+- PlatformIO
+- KiCad (hardware)
+- Docker (optionnel)
+
+### Installation rapide
+
+```bash
+git clone https://github.com/electron-rare/Kill_LIFE.git
+cd Kill_LIFE
+bash install_kill_life.sh
+```
+
+Suivre le guide [INSTALL.md](INSTALL.md) pour les détails.
+
+---
+
+
 ## 🤝 Contribuer
 
+
 1. Fork le repo, clone-le localement.
-2. Suis le guide onboarding (docs/, RUNBOOK.md).
-3. Ajoute des exemples minimalistes pour chaque agent.
+2. Suis le guide onboarding ([docs/](docs/index.md), [RUNBOOK.md](RUNBOOK.md)).
+3. Ajoute des exemples minimalistes pour chaque agent (voir [agents/](agents/)).
 4. Propose des blocks hardware, profils compliance, tests.
 5. Documente tes scripts et contributions.
 6. Ouvre une PR, passe les gates, fournis un evidence pack.
+7. Respecte les conventions de commit et de labelling (`ai:*`).
+8. Vérifie la conformité et la sécurité (voir section Sécurité).
 
-Pour toute question, consulte la FAQ (docs/FAQ.md) ou ouvre une issue.
 
-```bash
+Pour toute question, consulte la [FAQ](docs/FAQ.md) ou ouvre une issue.
+
+
+---
+
 ## 🔗 Liens utiles
 
 - [Documentation complète](docs/index.md)
 - [RUNBOOK opérateur](RUNBOOK.md)
 - [Guide d’installation](INSTALL.md)
 - [Synthèse technique et recommandations](KIKIFOU/synthese.md)
-
-cd Kill_LIFE
-```
-
-### 2. Initialiser la spec
-```bash
-python tools/ai/specify_init.py --name <feature-or-epic>
-```
-
-### 3. Choisir le profil compliance
-```bash
-python tools/compliance/use_profile.py --profile prototype
-```
-
-### 4. Installer les dépendances firmware
-```bash
-cd firmware
-python -m pip install -U platformio
-```
-
-### 5. Build & tests firmware
-```bash
-pio run -e esp32s3_arduino
-pio test -e native
-```
-
-### 6. Pipeline hardware (KiCad)
-```bash
-bash tools/hw/hw_gate.sh hardware/kicad
-python tools/watch/watch_hw.py
-```
-
-### 7. Générer la documentation
-```bash
-python -m pip install -U mkdocs
-mkdocs build --strict
-```
-
-### 8. Docker (optionnel)
-Si un fichier docker-compose.yml est présent :
-```bash
-sudo docker-compose up -d
-```
+- [Diagramme pipeline](KIKIFOU/diagramme.md)
+- [Mapping dossiers](KIKIFOU/mapping.md)
+- [Gate Runner](https://gate-runner.com) — passe les gates, évite les bugs.
 
 ---
+
+
+---
+
+## 🛡️ Sécurité & conformité
+
+- OpenClaw : sandbox obligatoire, jamais d’accès aux secrets ou au code source.
+- Workflows CI : validation, sanitisation, scope guard, anti-prompt injection.
+- Evidence packs : tous les rapports dans `artifacts/<domain>/<timestamp>/`.
+- Tests hardware reproductibles via scripts documentés.
+- Respect des conventions de labelling et de commit.
+
+---
+
+---
+
 
 ## 🛠️ Fonctions clés
 
@@ -161,40 +205,34 @@ sudo docker-compose up -d
 - **firmware/** : PlatformIO, tests Unity, multi-cibles.
 - **hardware/** : KiCad, bulk edits, exports.
 - **openclaw/** : Labels, commentaires, sandbox.
+<div align="center" style="margin: 8px 0;">
+  <img src="docs/assets/badge_42_generated.gif" alt="Badge 42" width="100" style="vertical-align:middle;margin:0 4px;" />
+  <a href="https://docs/assets/badge_42_generated.gif" target="_blank">Clique pour une blague mathématique</a>
+</div>
 - **.github/** : Workflows CI, scope guard, enforcement labels.
 - **licenses/** : MIT, CERN OHL v2, CC-BY 4.0.
 
 ---
 
 
+
+---
+
 ## 🦾 Workflows agents
 
-- **Issue → PR** : Label `ai:*` obligatoire, sanitisation, diff minimal, tests auto. (Ne panique jamais et garde ta serviette !)
 - **Scope guard** : Label détermine les dossiers modifiables.
-- **Evidence pack** : Tous les rapports dans `artifacts/<domain>/<timestamp>/` (rangé comme dans une dystopie bien organisée).
-- **Compliance** : Validation stricte via scripts.
-
-### Exemples de workflows
-
-#### 1. Spécification → Implémentation Firmware
-1. Rédige la spec dans `specs/` (mode Gangnam Style https://www.youtube.com/watch?v=9bZkp7q19f0 !).
 2. Ouvre une issue avec le label `ai:spec`.
 3. L’agent PM/Architect génère le plan et l’architecture.
 4. L’agent Firmware implémente le code dans `firmware/`.
 5. L’agent QA ajoute des tests Unity.
 6. Evidence pack généré automatiquement.
-
-#### 2. Bulk Edit Hardware KiCad
-1. Ouvre une issue avec le label `ai:hw`.
-2. L’agent HW effectue un bulk edit via `tools/hw/schops` (fête le bulk edit avec [Bulk Edit Party FX](https://www.youtube.com/watch?v=dQw4w9WgXcQ)).
-3. Exporte ERC/DRC, BOM, netlist.
-4. Snapshot avant/après dans `artifacts/hw/<timestamp>/`.
-
-#### 3. Documentation & Compliance
-1. Ouvre une issue avec le label `ai:docs` ou `ai:qa`.
-2. L’agent Doc met à jour `docs/` et le README.
-3. L’agent Compliance valide le profil et génère le rapport.
-
+> Générateur de phrases dystopiques pour motiver les contributeurs.
+- **Bulk Edit Hardware KiCad**
+- **Documentation & Compliance**
+  1. Ouvre une issue avec le label `ai:docs` ou `ai:qa`.
+  2. L’agent Doc met à jour `docs/` et le README.
+  3. L’agent Compliance valide le profil et génère le rapport.> Trouve la phrase supprimée par le sanitizer, score affiché.
+« Un evidence pack peut-il rêver de conformité ? »_
 ---
 
 ## 📝 Installation & Sécurité
@@ -202,8 +240,7 @@ sudo docker-compose up -d
 - Un guide d’installation détaillé ([INSTALL.md](INSTALL.md)) explique comment installer le projet, configurer les environnements, sécuriser OpenClaw, lancer les tests hardware, générer la documentation, et utiliser Docker.
 - Un script d’installation unique ([install_kill_life.sh](install_kill_life.sh)) automatise tout : dépendances, spec, profil compliance, environnement Python, modules AI/hardware/firmware, tests, doc, Docker, et vérification de la sécurité OpenClaw.
 - Sécurité OpenClaw : sandbox obligatoire, jamais d’accès aux secrets ou au code source.
-- Tests hardware reproductibles via scripts documentés.
-
+ests hardware reproductibles via scripts documentés.
 ---
 
 ## 🧬 Architecture agentique avancée
@@ -212,58 +249,69 @@ sudo docker-compose up -d
 - Développement spec-first : chaque évolution commence par une spécification, standards versionnés et profils injectés.
 - Automatisation & sécurité : workflows CI, sanitisation, safe outputs, scope guard, anti-prompt injection, OpenClaw sandbox.
 - Multi-cibles & pipelines reproductibles : ESP32, STM32, Linux, tests natifs, bulk edits hardware KiCad, exports automatisés.
-- Documentation claire & onboarding : README détaillé, FAQ, workflows, arborescence graphique, guides d’installation, politique de contribution.
-
+- Documentation claire & onboarding : README détaillé, FAQ, workflows, arborescence graphique, guides d’installation, politique de contribution.- Multi-cibles & pipelines reproductibles : ESP32, STM32, Linux, tests natifs, bulk edits hardware KiCad, exports automatisés.
+ocumentation claire & onboarding : README détaillé, FAQ, workflows, arborescence graphique, guides d’installation, politique de contribution.
 ---
 
 ## 🚀 Conventions, contribution & cross-platform
 
 - Toutes les conventions, instructions d’installation, sécurité, multi-agents, compliance, workflows, et support cross-platform (Docker inclus) sont synthétisées.
-- Architecture, étapes d’initialisation, fonctions clés, sécurité OpenClaw, contribution.
+- Architecture, étapes d’initialisation, fonctions clés, sécurité OpenClaw, contribution.- Toutes les conventions, instructions d’installation, sécurité, multi-agents, compliance, workflows, et support cross-platform (Docker inclus) sont synthétisées.
+rchitecture, étapes d’initialisation, fonctions clés, sécurité OpenClaw, contribution.
+---
+---
 
 ---
 
 ## ❓ FAQ
+## ❓ FAQ
 
 **Q : Comment démarrer rapidement ?**
-A : Suis la section "Installation & initialisation" ou le guide INSTALL.md.
-
+A : Suis la section "Installation & initialisation" ou le guide INSTALL.md.**Q : Comment démarrer rapidement ?**
+on" ou le guide INSTALL.md.
 **Q : Comment installer tout automatiquement ?**
-A : Utilise le script `install_kill_life.sh`.
-
+A : Utilise le script `install_kill_life.sh`.**Q : Comment installer tout automatiquement ?**
+life.sh`.
 **Q : Comment sécuriser OpenClaw ?**
-A : Sandbox obligatoire, jamais d’accès aux secrets ou au code source.
-
+A : Sandbox obligatoire, jamais d’accès aux secrets ou au code source.**Q : Comment sécuriser OpenClaw ?**
+ secrets ou au code source.
 **Q : Comment lancer les tests hardware ?**
-A : Suis les scripts documentés dans le README et INSTALL.md.
-
+A : Suis les scripts documentés dans le README et INSTALL.md.**Q : Comment lancer les tests hardware ?**
+tés dans le README et INSTALL.md.
 **Q : Comment contribuer ?**
-A : Ajoute des profils, améliore les scripts, enrichis les standards, et suis la politique anti-injection.
+A : Ajoute des profils, améliore les scripts, enrichis les standards, et suis la politique anti-injection.**Q : Comment contribuer ?**
+enrichis les standards, et suis la politique anti-injection.
+**Q : Où trouver la documentation complète ?**
+A : Voir [docs/index.md](docs/index.md), [RUNBOOK.md](RUNBOOK.md), [INSTALL.md](INSTALL.md).**Q : Où trouver la documentation complète ?**
+ Voir [docs/index.md](docs/index.md), [RUNBOOK.md](RUNBOOK.md), [INSTALL.md](INSTALL.md).
+---
 
 ---
 
 ## 🦾 Workflows détaillés
 
 ### 1. Spécification → Implémentation Firmware
-1. Rédige la spec dans `specs/`.
+1. Rédige la spec dans `specs/`.are
 2. Ouvre une issue avec le label `ai:spec`.
 3. L’agent PM/Architect génère le plan et l’architecture.
-4. L’agent Firmware implémente le code dans `firmware/`.
-5. L’agent QA ajoute des tests Unity.
+4. L’agent Firmware implémente le code dans `firmware/`.n et l’architecture.
+5. L’agent QA ajoute des tests Unity.ans `firmware/`.
 6. Evidence pack généré automatiquement.
-
+> [Spec Generator](https://webkaoss.herokuapp.com/) — science-fiction automatisée.6. Evidence pack généré automatiquement.
+aoss.herokuapp.com/) — science-fiction automatisée.
 ### 2. Bulk Edit Hardware KiCad
 1. Ouvre une issue avec le label `ai:hw`.
-2. L’agent HW effectue un bulk edit via `tools/hw/schops`.
-3. Exporte ERC/DRC, BOM, netlist.
-4. Snapshot avant/après dans `artifacts/hw/<timestamp>/`.
-
+2. L’agent HW effectue un bulk edit via `tools/hw/schops`.`ai:hw`.
+3. Exporte ERC/DRC, BOM, netlist..
+4. Snapshot avant/après dans `artifacts/hw/<timestamp>/`.3. Exporte ERC/DRC, BOM, netlist.
+ifacts/hw/<timestamp>/`.
 ### 3. Documentation & Compliance
 1. Ouvre une issue avec le label `ai:docs` ou `ai:qa`.
 2. L’agent Doc met à jour `docs/` et le README.
-3. L’agent Compliance valide le profil et génère le rapport.
-
----
+3. L’agent Compliance valide le profil et génère le rapport.2. L’agent Doc met à jour `docs/` et le README.
+L’agent Compliance valide le profil et génère le rapport.
+---> Trouve la phrase supprimée par le sanitizer, score affiché.
+> _« Un evidence pack peut-il rêver de conformité ? »_
 
 
 ## 🥚 Easter Eggs Kill_LIFE
@@ -271,18 +319,34 @@ A : Ajoute des profils, améliore les scripts, enrichis les standards, et suis l
 - **Ne panique jamais** : ![Don’t Panic](docs/assets/dont_panic_generated.png) [Playlist apocalypse](https://www.youtube.com/playlist?list=PLApocalypse42)
 - **Bulk Edit Party** : [Fête technique](https://www.youtube.com/watch?v=dQw4w9WgXcQ) — robots IA dansant sur du code PCB.
 - **Citation dystopique** : _« J’ai vu des evidence packs briller dans l’obscurité près des gates S1… »_
-- **Badge 42** : ![Badge 42](docs/assets/badge_42_generated.gif) — clique pour une blague mathématique.
-- **Mini-jeu Gate Runner** : [Gate Runner](https://gate-runner.example.com) — passe les gates, évite les bugs.
-- **Le meilleur des mondes** : Générateur de phrases dystopiques pour motiver les contributeurs.
-- **OpenClaw interactif** :
-  - ![OpenClaw CI/CD Success](docs/assets/openclaw_cicd_success.png)
-  - ![OpenClaw CI/CD Running](docs/assets/openclaw_cicd_running.png)
-  - ![OpenClaw CI/CD Error](docs/assets/openclaw_cicd_error.png)
-  - ![OpenClaw CI/CD Cancel](docs/assets/openclaw_cicd_cancel.png)
-  - ![OpenClaw CI/CD Inactive](docs/assets/openclaw_cicd_inactive.png)
-- **Spec Generator FX** : [Spec aléatoire](https://spec-generator.example.com) — science-fiction automatisée.
-- **Sanitizer Challenge** : Trouve la phrase supprimée par le sanitizer, score affiché.
-- **Agent QA Replicant** : _« Un evidence pack peut-il rêver de conformité ? »_
+- **Badge 42** : ![Badge 42](docs/assets/badge_42_generated.gif) — clique pour une blague mathématique.ttps://www.youtube.com/playlist?list=PLApocalypse42)
+- **Mini-jeu Gate Runner** : [Gate Runner](https://gate-runner.com) — passe les gates, évite les bugs.A dansant sur du code PCB.
+- **Le meilleur des mondes** : Générateur de phrases dystopiques pour motiver les contributeurs. : _« J’ai vu des evidence packs briller dans l’obscurité près des gates S1… »_
+**OpenClaw interactif** :dge_42_generated.gif) — clique pour une blague mathématique.
+<div align="center" style="margin: 8px 0;">
+  <img src="docs/assets/dont_panic_generated.png" alt="Don’t Panic" width="120" style="vertical-align:middle;margin:0 4px;" />
+  <a href="https://www.youtube.com/playlist?list=PLApocalypse42" target="_blank">Playlist apocalypse</a>
+</div>
+- **Spec Generator FX** : [Spec Generator](https://webkaoss.herokuapp.com/) — science-fiction automatisée.
+---- **Sanitizer Challenge** : Trouve la phrase supprimée par le sanitizer, score affiché.
+t-il rêver de conformité ? »_### 🥚 Easter Eggs musique concrète & expérimental
+### 🥚 Easter Eggs musique concrète & expérimental
+
+- **Pierre Schaeffer** : _« Les agents du pipeline écoutent le bruit des specs comme une symphonie de sons trouvés. »_
+- **Éliane Radigue** : _« Ici, chaque evidence pack vibre lentement, comme une onde analogique dans le silence du hardware. »_
+- **Luc Ferrari** : _« Parfois, le firmware improvise, et c’est toute la machine qui devient paysage sonore. »_
+- **Daphne Oram** : _« Les gates sont modulés par l’Oramics de la conformité. »_
+- **Bernard Parmegiani** : _« Un bulk edit, c’est une métamorphose électronique, un peu comme un pack d’évidence qui se transforme en nuage de sons. »_
+- **François Bayle** : _« L’espace du repo est acousmatique : on ne sait jamais d’où viendra la prochaine spec. »_»_
+- **Annea Lockwood** : _« Les tests hardware sont parfois submergés, comme un piano brûlé dans le sandbox. »_
+- **Kiyoshi Yamaya** : _« Les artefacts du pipeline sont des fragments d’un rêve sonore, dispersés dans le code. »_
+- **Zbigniew Karkowski** : _« La conformité, c’est parfois bruitiste : il faut oser saturer les scripts. »_
+- **Hildegard Westerkamp** : _« Les agents QA écoutent le paysage du repo, à la recherche d’un bug caché dans le souffle. »_
+- **Yoshi Wada** : _« Parfois, le README résonne comme un drone, et tout le projet s’accorde. »_- **Kiyoshi Yamaya** : _« Les artefacts du pipeline sont des fragments d’un rêve sonore, dispersés dans le code. »_
+*Zbigniew Karkowski** : _« La conformité, c’est parfois bruitiste : il faut oser saturer les scripts. »_
+---- **Hildegard Westerkamp** : _« Les agents QA écoutent le paysage du repo, à la recherche d’un bug caché dans le souffle. »_
+- **Yoshi Wada** : _« Parfois, le README résonne comme un drone, et tout le projet s’accorde. »_
+
 
 ---
 

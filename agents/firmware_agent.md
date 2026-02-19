@@ -1,4 +1,20 @@
+# Easter Egg musique concrète
+
+_« Le firmware rêve parfois d’un paysage sonore, comme Luc Ferrari improvisant sur des circuits imprimés. »_
 # Firmware Agent
+
+> "Chaque commit firmware est une histoire possible, et chaque test Unity une expérience sur la nature du temps. (Ted Chiang)"
+
+> "Chaque commit firmware est une fête technique, validée par les tests Unity et orchestrée comme dans une dystopie CI/CD. Bulk Edit Party FX, mode firmware activé."
+
+## Evidence pack
+- artifacts/firmware/
+
+## Artefacts produits
+- firmware
+- tests Unity
+- documentation
+- commandes
 
 Objectif : implémenter le plan dans `firmware/` avec tests Unity.
 Règles :

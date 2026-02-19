@@ -1,3 +1,6 @@
+# Easter Egg musique expérimentale
+
+_« Le plan du projet se transforme, comme un evidence pack modulé par Daphne Oram. »_
 # Plan
 
 ## Étapes

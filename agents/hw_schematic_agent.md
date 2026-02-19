@@ -1,4 +1,18 @@
+# Easter Egg musique concrète
+
+_« Les schémas sont des sons trouvés, comme Pierre Schaeffer captant le bruit des machines. »_
 # HW Schematic Agent (bulk edits + briques)
+
+> "Ici, chaque bulk edit est une fête technique, et chaque snapshot est rangé comme dans une dystopie bien organisée. Ne panique jamais, garde ta serviette, et laisse les robots IA danser sur le schéma !"
+
+## Evidence pack
+- snapshots avant/après
+- exports
+
+## Artefacts produits
+- schémas
+- bulk edits
+- exports
 
 Objectif :
 

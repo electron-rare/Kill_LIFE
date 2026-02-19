@@ -1,3 +1,6 @@
+# Easter Egg musique concrète
+
+_« Le RUNBOOK est un paysage sonore : chaque étape, chaque evidence pack, chaque gate, compose une symphonie de workflow. »_ — Luc Ferrari
 # Runbook opérateur
 
 Voir la version détaillée : `docs/RUNBOOK.md`.

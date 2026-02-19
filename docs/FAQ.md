@@ -1,4 +1,13 @@
+# Easter Egg musique expérimentale
+
+_« La FAQ se lit comme une partition acousmatique : chaque question résonne, chaque réponse module le silence. »_ — François Bayle
 # FAQ
+
+## Est-ce que les evidence packs rêvent de conformité ?
+Oui, mais seulement dans les dystopies techniques où chaque gate est une fête, chaque README une serviette, et chaque agent QA un replicant en quête de validation. Ne panique jamais, même si le sanitizer te retire ta phrase préférée.
+
+## Peut-on survivre à une apocalypse technique façon Liu Cixin ?
+"Quand le pipeline observe, il n’y a plus de place pour l’erreur. Comme dans Le Problème à trois corps, chaque evidence pack est une trace laissée pour les civilisations futures."
 
 ## Pourquoi des labels `ai:*` ?
 Ils servent à deux choses :

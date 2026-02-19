@@ -1,4 +1,9 @@
+# Easter Egg musique expérimentale
+
+_« La conformité, c’est parfois bruitiste : il faut oser saturer les scripts, comme Zbigniew Karkowski. »_
 # Compliance (profiles)
+
+> "La conformité est une question de survie, chaque profil une adaptation à l’environnement, et chaque validation un acte de résilience. (Kim Stanley Robinson, Ministry for the Future)"
 
 Ce repo propose **2 profils** sélectionnables :
 

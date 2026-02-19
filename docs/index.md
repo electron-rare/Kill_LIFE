@@ -31,3 +31,30 @@ Ce repo est un **socle** :
 - Templates : `docs/templates/`
 - Handoffs : `docs/handoffs/`
 - Rituels : `docs/rituals/`
+
+# Index documentation agentique
+
+Ce fichier centralise les liens vers les synthèses, rapports, diagrammes et evidence packs.
+
+- [Synthèse globale](../SYNTHESE_AGENTIQUE.md)
+- [Rapport détaillé](assets/rapport/rapport_agentique.md)
+- [Diagramme agentique](assets/rapport/diagramme_agentique.md)
+- [Synthèse correspondance agents/systèmes](assets/rapport/synthese_correspondance_agents_systemes.md)
+
+## Evidence packs
+- [Evidence packs hardware](../hardware/blocks/README.md)
+- [Evidence packs compliance](../compliance/evidence/)
+- [Evidence packs firmware](../firmware/test/)
+
+## Tests et validation
+- [Tests firmware](../firmware/test/)
+- [Tests hardware](../hardware/blocks/)
+- [Validation compliance](../compliance/evidence/)
+
+## Conventions et synchronisation
+- [Conventions multi-agent](../standards/global/coding.md)
+- [Synchronisation et traçabilité](../docs/AI_WORKFLOWS.md)
+
+---
+
+> Index généré automatiquement (GPT-4.1)
