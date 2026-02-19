@@ -1,0 +1,64 @@
+name: Firmware CI
+
+on:
+  push:
+    paths: ["firmware/**", "specs/**", "standards/**", ".github/workflows/firmware_ci.yml"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pio:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        env: [esp32s3_arduino, esp32_arduino, native]
+    steps:
+      - uses: actions/checkout@v6
+
+      # Required-check friendly: always run on PR, but skip heavy work when irrelevant.
+      - name: Detect relevant changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          filters: |
+            fw:
+              - 'firmware/**'
+              - 'specs/**'
+              - 'standards/**'
+              - '.github/workflows/firmware_ci.yml'
+
+      - name: No relevant changes (fast pass)
+        if: steps.changes.outputs.fw != 'true'
+        run: |
+          echo "No firmware/spec/standards changes detected. Skipping build/test for ${{ matrix.env }}."
+
+      - uses: actions/setup-python@v5
+        if: steps.changes.outputs.fw == 'true'
+        with:
+          python-version: "3.11"
+
+      - uses: actions/cache@v4
+        if: steps.changes.outputs.fw == 'true'
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio
+          key: pio-${{ runner.os }}-${{ matrix.env }}-${{ hashFiles('firmware/platformio.ini') }}
+
+      - name: Install PlatformIO
+        if: steps.changes.outputs.fw == 'true'
+        run: |
+          python -m pip install -U pip
+          python -m pip install -U platformio
+
+      - name: Build
+        if: steps.changes.outputs.fw == 'true'
+        working-directory: firmware
+        run: pio run -e ${{ matrix.env }}
+
+      - name: Test
+        if: steps.changes.outputs.fw == 'true' && matrix.env == 'native'
+        working-directory: firmware
+        run: pio test -e native

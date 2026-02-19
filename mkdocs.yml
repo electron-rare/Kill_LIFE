@@ -5,6 +5,8 @@ nav:
   - Home: docs/index.md
   - Install: docs/INSTALL.md
   - Runbook: docs/RUNBOOK.md
+  - FAQ: docs/FAQ.md
+  - Plans: docs/plans/README.md
   - Specs:
       - Overview: specs/README.md
       - Intake: specs/00_intake.md

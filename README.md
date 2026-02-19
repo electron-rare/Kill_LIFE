@@ -1,64 +1,238 @@
-# Kill\_LIFE — AI‑Native Embedded Project Template
 
-Bienvenue dans **Kill\_LIFE**, un modèle de dépôt pensé pour développer des systèmes embarqués à l’ère des agents. L’objectif est simple : offrir une structure prête à l’emploi qui combine spécifications formalisées, automatisation via agents, gestion multi‑cibles (ESP32/STM32/Linux), et pratiques de sécurité adaptées au développement assisté par IA.
+# Kill_LIFE 🚀 — AI-Native Embedded Project Template
 
-## ✨ Inspirations et principes
+![Kill_LIFE Banner](https://raw.githubusercontent.com/electron-rare/Kill_LIFE/main/docs/assets/banner_kill_life.png)
 
-Ce projet s’inspire de plusieurs initiatives et bonnes pratiques :
+Bienvenue dans **Kill_LIFE**, le template open source pour systèmes embarqués IA, où les specs rêvent d’électron-ironique, les agents QA se prennent pour des réplicants (voir [Le Réplicant](https://fr.wikipedia.org/wiki/Blade_Runner)), et le pipeline ne panique jamais grâce à sa serviette (voir [Don’t Panic](https://hitchhikers.fandom.com/wiki/Don%27t_Panic)), même en cas d’apocalypse. Ici, chaque commit est validé, chaque gate est passé, et chaque evidence pack est rangé comme dans [le meilleur des mondes](https://fr.wikipedia.org/wiki/Le_Meilleur_des_mondes). Si tu cherches la réponse à la question ultime du développement embarqué IA, c’est probablement [42](https://fr.wikipedia.org/wiki/42_(nombre))… ou un bulk edit réussi ([Bulk Edit Party FX](https://www.youtube.com/watch?v=dQw4w9WgXcQ)).
 
-- **GitHub Agentic Workflows** : les workflows agentiques de GitHub, qui introduisent une chaîne de sanitisation de l’input (neutralisation des mentions, filtrage des URLs, limitation de taille) et l’utilisation de *safe outputs* pour limiter les privilèges des agents. Ces principes guident notre pipeline d’automatisation【420659683624566†L747-L857】【11582546369719†L160-L168】.
-- **Alertes sur l’injection de prompt** : des rapports comme celui d’Aikido Security détaillent comment des contenus d’issues non fiables peuvent détourner un agent et recommandent d’éviter d’injecter du texte non filtré dans les prompts, de restreindre les outils disponibles et de traiter toute sortie de l’agent comme non fiable【885973626346785†L218-L231】.
-- **Réduction du rayon d’explosion** : le guide *prompt‑injection‑defenses* rappelle qu’il faut concevoir en assumant que les injections ne seront jamais totalement éliminées. Cela implique de limiter les privilèges, de vérifier et de sanitariser systématiquement les entrées et sorties et de séparer les rôles【408877418785616†L277-L304】.
-- **Enforcement des labels PR** : pour forcer les PR à respecter un flux précis, nous nous appuyons sur l’idée de l’action GitHub *enforce‑pr‑labels*, qui permet d’exiger qu’une PR contienne certains labels ou d’en bloquer d’autres【613342446189111†L283-L299】.
-- **Licences open source** : le code source est sous licence MIT, les fichiers matériels sous licence **CERN OHL v2** (promouvant la liberté d’utiliser, d’étudier, de modifier et de partager des conceptions matérielles【572981070514051†L86-L91】) et la documentation sous **CC‑BY 4.0**, qui autorise le partage et l’adaptation avec attribution【335439356583797†L59-L75】.
+> "La réponse à la question ultime de la vie, de l’univers et du développement embarqué IA : 42 specs, 7 agents, et un pipeline qui ne panique jamais."  
+> — H2G2, version Kill_LIFE
 
-## 🔧 Fonctionnalités clés
+> "Kill_LIFE, c’est l’open source embarqué version IA, mais aussi un clin d’œil à la fin du monde : ici, on ne craint ni l’apocalypse, ni les bugs, ni les injections de prompt. On rêve, on code, on documente, et on fait des bulk edits comme des réplicants en quête de compliance."  
+> — Le README qui ne panique jamais
 
-- **Développement guidé par la spécification** : écrivez votre spécification (user stories, contraintes, architecture) dans `specs/`. C’est la source de vérité. Des scripts de validation et un schéma garantissent la cohérence.
-- **Multi‑agents** : des prompts prédéfinis pour les rôles PM, Architecte, Firmware, QA, Doc et Hardware (BMAD/AgentOS) orchestrent les étapes de la conception et de la mise en œuvre.
-- **Automation L3 avec sécurité intégrée** : les workflows GitHub Agentic Workflows (Option A) transforment une issue en Pull Request en appliquant une sanitisation stricte et en créant la PR via un *safe output*. Un fallback sur `ai:impl` est possible si aucune étiquette n’est présente, mais vous pouvez activer l’option label obligatoire pour renforcer la gouvernance.
-- **Sanitisation renforcée des issues** : un script Python élimine balises HTML, blocs de code, URLs externes, mentions et commandes potentiellement dangereuses avant que le texte ne soit injecté dans un prompt (voir `tools/ai/sanitize_issue.py`).
-- **Contrôle des étiquettes** : un workflow impose qu’une PR contienne au moins un label `ai:*` (`ai:spec`, `ai:plan`, `ai:tasks`, `ai:impl`, `ai:qa`, `ai:docs`). Sans label, la PR est annotée par défaut avec `ai:impl` ou rejetée selon votre politique.
-- **Scope guard par label** : chaque label détermine les dossiers modifiables (par exemple, `ai:spec` autorise `specs/` et `docs/` ; `ai:impl` autorise `firmware/`). Si un fichier en dehors de la liste est modifié, le gate échoue.
-- **Multi‑cibles et firmware portable** : le dossier `firmware/` contient des environnements PlatformIO pour ESP32 (ESP‑IDF) et STM32, ainsi que des tests `native` pour valider la logique côté hôte. Ajoutez vos cibles personnalisées dans `firmware/targets/`.
-- **Pipeline matériel** : `hardware/` propose des projets KiCad et des scripts pour générer le schéma, valider les règles (DRC/ERC) et exporter la nomenclature. Les profils de conformité (ex : `iot_wifi_eu`) s’appuient sur les standards dans `standards/`.
-- **OpenClaw en mode observateur** : OpenClaw peut appliquer des labels ou laisser des commentaires sanitisés sur les issues/PR sans jamais écrire dans le code. Son exécution doit se faire en bac à sable, sans secrets【57263998884462†L355-L419】.
-
-## 🚀 Prise en main rapide
-
-1. **Créer votre spécification** : copiez/complétez un modèle dans `specs/` ou utilisez `python tools/ai/specify_init.py --name votre-feature` pour générer un squelette.
-2. **Définir votre profil** (prototype ou iot\_wifi\_eu) via `python tools/compliance/use_profile.py`.
-3. **Développement firmware** : installez PlatformIO (`pip install platformio`), puis :
-   ```bash
-   cd firmware
-   pio run -e esp32s3_idf   # build
-   pio test -e native        # tests unitaires hôte
-   ```
-4. **Lancer un agent** : ouvrez une issue et ajoutez l’étiquette appropriée (`ai:spec`, `ai:plan`, etc.). Le workflow agentique crée une PR avec un diff minimal, les tests et un résumé humain.
-5. **Contrôler les PR** : la CI exécute des gates (build/tests/validation spec). Un scope guard vérifie que les modifications respectent le label.
-6. **Lire la documentation** : les dossiers `docs/` et `standards/` contiennent des guides (setup KiCad, sécurité, compliance) et des standards versionnés injectés par AgentOS.
-
-## 🗂 Arborescence principale
-
-- `specs/` : spécifications, architectures, plans et tâches.
-- `standards/` : standards globaux (firmware, hardware, tests), profils de conformité.
-- `bmad/` : rôles, rituels et gabarits de handoff pour orchestrer les agents.
-- `agents/` : prompts pour chaque rôle.
-- `tools/` : scripts AI (sanitisation, prompts), cockpit de génération, gates et validateurs.
-- `firmware/` : projet PlatformIO (targets + tests).
-- `hardware/` : projets KiCad et scripts de génération.
-- `.github/` : workflows CI (build/test, scope guard, enforcement labels) et agents markdown (Option A).
-- `openclaw/` : configuration et règles pour OpenClaw en mode observateur.
-- `licenses/` : copies/summaries des licences MIT, CERN OHL v2 et CC BY 4.0.
-
-## 📄 Licences
-
-Le code source est diffusé sous **MIT**. Les fichiers matériels (KiCad, mécaniques, BOM) sont sous **CERN OHL v2 Permissive**, encourageant la collaboration et la liberté d’étudier et partager les designs【572981070514051†L86-L91】. La documentation et les spécifications sont sous **Creative Commons BY 4.0**, permettant la réutilisation et l’adaptation avec attribution【335439356583797†L59-L75】.
-
-## 🤝 Contribuer
-
-Les contributions sont les bienvenues ! Vous pouvez proposer de nouveaux profils cibles, améliorer les scripts de gating ou enrichir les standards. N’oubliez pas de suivre la politique anti‑injection décrite dans `docs/security/anti_prompt_injection_policy.md` et d’ajouter des tests avec vos changements.
+le meilleur des fin de monde ?
 
 ---
 
-Ce dépôt vise à offrir un point de départ moderne pour des projets embarqués assistés par IA, en conciliant innovation et sécurité. Explorez, adaptez et bâtissez votre prochain projet en toute confiance !
+
+## 🧩 Architecture & Principes
+
+- **Spec-first** : Chaque évolution commence par une définition claire dans `specs/` ([Spec Generator FX](https://www.youtube.com/watch?v=9bZkp7q19f0)).
+- **Standards injection** : Standards versionnés + profils injectés (Agent OS).
+- **BMAD / BMAD-METHOD** : Agents par rôles (PM, Architect, Firmware, QA, Doc, HW), rituels, gates, handoffs ([agents/](agents/), [bmad/](bmad/)).
+- **Tool-first** : Scripts reproductibles ([tools/](tools/)), evidence pack dans `artifacts/`.
+- **Pipeline hardware/firmware** : Bulk edits, exports, tests, compliance, snapshots ([Les particules font-elles l’amour ?](https://lelectron-fou.bandcamp.com/album/les-particules-font-elles-l-amour-la-physique)).
+- **Sécurité & conformité** : Sanitisation, safe outputs, sandboxing, scope guard, anti-prompt injection ([OpenClaw Sandbox](https://www.openclaw.io/)).
+
+> "Les particules rêvent-elles d’électron-ironique ? Peut-être font-elles l’amour dans le dossier hardware, pendant que les agents QA se demandent si la conformité est un rêve ou une réalité."  
+> — Inspiré par Le Réplicant de K. Dick & Les particules font-elles l’amour
+
+> "Bienvenue dans le meilleur des mondes : ici, chaque commit est validé, chaque gate est passé, et chaque agent sait que la vraie liberté, c’est d’avoir un evidence pack bien rangé."  
+> — Aldous Huxley, version CI/CD
+
+---
+
+## ✨ Fonctionnalités principales
+
+- **Développement guidé par la spec** : User stories, contraintes, archi, plans, backlog.
+- **Automatisation** : Issue → PR avec tests unitaires, sanitisation, evidence pack.
+- **Multi-cibles** : ESP32, STM32, Linux, tests natifs.
+- **Pipeline matériel** : KiCad, exports SVG/ERC/DRC/BOM/netlist, bulk edits.
+- **Compliance** : Profils injectés, validation automatique.
+- **OpenClaw** : Labels & commentaires sanitisés, jamais de commit/push, sandbox obligatoire.
+
+---
+
+## 🖥️ Arborescence graphique
+
+```mermaid
+flowchart TD
+  A[📄 specs/ — Source de vérité] --> B[⚙️ standards/ — Standards & profils]
+  A --> C[🧑‍🤝‍🧑 bmad/ — Rituels, gates, handoffs]
+  A --> D[🤖 agents/ — Prompts par rôle]
+  A --> E[🛠️ tools/ — Scripts AI, cockpit, compliance]
+  A --> F[💾 firmware/ — PlatformIO, tests, multi-cibles]
+  A --> G[🔩 hardware/ — KiCad, bulk edits, exports]
+  A --> H[🦞 openclaw/ — Sandbox, labels, commentaires]
+  A --> I[📜 licenses/ — MIT, CERN OHL v2, CC-BY 4.0]
+  A --> J[🛡️ .github/ — CI, scope guard, enforcement labels]
+  F --> K[🧪 tests natifs]
+  G --> L[📊 exports ERC/DRC/BOM/netlist]
+  E --> M[🦾 Evidence pack]
+  H --> N[🔒 Sanitisation, safe outputs]
+```
+
+---
+
+## 🚀 Installation & initialisation
+
+### Prérequis
+- Python ≥ 3.8
+- PlatformIO
+- KiCad 9
+- mkdocs
+- Docker (optionnel)
+
+### 1. Cloner le repo
+```bash
+git clone https://github.com/electron-rare/Kill_LIFE.git
+cd Kill_LIFE
+```
+
+### 2. Initialiser la spec
+```bash
+python tools/ai/specify_init.py --name <feature-or-epic>
+```
+
+### 3. Choisir le profil compliance
+```bash
+python tools/compliance/use_profile.py --profile prototype
+```
+
+### 4. Installer les dépendances firmware
+```bash
+cd firmware
+python -m pip install -U platformio
+```
+
+### 5. Build & tests firmware
+```bash
+pio run -e esp32s3_arduino
+pio test -e native
+```
+
+### 6. Pipeline hardware (KiCad)
+```bash
+bash tools/hw/hw_gate.sh hardware/kicad
+python tools/watch/watch_hw.py
+```
+
+### 7. Générer la documentation
+```bash
+python -m pip install -U mkdocs
+mkdocs build --strict
+```
+
+### 8. Docker (optionnel)
+Si un fichier docker-compose.yml est présent :
+```bash
+sudo docker-compose up -d
+```
+
+---
+
+## 🛠️ Fonctions clés
+
+- **specs/** : Source de vérité, plans, backlog.
+- **standards/** : Standards globaux, profils injectés.
+- **bmad/** : Gates, rituels, templates.
+- **agents/** : Prompts pour chaque rôle.
+- **tools/** : Scripts AI, cockpit, compliance, watch.
+- **firmware/** : PlatformIO, tests Unity, multi-cibles.
+- **hardware/** : KiCad, bulk edits, exports.
+- **openclaw/** : Labels, commentaires, sandbox.
+- **.github/** : Workflows CI, scope guard, enforcement labels.
+- **licenses/** : MIT, CERN OHL v2, CC-BY 4.0.
+
+---
+
+
+## 🦾 Workflows agents
+
+- **Issue → PR** : Label `ai:*` obligatoire, sanitisation, diff minimal, tests auto. (Ne panique jamais et garde ta serviette !)
+- **Scope guard** : Label détermine les dossiers modifiables.
+- **Evidence pack** : Tous les rapports dans `artifacts/<domain>/<timestamp>/` (rangé comme dans une dystopie bien organisée).
+- **Compliance** : Validation stricte via scripts.
+
+### Exemples de workflows
+
+#### 1. Spécification → Implémentation Firmware
+1. Rédige la spec dans `specs/` (mode Gangnam Style https://www.youtube.com/watch?v=9bZkp7q19f0 !).
+2. Ouvre une issue avec le label `ai:spec`.
+3. L’agent PM/Architect génère le plan et l’architecture.
+4. L’agent Firmware implémente le code dans `firmware/`.
+5. L’agent QA ajoute des tests Unity.
+6. Evidence pack généré automatiquement.
+
+#### 2. Bulk Edit Hardware KiCad
+1. Ouvre une issue avec le label `ai:hw`.
+2. L’agent HW effectue un bulk edit via `tools/hw/schops` (fête le bulk edit avec [Bulk Edit Party FX](https://www.youtube.com/watch?v=dQw4w9WgXcQ)).
+3. Exporte ERC/DRC, BOM, netlist.
+4. Snapshot avant/après dans `artifacts/hw/<timestamp>/`.
+
+#### 3. Documentation & Compliance
+1. Ouvre une issue avec le label `ai:docs` ou `ai:qa`.
+2. L’agent Doc met à jour `docs/` et le README.
+3. L’agent Compliance valide le profil et génère le rapport.
+
+---
+
+## 📝 Installation & Sécurité
+
+- Un guide d’installation détaillé ([INSTALL.md](INSTALL.md)) explique comment installer le projet, configurer les environnements, sécuriser OpenClaw, lancer les tests hardware, générer la documentation, et utiliser Docker.
+- Un script d’installation unique ([install_kill_life.sh](install_kill_life.sh)) automatise tout : dépendances, spec, profil compliance, environnement Python, modules AI/hardware/firmware, tests, doc, Docker, et vérification de la sécurité OpenClaw.
+- Sécurité OpenClaw : sandbox obligatoire, jamais d’accès aux secrets ou au code source.
+- Tests hardware reproductibles via scripts documentés.
+
+---
+
+## 🧬 Architecture agentique avancée
+
+- Structure multi-agent (BMAD) : rôles PM, Architect, Firmware, QA, Doc, HW, orchestrés par rituels, gates et handoffs.
+- Développement spec-first : chaque évolution commence par une spécification, standards versionnés et profils injectés.
+- Automatisation & sécurité : workflows CI, sanitisation, safe outputs, scope guard, anti-prompt injection, OpenClaw sandbox.
+- Multi-cibles & pipelines reproductibles : ESP32, STM32, Linux, tests natifs, bulk edits hardware KiCad, exports automatisés.
+- Documentation claire & onboarding : README détaillé, FAQ, workflows, arborescence graphique, guides d’installation, politique de contribution.
+
+---
+
+## 🚀 Conventions, contribution & cross-platform
+
+- Toutes les conventions, instructions d’installation, sécurité, multi-agents, compliance, workflows, et support cross-platform (Docker inclus) sont synthétisées.
+- Architecture, étapes d’initialisation, fonctions clés, sécurité OpenClaw, contribution.
+
+---
+
+## ❓ FAQ
+
+**Q : Comment démarrer rapidement ?**
+A : Suis la section "Installation & initialisation" ou le guide INSTALL.md.
+
+**Q : Comment installer tout automatiquement ?**
+A : Utilise le script `install_kill_life.sh`.
+
+**Q : Comment sécuriser OpenClaw ?**
+A : Sandbox obligatoire, jamais d’accès aux secrets ou au code source.
+
+**Q : Comment lancer les tests hardware ?**
+A : Suis les scripts documentés dans le README et INSTALL.md.
+
+**Q : Comment contribuer ?**
+A : Ajoute des profils, améliore les scripts, enrichis les standards, et suis la politique anti-injection.
+
+---
+
+## 🦾 Workflows détaillés
+
+### 1. Spécification → Implémentation Firmware
+1. Rédige la spec dans `specs/`.
+2. Ouvre une issue avec le label `ai:spec`.
+3. L’agent PM/Architect génère le plan et l’architecture.
+4. L’agent Firmware implémente le code dans `firmware/`.
+5. L’agent QA ajoute des tests Unity.
+6. Evidence pack généré automatiquement.
+
+### 2. Bulk Edit Hardware KiCad
+1. Ouvre une issue avec le label `ai:hw`.
+2. L’agent HW effectue un bulk edit via `tools/hw/schops`.
+3. Exporte ERC/DRC, BOM, netlist.
+4. Snapshot avant/après dans `artifacts/hw/<timestamp>/`.
+
+### 3. Documentation & Compliance
+1. Ouvre une issue avec le label `ai:docs` ou `ai:qa`.
+2. L’agent Doc met à jour `docs/` et le README.
+3. L’agent Compliance valide le profil et génère le rapport.
+
+---
+

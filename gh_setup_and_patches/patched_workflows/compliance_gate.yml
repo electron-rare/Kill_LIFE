@@ -1,0 +1,48 @@
+name: Compliance Gate
+
+on:
+  push:
+    paths:
+      - "compliance/**"
+      - "tools/compliance/**"
+      - ".github/workflows/compliance_gate.yml"
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Detect relevant changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          filters: |
+            comp:
+              - 'compliance/**'
+              - 'tools/compliance/**'
+              - '.github/workflows/compliance_gate.yml'
+
+      - name: No relevant changes (fast pass)
+        if: steps.changes.outputs.comp != 'true'
+        run: |
+          echo "No compliance/tools-compliance changes detected. Skipping compliance validation."
+
+      - uses: actions/setup-python@v5
+        if: steps.changes.outputs.comp == 'true'
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        if: steps.changes.outputs.comp == 'true'
+        run: |
+          python -m pip install -U pip
+          python -m pip install -r tools/compliance/requirements.txt
+
+      - name: Validate compliance
+        if: steps.changes.outputs.comp == 'true'
+        run: |
+          python tools/compliance/validate.py --strict
