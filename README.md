@@ -1,12 +1,22 @@
 # Kill_LIFE 🚀 — Modèle de Projet Embarqué IA-Natif
 
 
-<!-- Badges qualité & conformité -->
-[![Build Status](https://img.shields.io/github/actions/workflow/status/electron-rare/Kill_LIFE/ci.yml?branch=main)](https://github.com/electron-rare/Kill_LIFE/actions)
-[![Licence MIT](https://img.shields.io/badge/license-MIT-blue)](licenses/MIT.txt)
-[![Conformité RFC2119](https://img.shields.io/badge/conformité-RFC2119-blueviolet)](docs/COMPLIANCE.md)
+
+[//]: # (Badges dynamiques via shields.io)
+
+[![CI](https://img.shields.io/github/actions/workflow/status/electron-rare/Kill_LIFE/ci.yml?branch=main&label=CI)](https://github.com/electron-rare/Kill_LIFE/actions)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](licenses/MIT.txt)
+[![RFC2119](https://img.shields.io/badge/conformité-RFC2119-blueviolet)](docs/COMPLIANCE.md)
 [![Evidence Pack](https://img.shields.io/badge/evidence-pack-green)](docs/evidence/)
-[![Test Coverage](https://img.shields.io/badge/coverage-90%25-brightgreen)](docs/coverage_report.html)
+[![Test Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/electron-rare/Kill_LIFE/main/docs/coverage-summary.json&cacheSeconds=300)](docs/coverage_report.html)
+[![CI Audit](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/electron-rare/Kill_LIFE/main/docs/ci-audit-badge.json&cacheSeconds=300)](docs/ci-audit-summary.json)
+
+[![Security](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/electron-rare/Kill_LIFE/main/docs/security-summary.json&cacheSeconds=300)](docs/SECURITY.md)
+[![SBOM](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/electron-rare/Kill_LIFE/main/docs/sbom-summary.json&cacheSeconds=300)](docs/SBOM.md)
+[![Doc Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/electron-rare/Kill_LIFE/main/docs/doc-summary.json&cacheSeconds=300)](docs/DOC.md)
+[![Quality](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/electron-rare/Kill_LIFE/main/docs/quality-summary.json&cacheSeconds=300)](docs/QUALITY.md)
+[![Community](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/electron-rare/Kill_LIFE/main/docs/community-summary.json&cacheSeconds=300)](docs/COMMUNITY.md)
+
 
 
 ---
@@ -122,7 +132,7 @@ L’ensemble du workflow est pensé comme une partition modulaire : chaque age
 - **BMAD / BMAD-METHOD** : Agents par rôles (PM, Architecte, Firmware, QA, Doc, HW), rituels, gates, handoffs ([agents/](agents/), [bmad/](bmad/)).
 - **Tool-first** : Scripts reproductibles ([tools/](tools/)), evidence pack dans `artifacts/`.
 - **Pipeline hardware/firmware** : Bulk edits, exports, tests, conformité, snapshots.
-- **Sécurité & conformité** : Sanitisation, sorties sûres, sandboxing, scope guard, anti-prompt injection ([OpenClaw Sandbox](https://www.openclaw.io/)).
+ - **Sécurité & conformité** : Sanitisation, sorties sûres, sandboxing, scope guard, anti-prompt injection ([OpenClaw Sandbox](https://openclaw.ai/)).
   >Schaeffer : Les agents du pipeline écoutent le bruit des specs comme une symphonie de sons trouvés.
 
 <div align="center" style="margin: 18px 0;">
@@ -199,6 +209,9 @@ Ce dépôt fait l’objet d’un suivi régulier :
 - Les audits de sécurité, conformité et couverture de tests sont à planifier à chaque release majeure.
 - Les contributeurs sont invités à consulter la checklist d’audit (en tête du README) avant toute contribution majeure.
 - La traçabilité des actions est assurée par les evidence packs ([docs/evidence/](docs/evidence/)).
+
+- Un audit badge complet est généré et publié à chaque release majeure : voir [docs/badges/audit_2026-02-19.md](docs/badges/audit_2026-02-19.md).
+- Les guides badge sont accessibles dans [docs/badges/](docs/badges/) pour chaque badge.
 
 Pour toute question ou suggestion, ouvrir une issue ou contacter l’équipe via [docs/FAQ.md](docs/FAQ.md).
 

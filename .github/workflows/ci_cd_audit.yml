@@ -1,0 +1,49 @@
+# Audit CI/CD automatique à chaque release majeure
+
+## Objectif
+Planifier et exécuter un audit automatisé de la checklist badge & evidence pack à chaque release majeure.
+
+## Workflow recommandé
+- Utiliser GitHub Actions pour déclencher l’audit lors d’un tag de release majeure (vX.0.0).
+- Exécuter tools/auto_check_ci_cd.py pour valider la checklist.
+- Publier le rapport d’audit dans docs/evidence/ et sur GitHub Pages.
+
+## Exemple de workflow (ci_cd_audit.yml)
+
+```yaml
+name: CI/CD Audit Checklist
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  audit-checklist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Installer Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Installer dépendances
+        run: |
+          pip install -r requirements-mistral.txt
+      - name: Exécuter audit checklist
+        run: |
+          python3 tools/auto_check_ci_cd.py > docs/evidence/ci_cd_audit_report.txt
+      - name: Publier rapport sur GitHub Pages
+        run: |
+          cp docs/evidence/ci_cd_audit_report.txt public/
+```
+
+## Vérification
+- Le rapport d’audit est accessible dans docs/evidence/ et sur GitHub Pages.
+- La checklist badge & evidence pack est validée à chaque release majeure.
+
+---
+
+> Ce workflow peut être adapté pour inclure d’autres scripts ou rapports d’audit.

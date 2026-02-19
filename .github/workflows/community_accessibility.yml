@@ -1,0 +1,24 @@
+name: Community Health & Accessibilité
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  community:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Vérifier code of conduct, issue/pr templates
+        run: |
+          python tools/community/check_health.py > docs/community-health-report.json
+      - name: Scanner accessibilité doc/UI
+        run: |
+          python tools/accessibility/a11y_linter.py docs/ > docs/accessibility-report.json
+      - name: Upload reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: community-accessibility
+          path: docs/community-health-report.json

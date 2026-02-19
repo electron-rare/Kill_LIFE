@@ -1,0 +1,21 @@
+name: Incident Response & Security Policy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  incident_response:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Vérifier politique de sécurité et incident response
+        run: |
+          python tools/security/check_policy.py > docs/security-policy-report.json
+      - name: Upload security policy report
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-policy
+          path: docs/security-policy-report.json

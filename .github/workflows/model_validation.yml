@@ -1,0 +1,21 @@
+name: Data/Model Validation (IA)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  model_validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Validate IA models/datasets
+        run: |
+          python tools/ai/validate_model.py > docs/model-validation-report.json
+      - name: Upload model validation report
+        uses: actions/upload-artifact@v3
+        with:
+          name: model-validation
+          path: docs/model-validation-report.json

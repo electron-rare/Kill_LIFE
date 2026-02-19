@@ -1,3 +1,7 @@
+# Rapport de couverture des tests Python
+coverage:
+	coverage run -m pytest
+	coverage html -d docs/coverage_report
 .PHONY: fw hw s0 docs
 
 s0:

@@ -1,0 +1,26 @@
+name: Release Automation & Signing
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build artefacts
+        run: |
+          echo "Build artefacts..."
+      - name: Sign artefacts (cosign)
+        run: |
+          cosign sign --key ${{ secrets.SIGNING_KEY }} build/artefact.bin
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/artefact.bin
+          tag_name: ${{ github.ref_name }}
+          name: "Release ${{ github.ref_name }}"
+          body: "Release automatisée avec artefacts signés."

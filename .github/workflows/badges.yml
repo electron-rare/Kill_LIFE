@@ -1,0 +1,39 @@
+name: Badges & Coverage
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  badges:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: pip install coverage
+      - name: Run tests & collect coverage
+        run: |
+          coverage run -m pytest
+          coverage report
+          coverage json -o docs/coverage-summary.json
+      - name: Scan RFC2119 compliance
+        run: python3 tools/compliance/scan_rfc2119.py
+      - name: Commit badge JSON to badges branch
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git checkout -B badges
+          git add docs/coverage-summary.json docs/rfc2119-summary.json
+          git commit -m "Update badge JSONs [CI]" || echo "Nothing to commit"
+          git push origin badges --force
+      - name: Upload badge JSON as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: badge-json
+          path: docs/*.json

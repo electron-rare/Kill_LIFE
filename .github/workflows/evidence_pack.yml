@@ -1,0 +1,21 @@
+name: Evidence Pack Validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  evidence_pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Validate evidence pack
+        run: |
+          python tools/evidence/validate_evidence_pack.py > docs/evidence-pack-report.json
+      - name: Upload evidence pack report
+        uses: actions/upload-artifact@v3
+        with:
+          name: evidence-pack
+          path: docs/evidence-pack-report.json

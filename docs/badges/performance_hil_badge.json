@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "label": "Performance HIL",
+  "message": "validé",
+  "color": "green",
+  "isValid": true,
+  "details": {
+    "artefacts": ["https://github.com/electron-rare/Kill_LIFE/actions?query=workflow%3APerformance_HIL"],
+    "lastRun": "2026-02-19"
+  }
+}

@@ -29,6 +29,29 @@ Ajoute un label `ai:*` :
 
 > Si la PR n’a pas de label `ai:*`, le workflow ajoute `ai:impl` (fallback). Tu peux activer “label obligatoire” selon ta gouvernance.
 
+---
+
+## 3) CI/CD multi-cible hardware-in-the-loop
+
+Le workflow CI/CD compile, teste et valide le firmware sur ESP, STM et Linux.
+Les scripts d’automatisation sont dans `tools/` :
+- `build_firmware.py` : build par cible
+- `test_firmware.py` : tests par cible
+- `collect_evidence.py` : génération evidence pack
+
+Les evidence packs sont stockés dans `docs/evidence/`.
+La couverture est générée via `coverage_badge.py`.
+
+Pour vérifier manuellement :
+```bash
+python tools/build_firmware.py esp
+python tools/test_firmware.py esp
+python tools/collect_evidence.py esp
+```
+Remplace `esp` par `stm` ou `linux`.
+
+Vérifie la présence des artefacts et evidence packs après chaque run.
+
 ### 2.4 CI (automatique)
 - Label enforcement
 - Scope guard

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "label": "Dependency Update",
+  "message": "à jour",
+  "color": "green",
+  "isValid": true,
+  "details": {
+    "artefacts": ["https://github.com/electron-rare/Kill_LIFE/actions?query=workflow%3ADependency_Update"],
+    "lastRun": "2026-02-19"
+  }
+}

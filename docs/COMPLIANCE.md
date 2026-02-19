@@ -1,3 +1,32 @@
+# Politique badge & conformité Kill_LIFE
+
+Ce document décrit la stratégie d’intégration, d’automatisation et de vérification des badges pour garantir la conformité, la sécurité et la traçabilité du projet.
+
+## Objectifs
+- Assurer la visibilité de la qualité, sécurité, documentation, SBOM et communauté.
+- Automatiser la génération et la publication des badges via CI/CD.
+- Centraliser les guides badge dans docs/badges/.
+- Vérifier l’actualisation à chaque commit (timestamp ≥ commit).
+- Intégrer badges et rapports dans l’evidence pack.
+- Planifier un audit badge à chaque release majeure.
+
+## Processus
+1. Scripts badge exécutés à chaque CI (push/PR).
+2. Fichiers summary JSON générés et publiés.
+3. Guides badge accessibles dans docs/badges/.
+4. Checklist badge en tête du README.
+5. Evidence pack inclut badges et rapports.
+6. Audit badge documenté dans specs/04_tasks.md.
+
+## Références
+- [docs/badges/](docs/badges/)
+- [README.md](../README.md)
+- [docs/COMPLIANCE.md](../COMPLIANCE.md)
+- [specs/04_tasks.md](../../specs/04_tasks.md)
+
+---
+
+Pour toute évolution badge ou conformité, ouvrir une issue labellisée ai:qa ou ai:docs.
 # Easter Egg musique expérimentale
 
 _« La conformité, c’est parfois bruitiste : il faut oser saturer les scripts, comme Zbigniew Karkowski. »_

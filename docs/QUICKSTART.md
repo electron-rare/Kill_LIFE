@@ -22,9 +22,23 @@ pip install -r requirements-mistral.txt
 ```
 
 ## 3. Build et test minimal (exemple PlatformIO)
+
+## 3bis. Build et test multi-cible (CI/CD agentique)
+Le workflow CI/CD compile et teste le firmware sur ESP, STM et Linux automatiquement.
+
+Pour lancer manuellement :
 ```bash
-cd firmware
-platformio run
+python tools/build_firmware.py esp
+python tools/test_firmware.py esp
+python tools/collect_evidence.py esp
+```
+Remplace `esp` par `stm` ou `linux` selon la cible.
+
+Les evidence packs sont générés dans `docs/evidence/`.
+
+Pour vérifier la couverture :
+```bash
+python coverage_badge.py
 ```
 
 ## 4. Lancer la documentation locale (optionnel)

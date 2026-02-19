@@ -1,0 +1,21 @@
+name: API Contract & Integration Testing
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  api_contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run API contract tests
+        run: |
+          python tools/api/run_contract_tests.py > docs/api-contract-report.json
+      - name: Upload API contract report
+        uses: actions/upload-artifact@v3
+        with:
+          name: api-contract
+          path: docs/api-contract-report.json

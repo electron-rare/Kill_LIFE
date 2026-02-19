@@ -1,0 +1,27 @@
+name: Supply Chain Attestation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  supply_chain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build & provenance attestation
+        run: |
+          # Build (ex: PlatformIO, Docker, etc.)
+          echo "Build step..."
+          # Générer attestation provenance SLSA
+          slsa-generator provenance --output docs/supplychain-attestation.json
+      - name: Sign artefacts (cosign)
+        run: |
+          cosign sign --key ${{ secrets.SIGNING_KEY }} docs/supplychain-attestation.json
+      - name: Upload attestation
+        uses: actions/upload-artifact@v3
+        with:
+          name: supplychain-attestation
+          path: docs/supplychain-attestation.json

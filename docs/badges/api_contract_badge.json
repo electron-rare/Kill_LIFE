@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "label": "API Contract",
+  "message": "conforme",
+  "color": "green",
+  "isValid": true,
+  "details": {
+    "artefacts": ["https://github.com/electron-rare/Kill_LIFE/actions?query=workflow%3AAPI_Contract"],
+    "lastRun": "2026-02-19"
+  }
+}
