@@ -1,4 +1,3 @@
-
 # Kill_LIFE 🚀 — AI-Native Embedded Project Template
 
 ![Kill_LIFE Banner](https://raw.githubusercontent.com/electron-rare/Kill_LIFE/main/docs/assets/banner_kill_life.png)
@@ -13,8 +12,16 @@ Bienvenue dans **Kill_LIFE**, le template open source pour systèmes embarqués 
 
 le meilleur des fin de monde ?
 
----
 
+## 🚦 Quickstart
+
+1. Clone le repo et installe les dépendances (voir INSTALL.md).
+2. Initialise un environnement Python et PlatformIO.
+3. Lance les scripts de validation (Makefile, tools/).
+4. Ouvre une issue, ajoute un label `ai:*` pour déclencher l’automatisation.
+5. Suis le flux Issue → PR, gates, evidence pack.
+
+Pour plus de détails, consulte [docs/](docs/index.md), [RUNBOOK.md](RUNBOOK.md), [INSTALL.md](INSTALL.md).
 
 ## 🧩 Architecture & Principes
 
@@ -65,18 +72,40 @@ flowchart TD
 
 ---
 
+## 🗺️ Schéma de flux
+
+Voir [KIKIFOU/diagramme.md](KIKIFOU/diagramme.md) pour un diagramme complet du pipeline.
+
+## 🧾 Table de mapping
+
+Voir [KIKIFOU/mapping.md](KIKIFOU/mapping.md) pour une synthèse des dossiers et dépendances.
+
+
 ## 🚀 Installation & initialisation
 
 ### Prérequis
-- Python ≥ 3.8
-- PlatformIO
-- KiCad 9
-- mkdocs
-- Docker (optionnel)
 
-### 1. Cloner le repo
+---
+
+## 🤝 Contribuer
+
+1. Fork le repo, clone-le localement.
+2. Suis le guide onboarding (docs/, RUNBOOK.md).
+3. Ajoute des exemples minimalistes pour chaque agent.
+4. Propose des blocks hardware, profils compliance, tests.
+5. Documente tes scripts et contributions.
+6. Ouvre une PR, passe les gates, fournis un evidence pack.
+
+Pour toute question, consulte la FAQ (docs/FAQ.md) ou ouvre une issue.
+
 ```bash
-git clone https://github.com/electron-rare/Kill_LIFE.git
+## 🔗 Liens utiles
+
+- [Documentation complète](docs/index.md)
+- [RUNBOOK opérateur](RUNBOOK.md)
+- [Guide d’installation](INSTALL.md)
+- [Synthèse technique et recommandations](KIKIFOU/synthese.md)
+
 cd Kill_LIFE
 ```
 
@@ -233,6 +262,21 @@ A : Ajoute des profils, améliore les scripts, enrichis les standards, et suis l
 1. Ouvre une issue avec le label `ai:docs` ou `ai:qa`.
 2. L’agent Doc met à jour `docs/` et le README.
 3. L’agent Compliance valide le profil et génère le rapport.
+
+---
+
+## 🥚 Easter Eggs Kill_LIFE
+
+- **Ne panique jamais** : ![Don’t Panic](docs/assets/dont_panic_generated.png) [Playlist apocalypse](https://www.youtube.com/playlist?list=PLApocalypse42)
+- **Bulk Edit Party** : [Fête technique](https://www.youtube.com/watch?v=dQw4w9WgXcQ) — robots IA dansant sur du code PCB.
+- **Citation dystopique** : _« J’ai vu des evidence packs briller dans l’obscurité près des gates S1… »_
+- **Badge 42** : ![Badge 42](docs/assets/badge_42_generated.png) — clique pour une blague mathématique.
+- **Mini-jeu Gate Runner** : [Gate Runner](https://gate-runner.example.com) — passe les gates, évite les bugs.
+- **Le meilleur des mondes** : Générateur de phrases dystopiques pour motiver les contributeurs.
+- **OpenClaw interactif** : ![OpenClaw](docs/assets/openclaw_interactif_generated.png) — change de couleur selon le statut CI/CD.
+- **Spec Generator FX** : [Spec aléatoire](https://spec-generator.example.com) — science-fiction automatisée.
+- **Sanitizer Challenge** : Trouve la phrase supprimée par le sanitizer, score affiché.
+- **Agent QA Replicant** : _« Un evidence pack peut-il rêver de conformité ? »_
 
 ---
 
