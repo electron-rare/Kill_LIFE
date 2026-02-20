@@ -24,6 +24,7 @@ Fiabiliser, prouver, livrer : test matrix, evidence pack, versioning et release 
 - Tous status checks requis (CI)
 - Scope guard OK
 - Evidence pack complet
+- Route parity frontend/backend API (si surface web exposée)
 
 ## Evidence pack
 Voir `docs/evidence/evidence_pack.md`.
