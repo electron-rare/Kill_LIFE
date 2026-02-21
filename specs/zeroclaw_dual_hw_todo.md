@@ -57,3 +57,14 @@ Last updated: 2026-02-21
 - [x] E-002 - One successful complete loop Zacus in local hardware.
 - [x] E-003 - Dashboard live usable for continuous supervision.
 - [x] E-004 - Prometheus target scrape confirmed on gateway metrics.
+
+## Integrations (Open WebUI + n8n)
+
+- [x] I-201 - Add mixed Open WebUI Pipe mapping (`zc.router` + dedicated models).
+- [x] I-202 - Add n8n PR autotriage workflow (webhook + cron fallback).
+- [x] I-203 - Add local docker compose stack for Open WebUI (`3001`) and n8n (`5678`).
+- [x] I-204 - Add runtime scripts (`integrations_up/down/status`, `import_n8n`, `openwebui_assist`).
+- [ ] I-205 - Validate end-to-end import + activation on local Docker runtime.
+  - command: `tools/ai/zeroclaw_integrations_up.sh`
+  - command: `tools/ai/zeroclaw_integrations_status.sh`
+  - command: `tools/ai/zeroclaw_integrations_import_n8n.sh`

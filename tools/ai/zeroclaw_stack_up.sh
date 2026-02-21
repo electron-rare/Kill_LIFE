@@ -57,11 +57,21 @@ PROM_MANAGED_FILE="$ART_DIR/prometheus.managed"
 WATCHER_SCRIPT="$ROOT_DIR/tools/ai/zeroclaw_watch_1min.sh"
 ORCHESTRATOR_SERVER="$ROOT_DIR/tools/ai/zeroclaw_orchestrator_server.py"
 RT_LOG="$ART_DIR/realtime_1min.log"
+INTEGRATIONS_DIR="$ROOT_DIR/tools/ai/integrations"
 
 mkdir -p "$ART_DIR"
 touch "$CONVO_FILE"
 touch "$GW_LOG"
 touch "$RT_LOG"
+
+sync_integrations() {
+  if [[ ! -d "$INTEGRATIONS_DIR" ]]; then
+    return 0
+  fi
+  rm -rf "$ART_DIR/integrations"
+  mkdir -p "$ART_DIR/integrations"
+  cp -R "$INTEGRATIONS_DIR"/. "$ART_DIR/integrations/"
+}
 
 if [[ -f "$HOME/.zeroclaw/config.toml" ]]; then
   chmod 600 "$HOME/.zeroclaw/config.toml" >/dev/null 2>&1 || true
@@ -713,6 +723,8 @@ case "$PROM_MODE" in
     ;;
 esac
 
+sync_integrations
+
 cat >"$INDEX_FILE" <<EOF
 <!doctype html>
 <html lang="en">
@@ -878,6 +890,56 @@ cat >"$INDEX_FILE" <<EOF
       gap: 12px;
       margin-bottom: 12px;
     }
+    .workbench-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .compact {
+      min-height: 320px;
+    }
+    .select,
+    .input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: "SF Pro Text", "Segoe UI", Arial, sans-serif;
+      background: #fff;
+      color: var(--ink);
+    }
+    .inline-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .hub-tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+    }
+    .hub-tab-btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+    }
+    .hub-tab-btn.active {
+      background: #245fa1;
+      color: #fff;
+      border-color: #245fa1;
+    }
+    .hub-tab-panel {
+      display: none;
+      gap: 8px;
+      flex-direction: column;
+    }
+    .hub-tab-panel.active {
+      display: flex;
+    }
     .question-item {
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -949,6 +1011,7 @@ cat >"$INDEX_FILE" <<EOF
     }
     @media (max-width: 980px) {
       .ops-grid { grid-template-columns: 1fr; }
+      .workbench-grid { grid-template-columns: 1fr; }
       .questions-grid { grid-template-columns: 1fr; }
       .grid { grid-template-columns: 1fr; }
       .panel { min-height: 320px; }
@@ -963,7 +1026,7 @@ cat >"$INDEX_FILE" <<EOF
       Polling interval: <code>1s</code> |
       Display cap: <code>500 lines/panel</code> |
       Prometheus: <code>$PROM_STATUS</code> |
-      API: <code>/api/status</code> <code>/api/run</code>
+      API: <code>/api/status</code> <code>/api/run</code> <code>/api/pr/scan</code> <code>/api/pr/autotriage</code> <code>/api/alerts</code>
     </div>
     <div id="questionAlert" class="alert-banner"></div>
     <div class="links">
@@ -972,6 +1035,13 @@ cat >"$INDEX_FILE" <<EOF
       <a href="/realtime_1min.log">/realtime_1min.log</a>
       <a href="/orchestrator.log">/orchestrator.log</a>
       <a href="/prometheus.yml">/prometheus.yml</a>
+      <a href="/integrations/README.md">/integrations/README.md</a>
+      <a href="/integrations/openwebui/zeroclaw_orchestrator_pipe.py">openwebui pipe</a>
+      <a href="/integrations/n8n/zeroclaw_orchestrator_workflow.json">n8n workflow</a>
+      <a href="/integrations/n8n/zeroclaw_pr_autotriage_workflow.json">n8n pr-autotriage workflow</a>
+      <a href="/integrations/docker/docker-compose.openwebui-n8n.yml">compose openwebui+n8n</a>
+      <a href="/integrations/langgraph/README.md">langgraph runbook</a>
+      <a href="/integrations/autogen/README.md">autogen runbook</a>
       <a href="http://$GATEWAY_HOST:$GATEWAY_PORT/health">/health</a>
       <a href="http://$GATEWAY_HOST:$GATEWAY_PORT/metrics">/metrics</a>
       <a href="http://$PROM_HOST:$PROM_PORT/targets">prometheus /targets</a>
@@ -1023,6 +1093,114 @@ cat >"$INDEX_FILE" <<EOF
         </div>
       </section>
     </div>
+    <div class="workbench-grid">
+      <section class="panel compact">
+        <h2>Agent Workbench</h2>
+        <div class="body">
+          <p class="hint">Agents specializes: orchestrator, WebUI/UX, firmware RTC, firmware Zacus, QA/PR.</p>
+          <select id="agentRoleSelect" class="select"></select>
+          <textarea id="agentMissionInput">Stabilise orchestration UX, unblock firmware loops, and propose next PR steps.</textarea>
+          <div class="btn-row">
+            <button onclick="refreshAgents()">Refresh Agents</button>
+            <button onclick="deriveAgentPrompts()">Generate Role Prompts</button>
+            <button onclick="applyAgentPrompts()">Apply to RTC/Zacus</button>
+            <button class="primary" onclick="runAgentPreferredAction()">Run Preferred Chain</button>
+          </div>
+          <pre id="agentStatus">(agent status)</pre>
+        </div>
+      </section>
+      <section class="panel compact">
+        <h2>PR Cockpit (gh)</h2>
+        <div class="body">
+          <div class="inline-row">
+            <select id="prRepoSelect" class="select">
+              <option value="electron-rare/Kill_LIFE">Kill_LIFE</option>
+              <option value="electron-rare/RTC_BL_PHONE">RTC_BL_PHONE</option>
+              <option value="electron-rare/le-mystere-professeur-zacus">Zacus</option>
+            </select>
+            <input id="prNumberInput" class="input" type="number" min="1" placeholder="PR #" />
+          </div>
+          <div class="inline-row">
+            <select id="prMergeMethodSelect" class="select">
+              <option value="squash">squash</option>
+              <option value="rebase">rebase</option>
+              <option value="merge">merge</option>
+            </select>
+            <label class="hint"><input id="prDeleteBranchInput" type="checkbox" checked> delete branch</label>
+          </div>
+          <textarea id="prBodyInput">LGTM from orchestrator.</textarea>
+          <div class="btn-row">
+            <button onclick="refreshPrScan()">Scan Open PRs</button>
+            <button class="primary" onclick="runPrAutotriageNow()">PR autotriage now</button>
+            <button onclick="runPrAction('checks')">Checks</button>
+            <button onclick="runPrAction('view')">View</button>
+            <button onclick="runPrAction('approve')">Approve</button>
+            <button onclick="runPrAction('request_changes')">Request changes</button>
+            <button onclick="runPrAction('comment')">Comment</button>
+            <button class="primary" onclick="runPrAction('merge_auto')">Merge auto</button>
+            <button onclick="runPrAction('merge_admin')">Merge admin</button>
+          </div>
+          <pre id="prSummary">(PR summary)</pre>
+          <pre id="prActionResult">(PR action result)</pre>
+        </div>
+      </section>
+    </div>
+    <div class="workbench-grid">
+      <section class="panel compact">
+        <h2>Alerts</h2>
+        <div class="body">
+          <div class="btn-row">
+            <button onclick="refreshAlerts()">Refresh Alerts</button>
+            <button onclick="ackAllAlerts()">Ack All</button>
+          </div>
+          <pre id="alertsSummary">(alerts summary)</pre>
+          <div id="activeAlerts">(no active alerts)</div>
+        </div>
+      </section>
+      <section class="panel compact">
+        <h2>Integrations Status</h2>
+        <div class="body">
+          <pre id="integrationsStatus">(integrations status)</pre>
+          <div class="btn-row">
+            <button onclick="window.open('http://127.0.0.1:3001','_blank')">Open WebUI</button>
+            <button onclick="window.open('http://127.0.0.1:5678','_blank')">Open n8n</button>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="workbench-grid">
+      <section class="panel compact">
+        <h2>Workflow & Agents</h2>
+        <div class="body">
+          <div class="hub-tabs">
+            <button id="hubTabAgentsBtn" class="hub-tab-btn active" onclick="setHubTab('agents')">Agents</button>
+            <button id="hubTabWorkflowsBtn" class="hub-tab-btn" onclick="setHubTab('workflows')">Workflows</button>
+            <button id="hubTabRecapBtn" class="hub-tab-btn" onclick="setHubTab('recap')">Recap Usage</button>
+            <button onclick="refreshWorkflowHub()">Refresh</button>
+          </div>
+          <div id="hubTabAgents" class="hub-tab-panel active">
+            <pre id="hubAgents">(loading agents)</pre>
+          </div>
+          <div id="hubTabWorkflows" class="hub-tab-panel">
+            <div id="hubWorkflows">(loading workflows)</div>
+          </div>
+          <div id="hubTabRecap" class="hub-tab-panel">
+            <pre id="hubRecap">(loading recap)</pre>
+          </div>
+        </div>
+      </section>
+      <section class="panel compact">
+        <h2>Quick Start</h2>
+        <div class="body">
+          <p class="hint">Point d'entrée recommandé.</p>
+          <pre id="hubQuickStart">1) tools/ai/zeroclaw_stack_up.sh
+2) tools/ai/zeroclaw_integrations_up.sh
+3) Ouvrir http://127.0.0.1:8788/ (monitoring)
+4) Ouvrir http://127.0.0.1:3001/ (Open WebUI)
+5) Ouvrir http://127.0.0.1:5678/ (n8n)</pre>
+        </div>
+      </section>
+    </div>
     <div class="questions-grid">
       <section class="panel">
         <h2>Questions / Decisions</h2>
@@ -1069,6 +1247,17 @@ cat >"$INDEX_FILE" <<EOF
       </div>
     </div>
   </div>
+  <div id="alertPopup" class="modal">
+    <div class="modal-card">
+      <h3>Alert</h3>
+      <p class="small" id="alertPopupMeta"></p>
+      <pre id="alertPopupBody"></pre>
+      <div class="btn-row">
+        <button id="alertPopupAckBtn">Ack</button>
+        <button onclick="closeAlertPopup()">Close</button>
+      </div>
+    </div>
+  </div>
   <script>
     const MAX_LINES = 500;
     const POLL_MS = 1000;
@@ -1081,6 +1270,12 @@ cat >"$INDEX_FILE" <<EOF
     let lastOk = null;
     let runInFlight = false;
     let lastPopupQuestionId = Number(localStorage.getItem("zc_last_popup_question_id") || "0");
+    let lastPopupAlertId = Number(localStorage.getItem("zc_last_popup_alert_id") || "0");
+    let agentCatalog = [];
+    let latestDerivedAgent = null;
+    let prScanCache = null;
+    let workflowHubCache = null;
+    let hubTab = "agents";
 
     function trimTail(lines) {
       if (lines.length <= MAX_LINES) return lines;
@@ -1090,6 +1285,14 @@ cat >"$INDEX_FILE" <<EOF
     function safeText(input) {
       if (input === null || input === undefined) return "";
       return String(input);
+    }
+
+    function prettyJson(input) {
+      try {
+        return JSON.stringify(input, null, 2);
+      } catch (error) {
+        return safeText(input);
+      }
     }
 
     function renderConvo(line) {
@@ -1157,6 +1360,519 @@ cat >"$INDEX_FILE" <<EOF
         throw new Error(msg);
       }
       return parsed;
+    }
+
+    function selectedPrRepo() {
+      return document.getElementById("prRepoSelect").value;
+    }
+
+    function selectedPrNumber() {
+      return Number(document.getElementById("prNumberInput").value || "0");
+    }
+
+    function selectedPrMergeMethod() {
+      return document.getElementById("prMergeMethodSelect").value || "squash";
+    }
+
+    function selectedPrBody() {
+      return document.getElementById("prBodyInput").value.trim();
+    }
+
+    function selectedAgentRole() {
+      return document.getElementById("agentRoleSelect").value || "orchestrator";
+    }
+
+    function selectedAgentMission() {
+      return document.getElementById("agentMissionInput").value.trim();
+    }
+
+    function updateAgentStatus(text) {
+      document.getElementById("agentStatus").textContent = text;
+    }
+
+    function renderAgentOptions() {
+      const select = document.getElementById("agentRoleSelect");
+      const previous = select.value;
+      select.innerHTML = "";
+      if (!agentCatalog.length) {
+        const opt = document.createElement("option");
+        opt.value = "orchestrator";
+        opt.textContent = "orchestrator";
+        select.appendChild(opt);
+      } else {
+        for (const agent of agentCatalog) {
+          const opt = document.createElement("option");
+          opt.value = safeText(agent.id);
+          opt.textContent = safeText(agent.label) + " [" + safeText(agent.id) + "]";
+          select.appendChild(opt);
+        }
+      }
+      if (previous) {
+        select.value = previous;
+      }
+    }
+
+    async function refreshAgents() {
+      try {
+        const data = await fetchJson("/api/agents");
+        agentCatalog = Array.isArray(data.agents) ? data.agents : [];
+        renderAgentOptions();
+        const lines = [];
+        lines.push("roles=" + safeText(agentCatalog.length));
+        for (const agent of agentCatalog) {
+          lines.push(
+            safeText(agent.id) +
+            " -> focus: " + safeText(agent.focus) +
+            " | preferred_action=" + safeText(agent.preferred_action)
+          );
+        }
+        updateAgentStatus(lines.join("\n"));
+      } catch (error) {
+        updateAgentStatus("agents api error: " + error.message);
+      }
+    }
+
+    async function deriveAgentPrompts() {
+      const payload = {
+        role: selectedAgentRole(),
+        message: selectedAgentMission(),
+      };
+      try {
+        const response = await fetch("/api/agents/derive", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const body = await response.text();
+        let parsed = {};
+        try {
+          parsed = body ? JSON.parse(body) : {};
+        } catch (error) {
+          parsed = { raw: body };
+        }
+        if (!response.ok || !parsed.ok) {
+          throw new Error(parsed.error || ("HTTP " + response.status));
+        }
+        latestDerivedAgent = parsed;
+        const lines = [
+          "role=" + safeText(parsed.role) + " label=" + safeText(parsed.role_label),
+          "preferred_action=" + safeText(parsed.preferred_action),
+          "",
+          "[general]",
+          safeText(parsed.general_prompt),
+        ];
+        updateAgentStatus(lines.join("\n"));
+        setStatus("agent prompts generated for role " + safeText(parsed.role), false);
+      } catch (error) {
+        updateAgentStatus("derive failed: " + error.message);
+        setStatus("agent derive failed: " + error.message, true);
+      }
+    }
+
+    function applyAgentPrompts() {
+      if (!latestDerivedAgent) {
+        setStatus("run Generate Role Prompts first", true);
+        return;
+      }
+      document.getElementById("generalPromptInput").value = safeText(latestDerivedAgent.general_prompt);
+      document.getElementById("rtcPromptInput").value = safeText(latestDerivedAgent.rtc_prompt);
+      document.getElementById("zacusPromptInput").value = safeText(latestDerivedAgent.zacus_prompt);
+      setStatus("applied agent-derived prompts to RTC/Zacus/general", false);
+    }
+
+    async function runAgentPreferredAction() {
+      if (!latestDerivedAgent) {
+        await deriveAgentPrompts();
+      }
+      if (!latestDerivedAgent) {
+        return;
+      }
+      applyAgentPrompts();
+      const action = safeText(latestDerivedAgent.preferred_action || "daily_chain");
+      const needsMessage = action === "rtc_operator_chain" || action === "zacus_operator_chain";
+      await runAction(action, needsMessage);
+    }
+
+    function summarizePrScan(scan) {
+      if (!scan) return "(no PR scan yet)";
+      const lines = [];
+      const totals = scan.totals || {};
+      lines.push(
+        "open_prs=" + safeText(totals.open_prs) +
+        " generated_at=" + safeText(scan.generated_at)
+      );
+      const repos = Array.isArray(scan.repos) ? scan.repos : [];
+      for (const repoEntry of repos) {
+        if (!repoEntry.ok) {
+          lines.push("! " + safeText(repoEntry.repo) + " error=" + safeText(repoEntry.error));
+          continue;
+        }
+        lines.push("- " + safeText(repoEntry.repo) + " open=" + safeText(repoEntry.open_count));
+      }
+      lines.push("");
+      const prs = Array.isArray(scan.all_prs) ? scan.all_prs : [];
+      for (const pr of prs.slice(0, 40)) {
+        lines.push(
+          "[" + safeText(pr.repo) + " #" + safeText(pr.number) + "] " +
+          safeText(pr.title) +
+          " | checks=" + safeText(pr.checksBucket) +
+          " | review=" + safeText(pr.reviewDecision) +
+          " | merge=" + safeText(pr.mergeStateStatus)
+        );
+        lines.push("  " + safeText(pr.url));
+      }
+      return lines.join("\n");
+    }
+
+    async function refreshPrScan() {
+      try {
+        const data = await fetchJson("/api/pr/scan");
+        prScanCache = data;
+        document.getElementById("prSummary").textContent = summarizePrScan(data);
+      } catch (error) {
+        document.getElementById("prSummary").textContent = "pr scan error: " + error.message;
+      }
+    }
+
+    async function runPrAction(prAction) {
+      const repo = selectedPrRepo();
+      const number = selectedPrNumber();
+      const body = selectedPrBody();
+      if (number <= 0) {
+        setStatus("PR number is required for action " + prAction, true);
+        return;
+      }
+      const payload = {
+        pr_action: prAction,
+        repo: repo,
+        number: number,
+        body: body,
+        merge_method: selectedPrMergeMethod(),
+        delete_branch: document.getElementById("prDeleteBranchInput").checked,
+      };
+      if (prAction === "merge_auto" || prAction === "merge_admin") {
+        const ok = window.confirm(
+          "Confirm " + prAction + " on " + repo + " #" + String(number) + "?"
+        );
+        if (!ok) return;
+      }
+      try {
+        const response = await fetch("/api/pr/action", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const raw = await response.text();
+        let parsed = {};
+        try {
+          parsed = raw ? JSON.parse(raw) : {};
+        } catch (error) {
+          parsed = { raw: raw };
+        }
+        if (!response.ok || parsed.ok === false) {
+          throw new Error(parsed.error || ("HTTP " + response.status));
+        }
+        document.getElementById("prActionResult").textContent = prettyJson(parsed);
+        setStatus("pr action ok: " + prAction, false);
+        await refreshPrScan();
+      } catch (error) {
+        document.getElementById("prActionResult").textContent = "pr action failed: " + error.message;
+        setStatus("pr action failed: " + prAction + " -> " + error.message, true);
+      }
+    }
+
+    async function runPrAutotriageNow() {
+      const payload = {
+        repos: [
+          "electron-rare/Kill_LIFE",
+          "electron-rare/RTC_BL_PHONE",
+          "electron-rare/le-mystere-professeur-zacus"
+        ],
+        strict: {
+          allow_draft: false,
+          checks_bucket_required: "pass",
+          merge_state_required: ["CLEAN"]
+        },
+        actions: {
+          approve: true,
+          auto_merge: true,
+          merge_method: selectedPrMergeMethod(),
+          delete_branch: document.getElementById("prDeleteBranchInput").checked
+        },
+        dry_run: false
+      };
+      try {
+        const response = await fetch("/api/pr/autotriage", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const raw = await response.text();
+        let parsed = {};
+        try {
+          parsed = raw ? JSON.parse(raw) : {};
+        } catch (error) {
+          parsed = { raw: raw };
+        }
+        if (!response.ok && response.status !== 207) {
+          throw new Error(parsed.error || ("HTTP " + response.status));
+        }
+        document.getElementById("prActionResult").textContent = prettyJson(parsed);
+        const sum = parsed.summary || {};
+        setStatus(
+          "autotriage scanned=" + safeText(sum.scanned) +
+          " eligible=" + safeText(sum.eligible) +
+          " approved=" + safeText(sum.approved) +
+          " merge_auto=" + safeText(sum.merge_auto_requested),
+          false
+        );
+        await refreshPrScan();
+        await refreshAlerts();
+      } catch (error) {
+        document.getElementById("prActionResult").textContent = "pr autotriage failed: " + error.message;
+        setStatus("pr autotriage failed: " + error.message, true);
+      }
+    }
+
+    function setHubTab(tab) {
+      hubTab = tab;
+      const tabs = ["agents", "workflows", "recap"];
+      for (const name of tabs) {
+        const panel = document.getElementById("hubTab" + name.charAt(0).toUpperCase() + name.slice(1));
+        const btn = document.getElementById("hubTab" + name.charAt(0).toUpperCase() + name.slice(1) + "Btn");
+        if (!panel || !btn) continue;
+        const active = name === tab;
+        panel.classList.toggle("active", active);
+        btn.classList.toggle("active", active);
+      }
+    }
+
+    function renderWorkflowHubAgents(data) {
+      const agents = Array.isArray(data.agents) ? data.agents : [];
+      if (!agents.length) {
+        document.getElementById("hubAgents").textContent = "(no agents found)";
+        return;
+      }
+      const lines = [];
+      for (const agent of agents) {
+        lines.push(
+          "[" + safeText(agent.id) + "] " +
+          safeText(agent.label) +
+          "\nfocus: " + safeText(agent.focus) +
+          "\npreferred_action: " + safeText(agent.preferred_action)
+        );
+        lines.push("");
+      }
+      document.getElementById("hubAgents").textContent = lines.join("\n").trim();
+    }
+
+    async function runCatalogAction(actionId, needsMessage) {
+      if (needsMessage) {
+        const input = window.prompt("Message pour " + actionId, document.getElementById("generalPromptInput").value.trim());
+        if (!input || !input.trim()) return;
+        document.getElementById("generalPromptInput").value = input.trim();
+      }
+      await runAction(actionId, needsMessage);
+    }
+
+    function renderWorkflowHubWorkflows(data) {
+      const root = document.getElementById("hubWorkflows");
+      root.innerHTML = "";
+
+      const actions = Array.isArray(data.actions) ? data.actions : [];
+      const n8nWf = Array.isArray(data.n8n_workflows) ? data.n8n_workflows : [];
+      const scripts = Array.isArray(data.scripts) ? data.scripts : [];
+
+      const actionsBox = document.createElement("div");
+      actionsBox.className = "question-item";
+      const actionsTitle = document.createElement("div");
+      actionsTitle.className = "question-title";
+      actionsTitle.textContent = "Orchestrator Actions";
+      actionsBox.appendChild(actionsTitle);
+      for (const action of actions) {
+        const row = document.createElement("div");
+        row.className = "btn-row";
+        const btn = document.createElement("button");
+        btn.textContent = "Run " + safeText(action.id);
+        btn.onclick = function () {
+          runCatalogAction(action.id, !!action.needs_message);
+        };
+        const txt = document.createElement("span");
+        txt.className = "hint";
+        txt.textContent = safeText(action.description || "");
+        row.appendChild(btn);
+        row.appendChild(txt);
+        actionsBox.appendChild(row);
+      }
+      root.appendChild(actionsBox);
+
+      const n8nBox = document.createElement("div");
+      n8nBox.className = "question-item";
+      const n8nTitle = document.createElement("div");
+      n8nTitle.className = "question-title";
+      n8nTitle.textContent = "n8n Workflows (repo)";
+      n8nBox.appendChild(n8nTitle);
+      if (!n8nWf.length) {
+        const empty = document.createElement("div");
+        empty.className = "hint";
+        empty.textContent = "(none)";
+        n8nBox.appendChild(empty);
+      } else {
+        for (const wf of n8nWf) {
+          const line = document.createElement("div");
+          line.className = "question-meta";
+          line.textContent = safeText(wf.name) + " | " + safeText(wf.path);
+          n8nBox.appendChild(line);
+        }
+      }
+      root.appendChild(n8nBox);
+
+      const scriptsBox = document.createElement("div");
+      scriptsBox.className = "question-item";
+      const scriptsTitle = document.createElement("div");
+      scriptsTitle.className = "question-title";
+      scriptsTitle.textContent = "Scripts";
+      scriptsBox.appendChild(scriptsTitle);
+      for (const script of scripts) {
+        const line = document.createElement("div");
+        line.className = "question-meta";
+        line.textContent = safeText(script.path) + " — " + safeText(script.usage);
+        scriptsBox.appendChild(line);
+      }
+      root.appendChild(scriptsBox);
+    }
+
+    function renderWorkflowHubRecap(data) {
+      const recap = Array.isArray(data.usage_recap) ? data.usage_recap : [];
+      document.getElementById("hubRecap").textContent = recap.length ? recap.join("\n") : "(no recap)";
+    }
+
+    async function refreshWorkflowHub() {
+      try {
+        const data = await fetchJson("/api/workflows");
+        workflowHubCache = data;
+        renderWorkflowHubAgents(data);
+        renderWorkflowHubWorkflows(data);
+        renderWorkflowHubRecap(data);
+      } catch (error) {
+        document.getElementById("hubAgents").textContent = "workflow hub error: " + error.message;
+        document.getElementById("hubWorkflows").textContent = "workflow hub error: " + error.message;
+        document.getElementById("hubRecap").textContent = "workflow hub error: " + error.message;
+      }
+    }
+
+    function closeAlertPopup() {
+      document.getElementById("alertPopup").classList.remove("open");
+    }
+
+    async function ackAlert(id) {
+      const payload = id ? { id: id } : {};
+      try {
+        const response = await fetch("/api/alerts/ack", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const body = await response.text();
+        let parsed = {};
+        try {
+          parsed = body ? JSON.parse(body) : {};
+        } catch (error) {
+          parsed = { raw: body };
+        }
+        if (!response.ok) {
+          throw new Error(parsed.error || ("HTTP " + response.status));
+        }
+        await refreshAlerts();
+      } catch (error) {
+        setStatus("ack alert failed: " + error.message, true);
+      }
+    }
+
+    async function ackAllAlerts() {
+      await ackAlert(0);
+    }
+
+    function showAlertPopup(alertItem) {
+      if (!alertItem) return;
+      document.getElementById("alertPopupMeta").textContent =
+        "id=" + safeText(alertItem.id) +
+        " severity=" + safeText(alertItem.severity) +
+        " source=" + safeText(alertItem.source) +
+        " ts=" + safeText(alertItem.ts);
+      let body = safeText(alertItem.title);
+      if (alertItem.context) body += "\n\n" + safeText(alertItem.context);
+      if (alertItem.repo) body += "\nrepo=" + safeText(alertItem.repo);
+      if (alertItem.pr_number) body += " pr=" + safeText(alertItem.pr_number);
+      document.getElementById("alertPopupBody").textContent = body;
+      const ackBtn = document.getElementById("alertPopupAckBtn");
+      ackBtn.onclick = function () {
+        ackAlert(alertItem.id);
+        closeAlertPopup();
+      };
+      document.getElementById("alertPopup").classList.add("open");
+    }
+
+    function renderActiveAlerts(items) {
+      const root = document.getElementById("activeAlerts");
+      root.innerHTML = "";
+      if (!items.length) {
+        root.textContent = "(no active alerts)";
+        return;
+      }
+      for (const item of items) {
+        const box = document.createElement("div");
+        box.className = "question-item";
+        const title = document.createElement("div");
+        title.className = "question-title";
+        title.textContent =
+          "#" + safeText(item.id) + " [" + safeText(item.severity) + "] " + safeText(item.title);
+        box.appendChild(title);
+        const meta = document.createElement("div");
+        meta.className = "question-meta";
+        meta.textContent =
+          "source=" + safeText(item.source) +
+          " ts=" + safeText(item.ts) +
+          " repo=" + safeText(item.repo || "-") +
+          " pr=" + safeText(item.pr_number || "-");
+        box.appendChild(meta);
+        const ctx = document.createElement("div");
+        ctx.className = "question-context";
+        ctx.textContent = safeText(item.context || "(no context)");
+        box.appendChild(ctx);
+        const row = document.createElement("div");
+        row.className = "btn-row";
+        const popupBtn = document.createElement("button");
+        popupBtn.textContent = "Popup";
+        popupBtn.onclick = function () { showAlertPopup(item); };
+        const ackBtn = document.createElement("button");
+        ackBtn.textContent = "Ack";
+        ackBtn.onclick = function () { ackAlert(item.id); };
+        row.appendChild(popupBtn);
+        row.appendChild(ackBtn);
+        box.appendChild(row);
+        root.appendChild(box);
+      }
+    }
+
+    async function refreshAlerts() {
+      try {
+        const data = await fetchJson("/api/alerts");
+        const activeItems = Array.isArray(data.active_items) ? data.active_items : [];
+        document.getElementById("alertsSummary").textContent =
+          "active=" + safeText(data.active_count) +
+          " total=" + safeText(Array.isArray(data.items) ? data.items.length : 0);
+        renderActiveAlerts(activeItems);
+        const latest = data.latest_active;
+        if (latest && Number(latest.id) > lastPopupAlertId) {
+          lastPopupAlertId = Number(latest.id);
+          localStorage.setItem("zc_last_popup_alert_id", String(lastPopupAlertId));
+          showAlertPopup(latest);
+          window.alert("New alert #" + safeText(latest.id) + ": " + safeText(latest.title));
+        }
+      } catch (error) {
+        document.getElementById("alertsSummary").textContent = "alerts api error: " + error.message;
+      }
     }
 
     function boolText(value) {
@@ -1336,15 +2052,29 @@ cat >"$INDEX_FILE" <<EOF
         const health = status.health || {};
         const last = status.last || {};
         const job = status.job || {};
+        const integrations = status.integrations || {};
+        const alerts = status.alerts || {};
         const ops =
           "gateway_ok=" + boolText(health.gateway_ok) +
           " status=" + safeText(health.gateway_status) +
           " paired=" + boolText(health.paired) +
           " prom_ok=" + boolText(health.prometheus_ok) +
           " prom_status=" + safeText(health.prometheus_status) +
+          " openwebui_ok=" + boolText(health.openwebui_ok) +
+          " n8n_ok=" + boolText(health.n8n_ok) +
+          "\nactive_alerts: " + safeText(alerts.active_count || 0) +
           "\nlast_convo: " + safeText(last.conversation || "(none)") +
           "\nlast_rt1m: " + safeText(last.realtime_1min || "(none)");
         document.getElementById("opsStatus").textContent = ops;
+
+        const integrationsText =
+          "openwebui_url=" + safeText(integrations.openwebui_url || "http://127.0.0.1:3001") +
+          " status=" + safeText(health.openwebui_status) +
+          " ok=" + boolText(health.openwebui_ok) +
+          "\nn8n_url=" + safeText(integrations.n8n_url || "http://127.0.0.1:5678") +
+          " status=" + safeText(health.n8n_status) +
+          " ok=" + boolText(health.n8n_ok);
+        document.getElementById("integrationsStatus").textContent = integrationsText;
 
         const jobInfo =
           "job_id=" + safeText(job.job_id) +
@@ -1505,6 +2235,15 @@ cat >"$INDEX_FILE" <<EOF
     setInterval(tick, POLL_MS);
     refreshOps();
     setInterval(refreshOps, API_POLL_MS);
+    refreshAgents();
+    setInterval(refreshAgents, 10000);
+    setHubTab("agents");
+    refreshWorkflowHub();
+    setInterval(refreshWorkflowHub, 12000);
+    refreshPrScan();
+    setInterval(refreshPrScan, 15000);
+    refreshAlerts();
+    setInterval(refreshAlerts, API_POLL_MS);
     refreshQuestions();
     setInterval(refreshQuestions, API_POLL_MS);
   </script>

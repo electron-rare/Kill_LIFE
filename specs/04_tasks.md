@@ -117,6 +117,34 @@ Format:
   - Evidence: message `[budget] message length ... exceeds ...`.
   - Status: `2026-02-21` done (`ZEROCLAW_WEBHOOK_MAX_CHARS=5`, exit 11).
 
+## Integrations Open WebUI + n8n
+
+- [x] T-401 - Ajouter API alerts + autotriage backend
+  - AC: endpoints `/api/alerts`, `/api/alerts/ack`, `/api/pr/autotriage` disponibles.
+  - Evidence: `tools/ai/zeroclaw_orchestrator_server.py`.
+
+- [x] T-402 - Etendre WebUI orchestrateur
+  - AC: panneau Alerts + Integrations status + action `PR autotriage now`.
+  - Evidence: `tools/ai/zeroclaw_stack_up.sh`.
+
+- [x] T-403 - Refactor Pipe Open WebUI en mapping mixte
+  - AC: pipe expose `zc.router` + modeles dedies et parsing `/run`/`/pr`.
+  - Evidence: `tools/ai/integrations/openwebui/zeroclaw_orchestrator_pipe.py`.
+
+- [x] T-404 - Ajouter workflow n8n PR autotriage
+  - AC: workflow avec Webhook + Cron fallback + alert/question outputs.
+  - Evidence: `tools/ai/integrations/n8n/zeroclaw_pr_autotriage_workflow.json`.
+
+- [x] T-405 - Ajouter provisioning local Docker integrations
+  - AC: compose + scripts `up/down/status` + import n8n + assist Open WebUI.
+  - Evidence:
+    - `tools/ai/integrations/docker/docker-compose.openwebui-n8n.yml`
+    - `tools/ai/zeroclaw_integrations_up.sh`
+    - `tools/ai/zeroclaw_integrations_down.sh`
+    - `tools/ai/zeroclaw_integrations_status.sh`
+    - `tools/ai/zeroclaw_integrations_import_n8n.sh`
+    - `tools/ai/zeroclaw_integrations_openwebui_assist.sh`
+
 ## Definition of done
 
 - [x] Au moins une boucle complete RTC + Zacus executee en local.
