@@ -33,17 +33,17 @@ Format:
 
 ## Boucle hardware RTC
 
-- [ ] T-101 - Discover hardware RTC
+- [x] T-101 - Discover hardware RTC
   - AC: au moins un port detecte pour carte RTC.
   - Evidence: `tools/ai/zeroclaw_dual_chat.sh rtc --hardware`
 
 - [ ] T-102 - Build firmware RTC
-  - AC: `pio run` termine sans erreur bloquante.
+  - AC: `pio run -e esp32dev` termine sans erreur bloquante.
   - Evidence: logs build RTC.
 
-- [ ] T-103 - Test firmware RTC
-  - AC: `pio test` (ou fallback test local) execute.
-  - Evidence: rapport test RTC.
+- [ ] T-103 - Upload + monitor RTC (forced default)
+  - AC: `pio run -e esp32dev -t upload` puis monitor 60s executes.
+  - Evidence: logs upload/monitor RTC.
 
 - [ ] T-104 - Trace webhook RTC
   - AC: une ligne JSONL avec `repo_hint=rtc` apparait.
@@ -51,17 +51,17 @@ Format:
 
 ## Boucle hardware Zacus
 
-- [ ] T-201 - Discover hardware Zacus
+- [x] T-201 - Discover hardware Zacus
   - AC: au moins un port detecte pour carte Zacus.
   - Evidence: `tools/ai/zeroclaw_dual_chat.sh zacus --hardware`
 
 - [ ] T-202 - Build firmware Zacus
-  - AC: `pio run` (dans `hardware/firmware`) termine sans erreur bloquante.
+  - AC: `pio run -e esp32dev` (dans `hardware/firmware`) termine sans erreur bloquante.
   - Evidence: logs build Zacus.
 
-- [ ] T-203 - Test firmware Zacus
-  - AC: `pio test` (ou fallback test local) execute.
-  - Evidence: rapport test Zacus.
+- [ ] T-203 - Upload + monitor Zacus (forced default)
+  - AC: `pio run -e esp32dev -t upload` puis monitor 60s executes.
+  - Evidence: logs upload/monitor Zacus.
 
 - [ ] T-204 - Trace webhook Zacus
   - AC: une ligne JSONL avec `repo_hint=zacus` apparait.
@@ -69,7 +69,7 @@ Format:
 
 ## Observabilite et cout
 
-- [ ] T-301 - Stack endpoints smoke
+- [x] T-301 - Stack endpoints smoke
   - AC: `3000/health`, `8788`, `9090/-/ready` tous OK.
   - Evidence: captures `curl`.
 
@@ -91,3 +91,4 @@ Format:
 - [ ] Dashboard live exploitable pour suivi continu.
 - [ ] Prometheus disponible avec target gateway scrapee.
 - [ ] Logs et preuves archives dans `artifacts/zeroclaw/`.
+- [ ] Aucune commande documentee n'utilise `-e native` ou `-e test`.

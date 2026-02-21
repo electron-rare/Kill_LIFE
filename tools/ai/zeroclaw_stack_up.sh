@@ -27,6 +27,7 @@ PROM_SCRAPE_INTERVAL="${ZEROCLAW_PROM_SCRAPE_INTERVAL:-15s}"
 PROM_CONTAINER="${ZEROCLAW_PROM_CONTAINER:-zeroclaw-prometheus}"
 DOCKER_WAIT_SECS="${ZEROCLAW_DOCKER_WAIT_SECS:-90}"
 PROM_READY_WAIT_SECS="${ZEROCLAW_PROM_READY_WAIT_SECS:-15}"
+AUTO_REPAIR_ON_INVALID_TOKEN="${ZEROCLAW_AUTO_REPAIR_ON_INVALID_TOKEN:-1}"
 
 GW_PID_FILE="$ART_DIR/gateway.pid"
 FW_PID_FILE="$ART_DIR/follow.pid"
@@ -40,13 +41,17 @@ PROM_LOG="$ART_DIR/prometheus.log"
 PROM_CONFIG_FILE="$ART_DIR/prometheus.yml"
 PROM_DATA_DIR="$ART_DIR/prometheus-data"
 PROM_STATUS="disabled"
+ZEROCLAW_CONFIG_FILE="${ZEROCLAW_CONFIG_FILE:-$HOME/.zeroclaw/config.toml}"
 GW_MANAGED_FILE="$ART_DIR/gateway.managed"
 FW_MANAGED_FILE="$ART_DIR/follow.managed"
 PROM_MANAGED_FILE="$ART_DIR/prometheus.managed"
+WATCHER_SCRIPT="$ROOT_DIR/tools/ai/zeroclaw_watch_1min.sh"
+RT_LOG="$ART_DIR/realtime_1min.log"
 
 mkdir -p "$ART_DIR"
 touch "$CONVO_FILE"
 touch "$GW_LOG"
+touch "$RT_LOG"
 
 if [[ -f "$HOME/.zeroclaw/config.toml" ]]; then
   chmod 600 "$HOME/.zeroclaw/config.toml" >/dev/null 2>&1 || true
@@ -211,8 +216,44 @@ sys.exit(0 if obj.get("paired") else 1)' >/dev/null 2>&1
 }
 
 read_pair_token() {
-  [[ -f "$TOKEN_FILE" ]] || return 1
-  cat "$TOKEN_FILE" 2>/dev/null
+  if [[ -f "$TOKEN_FILE" ]]; then
+    cat "$TOKEN_FILE" 2>/dev/null
+    return 0
+  fi
+
+  if [[ -f "$ZEROCLAW_CONFIG_FILE" ]]; then
+    local token_from_config
+    token_from_config="$(python3 - "$ZEROCLAW_CONFIG_FILE" <<'PY'
+import sys
+from pathlib import Path
+
+cfg = Path(sys.argv[1])
+try:
+    import tomllib
+except Exception:
+    print("", end="")
+    raise SystemExit(0)
+
+try:
+    obj = tomllib.loads(cfg.read_text(encoding="utf-8"))
+except Exception:
+    print("", end="")
+    raise SystemExit(0)
+
+tokens = obj.get("gateway", {}).get("paired_tokens", [])
+if isinstance(tokens, list) and tokens:
+    print(str(tokens[0]), end="")
+PY
+)"
+    if [[ -n "$token_from_config" ]]; then
+      printf '%s\n' "$token_from_config" >"$TOKEN_FILE"
+      chmod 600 "$TOKEN_FILE"
+      printf '%s\n' "$token_from_config"
+      return 0
+    fi
+  fi
+
+  return 1
 }
 
 token_is_usable() {
@@ -229,6 +270,34 @@ token_is_usable() {
     return 1
   fi
   return 0
+}
+
+wait_for_gateway_health() {
+  local waited=0
+  while (( waited < 20 )); do
+    if curl -fsS "http://$GATEWAY_HOST:$GATEWAY_PORT/health" >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 0.25
+    waited=$((waited + 1))
+  done
+  return 1
+}
+
+clear_config_paired_tokens() {
+  [[ -f "$ZEROCLAW_CONFIG_FILE" ]] || return 1
+  python3 - "$ZEROCLAW_CONFIG_FILE" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+cfg = Path(sys.argv[1])
+text = cfg.read_text(encoding="utf-8")
+updated, n = re.subn(r'(?m)^paired_tokens\s*=\s*\[.*\]\s*$', 'paired_tokens = []', text)
+if n == 0:
+    raise SystemExit(1)
+cfg.write_text(updated, encoding="utf-8")
+PY
 }
 
 extract_pair_code() {
@@ -281,6 +350,36 @@ ensure_gateway_pairing() {
   current_token="$(read_pair_token || true)"
   if ! token_is_usable "$current_token"; then
     rm -f "$TOKEN_FILE"
+
+    if [[ "$AUTO_REPAIR_ON_INVALID_TOKEN" == "1" && -f "$GW_MANAGED_FILE" ]]; then
+      if clear_config_paired_tokens; then
+        local gw_pid=""
+        gw_pid="$(cat "$GW_PID_FILE" 2>/dev/null || true)"
+        if [[ -n "$gw_pid" ]] && kill -0 "$gw_pid" >/dev/null 2>&1; then
+          kill "$gw_pid" >/dev/null 2>&1 || true
+          sleep 0.3
+          if kill -0 "$gw_pid" >/dev/null 2>&1; then
+            kill -9 "$gw_pid" >/dev/null 2>&1 || true
+          fi
+        fi
+
+        nohup "$ZEROCLAW_BIN" gateway --port "$GATEWAY_PORT" --host "$GATEWAY_HOST" >"$GW_LOG" 2>&1 &
+        echo "$!" >"$GW_PID_FILE"
+        wait_for_gateway_health || true
+
+        for _ in $(seq 1 40); do
+          pair_code="$(extract_pair_code)"
+          if [[ -n "$pair_code" ]]; then
+            break
+          fi
+          sleep 0.25
+        done
+
+        if [[ -n "${pair_code:-}" ]]; then
+          write_pair_token_from_code "$pair_code" || true
+        fi
+      fi
+    fi
   fi
 }
 
@@ -461,6 +560,7 @@ cat >"$INDEX_FILE" <<EOF
     <div class="links">
       <a href="/conversations.jsonl">/conversations.jsonl</a>
       <a href="/gateway.log">/gateway.log</a>
+      <a href="/realtime_1min.log">/realtime_1min.log</a>
       <a href="/prometheus.yml">/prometheus.yml</a>
       <a href="http://$GATEWAY_HOST:$GATEWAY_PORT/health">/health</a>
       <a href="http://$GATEWAY_HOST:$GATEWAY_PORT/metrics">/metrics</a>
@@ -576,9 +676,14 @@ cat >"$INDEX_FILE" <<EOF
 </html>
 EOF
 
+if [[ -x "$WATCHER_SCRIPT" ]]; then
+  "$WATCHER_SCRIPT" start >/dev/null 2>&1 || true
+fi
+
 echo "Gateway: http://$GATEWAY_HOST:$GATEWAY_PORT/health"
 echo "Follow : http://127.0.0.1:$FOLLOW_PORT/"
 echo "Prom   : http://$PROM_HOST:$PROM_PORT/targets ($PROM_STATUS)"
+echo "RT 1m  : http://127.0.0.1:$FOLLOW_PORT/realtime_1min.log"
 echo "Logs   : $GW_LOG"
 echo "Token  : $TOKEN_FILE"
 if [[ ! -s "$TOKEN_FILE" ]]; then

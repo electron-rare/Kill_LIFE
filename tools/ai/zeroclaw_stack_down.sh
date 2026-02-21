@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ART_DIR="${ZEROCLAW_ART_DIR:-/Users/cils/Documents/Lelectron_rare/Kill_LIFE/artifacts/zeroclaw}"
+ROOT_DIR="/Users/cils/Documents/Lelectron_rare/Kill_LIFE"
 GW_PID_FILE="$ART_DIR/gateway.pid"
 FW_PID_FILE="$ART_DIR/follow.pid"
 PROM_PID_FILE="$ART_DIR/prometheus.pid"
@@ -9,6 +10,7 @@ PROM_CONTAINER="${ZEROCLAW_PROM_CONTAINER:-zeroclaw-prometheus}"
 GW_MANAGED_FILE="$ART_DIR/gateway.managed"
 FW_MANAGED_FILE="$ART_DIR/follow.managed"
 PROM_MANAGED_FILE="$ART_DIR/prometheus.managed"
+WATCHER_SCRIPT="$ROOT_DIR/tools/ai/zeroclaw_watch_1min.sh"
 
 stop_pid_file() {
   local pid_file="$1"
@@ -42,4 +44,7 @@ if [[ -f "$PROM_MANAGED_FILE" ]]; then
   fi
 fi
 rm -f "$GW_MANAGED_FILE" "$FW_MANAGED_FILE" "$PROM_MANAGED_FILE"
+if [[ -x "$WATCHER_SCRIPT" ]]; then
+  "$WATCHER_SCRIPT" stop >/dev/null 2>&1 || true
+fi
 echo "ZeroClaw local stack stopped. Logs preserved in artifacts/zeroclaw/."
