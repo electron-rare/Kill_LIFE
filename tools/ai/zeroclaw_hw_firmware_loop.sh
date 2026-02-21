@@ -98,7 +98,12 @@ if ! command -v pio >/dev/null 2>&1; then
   exit 1
 fi
 
-if ! rg -q "^\[env:${ENV_NAME}\]" "$FW_DIR/platformio.ini"; then
+env_exists() {
+  local env_name="$1"
+  rg -q "^\[env:${env_name}\]" "$FW_DIR/platformio.ini"
+}
+
+if ! env_exists "$ENV_NAME"; then
   echo "[fail] invalid PlatformIO env '${ENV_NAME}' for $target." >&2
   echo "[info] valid envs:" >&2
   rg "^\[env:" "$FW_DIR/platformio.ini" >&2 || true
@@ -151,6 +156,69 @@ if [[ -z "$PORT" ]]; then
   exit 2
 fi
 
+pick_s3_env() {
+  local candidate
+  if [[ "$target" == "rtc" ]]; then
+    for candidate in esp32-s3-devkitc-1 freenove_esp32s3 freenove_esp32s3_full_with_ui; do
+      if env_exists "$candidate"; then
+        echo "$candidate"
+        return 0
+      fi
+    done
+  else
+    for candidate in freenove_esp32s3 freenove_esp32s3_full_with_ui esp32-s3-devkitc-1; do
+      if env_exists "$candidate"; then
+        echo "$candidate"
+        return 0
+      fi
+    done
+  fi
+  return 1
+}
+
+pick_esp32_env() {
+  local candidate
+  for candidate in esp32dev esp32_release; do
+    if env_exists "$candidate"; then
+      echo "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
+upload_once() {
+  local env_name="$1"
+  local tmp_out
+  tmp_out="$(mktemp)"
+  set +e
+  (cd "$FW_DIR" && pio run -e "$env_name" -t upload "${UPLOAD_ARGS[@]}") >"$tmp_out" 2>&1
+  local rc=$?
+  set -e
+  UPLOAD_LAST_OUTPUT="$(cat "$tmp_out")"
+  cat "$tmp_out"
+  rm -f "$tmp_out"
+  return "$rc"
+}
+
+resolve_env_fallback() {
+  local failed_env="$1"
+  local output="$2"
+  local fallback=""
+
+  if printf '%s' "$output" | rg -qi "This chip is ESP32-S3, not ESP32"; then
+    fallback="$(pick_s3_env || true)"
+  elif printf '%s' "$output" | rg -qi "This chip is ESP32, not ESP32-S3"; then
+    fallback="$(pick_esp32_env || true)"
+  fi
+
+  if [[ -n "$fallback" && "$fallback" != "$failed_env" ]]; then
+    printf '%s\n' "$fallback"
+    return 0
+  fi
+  return 1
+}
+
 UPLOAD_ARGS=()
 MONITOR_ARGS=()
 if [[ -n "$PORT" ]]; then
@@ -161,17 +229,34 @@ if [[ -n "$BAUD" ]]; then
   MONITOR_ARGS+=(-b "$BAUD")
 fi
 
-echo "[info] target=$target fw_dir=$FW_DIR env=$ENV_NAME port=$PORT baud=$BAUD monitor_secs=$MONITOR_SECS"
+ACTIVE_ENV="$ENV_NAME"
+
+echo "[info] target=$target fw_dir=$FW_DIR env=$ACTIVE_ENV port=$PORT baud=$BAUD monitor_secs=$MONITOR_SECS"
 echo "[step] build"
-(cd "$FW_DIR" && pio run -e "$ENV_NAME")
+(cd "$FW_DIR" && pio run -e "$ACTIVE_ENV")
 
 echo "[step] upload/flash (forced default)"
-(cd "$FW_DIR" && pio run -e "$ENV_NAME" -t upload "${UPLOAD_ARGS[@]}")
+UPLOAD_LAST_OUTPUT=""
+if ! upload_once "$ACTIVE_ENV"; then
+  fallback_env="$(resolve_env_fallback "$ACTIVE_ENV" "$UPLOAD_LAST_OUTPUT" || true)"
+  if [[ -n "$fallback_env" ]]; then
+    echo "[warn] detected chip/env mismatch for $ACTIVE_ENV; retrying with '$fallback_env'."
+    ACTIVE_ENV="$fallback_env"
+    echo "[step] rebuild (fallback env)"
+    (cd "$FW_DIR" && pio run -e "$ACTIVE_ENV")
+    echo "[step] upload/flash retry (forced default)"
+    upload_once "$ACTIVE_ENV"
+  else
+    exit 3
+  fi
+fi
 
 echo "[step] serial monitor (forced default)"
 python3 - "$FW_DIR" "$MONITOR_SECS" "${MONITOR_ARGS[@]}" <<'PY'
 import os
+import platform
 import signal
+import shutil
 import subprocess
 import sys
 import time
@@ -179,7 +264,11 @@ import time
 fw_dir = sys.argv[1]
 monitor_secs = int(sys.argv[2])
 monitor_args = sys.argv[3:]
-cmd = ["pio", "device", "monitor", *monitor_args]
+base_cmd = ["pio", "device", "monitor", *monitor_args]
+if platform.system() == "Darwin" and shutil.which("script"):
+    cmd = ["script", "-q", "/dev/null", *base_cmd]
+else:
+    cmd = base_cmd
 print(f"[info] monitor command: {' '.join(cmd)} (timeout={monitor_secs}s)")
 
 proc = subprocess.Popen(cmd, cwd=fw_dir, preexec_fn=os.setsid)
@@ -195,4 +284,4 @@ finally:
             proc.wait(timeout=2)
 PY
 
-echo "[ok] loop complete for $target ($ENV_NAME)."
+echo "[ok] loop complete for $target ($ACTIVE_ENV)."

@@ -24,6 +24,7 @@ Usage:
   $(basename "$0") <rtc|zacus|path> --interactive
   $(basename "$0") <rtc|zacus|path> --hardware
   $(basename "$0") <rtc|zacus|path> --provider-check
+  $(basename "$0") <rtc|zacus|path> --cheap -m "message"
 USAGE
 }
 
@@ -60,10 +61,33 @@ if [[ "${1:-}" == "--hardware" ]]; then
   exit 0
 fi
 
+if [[ "${1:-}" == "--cheap" ]]; then
+  export ZEROCLAW_PREFER_LOCAL_AI=1
+  shift
+fi
+
 resolve_provider() {
   if [[ -n "${ZEROCLAW_PROVIDER:-}" ]]; then
     echo "$ZEROCLAW_PROVIDER"
     return 0
+  fi
+
+  if [[ "${ZEROCLAW_PREFER_LOCAL_AI:-0}" == "1" ]] && command -v ollama >/dev/null 2>&1; then
+    local ollama_model
+    ollama_model="${ZEROCLAW_OLLAMA_MODEL:-llama3.2:1b}"
+    if ollama list >/dev/null 2>&1; then
+      if ollama list 2>/dev/null | awk 'NR>1 {print $1}' | rg -qx "$ollama_model"; then
+        echo "ollama"
+        return 0
+      fi
+      local first_model
+      first_model="$(ollama list 2>/dev/null | awk 'NR==2 {print $1}')"
+      if [[ -n "$first_model" ]]; then
+        export ZEROCLAW_OLLAMA_MODEL="$first_model"
+        echo "ollama"
+        return 0
+      fi
+    fi
   fi
 
   if [[ "${ZEROCLAW_SKIP_COPILOT_CHECK:-0}" != "1" ]] && command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
@@ -86,14 +110,30 @@ resolve_provider() {
     return 0
   fi
 
+  if [[ -n "${GEMINI_API_KEY:-}" || -n "${GOOGLE_API_KEY:-}" ]]; then
+    echo "gemini"
+    return 0
+  fi
+
   if [[ -n "${OPENROUTER_API_KEY:-}" ]]; then
     export API_KEY="$OPENROUTER_API_KEY"
     echo "openrouter"
     return 0
   fi
 
+  if [[ -n "${ANTHROPIC_API_KEY:-}" || -n "${ANTHROPIC_OAUTH_TOKEN:-}" ]]; then
+    echo "anthropic"
+    return 0
+  fi
+
+  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+    echo "openai"
+    return 0
+  fi
+
   cat <<'ERR' >&2
 No provider credentials detected.
+- Option 0: install local model and set ZEROCLAW_PREFER_LOCAL_AI=1 (ollama)
 - Option 1: ZEROCLAW_PROVIDER=copilot with GitHub Copilot subscription + gh auth login
 - Option 2: zeroclaw auth login --provider openai-codex --device-code
 - Option 3: export OPENROUTER_API_KEY=... and ZEROCLAW_PROVIDER=openrouter

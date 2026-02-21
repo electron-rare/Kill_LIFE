@@ -8,6 +8,10 @@ Last updated: 2026-02-21
 - [x] I-002 - Configure local secret file `~/.zeroclaw/env` (`OPENROUTER_API_KEY` placeholder + mode `600`).
 - [x] I-003 - Ensure local Prometheus backend exists (`prometheus` binary installed).
 - [x] I-004 - Resolve open mirror PR redundancy (`PR #7` merge/close decision).
+- [x] I-005 - Enable local AI fallback (`ollama` + local model) for credit savings.
+- [x] I-006 - Enforce local-only chat mode option (`--local-only`) with `ollama/lmstudio` detection.
+- [x] I-007 - Align OpenClaw default model to local `ollama/llama3.2:1b` + cloud fallbacks for continuity.
+- [x] I-008 - Add provider/agentic scanner (`tools/ai/zeroclaw_provider_scan.sh`) for live capability matrix.
 
 ## Daily autonomous sequence
 
@@ -16,35 +20,40 @@ Last updated: 2026-02-21
   - `curl -fsS http://127.0.0.1:3000/health`
   - `curl -fsS http://127.0.0.1:8788/`
   - `curl -fsS http://127.0.0.1:9090/-/ready`
-- [ ] D-003 - RTC loop:
+- [x] D-003 - RTC loop:
   - `tools/ai/zeroclaw_dual_chat.sh rtc --provider-check`
   - `tools/ai/zeroclaw_dual_chat.sh rtc --hardware`
   - `tools/ai/zeroclaw_hw_firmware_loop.sh rtc` (build+upload+monitor forced default)
   - webhook trace with `--repo-hint rtc`
-  - current blocker: serial upload timeout (`No serial data received`)
-- [ ] D-004 - Zacus loop:
+  - status: `2026-02-21` done (flash + monitor + webhook HTTP 200).
+- [x] D-004 - Zacus loop:
   - `tools/ai/zeroclaw_dual_chat.sh zacus --provider-check`
   - `tools/ai/zeroclaw_dual_chat.sh zacus --hardware`
   - `tools/ai/zeroclaw_hw_firmware_loop.sh zacus` (build+upload+monitor forced default)
   - webhook trace with `--repo-hint zacus`
-  - current blocker: serial upload timeout (`No serial data received`)
-- [ ] D-005 - Review `artifacts/zeroclaw/gateway.log` + `conversations.jsonl`.
+  - status: `2026-02-21` done (ESP32-S3 mismatch auto-corrected to `freenove_esp32s3`).
+- [x] D-005 - Review `artifacts/zeroclaw/gateway.log` + `conversations.jsonl`.
+
+- [x] D-006 - Corriger l'association cible↔port
+  - `RTC_UPLOAD_PORT_HINT` cible Audio Kit (`cp2102`, `esp32audiokit`, `audio`).
+  - `ZACUS_UPLOAD_PORT_HINT` cible Freenove/S3 (`usbmodem`, `1a86`, `ch340`, `freenove`).
+  - status: `2026-02-21` done.
 
 ## Hardware safety gates
 
-- [ ] H-001 - Flash/upload/monitor are forced by default when a board is detected.
-- [ ] H-002 - Resolve stable serial target before upload.
-- [ ] H-003 - Keep per-run logs under `artifacts/zeroclaw/`.
+- [x] H-001 - Flash/upload/monitor are forced by default when a board is detected.
+- [x] H-002 - Resolve stable serial target before upload.
+- [x] H-003 - Keep per-run logs under `artifacts/zeroclaw/`.
 
 ## Cost/control gates
 
 - [x] C-001 - Validate `tools/ai/zeroclaw_webhook_send.sh --dry-run`.
-- [ ] C-002 - Validate hourly quota guard (`ZEROCLAW_WEBHOOK_MAX_CALLS_PER_HOUR`).
-- [ ] C-003 - Validate message length guard (`ZEROCLAW_WEBHOOK_MAX_CHARS`).
+- [x] C-002 - Validate hourly quota guard (`ZEROCLAW_WEBHOOK_MAX_CALLS_PER_HOUR`).
+- [x] C-003 - Validate message length guard (`ZEROCLAW_WEBHOOK_MAX_CHARS`).
 
 ## Exit criteria
 
-- [ ] E-001 - One successful complete loop RTC in local hardware.
-- [ ] E-002 - One successful complete loop Zacus in local hardware.
-- [ ] E-003 - Dashboard live usable for continuous supervision.
-- [ ] E-004 - Prometheus target scrape confirmed on gateway metrics.
+- [x] E-001 - One successful complete loop RTC in local hardware.
+- [x] E-002 - One successful complete loop Zacus in local hardware.
+- [x] E-003 - Dashboard live usable for continuous supervision.
+- [x] E-004 - Prometheus target scrape confirmed on gateway metrics.
