@@ -1,0 +1,41 @@
+name: Repo State Header Gate
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  header-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Kill_LIFE
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Clone sibling repos
+        run: |
+          cd ..
+          git clone --depth=1 https://github.com/electron-rare/RTC_BL_PHONE.git RTC_BL_PHONE
+          git clone --depth=1 https://github.com/electron-rare/le-mystere-professeur-zacus.git le-mystere-professeur-zacus
+
+      - name: Build global header
+        run: |
+          tools/repo_state/repo_refresh.sh --header-only
+
+      - name: Lint header contract
+        run: |
+          python tools/repo_state/lint_header_contract.py
+
+      - name: Upload global repo-state artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: global-repo-state
+          path: |
+            artifacts/repo_state/global_summary.md
+            artifacts/repo_state/global_index.json
+            artifacts/repo_state/header.latest.md
