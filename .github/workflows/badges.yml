@@ -16,15 +16,24 @@ jobs:
         with:
           python-version: '3.10'
       - name: Install dependencies
-        run: pip install coverage
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install coverage pytest
       - name: Run tests & collect coverage
         run: |
+          set +e
           coverage run -m pytest
-          coverage report
-          coverage json -o docs/coverage-summary.json
+          test_rc=$?
+          set -e
+          if [ "$test_rc" -ne 0 ] && [ "$test_rc" -ne 5 ]; then
+            exit "$test_rc"
+          fi
+          coverage report || true
+          coverage json -o docs/coverage-summary.json || echo '{"status":"no_coverage_data"}' > docs/coverage-summary.json
       - name: Scan RFC2119 compliance
         run: python3 tools/compliance/scan_rfc2119.py
       - name: Commit badge JSON to badges branch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"

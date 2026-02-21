@@ -13,10 +13,10 @@ jobs:
       - uses: actions/checkout@v3
       - name: Vérifier code of conduct, issue/pr templates
         run: |
-          python tools/community/check_health.py > docs/community-health-report.json
+          python3 tools/community/check_health.py > docs/community-health-report.json
       - name: Scanner accessibilité doc/UI
         run: |
-          python tools/accessibility/a11y_linter.py docs/ > docs/accessibility-report.json
+          python3 tools/accessibility/a11y_linter.py docs/ > docs/accessibility-report.json
       - name: Upload reports
         uses: actions/upload-artifact@v4
         with:

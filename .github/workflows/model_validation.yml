@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Validate IA models/datasets
         run: |
-          python tools/ai/validate_model.py > docs/model-validation-report.json
+          python3 tools/ai/validate_model.py > docs/model-validation-report.json
       - name: Upload model validation report
         uses: actions/upload-artifact@v4
         with:

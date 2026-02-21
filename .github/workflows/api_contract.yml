@@ -11,9 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
       - name: Run API contract tests
         run: |
-          python tools/api/run_contract_tests.py > docs/api-contract-report.json
+          python3 tools/api/run_contract_tests.py > docs/api-contract-report.json
       - name: Upload API contract report
         uses: actions/upload-artifact@v4
         with:
