@@ -1,3 +1,6 @@
+# Easter Egg musique concrète
+
+_« La spec vibre lentement, comme une onde analogique dans le silence du hardware. »_ — Éliane Radigue
 # Spec
 
 ## Objectifs
