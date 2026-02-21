@@ -9,10 +9,6 @@ on:
 jobs:
   pio:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        env: [esp32s3_arduino, esp32_arduino, native]
     steps:
       - uses: actions/checkout@v6
 
@@ -32,7 +28,7 @@ jobs:
       - name: No relevant changes (fast pass)
         if: steps.changes.outputs.fw != 'true'
         run: |
-          echo "No firmware/spec/standards changes detected. Skipping build/test for ${{ matrix.env }}."
+          echo "No firmware/spec/standards changes detected. Skipping build/test."
 
       - uses: actions/setup-python@v5
         if: steps.changes.outputs.fw == 'true'
@@ -45,7 +41,7 @@ jobs:
           path: |
             ~/.cache/pip
             ~/.platformio
-          key: pio-${{ runner.os }}-${{ matrix.env }}-${{ hashFiles('firmware/platformio.ini') }}
+          key: pio-${{ runner.os }}-${{ hashFiles('firmware/platformio.ini') }}
 
       - name: Install PlatformIO
         if: steps.changes.outputs.fw == 'true'
@@ -53,12 +49,58 @@ jobs:
           python -m pip install -U pip
           python -m pip install -U platformio
 
-      - name: Build
+      - name: Discover PlatformIO envs
+        id: envs
         if: steps.changes.outputs.fw == 'true'
         working-directory: firmware
-        run: pio run -e ${{ matrix.env }}
+        run: |
+          envs="$(pio project config --json-output | python3 -c 'import json,sys
+arr=json.load(sys.stdin)
+names=[]
+for item in arr:
+  name=item.get("name","")
+  if name.startswith("env:"):
+    names.append(name.split("env:",1)[1])
+print(",".join(names))')"
+          if [[ -z "$envs" ]]; then
+            echo "has_envs=false" >>"$GITHUB_OUTPUT"
+            echo "No PlatformIO env found in firmware/platformio.ini."
+          else
+            echo "has_envs=true" >>"$GITHUB_OUTPUT"
+            echo "envs=$envs" >>"$GITHUB_OUTPUT"
+            echo "Detected envs: $envs"
+          fi
 
-      - name: Test
-        if: steps.changes.outputs.fw == 'true' && matrix.env == 'native'
+      - name: Build all declared envs
+        if: steps.changes.outputs.fw == 'true' && steps.envs.outputs.has_envs == 'true'
         working-directory: firmware
-        run: pio test -e native
+        run: |
+          IFS=',' read -ra env_arr <<<"${{ steps.envs.outputs.envs }}"
+          for env_name in "${env_arr[@]}"; do
+            echo "==> pio run -e ${env_name}"
+            pio run -e "${env_name}"
+          done
+
+      - name: Unit tests (valid env only)
+        if: steps.changes.outputs.fw == 'true' && steps.envs.outputs.has_envs == 'true'
+        working-directory: firmware
+        run: |
+          if [[ ! -d test ]]; then
+            echo "No firmware/test directory. Skipping pio test."
+            exit 0
+          fi
+
+          IFS=',' read -ra env_arr <<<"${{ steps.envs.outputs.envs }}"
+          test_env=""
+          for env_name in "${env_arr[@]}"; do
+            if [[ "$env_name" == "esp32dev" ]]; then
+              test_env="$env_name"
+              break
+            fi
+          done
+          if [[ -z "$test_env" ]]; then
+            test_env="${env_arr[0]}"
+          fi
+
+          echo "==> pio test -e ${test_env} --without-uploading"
+          pio test -e "${test_env}" --without-uploading

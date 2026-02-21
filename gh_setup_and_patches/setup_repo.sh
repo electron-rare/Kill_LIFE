@@ -141,9 +141,7 @@ setup_branch_protection() {
   contexts+=("Scope Guard / guard")
 
   if [[ "${REQUIRE_BUILD_CHECKS}" == "1" ]]; then
-    contexts+=("Firmware CI / pio (esp32s3_arduino)")
-    contexts+=("Firmware CI / pio (esp32_arduino)")
-    contexts+=("Firmware CI / pio (native)")
+    contexts+=("Firmware CI / pio")
     contexts+=("Hardware CI (KiCad) / hw")
     contexts+=("Compliance Gate / validate")
   fi

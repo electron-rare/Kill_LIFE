@@ -11,32 +11,34 @@ Last updated: 2026-02-21
 
 ## Daily autonomous sequence
 
-- [ ] D-001 - `tools/ai/zeroclaw_stack_down.sh` then `ZEROCLAW_PROM_MODE=auto tools/ai/zeroclaw_stack_up.sh`.
-- [ ] D-002 - Smoke endpoints:
+- [x] D-001 - `tools/ai/zeroclaw_stack_down.sh` then `ZEROCLAW_PROM_MODE=auto tools/ai/zeroclaw_stack_up.sh`.
+- [x] D-002 - Smoke endpoints:
   - `curl -fsS http://127.0.0.1:3000/health`
   - `curl -fsS http://127.0.0.1:8788/`
   - `curl -fsS http://127.0.0.1:9090/-/ready`
 - [ ] D-003 - RTC loop:
   - `tools/ai/zeroclaw_dual_chat.sh rtc --provider-check`
   - `tools/ai/zeroclaw_dual_chat.sh rtc --hardware`
-  - repo build/test
+  - `tools/ai/zeroclaw_hw_firmware_loop.sh rtc` (build+upload+monitor forced default)
   - webhook trace with `--repo-hint rtc`
+  - current blocker: serial upload timeout (`No serial data received`)
 - [ ] D-004 - Zacus loop:
   - `tools/ai/zeroclaw_dual_chat.sh zacus --provider-check`
   - `tools/ai/zeroclaw_dual_chat.sh zacus --hardware`
-  - repo build/test
+  - `tools/ai/zeroclaw_hw_firmware_loop.sh zacus` (build+upload+monitor forced default)
   - webhook trace with `--repo-hint zacus`
+  - current blocker: serial upload timeout (`No serial data received`)
 - [ ] D-005 - Review `artifacts/zeroclaw/gateway.log` + `conversations.jsonl`.
 
 ## Hardware safety gates
 
-- [ ] H-001 - No flash/upload if `--hardware` detect returns no board.
+- [ ] H-001 - Flash/upload/monitor are forced by default when a board is detected.
 - [ ] H-002 - Resolve stable serial target before upload.
 - [ ] H-003 - Keep per-run logs under `artifacts/zeroclaw/`.
 
 ## Cost/control gates
 
-- [ ] C-001 - Validate `tools/ai/zeroclaw_webhook_send.sh --dry-run`.
+- [x] C-001 - Validate `tools/ai/zeroclaw_webhook_send.sh --dry-run`.
 - [ ] C-002 - Validate hourly quota guard (`ZEROCLAW_WEBHOOK_MAX_CALLS_PER_HOUR`).
 - [ ] C-003 - Validate message length guard (`ZEROCLAW_WEBHOOK_MAX_CHARS`).
 
