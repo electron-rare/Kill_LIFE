@@ -1,36 +1,48 @@
-# TODO: Dual Hardware Autonomy (RTC + Zacus)
+# TODO: Dual hardware autonomy runbook (RTC + Zacus)
 
 Last updated: 2026-02-21
 
-## Phase A: Local Baseline
+## Immediate now
 
-- [ ] Run `tools/ai/zeroclaw_dual_bootstrap.sh` and capture hardware snapshot.
-- [ ] Validate `tools/ai/zeroclaw_dual_chat.sh rtc -m "<diagnostic prompt>"`.
-- [ ] Validate `tools/ai/zeroclaw_dual_chat.sh zacus -m "<diagnostic prompt>"`.
-- [ ] Record detected ports and map preferred role per board.
+- [x] I-001 - Merge autonomie stack into `main` (`PR #5`).
+- [x] I-002 - Configure local secret file `~/.zeroclaw/env` (`OPENROUTER_API_KEY` placeholder + mode `600`).
+- [x] I-003 - Ensure local Prometheus backend exists (`prometheus` binary installed).
+- [x] I-004 - Resolve open mirror PR redundancy (`PR #7` merge/close decision).
 
-## Phase B: Repo Specs and PR Cadence
+## Daily autonomous sequence
 
-- [ ] Create/refresh one issue in `RTC_BL_PHONE` for ZeroClaw-assisted hardware loop.
-- [ ] Create/refresh one issue in `le-mystere-professeur-zacus` for ZeroClaw-assisted hardware loop.
-- [ ] Open one small PR per repo focused on one gate (build, tests, hardware smoke, docs).
-- [ ] Require code review pass before merge (`gh pr review --approve` only after checks).
+- [ ] D-001 - `tools/ai/zeroclaw_stack_down.sh` then `ZEROCLAW_PROM_MODE=auto tools/ai/zeroclaw_stack_up.sh`.
+- [ ] D-002 - Smoke endpoints:
+  - `curl -fsS http://127.0.0.1:3000/health`
+  - `curl -fsS http://127.0.0.1:8788/`
+  - `curl -fsS http://127.0.0.1:9090/-/ready`
+- [ ] D-003 - RTC loop:
+  - `tools/ai/zeroclaw_dual_chat.sh rtc --provider-check`
+  - `tools/ai/zeroclaw_dual_chat.sh rtc --hardware`
+  - repo build/test
+  - webhook trace with `--repo-hint rtc`
+- [ ] D-004 - Zacus loop:
+  - `tools/ai/zeroclaw_dual_chat.sh zacus --provider-check`
+  - `tools/ai/zeroclaw_dual_chat.sh zacus --hardware`
+  - repo build/test
+  - webhook trace with `--repo-hint zacus`
+- [ ] D-005 - Review `artifacts/zeroclaw/gateway.log` + `conversations.jsonl`.
 
-## Phase C: Autonomy + Cost Optimization
+## Hardware safety gates
 
-- [ ] Keep prompts short, target one repo at a time.
-- [ ] Use provider auto-fallback (`copilot` -> `openai-codex` -> `openrouter`) to avoid dead sessions.
-- [ ] Add repo-level path filters in workflows to avoid expensive irrelevant runs.
-- [ ] Use `workflow_dispatch` for hardware-required jobs to avoid noisy CI failures.
+- [ ] H-001 - No flash/upload if `--hardware` detect returns no board.
+- [ ] H-002 - Resolve stable serial target before upload.
+- [ ] H-003 - Keep per-run logs under `artifacts/zeroclaw/`.
 
-## Phase D: Hardware Robustness
+## Cost/control gates
 
-- [ ] Add serial-port resolver step before every upload/flash action.
-- [ ] Fail fast if no expected USB device is detected.
-- [ ] Archive logs per run for replayability (`artifacts/<timestamp>/...`).
+- [ ] C-001 - Validate `tools/ai/zeroclaw_webhook_send.sh --dry-run`.
+- [ ] C-002 - Validate hourly quota guard (`ZEROCLAW_WEBHOOK_MAX_CALLS_PER_HOUR`).
+- [ ] C-003 - Validate message length guard (`ZEROCLAW_WEBHOOK_MAX_CHARS`).
 
-## Exit Criteria
+## Exit criteria
 
-- [ ] Both repos can be targeted with one command (`rtc` or `zacus`) without workspace leakage.
-- [ ] Hardware discovery passes before action on connected boards.
-- [ ] At least one successful PR cycle completed per repo with this orchestration path.
+- [ ] E-001 - One successful complete loop RTC in local hardware.
+- [ ] E-002 - One successful complete loop Zacus in local hardware.
+- [ ] E-003 - Dashboard live usable for continuous supervision.
+- [ ] E-004 - Prometheus target scrape confirmed on gateway metrics.

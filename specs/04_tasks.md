@@ -1,28 +1,93 @@
-# Axe d’amélioration : badge & conformité
+# Tasks autonomie locale (execution)
 
-- Automatiser la génération, vérification et publication des badges (sécurité, SBOM, doc, qualité, communauté, coverage)
-- Centraliser guides badge dans docs/badges/
-- Vérifier la fraîcheur des badges à chaque commit (timestamp ≥ commit)
-- Inclure badges et rapports dans l’evidence pack
-- Ajouter checklist badge en tête du README
-- Documenter la politique badge & conformité (docs/COMPLIANCE.md)
-- Planifier un audit badge à chaque release majeure
+Last updated: 2026-02-21
 
-## Planification audit badge
+Format:
 
-- À chaque release majeure, exécuter un audit badge :
-  - Vérifier la couleur et l’actualisation de chaque badge
-  - Vérifier la présence des rapports JSON
-  - Vérifier l’inclusion dans l’evidence pack
-  - Documenter les résultats dans docs/badges/audit_<release>.md
-# Easter Egg musique concrète
+- `[ ]` non fait
+- `[x]` fait
+- `AC` = acceptance criteria
+- `Evidence` = fichier/commande de preuve
 
-_« Les tâches sont des sons trouvés : chaque action, chaque gate, est une pièce du puzzle acousmatique. »_ — Pierre Schaeffer
-# Tasks (Backlog exécutable)
+## Sprint actuel
 
-Format conseillé (copiable en GitHub Issues) :
+- [x] T-001 - Merger la PR autonomie ZeroClaw
+  - AC: PR mergee sur `main`.
+  - Evidence: `https://github.com/electron-rare/Kill_LIFE/pull/5`
 
-- [ ] T1 — ...
-  - AC: ...
-  - Evidence: ...
-- [ ] T2 — ...
+- [x] T-002 - Fermer ou merger la PR miroir restante
+  - AC: plus de PR redondante ouverte pour le meme scope.
+  - Evidence: `gh pr list --state open`
+
+- [x] T-003 - Configurer secret fallback OpenRouter local
+  - AC: `~/.zeroclaw/env` present avec `OPENROUTER_API_KEY` et mode `600`.
+  - Evidence: `ls -l ~/.zeroclaw/env`
+
+- [x] T-004 - Installer backend Prometheus local
+  - AC: commande `prometheus --version` disponible.
+  - Evidence: sortie shell `prometheus, version ...`
+
+- [ ] T-005 - Stabiliser pairing bearer auto
+  - AC: `artifacts/zeroclaw/pair_token.txt` utilisable pour webhook sans override manuel.
+  - Evidence: `tools/ai/zeroclaw_webhook_send.sh --repo-hint rtc "pairing check"`
+
+## Boucle hardware RTC
+
+- [ ] T-101 - Discover hardware RTC
+  - AC: au moins un port detecte pour carte RTC.
+  - Evidence: `tools/ai/zeroclaw_dual_chat.sh rtc --hardware`
+
+- [ ] T-102 - Build firmware RTC
+  - AC: `pio run` termine sans erreur bloquante.
+  - Evidence: logs build RTC.
+
+- [ ] T-103 - Test firmware RTC
+  - AC: `pio test` (ou fallback test local) execute.
+  - Evidence: rapport test RTC.
+
+- [ ] T-104 - Trace webhook RTC
+  - AC: une ligne JSONL avec `repo_hint=rtc` apparait.
+  - Evidence: `artifacts/zeroclaw/conversations.jsonl`
+
+## Boucle hardware Zacus
+
+- [ ] T-201 - Discover hardware Zacus
+  - AC: au moins un port detecte pour carte Zacus.
+  - Evidence: `tools/ai/zeroclaw_dual_chat.sh zacus --hardware`
+
+- [ ] T-202 - Build firmware Zacus
+  - AC: `pio run` (dans `hardware/firmware`) termine sans erreur bloquante.
+  - Evidence: logs build Zacus.
+
+- [ ] T-203 - Test firmware Zacus
+  - AC: `pio test` (ou fallback test local) execute.
+  - Evidence: rapport test Zacus.
+
+- [ ] T-204 - Trace webhook Zacus
+  - AC: une ligne JSONL avec `repo_hint=zacus` apparait.
+  - Evidence: `artifacts/zeroclaw/conversations.jsonl`
+
+## Observabilite et cout
+
+- [ ] T-301 - Stack endpoints smoke
+  - AC: `3000/health`, `8788`, `9090/-/ready` tous OK.
+  - Evidence: captures `curl`.
+
+- [ ] T-302 - Dry-run webhook budget
+  - AC: `--dry-run` passe sans ecriture execution JSONL.
+  - Evidence: sortie script + diff JSONL.
+
+- [ ] T-303 - Quota call limiter
+  - AC: depassement quota bloque avec code non-zero.
+  - Evidence: message `[budget] hourly call limit reached`.
+
+- [ ] T-304 - Quota chars limiter
+  - AC: message trop long bloque avec code non-zero.
+  - Evidence: message `[budget] message length ... exceeds ...`.
+
+## Definition of done
+
+- [ ] Au moins une boucle complete RTC + Zacus executee en local.
+- [ ] Dashboard live exploitable pour suivi continu.
+- [ ] Prometheus disponible avec target gateway scrapee.
+- [ ] Logs et preuves archives dans `artifacts/zeroclaw/`.
