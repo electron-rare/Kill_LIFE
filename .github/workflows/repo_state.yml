@@ -1,0 +1,30 @@
+name: Repo State
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  repo-state:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate repo state
+        run: |
+          python tools/repo_state/collect.py --repo-name Kill_LIFE
+
+      - name: Upload repo-state artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-state
+          path: |
+            docs/REPO_STATE.md
+            docs/repo_state.json
