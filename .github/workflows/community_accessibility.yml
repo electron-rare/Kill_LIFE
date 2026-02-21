@@ -17,9 +17,7 @@ jobs:
           if [ -f tools/community/check_health.py ]; then
             python tools/community/check_health.py > docs/community-health-report.json
           else
-            cat > docs/community-health-report.json <<'JSON'
-            {"status":"skipped","reason":"missing tools/community/check_health.py"}
-            JSON
+            echo '{"status":"skipped","reason":"missing tools/community/check_health.py"}' > docs/community-health-report.json
           fi
       - name: Scanner accessibilité doc/UI
         run: |
@@ -27,9 +25,7 @@ jobs:
           if [ -f tools/accessibility/a11y_linter.py ]; then
             python tools/accessibility/a11y_linter.py docs/ > docs/accessibility-report.json
           else
-            cat > docs/accessibility-report.json <<'JSON'
-            {"status":"skipped","reason":"missing tools/accessibility/a11y_linter.py"}
-            JSON
+            echo '{"status":"skipped","reason":"missing tools/accessibility/a11y_linter.py"}' > docs/accessibility-report.json
           fi
       - name: Upload reports
         uses: actions/upload-artifact@v4

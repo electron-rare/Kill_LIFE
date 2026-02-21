@@ -17,9 +17,7 @@ jobs:
           if [ -f tools/ai/validate_model.py ]; then
             python tools/ai/validate_model.py > docs/model-validation-report.json
           else
-            cat > docs/model-validation-report.json <<'JSON'
-            {"status":"skipped","reason":"missing tools/ai/validate_model.py"}
-            JSON
+            echo '{"status":"skipped","reason":"missing tools/ai/validate_model.py"}' > docs/model-validation-report.json
           fi
       - name: Upload model validation report
         uses: actions/upload-artifact@v4

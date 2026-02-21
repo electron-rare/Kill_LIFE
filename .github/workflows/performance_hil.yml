@@ -17,9 +17,7 @@ jobs:
           if [ -f tools/benchmarks/run_benchmarks.py ]; then
             python tools/benchmarks/run_benchmarks.py > docs/performance-report.json
           else
-            cat > docs/performance-report.json <<'JSON'
-            {"status":"skipped","reason":"missing tools/benchmarks/run_benchmarks.py"}
-            JSON
+            echo '{"status":"skipped","reason":"missing tools/benchmarks/run_benchmarks.py"}' > docs/performance-report.json
           fi
       - name: Upload performance report
         uses: actions/upload-artifact@v4
@@ -36,9 +34,7 @@ jobs:
           if [ -f tools/hil/run_hil_tests.py ]; then
             python tools/hil/run_hil_tests.py > docs/hil-report.json
           else
-            cat > docs/hil-report.json <<'JSON'
-            {"status":"skipped","reason":"missing tools/hil/run_hil_tests.py"}
-            JSON
+            echo '{"status":"skipped","reason":"missing tools/hil/run_hil_tests.py"}' > docs/hil-report.json
           fi
       - name: Upload HIL report
         uses: actions/upload-artifact@v4

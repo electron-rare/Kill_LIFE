@@ -31,13 +31,9 @@ jobs:
           coverage json -o docs/coverage-summary.json || true
           if [ ! -s docs/coverage-summary.json ]; then
             if [ "$rc" -eq 5 ]; then
-              cat > docs/coverage-summary.json <<'JSON'
-              {"status":"skipped","reason":"no pytest tests collected"}
-              JSON
+              echo '{"status":"skipped","reason":"no pytest tests collected"}' > docs/coverage-summary.json
             else
-              cat > docs/coverage-summary.json <<'JSON'
-              {"status":"ok","reason":"coverage json not generated"}
-              JSON
+              echo '{"status":"ok","reason":"coverage json not generated"}' > docs/coverage-summary.json
             fi
           fi
       - name: Scan RFC2119 compliance

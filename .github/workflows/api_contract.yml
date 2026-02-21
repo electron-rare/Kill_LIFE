@@ -17,9 +17,7 @@ jobs:
           if [ -f tools/api/run_contract_tests.py ]; then
             python tools/api/run_contract_tests.py > docs/api-contract-report.json
           else
-            cat > docs/api-contract-report.json <<'JSON'
-            {"status":"skipped","reason":"missing tools/api/run_contract_tests.py"}
-            JSON
+            echo '{"status":"skipped","reason":"missing tools/api/run_contract_tests.py"}' > docs/api-contract-report.json
           fi
       - name: Upload API contract report
         uses: actions/upload-artifact@v4

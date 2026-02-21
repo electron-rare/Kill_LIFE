@@ -20,9 +20,7 @@ jobs:
           if command -v slsa-generator >/dev/null 2>&1; then
             slsa-generator provenance --output docs/supplychain-attestation.json
           else
-            cat > docs/supplychain-attestation.json <<'JSON'
-            {"status":"skipped","reason":"slsa-generator not installed"}
-            JSON
+            echo '{"status":"skipped","reason":"slsa-generator not installed"}' > docs/supplychain-attestation.json
           fi
       - name: Sign artefacts (cosign)
         run: |

@@ -17,9 +17,7 @@ jobs:
           if command -v cyclonedx-bom >/dev/null 2>&1; then
             cyclonedx-bom -o docs/sbom-cyclonedx.json
           else
-            cat > docs/sbom-cyclonedx.json <<'JSON'
-            {"status":"skipped","reason":"cyclonedx-bom not installed"}
-            JSON
+            echo '{"status":"skipped","reason":"cyclonedx-bom not installed"}' > docs/sbom-cyclonedx.json
           fi
       - name: Générer SBOM SPDX
         run: |
@@ -27,9 +25,7 @@ jobs:
           if command -v spdx-sbom-generator >/dev/null 2>&1; then
             spdx-sbom-generator -o docs/sbom-spdx.json
           else
-            cat > docs/sbom-spdx.json <<'JSON'
-            {"status":"skipped","reason":"spdx-sbom-generator not installed"}
-            JSON
+            echo '{"status":"skipped","reason":"spdx-sbom-generator not installed"}' > docs/sbom-spdx.json
           fi
       - name: Valider SBOM (Trivy)
         run: |
@@ -37,9 +33,7 @@ jobs:
           if command -v trivy >/dev/null 2>&1; then
             trivy sbom docs/sbom-cyclonedx.json --format json --output docs/sbom-trivy-report.json
           else
-            cat > docs/sbom-trivy-report.json <<'JSON'
-            {"status":"skipped","reason":"trivy not installed"}
-            JSON
+            echo '{"status":"skipped","reason":"trivy not installed"}' > docs/sbom-trivy-report.json
           fi
       - name: Valider SBOM (Snyk)
         run: |
@@ -47,9 +41,7 @@ jobs:
           if command -v snyk >/dev/null 2>&1; then
             snyk test --file=docs/sbom-cyclonedx.json --json > docs/sbom-snyk-report.json || true
           else
-            cat > docs/sbom-snyk-report.json <<'JSON'
-            {"status":"skipped","reason":"snyk not installed"}
-            JSON
+            echo '{"status":"skipped","reason":"snyk not installed"}' > docs/sbom-snyk-report.json
           fi
       - name: Upload SBOM & reports
         uses: actions/upload-artifact@v4

@@ -17,9 +17,7 @@ jobs:
           if [ -f tools/security/check_policy.py ]; then
             python tools/security/check_policy.py > docs/security-policy-report.json
           else
-            cat > docs/security-policy-report.json <<'JSON'
-            {"status":"skipped","reason":"missing tools/security/check_policy.py"}
-            JSON
+            echo '{"status":"skipped","reason":"missing tools/security/check_policy.py"}' > docs/security-policy-report.json
           fi
       - name: Upload security policy report
         uses: actions/upload-artifact@v4
