@@ -11,6 +11,9 @@ RTC_ENV_DEFAULT="${ZEROCLAW_RTC_PIO_ENV:-esp32dev}"
 ZACUS_ENV_DEFAULT="${ZEROCLAW_ZACUS_PIO_ENV:-esp32dev}"
 MONITOR_SECS_DEFAULT="${ZEROCLAW_MONITOR_SECS:-60}"
 BAUD_DEFAULT="${ZEROCLAW_SERIAL_BAUD:-115200}"
+ZEROCLAW_CHIP_MISMATCH_FALLBACK="${ZEROCLAW_CHIP_MISMATCH_FALLBACK:-1}"
+ZEROCLAW_USB_STABILITY_SAMPLES="${ZEROCLAW_USB_STABILITY_SAMPLES:-2}"
+ZEROCLAW_USB_STABILITY_DELAY="${ZEROCLAW_USB_STABILITY_DELAY:-1}"
 
 usage() {
   cat <<USAGE
@@ -101,6 +104,62 @@ fi
 env_exists() {
   local env_name="$1"
   rg -q "^\[env:${env_name}\]" "$FW_DIR/platformio.ini"
+}
+
+serial_port_signature() {
+  local port="$1"
+  cd "$FW_DIR"
+  python3 - "$port" <<'PY'
+import json
+import sys
+import subprocess
+
+port = sys.argv[1]
+raw = subprocess.check_output(["pio", "device", "list", "--json-output"], text=True)
+if not raw or not raw.strip():
+  raise SystemExit(1)
+try:
+  items = json.loads(raw)
+except Exception:
+  raise SystemExit(1)
+
+for it in items:
+  if str(it.get("port", "")) != port:
+    continue
+  print(f"{it.get('hwid','unknown')}|{it.get('description','unknown')}|{it.get('serial_number','')}")
+  raise SystemExit(0)
+
+raise SystemExit(1)
+PY
+}
+
+is_usb_port_stable() {
+  local port="$1"
+  local samples="$2"
+  local delay_secs="$3"
+
+  if (( samples < 2 )); then
+    return 0
+  fi
+
+  local i=0
+  local last_sig
+  local sig
+  while (( i < samples )); do
+    if ! sig="$(serial_port_signature "$port" 2>/dev/null || true)"; then
+      return 1
+    fi
+    if [[ "$i" -eq 0 ]]; then
+      last_sig="$sig"
+    elif [[ "$sig" != "$last_sig" ]]; then
+      return 1
+    fi
+    ((i++))
+    if (( i < samples )); then
+      sleep "$delay_secs"
+    fi
+  done
+  return 0
 }
 
 if ! env_exists "$ENV_NAME"; then
@@ -219,6 +278,24 @@ resolve_env_fallback() {
   return 1
 }
 
+can_use_fallback_on_mismatch() {
+  local failed_env="$1"
+  local fallback_env="$2"
+
+  if [[ "${ZEROCLAW_CHIP_MISMATCH_FALLBACK}" != "1" ]]; then
+    echo "[warn] chip mismatch detected for $failed_env -> $fallback_env, but ZEROCLAW_CHIP_MISMATCH_FALLBACK=${ZEROCLAW_CHIP_MISMATCH_FALLBACK} (auto-fallback disabled)."
+    return 1
+  fi
+
+  if ! is_usb_port_stable "$PORT" "$ZEROCLAW_USB_STABILITY_SAMPLES" "$ZEROCLAW_USB_STABILITY_DELAY"; then
+    echo "[warn] chip mismatch detected for $failed_env but serial port is unstable (flapping signature on $PORT)."
+    echo "[hint] Retry with a stable USB link or set ZEROCLAW_USB_STABILITY_SAMPLES=1 after manual validation."
+    return 1
+  fi
+
+  return 0
+}
+
 UPLOAD_ARGS=()
 MONITOR_ARGS=()
 if [[ -n "$PORT" ]]; then
@@ -240,6 +317,10 @@ UPLOAD_LAST_OUTPUT=""
 if ! upload_once "$ACTIVE_ENV"; then
   fallback_env="$(resolve_env_fallback "$ACTIVE_ENV" "$UPLOAD_LAST_OUTPUT" || true)"
   if [[ -n "$fallback_env" ]]; then
+    if ! can_use_fallback_on_mismatch "$ACTIVE_ENV" "$fallback_env"; then
+      echo "[fail] upload skipped fallback for retry due to unstable link or disabled policy."
+      exit 3
+    fi
     echo "[warn] detected chip/env mismatch for $ACTIVE_ENV; retrying with '$fallback_env'."
     ACTIVE_ENV="$fallback_env"
     echo "[step] rebuild (fallback env)"
