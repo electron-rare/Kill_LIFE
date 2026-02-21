@@ -106,7 +106,9 @@ if ! rg -q "^\[env:${ENV_NAME}\]" "$FW_DIR/platformio.ini"; then
 fi
 
 if [[ -z "$PORT" ]]; then
-  PORT="$(cd "$FW_DIR" && pio device list --json-output 2>/dev/null | python3 -c 'import json,sys
+  if ! PORT="$(
+    cd "$FW_DIR"
+    pio device list --json-output 2>/dev/null | python3 -c 'import json,sys
 raw=sys.stdin.read().strip()
 try:
   arr=json.loads(raw) if raw else []
@@ -138,7 +140,10 @@ for d in arr:
 if best:
   print(best)
   raise SystemExit(0)
-raise SystemExit(1)' || true)"
+raise SystemExit(1)'
+  )"; then
+    PORT=""
+  fi
 fi
 
 if [[ -z "$PORT" ]]; then
