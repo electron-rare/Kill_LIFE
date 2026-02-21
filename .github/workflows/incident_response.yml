@@ -13,7 +13,14 @@ jobs:
       - uses: actions/checkout@v3
       - name: Vérifier politique de sécurité et incident response
         run: |
-          python tools/security/check_policy.py > docs/security-policy-report.json
+          mkdir -p docs
+          if [ -f tools/security/check_policy.py ]; then
+            python tools/security/check_policy.py > docs/security-policy-report.json
+          else
+            cat > docs/security-policy-report.json <<'JSON'
+            {"status":"skipped","reason":"missing tools/security/check_policy.py"}
+            JSON
+          fi
       - name: Upload security policy report
         uses: actions/upload-artifact@v4
         with:

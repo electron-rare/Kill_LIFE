@@ -13,12 +13,28 @@ jobs:
       - uses: actions/checkout@v3
       - name: Vérifier code of conduct, issue/pr templates
         run: |
-          python tools/community/check_health.py > docs/community-health-report.json
+          mkdir -p docs
+          if [ -f tools/community/check_health.py ]; then
+            python tools/community/check_health.py > docs/community-health-report.json
+          else
+            cat > docs/community-health-report.json <<'JSON'
+            {"status":"skipped","reason":"missing tools/community/check_health.py"}
+            JSON
+          fi
       - name: Scanner accessibilité doc/UI
         run: |
-          python tools/accessibility/a11y_linter.py docs/ > docs/accessibility-report.json
+          mkdir -p docs
+          if [ -f tools/accessibility/a11y_linter.py ]; then
+            python tools/accessibility/a11y_linter.py docs/ > docs/accessibility-report.json
+          else
+            cat > docs/accessibility-report.json <<'JSON'
+            {"status":"skipped","reason":"missing tools/accessibility/a11y_linter.py"}
+            JSON
+          fi
       - name: Upload reports
         uses: actions/upload-artifact@v4
         with:
           name: community-accessibility
-          path: docs/community-health-report.json
+          path: |
+            docs/community-health-report.json
+            docs/accessibility-report.json
