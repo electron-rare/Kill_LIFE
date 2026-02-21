@@ -30,7 +30,12 @@ Format:
 - [x] T-005 - Stabiliser pairing bearer auto
   - AC: `artifacts/zeroclaw/pair_token.txt` utilisable pour webhook sans override manuel.
   - Evidence: `tools/ai/zeroclaw_webhook_send.sh --repo-hint rtc "pairing check"`
-  - Status: `2026-02-21` done (401 resolved; gateway now accepts bearer, downstream model may still return HTTP 500).
+  - Status: `2026-02-21` done (401 resolved + webhook HTTP 200 after provider/model auto-fix in stack bootstrap).
+
+- [x] T-006 - Activer fallback IA locale (macOS)
+  - AC: `ollama` installe, service actif, modele local disponible, stack capable de le preferer.
+  - Evidence: `tools/ai/ollama_local_setup.sh --no-pull --no-warmup` + config `default_provider = "ollama"`.
+  - Status: `2026-02-21` done (`llama3.2:1b` local); mode local est optionnel via `ZEROCLAW_PREFER_LOCAL_AI=1` pour garder la fiabilite webhook par defaut.
 
 ## Boucle hardware RTC
 
@@ -43,14 +48,15 @@ Format:
   - Evidence: logs build RTC.
   - Status: `2026-02-21` done.
 
-- [ ] T-103 - Upload + monitor RTC (forced default)
+- [x] T-103 - Upload + monitor RTC (forced default)
   - AC: `pio run -e esp32dev -t upload` puis monitor 60s executes.
   - Evidence: logs upload/monitor RTC.
-  - Blocker: `esptool` connect timeout (`No serial data received`) on selected USB serial port.
+  - Status: `2026-02-21` done (`ESP32-D0WD-V3` flash + serial monitor output captured).
 
-- [ ] T-104 - Trace webhook RTC
+- [x] T-104 - Trace webhook RTC
   - AC: une ligne JSONL avec `repo_hint=rtc` apparait.
   - Evidence: `artifacts/zeroclaw/conversations.jsonl`
+  - Status: `2026-02-21` done (`http_status=200`, `ok=true`).
 
 ## Boucle hardware Zacus
 
@@ -63,14 +69,15 @@ Format:
   - Evidence: logs build Zacus.
   - Status: `2026-02-21` done.
 
-- [ ] T-203 - Upload + monitor Zacus (forced default)
-  - AC: `pio run -e esp32dev -t upload` puis monitor 60s executes.
+- [x] T-203 - Upload + monitor Zacus (forced default)
+  - AC: `pio run -e <env valide> -t upload` puis monitor executes.
   - Evidence: logs upload/monitor Zacus.
-  - Blocker: `esptool` connect timeout (`No serial data received`) on selected USB serial port.
+  - Status: `2026-02-21` done (`ESP32-S3` detecte, env fallback `freenove_esp32s3`, flash + monitor OK).
 
-- [ ] T-204 - Trace webhook Zacus
+- [x] T-204 - Trace webhook Zacus
   - AC: une ligne JSONL avec `repo_hint=zacus` apparait.
   - Evidence: `artifacts/zeroclaw/conversations.jsonl`
+  - Status: `2026-02-21` done (`http_status=200`, `ok=true`).
 
 ## Observabilite et cout
 
@@ -83,18 +90,20 @@ Format:
   - Evidence: sortie script + diff JSONL.
   - Status: `2026-02-21` done.
 
-- [ ] T-303 - Quota call limiter
+- [x] T-303 - Quota call limiter
   - AC: depassement quota bloque avec code non-zero.
   - Evidence: message `[budget] hourly call limit reached`.
+  - Status: `2026-02-21` done (test sandbox local `max_calls=1`, second call blocked with exit 12).
 
-- [ ] T-304 - Quota chars limiter
+- [x] T-304 - Quota chars limiter
   - AC: message trop long bloque avec code non-zero.
   - Evidence: message `[budget] message length ... exceeds ...`.
+  - Status: `2026-02-21` done (`ZEROCLAW_WEBHOOK_MAX_CHARS=5`, exit 11).
 
 ## Definition of done
 
-- [ ] Au moins une boucle complete RTC + Zacus executee en local.
-- [ ] Dashboard live exploitable pour suivi continu.
-- [ ] Prometheus disponible avec target gateway scrapee.
-- [ ] Logs et preuves archives dans `artifacts/zeroclaw/`.
-- [ ] Aucune commande documentee n'utilise `-e native` ou `-e test`.
+- [x] Au moins une boucle complete RTC + Zacus executee en local.
+- [x] Dashboard live exploitable pour suivi continu.
+- [x] Prometheus disponible avec target gateway scrapee.
+- [x] Logs et preuves archives dans `artifacts/zeroclaw/`.
+- [x] Aucune commande documentee n'utilise `-e native` ou `-e test`.

@@ -65,13 +65,19 @@ This keeps `autonomy.workspace_only = true` effective on a per-repo boundary.
 - `tools/ai/zeroclaw_dual_chat.sh`
   - target switch by alias (`rtc`, `zacus`) or absolute path,
   - message mode (`-m`) or interactive mode,
+  - `--cheap` mode to prefer local provider routing for low-credit runs,
   - loads local auth env file `~/.zeroclaw/env` when present,
-  - provider auto-fallback (`copilot` -> `openai-codex` -> `openrouter`),
+  - provider auto-fallback (`ollama` when local preferred -> `copilot` -> `openai-codex` -> `gemini` -> `openrouter` -> `anthropic` -> `openai`),
   - token sourcing from `gh auth token` at runtime only when `copilot` is selected.
 - `tools/ai/zeroclaw_stack_up.sh`
   - starts local gateway and local follow server,
   - reuses existing listeners when ports are already bound (prevents duplicate-start failures),
   - loads local auth env file `~/.zeroclaw/env` when present,
+  - auto-aligns gateway provider/model for autonomous cost control:
+    - default uses `openai-codex` when auth profile exists (reliable baseline),
+    - optionally prefers local `ollama` when `ZEROCLAW_PREFER_LOCAL_AI=1`,
+    - otherwise uses `openrouter` when API key exists,
+  - writes reliability fallback chain in config (`ollama -> openai-codex -> openrouter` when available),
   - attempts automatic gateway pairing and token refresh,
   - validates bearer token with a malformed webhook probe (`{}` payload) and re-pairs when possible,
   - generates live follow dashboard at `http://127.0.0.1:8788/`,
@@ -96,8 +102,15 @@ This keeps `autonomy.workspace_only = true` effective on a per-repo boundary.
   - target switch `rtc|zacus`,
   - validates `platformio.ini` env exists before running,
   - forces `build -> upload -> serial monitor` by default,
+  - auto-retries with a compatible env when chip mismatch is detected (`ESP32` vs `ESP32-S3`),
   - auto-detects serial port when not specified,
+  - on macOS, wraps monitor with `script` pseudo-TTY to avoid `termios` non-interactive failures,
   - monitor timeout default 60s.
+- `tools/ai/ollama_local_setup.sh`
+  - installs `ollama` via Homebrew when missing,
+  - starts local service,
+  - optionally pulls/warms a local model,
+  - prints zero-credit defaults for stack usage.
 - `tools/ai/zeroclaw_webhook_send.sh`
   - sends webhook by default (no mandatory allow flag),
   - keeps `--allow-model-call` as backward-compatible legacy option,
@@ -111,9 +124,19 @@ This keeps `autonomy.workspace_only = true` effective on a per-repo boundary.
 Auto provider selection order in `zeroclaw_dual_chat.sh`:
 
 1. explicit `ZEROCLAW_PROVIDER` override,
-2. `copilot` when `gh` auth is valid and Copilot billing endpoint is accessible,
-3. `openai-codex` when a ZeroClaw auth profile exists,
-4. `openrouter` when `OPENROUTER_API_KEY` is present.
+2. `ollama` when `ZEROCLAW_PREFER_LOCAL_AI=1` and local model is available,
+3. `copilot` when `gh` auth is valid and Copilot billing endpoint is accessible,
+4. `openai-codex` when a ZeroClaw auth profile exists,
+5. `gemini` when `GEMINI_API_KEY`/`GOOGLE_API_KEY` is present,
+6. `openrouter` when `OPENROUTER_API_KEY` is present,
+7. `anthropic` when `ANTHROPIC_API_KEY`/`ANTHROPIC_OAUTH_TOKEN` is present,
+8. `openai` when `OPENAI_API_KEY` is present.
+
+Gateway bootstrap provider order in `zeroclaw_stack_up.sh`:
+
+1. `openai-codex` when auth profile exists (default mode),
+2. `openrouter` when `OPENROUTER_API_KEY` exists,
+3. `ollama` only when `ZEROCLAW_PREFER_LOCAL_AI=1` and local model is available.
 
 Observed on current machine:
 

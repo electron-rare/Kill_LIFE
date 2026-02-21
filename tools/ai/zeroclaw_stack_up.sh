@@ -28,6 +28,12 @@ PROM_CONTAINER="${ZEROCLAW_PROM_CONTAINER:-zeroclaw-prometheus}"
 DOCKER_WAIT_SECS="${ZEROCLAW_DOCKER_WAIT_SECS:-90}"
 PROM_READY_WAIT_SECS="${ZEROCLAW_PROM_READY_WAIT_SECS:-15}"
 AUTO_REPAIR_ON_INVALID_TOKEN="${ZEROCLAW_AUTO_REPAIR_ON_INVALID_TOKEN:-1}"
+OPENAI_CODEX_MODEL="${ZEROCLAW_OPENAI_CODEX_MODEL:-gpt-5.3-codex}"
+OPENROUTER_MODEL="${ZEROCLAW_OPENROUTER_MODEL:-openrouter/auto}"
+PREFER_LOCAL_AI="${ZEROCLAW_PREFER_LOCAL_AI:-0}"
+OLLAMA_MODEL="${ZEROCLAW_OLLAMA_MODEL:-llama3.2:1b}"
+OLLAMA_AUTO_PULL="${ZEROCLAW_OLLAMA_AUTO_PULL:-0}"
+OLLAMA_WARMUP="${ZEROCLAW_OLLAMA_WARMUP:-1}"
 
 GW_PID_FILE="$ART_DIR/gateway.pid"
 FW_PID_FILE="$ART_DIR/follow.pid"
@@ -65,6 +71,188 @@ if [[ ! -x "$ZEROCLAW_BIN" ]]; then
     exit 1
   fi
 fi
+
+ensure_preferred_provider_config() {
+  [[ -f "$ZEROCLAW_CONFIG_FILE" ]] || return 0
+
+  local preferred_provider=""
+  local preferred_model=""
+  local fallback_csv=""
+  local fallback_models_csv=""
+
+  ollama_model_available() {
+    command -v ollama >/dev/null 2>&1 || return 1
+    ollama list 2>/dev/null | awk 'NR>1 {print $1}' | rg -qx "$OLLAMA_MODEL"
+  }
+
+  ensure_ollama_ready() {
+    [[ "$PREFER_LOCAL_AI" == "1" ]] || return 1
+    command -v ollama >/dev/null 2>&1 || return 1
+
+    if ! ollama list >/dev/null 2>&1; then
+      if [[ "$(uname -s)" == "Darwin" ]] && command -v brew >/dev/null 2>&1; then
+        brew services start ollama >/dev/null 2>&1 || true
+        sleep 1
+      fi
+      if ! ollama list >/dev/null 2>&1; then
+        nohup ollama serve >"$ART_DIR/ollama.log" 2>&1 &
+        sleep 1
+      fi
+    fi
+
+    if ollama_model_available; then
+      if [[ "$OLLAMA_WARMUP" == "1" ]]; then
+        python3 - "$OLLAMA_MODEL" >>"$ART_DIR/ollama.log" 2>&1 <<'PY'
+import json
+import sys
+import urllib.request
+
+model = sys.argv[1]
+payload = json.dumps({
+    "model": model,
+    "prompt": "Reply with exactly: ready",
+    "stream": False,
+}).encode("utf-8")
+req = urllib.request.Request(
+    "http://127.0.0.1:11434/api/generate",
+    data=payload,
+    headers={"Content-Type": "application/json"},
+    method="POST",
+)
+try:
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        resp.read()
+except Exception:
+    pass
+PY
+      fi
+      return 0
+    fi
+
+    if [[ "$OLLAMA_AUTO_PULL" == "1" ]]; then
+      ollama pull "$OLLAMA_MODEL" >>"$ART_DIR/ollama.log" 2>&1 || true
+      if ollama_model_available; then
+        if [[ "$OLLAMA_WARMUP" == "1" ]]; then
+          python3 - "$OLLAMA_MODEL" >>"$ART_DIR/ollama.log" 2>&1 <<'PY'
+import json
+import sys
+import urllib.request
+
+model = sys.argv[1]
+payload = json.dumps({
+    "model": model,
+    "prompt": "Reply with exactly: ready",
+    "stream": False,
+}).encode("utf-8")
+req = urllib.request.Request(
+    "http://127.0.0.1:11434/api/generate",
+    data=payload,
+    headers={"Content-Type": "application/json"},
+    method="POST",
+)
+try:
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        resp.read()
+except Exception:
+    pass
+PY
+        fi
+        return 0
+      fi
+    fi
+
+    return 1
+  }
+
+  if ensure_ollama_ready; then
+    preferred_provider="ollama"
+    preferred_model="$OLLAMA_MODEL"
+  elif env -u ZEROCLAW_WORKSPACE "$ZEROCLAW_BIN" auth status 2>/dev/null | rg -q "openai-codex:"; then
+    preferred_provider="openai-codex"
+    preferred_model="$OPENAI_CODEX_MODEL"
+  elif [[ -n "${OPENROUTER_API_KEY:-}" ]]; then
+    preferred_provider="openrouter"
+    preferred_model="$OPENROUTER_MODEL"
+  else
+    return 0
+  fi
+
+  if [[ "$preferred_provider" == "ollama" ]]; then
+    if env -u ZEROCLAW_WORKSPACE "$ZEROCLAW_BIN" auth status 2>/dev/null | rg -q "openai-codex:"; then
+      fallback_csv="openai-codex"
+      fallback_models_csv="$OPENAI_CODEX_MODEL"
+    fi
+    if [[ -n "${OPENROUTER_API_KEY:-}" ]]; then
+      if [[ -n "$fallback_csv" ]]; then
+        fallback_csv+=",openrouter"
+      else
+        fallback_csv="openrouter"
+      fi
+      if [[ -n "$fallback_models_csv" ]]; then
+        fallback_models_csv+=",$OPENROUTER_MODEL"
+      else
+        fallback_models_csv="$OPENROUTER_MODEL"
+      fi
+    fi
+  elif [[ "$preferred_provider" == "openai-codex" && -n "${OPENROUTER_API_KEY:-}" ]]; then
+    fallback_csv="openrouter"
+    fallback_models_csv="$OPENROUTER_MODEL"
+  elif [[ "$preferred_provider" == "openrouter" ]] && env -u ZEROCLAW_WORKSPACE "$ZEROCLAW_BIN" auth status 2>/dev/null | rg -q "openai-codex:"; then
+    fallback_csv="openai-codex"
+    fallback_models_csv="$OPENAI_CODEX_MODEL"
+  fi
+
+  python3 - "$ZEROCLAW_CONFIG_FILE" "$preferred_provider" "$preferred_model" "$fallback_csv" "$fallback_models_csv" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+cfg = Path(sys.argv[1])
+provider = sys.argv[2]
+model = sys.argv[3]
+fallback_csv = sys.argv[4]
+fallback_models_csv = sys.argv[5]
+fallbacks = [p for p in fallback_csv.split(",") if p]
+model_fallbacks = [m for m in fallback_models_csv.split(",") if m]
+text = cfg.read_text(encoding="utf-8")
+
+if re.search(r"(?m)^default_provider\s*=", text):
+    text = re.sub(r'(?m)^default_provider\s*=.*$', f'default_provider = "{provider}"', text, count=1)
+else:
+    text = f'default_provider = "{provider}"\n' + text
+
+if re.search(r"(?m)^default_model\s*=", text):
+    text = re.sub(r'(?m)^default_model\s*=.*$', f'default_model = "{model}"', text, count=1)
+else:
+    text = f'default_model = "{model}"\n' + text
+
+fallback_value = "[]" if not fallbacks else "[" + ", ".join(f'"{p}"' for p in fallbacks) + "]"
+if re.search(r"(?m)^fallback_providers\s*=", text):
+    text = re.sub(r'(?m)^fallback_providers\s*=\s*\[.*\]\s*$', f"fallback_providers = {fallback_value}", text, count=1)
+else:
+    if re.search(r"(?m)^\[reliability\]\s*$", text):
+        text = re.sub(r"(?m)^\[reliability\]\s*$", f"[reliability]\nfallback_providers = {fallback_value}", text, count=1)
+    else:
+        text += f"\n[reliability]\nfallback_providers = {fallback_value}\n"
+
+# Normalize model fallback section for the currently selected model.
+text = re.sub(
+    r"(?ms)^\[reliability\.model_fallbacks\]\n.*?(?=^\[|\Z)",
+    "",
+    text,
+)
+
+section_lines = ["[reliability.model_fallbacks]"]
+if model_fallbacks:
+    fallbacks_value = "[" + ", ".join(f'"{m}"' for m in model_fallbacks) + "]"
+    section_lines.append(f'"{model}" = {fallbacks_value}')
+text = text.rstrip() + "\n\n" + "\n".join(section_lines) + "\n"
+
+cfg.write_text(text, encoding="utf-8")
+PY
+}
+
+ensure_preferred_provider_config
 
 is_running() {
   local pid_file="$1"
