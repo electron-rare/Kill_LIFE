@@ -18,6 +18,7 @@ INDEX_FILE="$ART_DIR/index.html"
 
 mkdir -p "$ART_DIR"
 touch "$CONVO_FILE"
+touch "$GW_LOG"
 
 if [[ ! -x "$ZEROCLAW_BIN" ]]; then
   if command -v zeroclaw >/dev/null 2>&1; then
@@ -79,19 +80,216 @@ cat >"$INDEX_FILE" <<EOF
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta http-equiv="refresh" content="5" />
-  <title>ZeroClaw Local Follow</title>
-  <style>body{font-family:ui-sans-serif,system-ui;margin:20px}code{background:#f4f4f4;padding:2px 4px}</style>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ZeroClaw Live Follow</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --ink: #161b22;
+      --muted: #5b6270;
+      --line: #d7dbe2;
+      --accent: #1a4f8b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "SF Pro Text", "Segoe UI", Arial, sans-serif;
+      background: radial-gradient(circle at top, #ffffff 0%, #f2f4f8 48%, #eceff5 100%);
+      color: var(--ink);
+    }
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 20px 14px 28px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 24px;
+      letter-spacing: 0.2px;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    .links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .links a {
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 13px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      min-height: 420px;
+      box-shadow: 0 2px 10px rgba(17, 26, 41, 0.04);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .panel h2 {
+      margin: 0;
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid var(--line);
+      font-size: 16px;
+    }
+    .panel pre {
+      margin: 0;
+      padding: 12px 14px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.4;
+      flex: 1;
+    }
+    .status {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: 1fr; }
+      .panel { min-height: 320px; }
+    }
+  </style>
 </head>
 <body>
-  <h1>ZeroClaw Local Follow</h1>
-  <ul>
-    <li>Health: <a href="http://$GATEWAY_HOST:$GATEWAY_PORT/health">http://$GATEWAY_HOST:$GATEWAY_PORT/health</a></li>
-    <li>Metrics: <a href="http://$GATEWAY_HOST:$GATEWAY_PORT/metrics">http://$GATEWAY_HOST:$GATEWAY_PORT/metrics</a></li>
-    <li>Gateway log: <a href="/gateway.log">/gateway.log</a></li>
-    <li>Conversation log: <a href="/conversations.jsonl">/conversations.jsonl</a></li>
-  </ul>
-  <p>Follow URL: <code>http://127.0.0.1:$FOLLOW_PORT/</code></p>
+  <main>
+    <h1>ZeroClaw Live Follow</h1>
+    <div class="meta">
+      Follow URL: <code>http://127.0.0.1:$FOLLOW_PORT/</code> |
+      Polling interval: <code>1s</code> |
+      Display cap: <code>500 lines/panel</code>
+    </div>
+    <div class="links">
+      <a href="/conversations.jsonl">/conversations.jsonl</a>
+      <a href="/gateway.log">/gateway.log</a>
+      <a href="http://$GATEWAY_HOST:$GATEWAY_PORT/health">/health</a>
+      <a href="http://$GATEWAY_HOST:$GATEWAY_PORT/metrics">/metrics</a>
+    </div>
+    <div class="grid">
+      <section class="panel">
+        <h2>Conversations (JSONL live)</h2>
+        <pre id="conversations">Waiting for data...</pre>
+      </section>
+      <section class="panel">
+        <h2>Gateway log (live)</h2>
+        <pre id="gateway">Waiting for data...</pre>
+      </section>
+    </div>
+    <div class="status" id="status">Polling started...</div>
+  </main>
+  <script>
+    const MAX_LINES = 500;
+    const POLL_MS = 1000;
+
+    let convoCount = 0;
+    let gatewayCount = 0;
+    let convoBuf = [];
+    let gatewayBuf = [];
+    let lastOk = null;
+
+    function trimTail(lines) {
+      if (lines.length <= MAX_LINES) return lines;
+      return lines.slice(lines.length - MAX_LINES);
+    }
+
+    function safeText(input) {
+      if (input === null || input === undefined) return "";
+      return String(input);
+    }
+
+    function renderConvo(line) {
+      try {
+        const obj = JSON.parse(line);
+        const ts = safeText(obj.ts || "");
+        const repo = safeText(obj.repo_hint || "unknown");
+        const msg = safeText(obj.message || "");
+        const status = obj.http_status === undefined ? "-" : safeText(obj.http_status);
+        const ok = obj.ok === undefined ? "-" : safeText(obj.ok);
+        const raw = safeText(obj.response_raw || "");
+        return "[" + ts + "] repo=" + repo + " status=" + status + " ok=" + ok + "\n> " + msg + "\n< " + raw;
+      } catch (error) {
+        return "[raw] " + line;
+      }
+    }
+
+    function splitLines(text) {
+      if (!text) return [];
+      const lines = text.replace(/\r/g, "").split("\n");
+      if (lines.length > 0 && lines[lines.length - 1] === "") lines.pop();
+      return lines;
+    }
+
+    async function pollFile(url, kind) {
+      const response = await fetch(url + "?t=" + Date.now(), { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(kind + " HTTP " + response.status);
+      }
+      const content = await response.text();
+      const lines = splitLines(content);
+
+      if (kind === "conversations") {
+        if (lines.length < convoCount) {
+          convoCount = 0;
+          convoBuf = [];
+        }
+        const delta = lines.slice(convoCount).map(renderConvo);
+        convoCount = lines.length;
+        convoBuf = trimTail(convoBuf.concat(delta));
+        document.getElementById("conversations").textContent = convoBuf.length ? convoBuf.join("\n\n") : "(empty)";
+      } else {
+        if (lines.length < gatewayCount) {
+          gatewayCount = 0;
+          gatewayBuf = [];
+        }
+        const delta = lines.slice(gatewayCount);
+        gatewayCount = lines.length;
+        gatewayBuf = trimTail(gatewayBuf.concat(delta));
+        document.getElementById("gateway").textContent = gatewayBuf.length ? gatewayBuf.join("\n") : "(empty)";
+      }
+    }
+
+    function setStatus(message, isError) {
+      const now = new Date().toISOString();
+      lastOk = !isError;
+      const marker = isError ? "error" : "ok";
+      document.getElementById("status").textContent = "[" + marker + "] " + message + " | updated " + now;
+    }
+
+    async function tick() {
+      try {
+        await Promise.all([
+          pollFile("/conversations.jsonl", "conversations"),
+          pollFile("/gateway.log", "gateway"),
+        ]);
+        setStatus("polling every " + POLL_MS + "ms", false);
+      } catch (error) {
+        setStatus(error.message, true);
+      }
+    }
+
+    tick();
+    setInterval(tick, POLL_MS);
+  </script>
 </body>
 </html>
 EOF

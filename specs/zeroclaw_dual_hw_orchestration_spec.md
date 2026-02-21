@@ -68,12 +68,17 @@ This keeps `autonomy.workspace_only = true` effective on a per-repo boundary.
   - token sourcing from `gh auth token` at runtime only when `copilot` is selected.
 - `tools/ai/zeroclaw_stack_up.sh`
   - starts local gateway and local follow server,
-  - generates local follow page at `http://127.0.0.1:8788/`,
+  - generates live follow dashboard at `http://127.0.0.1:8788/`,
+  - dashboard includes live polling panels for `/conversations.jsonl` and `/gateway.log` (1s polling),
+  - preserves direct raw links: `/conversations.jsonl` and `/gateway.log`,
   - stores pair token in `artifacts/zeroclaw/pair_token.txt`.
 - `tools/ai/zeroclaw_stack_down.sh`
-  - stops local gateway/follow processes.
+  - stops local gateway/follow processes,
+  - confirms logs remain in `artifacts/zeroclaw/`.
 - `tools/ai/zeroclaw_webhook_send.sh`
-  - sends one webhook message and appends raw request/response trace to `artifacts/zeroclaw/conversations.jsonl`.
+  - requires `--allow-model-call` before any real webhook send,
+  - supports `--repo-hint <hint>` metadata tagging,
+  - appends enriched JSONL traces to `artifacts/zeroclaw/conversations.jsonl`.
 
 ### 4.3 Provider/cost strategy
 
@@ -120,3 +125,31 @@ Behavior:
   https://docs.platformio.org/en/latest/plus/remote/unit-testing.html
 - PySerial port metadata usage (`serial.tools.list_ports`) for stable device targeting:  
   https://pyserial.readthedocs.io/en/latest/tools.html
+
+## 8) Live Follow Contract
+
+Follow URL:
+
+- `http://127.0.0.1:8788/` (dashboard)
+
+Raw URLs:
+
+- `http://127.0.0.1:8788/conversations.jsonl`
+- `http://127.0.0.1:8788/gateway.log`
+
+Conversation JSONL line schema (append-only):
+
+- `ts` (ISO UTC)
+- `repo_hint` (`rtc`, `zacus`, or custom hint; default `unknown`)
+- `message`
+- `http_status`
+- `ok` (boolean)
+- `response_raw`
+
+Compatibility rule:
+
+- viewer tolerates legacy lines that only contain `ts`, `message`, `response_raw`.
+
+Credit-protection rule:
+
+- without `--allow-model-call`, `zeroclaw_webhook_send.sh` exits non-zero and does not send/write logs.

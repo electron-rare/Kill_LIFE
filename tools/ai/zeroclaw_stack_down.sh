@@ -22,4 +22,4 @@ stop_pid_file() {
 
 stop_pid_file "$GW_PID_FILE"
 stop_pid_file "$FW_PID_FILE"
-echo "ZeroClaw local stack stopped."
+echo "ZeroClaw local stack stopped. Logs preserved in artifacts/zeroclaw/."
