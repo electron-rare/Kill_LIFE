@@ -64,23 +64,31 @@ This keeps `autonomy.workspace_only = true` effective on a per-repo boundary.
 - `tools/ai/zeroclaw_dual_chat.sh`
   - target switch by alias (`rtc`, `zacus`) or absolute path,
   - message mode (`-m`) or interactive mode,
+  - loads local auth env file `~/.zeroclaw/env` when present,
   - provider auto-fallback (`copilot` -> `openai-codex` -> `openrouter`),
   - token sourcing from `gh auth token` at runtime only when `copilot` is selected.
 - `tools/ai/zeroclaw_stack_up.sh`
   - starts local gateway and local follow server,
   - reuses existing listeners when ports are already bound (prevents duplicate-start failures),
+  - loads local auth env file `~/.zeroclaw/env` when present,
+  - attempts automatic gateway pairing and token refresh,
+  - validates bearer token with a malformed webhook probe (`{}` payload) and re-pairs when possible,
   - generates live follow dashboard at `http://127.0.0.1:8788/`,
   - dashboard includes live polling panels for `/conversations.jsonl` and `/gateway.log` (1s polling),
   - preserves direct raw links: `/conversations.jsonl` and `/gateway.log`,
   - writes `artifacts/zeroclaw/prometheus.yml` scrape config,
-  - supports local Prometheus startup via `ZEROCLAW_PROM_MODE` (`off`, `auto`, `binary`, `docker`),
+  - supports local Prometheus startup via `ZEROCLAW_PROM_MODE` (`off`, `auto`, `binary`, `docker`) with `auto` fallback `binary -> docker`,
+  - on macOS, auto-attempts Docker Desktop startup before Prometheus docker mode,
   - stores pair token in `artifacts/zeroclaw/pair_token.txt`.
 - `tools/ai/zeroclaw_stack_down.sh`
   - stops local gateway/follow processes,
   - stops local Prometheus process/container if managed by the stack,
   - confirms logs remain in `artifacts/zeroclaw/`.
 - `tools/ai/zeroclaw_webhook_send.sh`
-  - requires `--allow-model-call` before any real webhook send,
+  - sends webhook by default (no mandatory allow flag),
+  - keeps `--allow-model-call` as backward-compatible legacy option,
+  - supports `--dry-run` to validate payload/limits without network send,
+  - enforces autonomous local quotas with `artifacts/zeroclaw/webhook_budget.json`,
   - supports `--repo-hint <hint>` metadata tagging,
   - appends enriched JSONL traces to `artifacts/zeroclaw/conversations.jsonl`.
 
@@ -155,22 +163,43 @@ Compatibility rule:
 
 - viewer tolerates legacy lines that only contain `ts`, `message`, `response_raw`.
 
-Credit-protection rule:
+Webhook execution and cost controls:
 
-- without `--allow-model-call`, `zeroclaw_webhook_send.sh` exits non-zero and does not send/write logs.
+- webhook send is enabled by default.
+- `--dry-run` performs validation only (no network call, no execution log append).
+- hourly quota and message-size limits are enforced by environment variables:
+  - `ZEROCLAW_WEBHOOK_MAX_CALLS_PER_HOUR` (default: `40`)
+  - `ZEROCLAW_WEBHOOK_MAX_CHARS` (default: `1200`)
+- quota state is stored in `artifacts/zeroclaw/webhook_budget.json`.
 
 ## 9) Prometheus Integration
 
 Economical default:
 
-- `ZEROCLAW_PROM_MODE=auto` (start only if local `prometheus` binary exists)
+- `ZEROCLAW_PROM_MODE=auto` (try local `prometheus` binary first, then Docker fallback)
 
 Optional modes:
 
 - `ZEROCLAW_PROM_MODE=off` disables Prometheus startup
 - `ZEROCLAW_PROM_MODE=binary` requires local `prometheus` binary
 - `ZEROCLAW_PROM_MODE=docker` runs `prom/prometheus:latest` locally
+- `ZEROCLAW_DOCKER_WAIT_SECS` controls Docker daemon wait timeout (default: `90`)
+- `ZEROCLAW_PROM_READY_WAIT_SECS` controls Prometheus readiness wait (default: `15`)
 
 Default local endpoint when running:
 
 - `http://127.0.0.1:9090/targets`
+
+## 10) Local Auth Bootstrap
+
+Recommended local secret file:
+
+- `~/.zeroclaw/env` (permissions `600`)
+
+Suggested contents:
+
+- `OPENROUTER_API_KEY=...`
+
+Behavior:
+
+- `zeroclaw_dual_chat.sh`, `zeroclaw_stack_up.sh`, and `zeroclaw_webhook_send.sh` auto-load this file if present.
