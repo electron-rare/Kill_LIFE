@@ -37,6 +37,23 @@ Format:
   - Evidence: `tools/ai/ollama_local_setup.sh --no-pull --no-warmup` + config `default_provider = "ollama"`.
   - Status: `2026-02-21` done (`llama3.2:1b` local); mode local est optionnel via `ZEROCLAW_PREFER_LOCAL_AI=1` pour garder la fiabilite webhook par defaut.
 
+- [x] T-007 - Renforcer mode local-only agentic (ZeroClaw + OpenClaw)
+  - AC: `tools/ai/zeroclaw_dual_chat.sh <repo> --local-only --provider-check` choisit un provider local (`ollama` ou `lmstudio`) sinon exit explicite.
+  - Evidence: sortie provider-check + `openclaw models status --plain`.
+  - Status: `2026-02-21` done (`openclaw` default model force sur `ollama/llama3.2:1b`, fallbacks `openai-codex` puis `openrouter`).
+
+- [x] T-008 - Scanner les options provider/agentic disponibles
+  - AC: rapport local avec statut runtime `openclaw/ollama/lmstudio/litellm` et matrice providers ZeroClaw.
+  - Evidence: `tools/ai/zeroclaw_provider_scan.sh --no-refresh` -> `artifacts/zeroclaw/provider_options.md`.
+  - Status: `2026-02-21` done.
+
+- [x] T-009 - Verrouiller le mapping matériel par cible
+  - AC: la détection automatique affecte `zacus` aux ports `usbmodem`/S3 et `rtc` à l’Audio Kit (pas d’interversion habituelle).
+  - Evidence:
+    - `ZEROCLAW_ZACUS_UPLOAD_PORT_HINT="1a86,usbmodem,ch340,freenove" tools/ai/zeroclaw_hw_firmware_loop.sh zacus --port '' --monitor-secs 5`
+    - `ZEROCLAW_RTC_UPLOAD_PORT_HINT="cp2102,10c4,esp32audiokit,audio" tools/ai/zeroclaw_hw_firmware_loop.sh rtc --port '' --monitor-secs 5`
+  - Status: `2026-02-21` done (`usbmodem` prioritaire pour zacus, `usbmodem` pénalisé pour rtc).
+
 ## Boucle hardware RTC
 
 - [x] T-101 - Discover hardware RTC

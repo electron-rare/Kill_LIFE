@@ -9,6 +9,9 @@ Last updated: 2026-02-21
 - [x] I-003 - Ensure local Prometheus backend exists (`prometheus` binary installed).
 - [x] I-004 - Resolve open mirror PR redundancy (`PR #7` merge/close decision).
 - [x] I-005 - Enable local AI fallback (`ollama` + local model) for credit savings.
+- [x] I-006 - Enforce local-only chat mode option (`--local-only`) with `ollama/lmstudio` detection.
+- [x] I-007 - Align OpenClaw default model to local `ollama/llama3.2:1b` + cloud fallbacks for continuity.
+- [x] I-008 - Add provider/agentic scanner (`tools/ai/zeroclaw_provider_scan.sh`) for live capability matrix.
 
 ## Daily autonomous sequence
 
@@ -30,6 +33,11 @@ Last updated: 2026-02-21
   - webhook trace with `--repo-hint zacus`
   - status: `2026-02-21` done (ESP32-S3 mismatch auto-corrected to `freenove_esp32s3`).
 - [x] D-005 - Review `artifacts/zeroclaw/gateway.log` + `conversations.jsonl`.
+
+- [x] D-006 - Corriger l'association cible↔port
+  - `RTC_UPLOAD_PORT_HINT` cible Audio Kit (`cp2102`, `esp32audiokit`, `audio`).
+  - `ZACUS_UPLOAD_PORT_HINT` cible Freenove/S3 (`usbmodem`, `1a86`, `ch340`, `freenove`).
+  - status: `2026-02-21` done.
 
 ## Hardware safety gates
 
