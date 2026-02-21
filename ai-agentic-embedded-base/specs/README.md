@@ -9,3 +9,16 @@ Flux conseillé (itératif) :
 6) Implémentation (firmware/hardware) + tests + doc
 
 Le fichier `constraints.yaml` est la **source de vérité** des contraintes non-fonctionnelles et règles repo.
+
+Specs complémentaires:
+
+- `zeroclaw_dual_hw_orchestration_spec.md`: architecture d'orchestration ZeroClaw multi-repo + double matériel.
+- `zeroclaw_dual_hw_todo.md`: backlog opérationnel court terme pour autonomie contrôlée.
+
+Synchronisation `spec_kit`:
+
+- `specs/` (racine repo) et `ai-agentic-embedded-base/specs/` doivent rester alignés.
+- Après toute mise à jour, synchroniser avec:
+  - `rsync -a --delete specs/ ai-agentic-embedded-base/specs/`
+- Vérifier l'absence d'écart avec:
+  - `diff -ru ai-agentic-embedded-base/specs specs`
