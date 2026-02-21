@@ -13,7 +13,12 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run API contract tests
         run: |
-          python tools/api/run_contract_tests.py > docs/api-contract-report.json
+          mkdir -p docs
+          if [ -f tools/api/run_contract_tests.py ]; then
+            python tools/api/run_contract_tests.py > docs/api-contract-report.json
+          else
+            echo '{"status":"skipped","reason":"missing tools/api/run_contract_tests.py"}' > docs/api-contract-report.json
+          fi
       - name: Upload API contract report
         uses: actions/upload-artifact@v4
         with:

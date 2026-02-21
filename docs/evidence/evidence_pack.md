@@ -24,6 +24,7 @@ Dans le repo (docs) :
 - [ ] Le label `ai:*` est présent et cohérent avec le contenu
 - [ ] Scope guard passe
 - [ ] Build + tests passent
+- [ ] Si API web: rapport route parity présent (`docs/evidence/route_parity_report.json`)
 - [ ] Spec/AC référencés
 - [ ] Logs/artifacts attachés (ou links internes)
 

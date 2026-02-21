@@ -1,0 +1,45 @@
+name: ZeroClaw Dual Orchestrator
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tools/ai/zeroclaw_*.sh"
+      - "specs/zeroclaw_dual_hw_*.md"
+      - ".github/workflows/zeroclaw_dual_orchestrator.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "tools/ai/zeroclaw_*.sh"
+      - "specs/zeroclaw_dual_hw_*.md"
+      - ".github/workflows/zeroclaw_dual_orchestrator.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: zeroclaw-dual-orchestrator-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: Shellcheck orchestrator scripts
+        run: |
+          shellcheck tools/ai/zeroclaw_dual_bootstrap.sh
+          shellcheck tools/ai/zeroclaw_dual_chat.sh
+          shellcheck tools/ai/zeroclaw_stack_up.sh
+          shellcheck tools/ai/zeroclaw_stack_down.sh
+          shellcheck tools/ai/zeroclaw_webhook_send.sh
+
+      - name: Verify spec files
+        run: |
+          test -s specs/zeroclaw_dual_hw_orchestration_spec.md
+          test -s specs/zeroclaw_dual_hw_todo.md

@@ -9,3 +9,8 @@ Flux conseillé (itératif) :
 6) Implémentation (firmware/hardware) + tests + doc
 
 Le fichier `constraints.yaml` est la **source de vérité** des contraintes non-fonctionnelles et règles repo.
+
+Specs complémentaires:
+
+- `zeroclaw_dual_hw_orchestration_spec.md`: architecture d'orchestration ZeroClaw multi-repo + double matériel.
+- `zeroclaw_dual_hw_todo.md`: backlog opérationnel court terme pour autonomie contrôlée.

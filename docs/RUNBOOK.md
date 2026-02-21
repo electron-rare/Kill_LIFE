@@ -58,6 +58,23 @@ Vérifie la présence des artefacts et evidence packs après chaque run.
 - Build/tests
 - Compliance gates (si profil)
 
+### 2.5 Gate route parity (frontend/backend API)
+Pour éviter les régressions où le frontend appelle des routes supprimées/inexistantes,
+ajoute un check statique de parité routes API.
+
+Exemple (adapté au repo cible) :
+```bash
+python tools/gates/route_parity_check.py \
+  --backend "src/**/*.cpp" \
+  --backend "src/**/*.h" \
+  --frontend "data/webui/**/*.js" \
+  --frontend "data/webui/**/*.html" \
+  --report "docs/evidence/route_parity_report.json"
+```
+
+Règle : le gate échoue si une route `/api/...` utilisée côté frontend n'est pas
+trouvée dans les sources backend scannées.
+
 ## 3) Stop / Incident
 - Ajouter `ai:hold` sur issue/PR
 - Revoir contenu + logs

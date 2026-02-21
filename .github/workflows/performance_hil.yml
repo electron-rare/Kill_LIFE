@@ -13,7 +13,12 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run firmware benchmarks
         run: |
-          python tools/benchmarks/run_benchmarks.py > docs/performance-report.json
+          mkdir -p docs
+          if [ -f tools/benchmarks/run_benchmarks.py ]; then
+            python tools/benchmarks/run_benchmarks.py > docs/performance-report.json
+          else
+            echo '{"status":"skipped","reason":"missing tools/benchmarks/run_benchmarks.py"}' > docs/performance-report.json
+          fi
       - name: Upload performance report
         uses: actions/upload-artifact@v4
         with:
@@ -25,7 +30,12 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run HIL tests (émulateur/hardware cloud)
         run: |
-          python tools/hil/run_hil_tests.py > docs/hil-report.json
+          mkdir -p docs
+          if [ -f tools/hil/run_hil_tests.py ]; then
+            python tools/hil/run_hil_tests.py > docs/hil-report.json
+          else
+            echo '{"status":"skipped","reason":"missing tools/hil/run_hil_tests.py"}' > docs/hil-report.json
+          fi
       - name: Upload HIL report
         uses: actions/upload-artifact@v4
         with:

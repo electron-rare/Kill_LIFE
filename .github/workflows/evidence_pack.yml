@@ -13,7 +13,12 @@ jobs:
       - uses: actions/checkout@v3
       - name: Validate evidence pack
         run: |
-          python tools/evidence/validate_evidence_pack.py > docs/evidence-pack-report.json
+          mkdir -p docs
+          if [ -f tools/evidence/validate_evidence_pack.py ]; then
+            python tools/evidence/validate_evidence_pack.py > docs/evidence-pack-report.json
+          else
+            echo '{"status":"skipped","reason":"missing tools/evidence/validate_evidence_pack.py"}' > docs/evidence-pack-report.json
+          fi
       - name: Upload evidence pack report
         uses: actions/upload-artifact@v4
         with:

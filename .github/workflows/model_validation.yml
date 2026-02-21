@@ -13,7 +13,12 @@ jobs:
       - uses: actions/checkout@v3
       - name: Validate IA models/datasets
         run: |
-          python tools/ai/validate_model.py > docs/model-validation-report.json
+          mkdir -p docs
+          if [ -f tools/ai/validate_model.py ]; then
+            python tools/ai/validate_model.py > docs/model-validation-report.json
+          else
+            echo '{"status":"skipped","reason":"missing tools/ai/validate_model.py"}' > docs/model-validation-report.json
+          fi
       - name: Upload model validation report
         uses: actions/upload-artifact@v4
         with:

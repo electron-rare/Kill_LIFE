@@ -1,5 +1,6 @@
 .venv
 # Fichiers et dossiers à ignorer pour Kill_LIFE
+zeroclaw/
 
 # Python
 __pycache__/
