@@ -68,12 +68,16 @@ This keeps `autonomy.workspace_only = true` effective on a per-repo boundary.
   - token sourcing from `gh auth token` at runtime only when `copilot` is selected.
 - `tools/ai/zeroclaw_stack_up.sh`
   - starts local gateway and local follow server,
+  - reuses existing listeners when ports are already bound (prevents duplicate-start failures),
   - generates live follow dashboard at `http://127.0.0.1:8788/`,
   - dashboard includes live polling panels for `/conversations.jsonl` and `/gateway.log` (1s polling),
   - preserves direct raw links: `/conversations.jsonl` and `/gateway.log`,
+  - writes `artifacts/zeroclaw/prometheus.yml` scrape config,
+  - supports local Prometheus startup via `ZEROCLAW_PROM_MODE` (`off`, `auto`, `binary`, `docker`),
   - stores pair token in `artifacts/zeroclaw/pair_token.txt`.
 - `tools/ai/zeroclaw_stack_down.sh`
   - stops local gateway/follow processes,
+  - stops local Prometheus process/container if managed by the stack,
   - confirms logs remain in `artifacts/zeroclaw/`.
 - `tools/ai/zeroclaw_webhook_send.sh`
   - requires `--allow-model-call` before any real webhook send,
@@ -136,6 +140,7 @@ Raw URLs:
 
 - `http://127.0.0.1:8788/conversations.jsonl`
 - `http://127.0.0.1:8788/gateway.log`
+- `http://127.0.0.1:8788/prometheus.yml`
 
 Conversation JSONL line schema (append-only):
 
@@ -153,3 +158,19 @@ Compatibility rule:
 Credit-protection rule:
 
 - without `--allow-model-call`, `zeroclaw_webhook_send.sh` exits non-zero and does not send/write logs.
+
+## 9) Prometheus Integration
+
+Economical default:
+
+- `ZEROCLAW_PROM_MODE=auto` (start only if local `prometheus` binary exists)
+
+Optional modes:
+
+- `ZEROCLAW_PROM_MODE=off` disables Prometheus startup
+- `ZEROCLAW_PROM_MODE=binary` requires local `prometheus` binary
+- `ZEROCLAW_PROM_MODE=docker` runs `prom/prometheus:latest` locally
+
+Default local endpoint when running:
+
+- `http://127.0.0.1:9090/targets`

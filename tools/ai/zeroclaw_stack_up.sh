@@ -7,6 +7,12 @@ ZEROCLAW_BIN="${ZEROCLAW_BIN:-$ROOT_DIR/zeroclaw/target/release/zeroclaw}"
 GATEWAY_HOST="${ZEROCLAW_GATEWAY_HOST:-127.0.0.1}"
 GATEWAY_PORT="${ZEROCLAW_GATEWAY_PORT:-3000}"
 FOLLOW_PORT="${ZEROCLAW_FOLLOW_PORT:-8788}"
+PROM_MODE="${ZEROCLAW_PROM_MODE:-auto}"
+PROM_HOST="${ZEROCLAW_PROM_HOST:-127.0.0.1}"
+PROM_PORT="${ZEROCLAW_PROM_PORT:-9090}"
+PROM_RETENTION="${ZEROCLAW_PROM_RETENTION:-24h}"
+PROM_SCRAPE_INTERVAL="${ZEROCLAW_PROM_SCRAPE_INTERVAL:-15s}"
+PROM_CONTAINER="${ZEROCLAW_PROM_CONTAINER:-zeroclaw-prometheus}"
 
 GW_PID_FILE="$ART_DIR/gateway.pid"
 FW_PID_FILE="$ART_DIR/follow.pid"
@@ -15,10 +21,22 @@ FW_LOG="$ART_DIR/follow.log"
 TOKEN_FILE="$ART_DIR/pair_token.txt"
 CONVO_FILE="$ART_DIR/conversations.jsonl"
 INDEX_FILE="$ART_DIR/index.html"
+PROM_PID_FILE="$ART_DIR/prometheus.pid"
+PROM_LOG="$ART_DIR/prometheus.log"
+PROM_CONFIG_FILE="$ART_DIR/prometheus.yml"
+PROM_DATA_DIR="$ART_DIR/prometheus-data"
+PROM_STATUS="disabled"
+GW_MANAGED_FILE="$ART_DIR/gateway.managed"
+FW_MANAGED_FILE="$ART_DIR/follow.managed"
+PROM_MANAGED_FILE="$ART_DIR/prometheus.managed"
 
 mkdir -p "$ART_DIR"
 touch "$CONVO_FILE"
 touch "$GW_LOG"
+
+if [[ -f "$HOME/.zeroclaw/config.toml" ]]; then
+  chmod 600 "$HOME/.zeroclaw/config.toml" >/dev/null 2>&1 || true
+fi
 
 if [[ ! -x "$ZEROCLAW_BIN" ]]; then
   if command -v zeroclaw >/dev/null 2>&1; then
@@ -38,18 +56,113 @@ is_running() {
   kill -0 "$pid" >/dev/null 2>&1
 }
 
+listener_pid_on_port() {
+  local port="$1"
+  lsof -nP -iTCP:"$port" -sTCP:LISTEN -t 2>/dev/null | head -n 1
+}
+
+write_prometheus_config() {
+  mkdir -p "$PROM_DATA_DIR"
+  cat >"$PROM_CONFIG_FILE" <<EOF
+global:
+  scrape_interval: $PROM_SCRAPE_INTERVAL
+  evaluation_interval: $PROM_SCRAPE_INTERVAL
+
+scrape_configs:
+  - job_name: zeroclaw_gateway
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["$GATEWAY_HOST:$GATEWAY_PORT"]
+EOF
+}
+
+start_prometheus_binary() {
+  if is_running "$PROM_PID_FILE"; then
+    PROM_STATUS="binary(pid $(cat "$PROM_PID_FILE"))"
+    return 0
+  fi
+  if ! command -v prometheus >/dev/null 2>&1; then
+    return 1
+  fi
+  nohup prometheus \
+    --config.file="$PROM_CONFIG_FILE" \
+    --storage.tsdb.path="$PROM_DATA_DIR" \
+    --storage.tsdb.retention.time="$PROM_RETENTION" \
+    --web.listen-address="$PROM_HOST:$PROM_PORT" \
+    >"$PROM_LOG" 2>&1 &
+  echo "$!" >"$PROM_PID_FILE"
+  sleep 0.3
+  if is_running "$PROM_PID_FILE"; then
+    printf '%s\n' "binary" >"$PROM_MANAGED_FILE"
+    PROM_STATUS="binary"
+    return 0
+  fi
+  rm -f "$PROM_PID_FILE"
+  return 1
+}
+
+start_prometheus_docker() {
+  if ! command -v docker >/dev/null 2>&1; then
+    return 1
+  fi
+  if ! docker info >/dev/null 2>&1; then
+    return 1
+  fi
+  local running_id
+  running_id="$(docker ps --filter "name=^/${PROM_CONTAINER}$" --format '{{.ID}}' | head -n 1)"
+  if [[ -n "$running_id" ]]; then
+    printf '%s\n' "docker" >"$PROM_MANAGED_FILE"
+    PROM_STATUS="docker(existing:$PROM_CONTAINER)"
+    return 0
+  fi
+
+  if docker ps -a --filter "name=^/${PROM_CONTAINER}$" --format '{{.ID}}' | grep -q .; then
+    docker rm -f "$PROM_CONTAINER" >/dev/null 2>&1 || true
+  fi
+
+  local container_id
+  container_id="$(docker run -d \
+    --name "$PROM_CONTAINER" \
+    -p "$PROM_HOST:$PROM_PORT:9090" \
+    -v "$PROM_CONFIG_FILE:/etc/prometheus/prometheus.yml:ro" \
+    -v "$PROM_DATA_DIR:/prometheus" \
+    prom/prometheus:latest \
+    --config.file=/etc/prometheus/prometheus.yml \
+    --storage.tsdb.path=/prometheus \
+    --storage.tsdb.retention.time="$PROM_RETENTION" \
+    --web.listen-address=:9090 2>>"$PROM_LOG" || true)"
+  if [[ -n "$container_id" ]]; then
+    printf '%s\n' "docker" >"$PROM_MANAGED_FILE"
+    PROM_STATUS="docker($PROM_CONTAINER)"
+    return 0
+  fi
+  return 1
+}
+
 if is_running "$GW_PID_FILE"; then
   echo "[info] gateway already running (pid $(cat "$GW_PID_FILE"))."
+elif [[ -n "$(listener_pid_on_port "$GATEWAY_PORT")" ]]; then
+  existing_gateway_pid="$(listener_pid_on_port "$GATEWAY_PORT")"
+  echo "[info] gateway port $GATEWAY_PORT already listening (pid $existing_gateway_pid). reusing."
+  printf '%s\n' "$existing_gateway_pid" >"$GW_PID_FILE"
+  rm -f "$GW_MANAGED_FILE"
 else
   nohup "$ZEROCLAW_BIN" gateway --port "$GATEWAY_PORT" --host "$GATEWAY_HOST" >"$GW_LOG" 2>&1 &
   echo "$!" >"$GW_PID_FILE"
+  printf '%s\n' "1" >"$GW_MANAGED_FILE"
 fi
 
 if is_running "$FW_PID_FILE"; then
   echo "[info] follow server already running (pid $(cat "$FW_PID_FILE"))."
+elif [[ -n "$(listener_pid_on_port "$FOLLOW_PORT")" ]]; then
+  existing_follow_pid="$(listener_pid_on_port "$FOLLOW_PORT")"
+  echo "[info] follow port $FOLLOW_PORT already listening (pid $existing_follow_pid). reusing."
+  printf '%s\n' "$existing_follow_pid" >"$FW_PID_FILE"
+  rm -f "$FW_MANAGED_FILE"
 else
   nohup python3 -m http.server "$FOLLOW_PORT" --bind 127.0.0.1 --directory "$ART_DIR" >"$FW_LOG" 2>&1 &
   echo "$!" >"$FW_PID_FILE"
+  printf '%s\n' "1" >"$FW_MANAGED_FILE"
 fi
 
 for _ in $(seq 1 40); do
@@ -74,6 +187,36 @@ print(obj.get("token",""), end="")')"
     chmod 600 "$TOKEN_FILE"
   fi
 fi
+
+write_prometheus_config
+case "$PROM_MODE" in
+  off)
+    rm -f "$PROM_MANAGED_FILE"
+    PROM_STATUS="disabled(mode=off)"
+    ;;
+  auto)
+    rm -f "$PROM_MANAGED_FILE"
+    if ! start_prometheus_binary; then
+      PROM_STATUS="disabled(prometheus missing; use ZEROCLAW_PROM_MODE=docker)"
+    fi
+    ;;
+  binary)
+    rm -f "$PROM_MANAGED_FILE"
+    if ! start_prometheus_binary; then
+      PROM_STATUS="disabled(prometheus binary unavailable)"
+    fi
+    ;;
+  docker)
+    rm -f "$PROM_MANAGED_FILE"
+    if ! start_prometheus_docker; then
+      PROM_STATUS="disabled(docker unavailable)"
+    fi
+    ;;
+  *)
+    rm -f "$PROM_MANAGED_FILE"
+    PROM_STATUS="disabled(invalid mode:$PROM_MODE)"
+    ;;
+esac
 
 cat >"$INDEX_FILE" <<EOF
 <!doctype html>
@@ -177,13 +320,17 @@ cat >"$INDEX_FILE" <<EOF
     <div class="meta">
       Follow URL: <code>http://127.0.0.1:$FOLLOW_PORT/</code> |
       Polling interval: <code>1s</code> |
-      Display cap: <code>500 lines/panel</code>
+      Display cap: <code>500 lines/panel</code> |
+      Prometheus: <code>$PROM_STATUS</code>
     </div>
     <div class="links">
       <a href="/conversations.jsonl">/conversations.jsonl</a>
       <a href="/gateway.log">/gateway.log</a>
+      <a href="/prometheus.yml">/prometheus.yml</a>
       <a href="http://$GATEWAY_HOST:$GATEWAY_PORT/health">/health</a>
       <a href="http://$GATEWAY_HOST:$GATEWAY_PORT/metrics">/metrics</a>
+      <a href="http://$PROM_HOST:$PROM_PORT/targets">prometheus /targets</a>
+      <a href="http://$PROM_HOST:$PROM_PORT/graph">prometheus /graph</a>
     </div>
     <div class="grid">
       <section class="panel">
