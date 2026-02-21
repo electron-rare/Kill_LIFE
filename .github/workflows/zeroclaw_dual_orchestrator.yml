@@ -35,11 +35,15 @@ jobs:
         run: |
           shellcheck tools/ai/zeroclaw_dual_bootstrap.sh
           shellcheck tools/ai/zeroclaw_dual_chat.sh
+          shellcheck tools/ai/zeroclaw_hw_firmware_loop.sh
           shellcheck tools/ai/zeroclaw_stack_up.sh
           shellcheck tools/ai/zeroclaw_stack_down.sh
+          shellcheck tools/ai/zeroclaw_watch_1min.sh
           shellcheck tools/ai/zeroclaw_webhook_send.sh
 
       - name: Verify spec files
         run: |
+          test -s specs/03_plan.md
+          test -s specs/04_tasks.md
           test -s specs/zeroclaw_dual_hw_orchestration_spec.md
           test -s specs/zeroclaw_dual_hw_todo.md

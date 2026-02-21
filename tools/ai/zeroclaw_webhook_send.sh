@@ -17,6 +17,7 @@ ART_DIR="${ZEROCLAW_ART_DIR:-/Users/cils/Documents/Lelectron_rare/Kill_LIFE/arti
 HOST="${ZEROCLAW_GATEWAY_HOST:-127.0.0.1}"
 PORT="${ZEROCLAW_GATEWAY_PORT:-3000}"
 TOKEN_FILE="$ART_DIR/pair_token.txt"
+ZEROCLAW_CONFIG_FILE="${ZEROCLAW_CONFIG_FILE:-$HOME/.zeroclaw/config.toml}"
 CONVO_FILE="$ART_DIR/conversations.jsonl"
 BUDGET_FILE="$ART_DIR/webhook_budget.json"
 MAX_CALLS_PER_HOUR="${ZEROCLAW_WEBHOOK_MAX_CALLS_PER_HOUR:-40}"
@@ -92,6 +93,34 @@ fi
 TOKEN="${ZEROCLAW_BEARER:-}"
 if [[ -z "$TOKEN" && -f "$TOKEN_FILE" ]]; then
   TOKEN="$(cat "$TOKEN_FILE")"
+fi
+if [[ -z "$TOKEN" && -f "$ZEROCLAW_CONFIG_FILE" ]]; then
+  TOKEN="$(python3 - "$ZEROCLAW_CONFIG_FILE" <<'PY'
+import sys
+from pathlib import Path
+
+cfg = Path(sys.argv[1])
+try:
+    import tomllib
+except Exception:
+    print("", end="")
+    raise SystemExit(0)
+
+try:
+    obj = tomllib.loads(cfg.read_text(encoding="utf-8"))
+except Exception:
+    print("", end="")
+    raise SystemExit(0)
+
+tokens = obj.get("gateway", {}).get("paired_tokens", [])
+if isinstance(tokens, list) and tokens:
+    print(str(tokens[0]), end="")
+PY
+)"
+  if [[ -n "$TOKEN" ]]; then
+    printf '%s\n' "$TOKEN" >"$TOKEN_FILE"
+    chmod 600 "$TOKEN_FILE"
+  fi
 fi
 
 mkdir -p "$ART_DIR"

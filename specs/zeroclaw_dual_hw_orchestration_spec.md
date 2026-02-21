@@ -9,7 +9,7 @@ Run one orchestration layer that can:
 - converse against `RTC_BL_PHONE` and `le-mystere-professeur-zacus` independently,
 - keep workspace boundaries strict per repo,
 - run low-cost autonomous loops with guarded command allowlists,
-- stay ready for connected hardware checks before any upload/flash action.
+- enforce upload/flash/serial-monitor loops by default on connected hardware.
 
 ## 2) Scope
 
@@ -18,6 +18,7 @@ In scope:
 - local ZeroClaw profile bootstrap for both repos,
 - deterministic workspace switch (`rtc` vs `zacus`) from one CLI entrypoint,
 - hardware discovery/introspection preflight,
+- forced-by-default firmware loop (build + upload + monitor) per repo target,
 - lightweight CI validation for orchestration scripts/spec.
 
 Out of scope:
@@ -76,6 +77,7 @@ This keeps `autonomy.workspace_only = true` effective on a per-repo boundary.
   - generates live follow dashboard at `http://127.0.0.1:8788/`,
   - dashboard includes live polling panels for `/conversations.jsonl` and `/gateway.log` (1s polling),
   - preserves direct raw links: `/conversations.jsonl` and `/gateway.log`,
+  - starts `tools/ai/zeroclaw_watch_1min.sh` watcher and exposes `/realtime_1min.log`,
   - writes `artifacts/zeroclaw/prometheus.yml` scrape config,
   - supports local Prometheus startup via `ZEROCLAW_PROM_MODE` (`off`, `auto`, `binary`, `docker`) with `auto` fallback `binary -> docker`,
   - on macOS, auto-attempts Docker Desktop startup before Prometheus docker mode,
@@ -83,7 +85,19 @@ This keeps `autonomy.workspace_only = true` effective on a per-repo boundary.
 - `tools/ai/zeroclaw_stack_down.sh`
   - stops local gateway/follow processes,
   - stops local Prometheus process/container if managed by the stack,
+  - stops `tools/ai/zeroclaw_watch_1min.sh` watcher process,
   - confirms logs remain in `artifacts/zeroclaw/`.
+- `tools/ai/zeroclaw_watch_1min.sh`
+  - supports `start|stop|status|run|once`,
+  - appends one status line every 60s by default to `artifacts/zeroclaw/realtime_1min.log`,
+  - line format:
+    - `<ts> | paired=<...> | uptime=<...> | prom=<...> | convo=<last line> | gateway=<last line>`
+- `tools/ai/zeroclaw_hw_firmware_loop.sh`
+  - target switch `rtc|zacus`,
+  - validates `platformio.ini` env exists before running,
+  - forces `build -> upload -> serial monitor` by default,
+  - auto-detects serial port when not specified,
+  - monitor timeout default 60s.
 - `tools/ai/zeroclaw_webhook_send.sh`
   - sends webhook by default (no mandatory allow flag),
   - keeps `--allow-model-call` as backward-compatible legacy option,
@@ -148,6 +162,7 @@ Raw URLs:
 
 - `http://127.0.0.1:8788/conversations.jsonl`
 - `http://127.0.0.1:8788/gateway.log`
+- `http://127.0.0.1:8788/realtime_1min.log`
 - `http://127.0.0.1:8788/prometheus.yml`
 
 Conversation JSONL line schema (append-only):
@@ -203,3 +218,18 @@ Suggested contents:
 Behavior:
 
 - `zeroclaw_dual_chat.sh`, `zeroclaw_stack_up.sh`, and `zeroclaw_webhook_send.sh` auto-load this file if present.
+
+## 11) Firmware Loop Defaults (local hardware)
+
+Default execution policy:
+
+- with hardware connected, upload/flash and serial monitor are forced by default.
+- if no serial port is detected, loop fails fast (non-zero) instead of silently skipping upload.
+- only declared PlatformIO envs are allowed; no `-e native` or `-e test` shortcuts.
+
+Default commands:
+
+- RTC:
+  - `tools/ai/zeroclaw_hw_firmware_loop.sh rtc`
+- Zacus:
+  - `tools/ai/zeroclaw_hw_firmware_loop.sh zacus`

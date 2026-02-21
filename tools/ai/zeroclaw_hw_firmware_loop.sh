@@ -112,11 +112,32 @@ try:
   arr=json.loads(raw) if raw else []
 except Exception:
   arr=[]
+best=None
+best_score=-10**9
 for d in arr:
-  p=d.get("port")
-  if p:
-    print(p)
-    raise SystemExit(0)
+  p=str(d.get("port",""))
+  desc=str(d.get("description",""))
+  hwid=str(d.get("hwid",""))
+  if not p:
+    continue
+  score=0
+  low=f\"{p} {desc} {hwid}\".lower()
+  if hwid and hwid.lower() != \"n/a\":
+    score += 50
+  if \"usb\" in low:
+    score += 30
+  if \"cp210\" in low or \"ch340\" in low or \"uart\" in low:
+    score += 20
+  if \"bluetooth\" in low:
+    score -= 100
+  if \"/cu.urt\" in p.lower() and hwid.lower() == \"n/a\":
+    score -= 120
+  if score > best_score:
+    best_score=score
+    best=p
+if best:
+  print(best)
+  raise SystemExit(0)
 raise SystemExit(1)' || true)"
 fi
 

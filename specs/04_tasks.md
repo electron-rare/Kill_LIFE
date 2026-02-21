@@ -27,9 +27,10 @@ Format:
   - AC: commande `prometheus --version` disponible.
   - Evidence: sortie shell `prometheus, version ...`
 
-- [ ] T-005 - Stabiliser pairing bearer auto
+- [x] T-005 - Stabiliser pairing bearer auto
   - AC: `artifacts/zeroclaw/pair_token.txt` utilisable pour webhook sans override manuel.
   - Evidence: `tools/ai/zeroclaw_webhook_send.sh --repo-hint rtc "pairing check"`
+  - Status: `2026-02-21` done (401 resolved; gateway now accepts bearer, downstream model may still return HTTP 500).
 
 ## Boucle hardware RTC
 
@@ -37,13 +38,15 @@ Format:
   - AC: au moins un port detecte pour carte RTC.
   - Evidence: `tools/ai/zeroclaw_dual_chat.sh rtc --hardware`
 
-- [ ] T-102 - Build firmware RTC
+- [x] T-102 - Build firmware RTC
   - AC: `pio run -e esp32dev` termine sans erreur bloquante.
   - Evidence: logs build RTC.
+  - Status: `2026-02-21` done.
 
 - [ ] T-103 - Upload + monitor RTC (forced default)
   - AC: `pio run -e esp32dev -t upload` puis monitor 60s executes.
   - Evidence: logs upload/monitor RTC.
+  - Blocker: `esptool` connect timeout (`No serial data received`) on selected USB serial port.
 
 - [ ] T-104 - Trace webhook RTC
   - AC: une ligne JSONL avec `repo_hint=rtc` apparait.
@@ -55,13 +58,15 @@ Format:
   - AC: au moins un port detecte pour carte Zacus.
   - Evidence: `tools/ai/zeroclaw_dual_chat.sh zacus --hardware`
 
-- [ ] T-202 - Build firmware Zacus
+- [x] T-202 - Build firmware Zacus
   - AC: `pio run -e esp32dev` (dans `hardware/firmware`) termine sans erreur bloquante.
   - Evidence: logs build Zacus.
+  - Status: `2026-02-21` done.
 
 - [ ] T-203 - Upload + monitor Zacus (forced default)
   - AC: `pio run -e esp32dev -t upload` puis monitor 60s executes.
   - Evidence: logs upload/monitor Zacus.
+  - Blocker: `esptool` connect timeout (`No serial data received`) on selected USB serial port.
 
 - [ ] T-204 - Trace webhook Zacus
   - AC: une ligne JSONL avec `repo_hint=zacus` apparait.
@@ -73,9 +78,10 @@ Format:
   - AC: `3000/health`, `8788`, `9090/-/ready` tous OK.
   - Evidence: captures `curl`.
 
-- [ ] T-302 - Dry-run webhook budget
+- [x] T-302 - Dry-run webhook budget
   - AC: `--dry-run` passe sans ecriture execution JSONL.
   - Evidence: sortie script + diff JSONL.
+  - Status: `2026-02-21` done.
 
 - [ ] T-303 - Quota call limiter
   - AC: depassement quota bloque avec code non-zero.

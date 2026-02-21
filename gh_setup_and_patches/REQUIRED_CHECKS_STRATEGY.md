@@ -36,7 +36,7 @@ Then commit.
 ## Verify required check contexts
 
 After your first PR, open **PR → Checks** and note the exact names, e.g.
-- `Firmware CI / pio (native)`
+- `Firmware CI / pio`
 - `Scope Guard / guard`
 
 Use those exact names in branch protection (the provided `setup_repo.sh` uses the defaults from the template).
