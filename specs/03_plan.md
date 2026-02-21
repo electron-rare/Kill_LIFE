@@ -29,7 +29,8 @@ avec:
 - Local only (loopback `127.0.0.1`), pas d'exposition publique.
 - Secrets hors git (`~/.zeroclaw/env`, mode `600`).
 - Cout modele borne par quotas webhook locaux.
-- Pas de flash/upload firmware sans detection hardware prealable.
+- Flash/upload/serial monitor forces par defaut apres detection hardware valide.
+- Jamais de commande `pio` sur un env non declare dans `platformio.ini`.
 
 ## Plan par phases
 
@@ -73,8 +74,10 @@ Actions:
 2. Hardware discover: `tools/ai/zeroclaw_dual_chat.sh rtc --hardware`
 3. Build/test firmware repo RTC:
    - `cd /Users/cils/Documents/Lelectron_rare/RTC_BL_PHONE`
-   - `pio run`
-   - `pio test -e native` (si environnement present)
+   - `pio run -e esp32dev`
+   - `pio run -e esp32dev -t upload`
+   - `pio device monitor -p <port> -b 115200` (capture 60s)
+   - ou commande unique: `tools/ai/zeroclaw_hw_firmware_loop.sh rtc`
 4. Trace webhook:
    - `tools/ai/zeroclaw_webhook_send.sh --repo-hint rtc "rtc loop status ..."`
 
@@ -91,8 +94,11 @@ Actions:
 2. Hardware discover: `tools/ai/zeroclaw_dual_chat.sh zacus --hardware`
 3. Build/test firmware repo Zacus:
    - `cd /Users/cils/Documents/Lelectron_rare/le-mystere-professeur-zacus/hardware/firmware`
-   - `pio run`
-   - `pio test -e native` (si environnement present)
+   - `pio run -e esp32dev`
+   - `pio run -e esp32dev -t upload`
+   - `pio device monitor -p <port> -b 115200` (capture 60s)
+   - ou commande unique: `tools/ai/zeroclaw_hw_firmware_loop.sh zacus`
+   - statut tests: `blocked` tant que dossier `test/` absent
 4. Trace webhook:
    - `tools/ai/zeroclaw_webhook_send.sh --repo-hint zacus "zacus loop status ..."`
 
@@ -122,7 +128,7 @@ Sortie attendue:
 
 1. Preflight auth + hardware.
 2. Stack up + smoke endpoints.
-3. RTC loop (dev/test + webhook trace).
-4. Zacus loop (dev/test + webhook trace).
+3. RTC loop (build + upload + monitor + webhook trace).
+4. Zacus loop (build + upload + monitor + webhook trace).
 5. Review logs + correction ciblée.
 6. Commit/PR petit lot.
