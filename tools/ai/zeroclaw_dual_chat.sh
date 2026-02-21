@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+load_local_env() {
+  local env_file="${ZEROCLAW_ENV_FILE:-$HOME/.zeroclaw/env}"
+  [[ -f "$env_file" ]] || return 0
+  chmod 600 "$env_file" >/dev/null 2>&1 || true
+  set -a
+  # shellcheck disable=SC1090
+  source "$env_file"
+  set +a
+}
+
+load_local_env
+
 ZEROCLAW_BIN="${ZEROCLAW_BIN:-/Users/cils/Documents/Lelectron_rare/Kill_LIFE/zeroclaw/target/release/zeroclaw}"
 RTC_REPO="/Users/cils/Documents/Lelectron_rare/RTC_BL_PHONE"
 ZACUS_REPO="/Users/cils/Documents/Lelectron_rare/le-mystere-professeur-zacus"

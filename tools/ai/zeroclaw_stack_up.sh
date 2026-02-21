@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+load_local_env() {
+  local env_file="${ZEROCLAW_ENV_FILE:-$HOME/.zeroclaw/env}"
+  [[ -f "$env_file" ]] || return 0
+  chmod 600 "$env_file" >/dev/null 2>&1 || true
+  set -a
+  # shellcheck disable=SC1090
+  source "$env_file"
+  set +a
+}
+
+load_local_env
+
 ROOT_DIR="/Users/cils/Documents/Lelectron_rare/Kill_LIFE"
 ART_DIR="${ZEROCLAW_ART_DIR:-$ROOT_DIR/artifacts/zeroclaw}"
 ZEROCLAW_BIN="${ZEROCLAW_BIN:-$ROOT_DIR/zeroclaw/target/release/zeroclaw}"
@@ -13,6 +25,8 @@ PROM_PORT="${ZEROCLAW_PROM_PORT:-9090}"
 PROM_RETENTION="${ZEROCLAW_PROM_RETENTION:-24h}"
 PROM_SCRAPE_INTERVAL="${ZEROCLAW_PROM_SCRAPE_INTERVAL:-15s}"
 PROM_CONTAINER="${ZEROCLAW_PROM_CONTAINER:-zeroclaw-prometheus}"
+DOCKER_WAIT_SECS="${ZEROCLAW_DOCKER_WAIT_SECS:-90}"
+PROM_READY_WAIT_SECS="${ZEROCLAW_PROM_READY_WAIT_SECS:-15}"
 
 GW_PID_FILE="$ART_DIR/gateway.pid"
 FW_PID_FILE="$ART_DIR/follow.pid"
@@ -61,6 +75,41 @@ listener_pid_on_port() {
   lsof -nP -iTCP:"$port" -sTCP:LISTEN -t 2>/dev/null | head -n 1
 }
 
+ensure_docker_daemon() {
+  if ! command -v docker >/dev/null 2>&1; then
+    return 1
+  fi
+  if docker info >/dev/null 2>&1; then
+    return 0
+  fi
+
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    open -ga Docker >/dev/null 2>&1 || true
+  fi
+
+  local waited=0
+  while (( waited < DOCKER_WAIT_SECS )); do
+    if docker info >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 2
+    waited=$((waited + 2))
+  done
+  return 1
+}
+
+wait_for_prometheus_ready() {
+  local waited=0
+  while (( waited < PROM_READY_WAIT_SECS )); do
+    if curl -fsS "http://$PROM_HOST:$PROM_PORT/-/ready" >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 1
+    waited=$((waited + 1))
+  done
+  return 1
+}
+
 write_prometheus_config() {
   mkdir -p "$PROM_DATA_DIR"
   cat >"$PROM_CONFIG_FILE" <<EOF
@@ -78,7 +127,7 @@ EOF
 
 start_prometheus_binary() {
   if is_running "$PROM_PID_FILE"; then
-    PROM_STATUS="binary(pid $(cat "$PROM_PID_FILE"))"
+    PROM_STATUS="binary(existing pid $(cat "$PROM_PID_FILE"))"
     return 0
   fi
   if ! command -v prometheus >/dev/null 2>&1; then
@@ -94,7 +143,11 @@ start_prometheus_binary() {
   sleep 0.3
   if is_running "$PROM_PID_FILE"; then
     printf '%s\n' "binary" >"$PROM_MANAGED_FILE"
-    PROM_STATUS="binary"
+    if wait_for_prometheus_ready; then
+      PROM_STATUS="binary(ready)"
+    else
+      PROM_STATUS="binary(starting)"
+    fi
     return 0
   fi
   rm -f "$PROM_PID_FILE"
@@ -105,14 +158,18 @@ start_prometheus_docker() {
   if ! command -v docker >/dev/null 2>&1; then
     return 1
   fi
-  if ! docker info >/dev/null 2>&1; then
+  if ! ensure_docker_daemon; then
     return 1
   fi
   local running_id
   running_id="$(docker ps --filter "name=^/${PROM_CONTAINER}$" --format '{{.ID}}' | head -n 1)"
   if [[ -n "$running_id" ]]; then
     printf '%s\n' "docker" >"$PROM_MANAGED_FILE"
-    PROM_STATUS="docker(existing:$PROM_CONTAINER)"
+    if wait_for_prometheus_ready; then
+      PROM_STATUS="docker(existing:$PROM_CONTAINER,ready)"
+    else
+      PROM_STATUS="docker(existing:$PROM_CONTAINER,starting)"
+    fi
     return 0
   fi
 
@@ -133,10 +190,98 @@ start_prometheus_docker() {
     --web.listen-address=:9090 2>>"$PROM_LOG" || true)"
   if [[ -n "$container_id" ]]; then
     printf '%s\n' "docker" >"$PROM_MANAGED_FILE"
-    PROM_STATUS="docker($PROM_CONTAINER)"
+    if wait_for_prometheus_ready; then
+      PROM_STATUS="docker($PROM_CONTAINER,ready)"
+    else
+      PROM_STATUS="docker($PROM_CONTAINER,starting)"
+    fi
     return 0
   fi
   return 1
+}
+
+gateway_is_paired() {
+  curl -fsS "http://$GATEWAY_HOST:$GATEWAY_PORT/health" 2>/dev/null | python3 -c 'import json,sys
+raw=sys.stdin.read().strip()
+try:
+  obj=json.loads(raw) if raw else {}
+except Exception:
+  sys.exit(1)
+sys.exit(0 if obj.get("paired") else 1)' >/dev/null 2>&1
+}
+
+read_pair_token() {
+  [[ -f "$TOKEN_FILE" ]] || return 1
+  cat "$TOKEN_FILE" 2>/dev/null
+}
+
+token_is_usable() {
+  local token="${1:-}"
+  [[ -n "$token" ]] || return 1
+  local http_status
+  http_status="$(curl -sS -o /dev/null -w "%{http_code}" -X POST "http://$GATEWAY_HOST:$GATEWAY_PORT/webhook" \
+    -H "Authorization: Bearer $token" \
+    -H "Content-Type: application/json" \
+    -d '{}' || true)"
+
+  # 400/422 typically means auth passed but payload was intentionally malformed.
+  if [[ "$http_status" == "401" || "$http_status" == "403" || "$http_status" == "000" ]]; then
+    return 1
+  fi
+  return 0
+}
+
+extract_pair_code() {
+  grep -Eo 'X-Pairing-Code: [0-9]{6}' "$GW_LOG" 2>/dev/null | tail -1 | awk '{print $2}' || true
+}
+
+write_pair_token_from_code() {
+  local pair_code="$1"
+  local pair_json token
+  pair_json="$(curl -sS -X POST "http://$GATEWAY_HOST:$GATEWAY_PORT/pair" -H "X-Pairing-Code: $pair_code" || true)"
+  token="$(printf '%s' "$pair_json" | python3 -c 'import json,sys
+raw=sys.stdin.read().strip()
+try:
+  obj=json.loads(raw) if raw else {}
+except Exception:
+  obj={}
+print(obj.get("token",""), end="")')"
+  if [[ -z "$token" ]]; then
+    return 1
+  fi
+  printf '%s\n' "$token" >"$TOKEN_FILE"
+  chmod 600 "$TOKEN_FILE"
+  return 0
+}
+
+ensure_gateway_pairing() {
+  local current_token=""
+  current_token="$(read_pair_token || true)"
+  if gateway_is_paired && token_is_usable "$current_token"; then
+    return 0
+  fi
+
+  local pair_code
+  pair_code="$(extract_pair_code)"
+  if [[ -n "$pair_code" ]]; then
+    write_pair_token_from_code "$pair_code" || true
+  fi
+
+  current_token="$(read_pair_token || true)"
+  if gateway_is_paired && token_is_usable "$current_token"; then
+    return 0
+  fi
+
+  sleep 0.5
+  pair_code="$(extract_pair_code)"
+  if [[ -n "$pair_code" ]]; then
+    write_pair_token_from_code "$pair_code" || true
+  fi
+
+  current_token="$(read_pair_token || true)"
+  if ! token_is_usable "$current_token"; then
+    rm -f "$TOKEN_FILE"
+  fi
 }
 
 if is_running "$GW_PID_FILE"; then
@@ -172,21 +317,7 @@ for _ in $(seq 1 40); do
   sleep 0.25
 done
 
-PAIR_CODE="$(grep -Eo 'X-Pairing-Code: [0-9]{6}' "$GW_LOG" 2>/dev/null | tail -1 | awk '{print $2}' || true)"
-if [[ -n "$PAIR_CODE" ]]; then
-  PAIR_JSON="$(curl -sS -X POST "http://$GATEWAY_HOST:$GATEWAY_PORT/pair" -H "X-Pairing-Code: $PAIR_CODE" || true)"
-  TOKEN="$(printf '%s' "$PAIR_JSON" | python3 -c 'import json,sys
-raw=sys.stdin.read().strip()
-try:
-  obj=json.loads(raw) if raw else {}
-except Exception:
-  obj={}
-print(obj.get("token",""), end="")')"
-  if [[ -n "$TOKEN" ]]; then
-    printf '%s\n' "$TOKEN" >"$TOKEN_FILE"
-    chmod 600 "$TOKEN_FILE"
-  fi
-fi
+ensure_gateway_pairing
 
 write_prometheus_config
 case "$PROM_MODE" in
@@ -196,8 +327,12 @@ case "$PROM_MODE" in
     ;;
   auto)
     rm -f "$PROM_MANAGED_FILE"
-    if ! start_prometheus_binary; then
-      PROM_STATUS="disabled(prometheus missing; use ZEROCLAW_PROM_MODE=docker)"
+    if start_prometheus_binary; then
+      :
+    elif start_prometheus_docker; then
+      :
+    else
+      PROM_STATUS="disabled(no prometheus backend available)"
     fi
     ;;
   binary)
@@ -209,7 +344,7 @@ case "$PROM_MODE" in
   docker)
     rm -f "$PROM_MANAGED_FILE"
     if ! start_prometheus_docker; then
-      PROM_STATUS="disabled(docker unavailable)"
+      PROM_STATUS="disabled(docker unavailable or daemon not ready)"
     fi
     ;;
   *)
@@ -443,5 +578,13 @@ EOF
 
 echo "Gateway: http://$GATEWAY_HOST:$GATEWAY_PORT/health"
 echo "Follow : http://127.0.0.1:$FOLLOW_PORT/"
+echo "Prom   : http://$PROM_HOST:$PROM_PORT/targets ($PROM_STATUS)"
 echo "Logs   : $GW_LOG"
 echo "Token  : $TOKEN_FILE"
+if [[ ! -s "$TOKEN_FILE" ]]; then
+  if gateway_is_paired; then
+    echo "[warn] gateway is paired but local bearer token is unavailable; webhook_send may require ZEROCLAW_BEARER or gateway re-pair."
+  else
+    echo "[warn] pair token not found. If gateway is waiting for pairing, restart and pair again."
+  fi
+fi
