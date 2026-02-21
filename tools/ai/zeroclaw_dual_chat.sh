@@ -11,10 +11,11 @@ Usage:
   $(basename "$0") <rtc|zacus|path> -m "message"
   $(basename "$0") <rtc|zacus|path> --interactive
   $(basename "$0") <rtc|zacus|path> --hardware
+  $(basename "$0") <rtc|zacus|path> --provider-check
 USAGE
 }
 
-if [[ $# -lt 2 ]]; then
+if [[ $# -lt 1 ]]; then
   usage
   exit 1
 fi
@@ -53,7 +54,7 @@ resolve_provider() {
     return 0
   fi
 
-  if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
+  if [[ "${ZEROCLAW_SKIP_COPILOT_CHECK:-0}" != "1" ]] && command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
     if gh api /user/copilot/billing --silent >/dev/null 2>&1; then
       local gh_token
       gh_token="$(gh auth token)"
@@ -63,7 +64,12 @@ resolve_provider() {
     fi
   fi
 
-  if "$ZEROCLAW_BIN" auth list 2>/dev/null | rg -q "openai-codex:"; then
+  if env -u ZEROCLAW_WORKSPACE "$ZEROCLAW_BIN" auth status 2>/dev/null | rg -q "openai-codex:"; then
+    echo "openai-codex"
+    return 0
+  fi
+
+  if env -u ZEROCLAW_WORKSPACE "$ZEROCLAW_BIN" auth list 2>/dev/null | rg -q "openai-codex:"; then
     echo "openai-codex"
     return 0
   fi
@@ -83,9 +89,14 @@ ERR
   return 1
 }
 
-export ZEROCLAW_WORKSPACE="$workspace"
 provider="$(resolve_provider)"
 echo "[zeroclaw-dual-chat] workspace=$workspace provider=$provider"
+
+if [[ "${1:-}" == "--provider-check" ]]; then
+  exit 0
+fi
+
+export ZEROCLAW_WORKSPACE="$workspace"
 
 if [[ "${1:-}" == "--interactive" ]]; then
   exec "$ZEROCLAW_BIN" agent -p "$provider"

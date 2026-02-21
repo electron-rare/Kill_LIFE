@@ -66,6 +66,14 @@ This keeps `autonomy.workspace_only = true` effective on a per-repo boundary.
   - message mode (`-m`) or interactive mode,
   - provider auto-fallback (`copilot` -> `openai-codex` -> `openrouter`),
   - token sourcing from `gh auth token` at runtime only when `copilot` is selected.
+- `tools/ai/zeroclaw_stack_up.sh`
+  - starts local gateway and local follow server,
+  - generates local follow page at `http://127.0.0.1:8788/`,
+  - stores pair token in `artifacts/zeroclaw/pair_token.txt`.
+- `tools/ai/zeroclaw_stack_down.sh`
+  - stops local gateway/follow processes.
+- `tools/ai/zeroclaw_webhook_send.sh`
+  - sends one webhook message and appends raw request/response trace to `artifacts/zeroclaw/conversations.jsonl`.
 
 ### 4.3 Provider/cost strategy
 
