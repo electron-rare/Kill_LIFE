@@ -39,9 +39,9 @@ ALLOWLIST = {
     "ai:spec": ["specs/", "docs/", "README.md"],
     "ai:plan": ["specs/", "docs/", "README.md"],
     "ai:tasks": ["specs/features/", "docs/", "README.md"],
-    "ai:impl": ["firmware/", "tools/", "docs/auto_generated/", "README.md"],
-    "ai:qa": ["firmware/test/", "tools/gates/", "docs/", "README.md"],
-    "ai:docs": ["docs/", "README.md", "specs/"],
+    "ai:impl": ["firmware/", "tools/hw/", "tools/ai/", "tools/compliance/", "docs/auto_generated/", "README.md"],
+    "ai:qa": ["firmware/test/", "docs/", "README.md"],
+    "ai:docs": ["docs/", "README.md"],
 }
 
 # Files or directories that must never be modified by AI automations. If a

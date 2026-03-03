@@ -8,19 +8,16 @@ compatible with the repo's `specs/<name>/` convention.
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 
 
 def sanitize(name: str) -> str:
     name = name.strip().lower()
-    out = []
-    for ch in name:
-        if ch.isalnum() or ch in ("-", "_"):
-            out.append(ch)
-        elif ch.isspace():
-            out.append("-")
-    s = "".join(out).strip("-")
-    return s or "spec"
+    # Keep only alphanumeric, hyphens, underscores; replace spaces with hyphens
+    name = re.sub(r"[^\w\s-]", "", name)
+    name = re.sub(r"[\s-]+", "-", name).strip("-")
+    return name or "spec"
 
 
 def main() -> int:

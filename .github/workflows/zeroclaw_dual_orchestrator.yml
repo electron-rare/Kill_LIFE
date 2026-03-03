@@ -19,6 +19,9 @@ concurrency:
   group: zeroclaw-dual-orchestrator-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   lint-and-contract:
     runs-on: ubuntu-latest

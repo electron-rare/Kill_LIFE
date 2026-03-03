@@ -6,13 +6,21 @@ from pathlib import Path
 BASE = Path(__file__).resolve().parents[2]
 
 def read(p: str) -> str:
-  return (BASE / p).read_text(encoding="utf-8")
+  fp = BASE / p
+  if not fp.exists():
+    print(f"error: required file not found: {fp}", file=sys.stderr)
+    raise SystemExit(2)
+  return fp.read_text(encoding="utf-8", errors="replace")
 
 def main():
   if len(sys.argv) != 3:
     print("usage: compose_codex_prompt.py <issue_txt> <out_prompt_md>", file=sys.stderr)
     return 2
-  issue = Path(sys.argv[1]).read_text(encoding="utf-8")
+  issue_path = Path(sys.argv[1])
+  if not issue_path.exists():
+    print(f"error: issue file not found: {issue_path}", file=sys.stderr)
+    return 2
+  issue = issue_path.read_text(encoding="utf-8", errors="replace")
   base = read(".github/codex/prompts/issue_to_pr_base.md")
   out = (
     base

@@ -85,7 +85,10 @@ def need_sch_api():
 
 def backup_file(path: Path, suffix: str = ".bak") -> Path:
     dst = path.with_suffix(path.suffix + suffix)
-    shutil.copy2(path, dst)
+    try:
+        shutil.copy2(path, dst)
+    except OSError as exc:
+        raise RuntimeError(f"backup failed for {path}: {exc}") from exc
     return dst
 
 
@@ -388,7 +391,7 @@ def cmd_apply_footprints(args) -> int:
         ref, lib_id, value, footprint, _ = _component_get(c)
         new_fp: Optional[str] = None
         for lib_prefix, fp in mapping:
-            if lib_id == lib_prefix or lib_id.startswith(lib_prefix):
+            if lib_id == lib_prefix or lib_id.startswith(lib_prefix + ":"):
                 new_fp = fp
                 break
         if not new_fp:

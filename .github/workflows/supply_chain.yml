@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   supply_chain:
     runs-on: ubuntu-latest
@@ -23,9 +26,11 @@ jobs:
             echo '{"status":"skipped","reason":"slsa-generator not installed"}' > docs/supplychain-attestation.json
           fi
       - name: Sign artefacts (cosign)
+        env:
+          COSIGN_KEY: ${{ secrets.SIGNING_KEY }}
         run: |
-          if command -v cosign >/dev/null 2>&1 && [ -n "${{ secrets.SIGNING_KEY }}" ]; then
-            cosign sign --key "${{ secrets.SIGNING_KEY }}" docs/supplychain-attestation.json
+          if command -v cosign >/dev/null 2>&1 && [ -n "$COSIGN_KEY" ]; then
+            cosign sign --key env://COSIGN_KEY docs/supplychain-attestation.json 2>/dev/null
           else
             echo "Skipping cosign signing (missing cosign or SIGNING_KEY)"
           fi
