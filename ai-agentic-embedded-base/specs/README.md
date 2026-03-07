@@ -12,6 +12,7 @@ Le fichier `constraints.yaml` est la **source de vérité** des contraintes non-
 
 Specs complémentaires:
 
+- `kicad_mcp_scope_spec.md`: perimetre fonctionnel, hors scope et criteres d'acceptation du MCP KiCad supporte.
 - `zeroclaw_dual_hw_orchestration_spec.md`: architecture d'orchestration ZeroClaw multi-repo + double matériel.
 - `zeroclaw_dual_hw_todo.md`: backlog opérationnel court terme pour autonomie contrôlée.
 

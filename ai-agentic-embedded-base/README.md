@@ -10,9 +10,9 @@ Repo “de base” qui combine le meilleur de :
 
 ## TL;DR
 - Écris/itère la spec dans `specs/`
-- (optionnel) Génère un squelette de spec depuis `.specify/` : `python tools/ai/specify_init.py --name <feature>`
+- (optionnel) Génère un squelette de spec depuis `.specify/` : `python3 tools/ai/specify_init.py --name <feature>`
 - Applique les standards dans `standards/`
-- Exécute le cockpit : `python tools/cockpit/cockpit.py menu`
+- Exécute le cockpit : `python3 tools/cockpit/cockpit.py menu`
 - Pour l’automatisation GitHub : label `ai:codex` → Issue → PR
 
 ## Structure
@@ -37,7 +37,7 @@ pio run -e esp32s3_arduino
 pio test -e native
 
 # cockpit
-python tools/cockpit/cockpit.py menu
+python3 tools/cockpit/cockpit.py menu
 ```
 
 ## Conventions de sortie
@@ -46,8 +46,8 @@ Tous les scripts écrivent sous `artifacts/<domain>/<timestamp>/` (logs + export
 
 ## V4 — KiCad agentique (bulk + previews + MCP)
 - `bash tools/hw/hw_gate.sh hardware/kicad` : exports SVG + ERC/DRC JSON + BOM/netlist
-- `python tools/watch/watch_hw.py` : watch mode (re-run gate on save)
-- `docs/MCP_SETUP.md` : configuration MCP (kicad-sch-mcp) citeturn0search9
+- `python3 tools/watch/watch_hw.py` : watch mode (re-run gate on save)
+- `docs/MCP_SETUP.md` : configuration MCP (`kicad-sch-api` / `kicad-sch-mcp`) citeturn0search9
 
 ## Compliance (2 options)
 - **Prototype interne** : profil `prototype` (pas de CE/RED)
@@ -55,10 +55,9 @@ Tous les scripts écrivent sous `artifacts/<domain>/<timestamp>/` (logs + export
 
 Changer de profil :
 ```bash
-python tools/compliance/use_profile.py prototype
-python tools/compliance/use_profile.py iot_wifi_eu
-python tools/compliance/validate.py
+python3 tools/compliance/use_profile.py prototype
+python3 tools/compliance/use_profile.py iot_wifi_eu
+python3 tools/compliance/validate.py
 ```
 
 Docs : `docs/COMPLIANCE.md`
-

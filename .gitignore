@@ -83,6 +83,7 @@ node_modules/
 # Docker
 *.pid
 docker-compose.override.yml
+.cad-home/
 
 # Autres outils CI/CD
 coverage/
