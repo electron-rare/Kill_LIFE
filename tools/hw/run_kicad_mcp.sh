@@ -7,10 +7,11 @@ VERBOSE=0
 DOCTOR=0
 RUNTIME="${KICAD_MCP_RUNTIME:-auto}"
 FORCE_BUILD=0
+REQUESTED_RUNTIME="$RUNTIME"
 
 usage() {
   cat <<'EOF'
-Usage: tools/hw/run_kicad_mcp.sh [--doctor] [--verbose] [--debug] [--profile v1|v2] [--rebuild] [-- <server args>]
+Usage: tools/hw/run_kicad_mcp.sh [--doctor] [--verbose] [--debug] [--rebuild] [-- <server args>]
 
 Launch the supported KiCad MCP server from the companion `mascarade` repo.
 
@@ -18,7 +19,6 @@ Options:
   --doctor    Print resolved paths and exit
   --verbose   Print resolved command before exec
   --debug     Enable verbose launcher + server logs
-  --profile   Select MCP profile (`v1` default, `v2` for extended tools)
   --rebuild   Force a rebuild of the container image before launch
   -h, --help  Show this help
 
@@ -29,7 +29,6 @@ Environment:
   NODE_BIN             Override the Node executable (default: node)
   KICAD_MCP_DATA_DIR   Override the writable data directory used by the server
   KICAD_MCP_RUNTIME    host | container | auto (default: auto)
-  KICAD_MCP_PROFILE    v1 | v2 (default: v1)
   KICAD_MCP_LOG_LEVEL  error | warn | info | debug (default: warn)
 EOF
 }
@@ -127,18 +126,22 @@ while [ "$#" -gt 0 ]; do
     --runtime)
       [ "$#" -ge 2 ] || die "--runtime requires a value"
       RUNTIME="$2"
+      REQUESTED_RUNTIME="$RUNTIME"
       shift 2
       ;;
     --runtime=*)
       RUNTIME="${1#*=}"
+      REQUESTED_RUNTIME="$RUNTIME"
       shift
       ;;
     --container)
       RUNTIME="container"
+      REQUESTED_RUNTIME="$RUNTIME"
       shift
       ;;
     --host)
       RUNTIME="host"
+      REQUESTED_RUNTIME="$RUNTIME"
       shift
       ;;
     --verbose)
@@ -152,14 +155,8 @@ while [ "$#" -gt 0 ]; do
       export KICAD_PYTHON_FILE_LOG_LEVEL="${KICAD_PYTHON_FILE_LOG_LEVEL:-DEBUG}"
       shift
       ;;
-    --profile)
-      [ "$#" -ge 2 ] || die "--profile requires a value"
-      export KICAD_MCP_PROFILE="$2"
-      shift 2
-      ;;
-    --profile=*)
-      export KICAD_MCP_PROFILE="${1#*=}"
-      shift
+    --profile|--profile=*)
+      die "KiCad MCP now exposes a single stable runtime; remove --profile"
       ;;
     --rebuild)
       FORCE_BUILD=1
@@ -183,7 +180,6 @@ REPO_PARENT="$(cd "$ROOT_DIR/.." && pwd)"
 export CAD_HOST_ROOT="${CAD_HOST_ROOT:-$REPO_PARENT}"
 export CAD_WORKSPACE_DIR="${CAD_WORKSPACE_DIR:-$ROOT_DIR}"
 export KICAD_MCP_IMAGE="${KICAD_MCP_IMAGE:-kill_life_cad-kicad-mcp:latest}"
-export KICAD_MCP_PROFILE="${KICAD_MCP_PROFILE:-v1}"
 export KICAD_MCP_LOG_LEVEL="${KICAD_MCP_LOG_LEVEL:-warn}"
 export KICAD_PYTHON_STDERR_LOG_LEVEL="${KICAD_PYTHON_STDERR_LOG_LEVEL:-WARNING}"
 export KICAD_PYTHON_FILE_LOG_LEVEL="${KICAD_PYTHON_FILE_LOG_LEVEL:-INFO}"
@@ -210,6 +206,21 @@ else
   CONTAINER_STATUS="missing"
 fi
 
+case "$RUNTIME" in
+  auto)
+    if [ "$HOST_PCBNEW_STATUS" = "ok" ]; then
+      RUNTIME="host"
+    else
+      RUNTIME="container"
+    fi
+    ;;
+  host|container)
+    ;;
+  *)
+    die "invalid runtime: $RUNTIME"
+    ;;
+esac
+
 if [ "$DOCTOR" -eq 1 ]; then
   cat <<EOF
 ROOT_DIR=$ROOT_DIR
@@ -226,9 +237,9 @@ KICAD_PYTHONPATH=$PYTHONPATH_VALUE
 HOST_PCBNEW_IMPORT=$HOST_PCBNEW_STATUS
 CONTAINER_STATUS=$CONTAINER_STATUS
 KICAD_MCP_IMAGE=$KICAD_MCP_IMAGE
-KICAD_MCP_PROFILE=$KICAD_MCP_PROFILE
 KICAD_MCP_LOG_LEVEL=$KICAD_MCP_LOG_LEVEL
 KICAD_PYTHON_STDERR_LOG_LEVEL=$KICAD_PYTHON_STDERR_LOG_LEVEL
+REQUESTED_RUNTIME=$REQUESTED_RUNTIME
 SELECTED_RUNTIME=$RUNTIME
 EOF
   exit 0
@@ -248,21 +259,6 @@ export KICAD_MCP_DATA_DIR="$DATA_DIR"
 if [ -n "$PYTHONPATH_VALUE" ]; then
   export KICAD_PYTHONPATH="$PYTHONPATH_VALUE"
 fi
-
-case "$RUNTIME" in
-  auto)
-    if [ "$HOST_PCBNEW_STATUS" = "ok" ]; then
-      RUNTIME="host"
-    else
-      RUNTIME="container"
-    fi
-    ;;
-  host|container)
-    ;;
-  *)
-    die "invalid runtime: $RUNTIME"
-    ;;
-esac
 
 if [ "$RUNTIME" = "host" ]; then
   probe_pcbnew "$PROBE_PYTHON" "${KICAD_PYTHONPATH:-}" || die "pcbnew is not importable from $PROBE_PYTHON. Install KiCad with Python bindings, set KICAD_PYTHON/KICAD_PYTHONPATH, or use --container."
@@ -291,7 +287,6 @@ docker run --rm -i --init \
   -e XDG_CONFIG_HOME="$CONFIG_HOME" \
   -e XDG_CACHE_HOME="$CACHE_HOME" \
   -e KICAD_MCP_DATA_DIR="$DATA_DIR" \
-  -e KICAD_MCP_PROFILE="$KICAD_MCP_PROFILE" \
   -e KICAD_MCP_LOG_LEVEL="$KICAD_MCP_LOG_LEVEL" \
   -e KICAD_PYTHON_STDERR_LOG_LEVEL="$KICAD_PYTHON_STDERR_LOG_LEVEL" \
   -e KICAD_PYTHON_FILE_LOG_LEVEL="$KICAD_PYTHON_FILE_LOG_LEVEL" \
