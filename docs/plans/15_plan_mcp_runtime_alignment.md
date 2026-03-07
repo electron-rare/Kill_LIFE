@@ -55,6 +55,7 @@ Faire de `Kill_LIFE` le repo de consommation et de gouvernance MCP, sans mainten
 
 1. Fait
 2. `/api/ops/summary` expose l'etat synthetique MCP quand la stack compagnon `mascarade` est presente.
+3. `python3 tools/mcp_runtime_status.py --json` fournit un rapport local synthetique quand la stack compagnon n'est pas disponible ou quand on veut visualiser explicitement les blocages environnementaux.
 
 ### Priorite 3 — Validation host-native
 

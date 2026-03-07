@@ -80,3 +80,6 @@ Format:
 
 - [x] K-020 — Ajouter un smoke dedie pour `nexar_api`
   - AC: `python3 tools/nexar_mcp_smoke.py --json` distingue mode demo et mode live.
+
+- [x] K-021 — Ajouter un rapport MCP local synthetique
+  - AC: `python3 tools/mcp_runtime_status.py --json` agrege les smokes supportes et rend visibles les blocages K-012/K-014.
