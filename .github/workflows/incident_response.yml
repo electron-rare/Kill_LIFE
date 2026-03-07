@@ -18,7 +18,7 @@ jobs:
         run: |
           mkdir -p docs
           if [ -f tools/security/check_policy.py ]; then
-            python tools/security/check_policy.py > docs/security-policy-report.json
+            python3 tools/security/check_policy.py > docs/security-policy-report.json
           else
             echo '{"status":"skipped","reason":"missing tools/security/check_policy.py"}' > docs/security-policy-report.json
           fi

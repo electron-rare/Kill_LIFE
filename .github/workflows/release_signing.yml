@@ -17,7 +17,8 @@ jobs:
       - uses: actions/checkout@v3
       - name: Build artefacts
         run: |
-          echo "Build artefacts..."
+          mkdir -p build
+          printf 'Kill_LIFE release %s\n' "${GITHUB_REF_NAME:-dev}" > build/artefact.bin
       - name: Sign artefacts (cosign)
         env:
           COSIGN_KEY: ${{ secrets.SIGNING_KEY }}

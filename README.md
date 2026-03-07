@@ -1,65 +1,36 @@
 # Kill_LIFE
 
-Template de projet embarque IA-natif. Architecture agentique spec-first avec gates de qualite, evidence packs et tracabilite complete.
+Template de projet embarque IA-natif, spec-first, avec gates de qualite, evidence packs et outillage runtime pour firmware, CAD et conformite.
 
 [![CI](https://img.shields.io/github/actions/workflow/status/electron-rare/Kill_LIFE/ci.yml?branch=main&label=CI)](https://github.com/electron-rare/Kill_LIFE/actions)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](licenses/MIT.txt)
 
 ## Principe
 
-Kill_LIFE structure un projet embarque autour de **7 agents specialises** et **7 gates de qualite**. Chaque etape produit des artefacts verifiables (evidence packs). Le workflow est concu pour l'embarque multi-cibles (ESP32, STM32, Linux) avec tracabilite et conformite integrees.
+Kill_LIFE structure un projet embarque autour de specs testables, d'agents specialises, de gates de qualite et d'artefacts verifiables. Le depot couvre trois axes:
 
-## Agents
+- firmware et CI locale/containeurisee
+- CAD headless KiCad 10 first
+- evidence, compliance et workflows canoniques
 
-| Agent | Responsabilite |
-|-------|---------------|
-| **PM / Spec** | Intention -> specs testables (acceptance criteria, risques) |
-| **Architect** | Decoupe modules, interfaces, contraintes (RTOS, memoire, IO) |
-| **Firmware** | Implementation multi-cibles, invariants |
-| **HW** | Contraintes PCB / alimentation / signaux, checklists hardware |
-| **QA / Test** | Tests unitaires + integration + smoke HIL |
-| **Doc** | Runbooks, troubleshooting, changelog |
-| **Compliance** | Standards, SBOM, versions, evidence pack final |
+## Structure utile
 
-## Gates
-
-| Gate | Objectif |
-|------|----------|
-| G0 - Intention | Brief valide, non-goals explicites |
-| G1 - Spec | Specs testables, matrice de risques |
-| G2 - Architecture | Modules definis, interfaces documentees |
-| G3 - Implementation | Code compile, tests unitaires passent |
-| G4 - Integration | Tests HIL, smoke tests multi-cibles |
-| G5 - Doc & Compliance | Docs completes, SBOM, standards |
-| G6 - Release | Evidence pack final, tag, artefacts publies |
-
-## Structure
-
-```
+```text
 Kill_LIFE/
-├── agents/                  # Definitions des agents (markdown)
-├── specs/                   # Specifications par feature
-├── standards/               # Standards et regles de conformite
-├── firmware/                # Code embarque PlatformIO (ESP32, STM32)
-├── hardware/                # Schemas KiCad, contraintes PCB
+├── firmware/                    # Code PlatformIO
+├── hardware/                    # Assets hardware et blocs
+├── specs/                       # Specs et taches canoniques
+├── workflows/                   # Workflows JSON canoniques + templates
 ├── tools/
-│   ├── ai/                  # Outils IA (generation, review)
-│   ├── compliance/          # Verification conformite
-│   ├── gates/               # Scripts de validation des gates
-│   ├── hw/                  # Outils hardware
-│   ├── mistral/             # Integration Mistral AI
-│   └── cockpit/             # Dashboard local
-├── openclaw/                # Module OpenClaw
-├── docs/                    # Documentation, evidence packs
-├── test/                    # Tests et validation
-├── bmad/                    # Methodologie BMAD
-├── .github/
-│   ├── workflows/           # 18+ workflows CI/CD
-│   ├── agents/              # Prompts agents GitHub
-│   └── prompts/             # Templates de prompts
-├── mcp.json                 # Configuration MCP server
-├── Makefile                 # Commandes principales
-└── mkdocs.yml               # Documentation MkDocs
+│   ├── compliance/              # Validation compliance
+│   ├── hw/                      # Stack CAD, MCP, exports, smoke
+│   ├── mistral/                 # Safe patch et outils Mistral
+│   └── ci/                      # Audit CI
+├── deploy/cad/                  # Dockerfiles et compose CAD/runtime
+├── docs/                        # Docs operateur, bridge, plans, workflows
+├── test/                        # Tests Python
+├── mcp.json                     # Profil MCP par defaut
+└── mkdocs.yml                   # Site docs
 ```
 
 ## Demarrage rapide
@@ -67,53 +38,50 @@ Kill_LIFE/
 ### Prerequis
 
 - Python 3.10+
-- PlatformIO (firmware ESP32/STM32)
-- KiCad (schemas hardware)
+- Docker + `docker compose`
+- `gh` pour les operations GitHub
+- PlatformIO en natif ou via la stack conteneurisee
 
 ### Installation
 
 ```bash
 git clone https://github.com/electron-rare/Kill_LIFE.git
 cd Kill_LIFE
-
-# Installation complete
 bash install_kill_life.sh
-
-# Ou installation minimale
-pip install -r requirements-mistral.txt
 ```
 
-### Commandes
+### Verifications utiles
 
 ```bash
-make help              # Lister les commandes disponibles
-make check             # Verifier la conformite
-make test              # Lancer les tests
-make docs              # Generer la documentation MkDocs
+python3 tools/compliance/validate.py --strict
+python3 tools/validate_specs.py --json
+bash tools/hw/cad_stack.sh doctor
+KILL_LIFE_PIO_MODE=container python3 tools/auto_check_ci_cd.py
 ```
 
-## Integration Mistral AI
+## Workflow catalog
 
-Kill_LIFE utilise Mistral AI pour la generation de code et la review :
+Les workflows editables par `crazy_life` vivent dans [`workflows/`](workflows/) et sont valides contre [`workflows/workflow.schema.json`](workflows/workflow.schema.json).
 
-```bash
-# Configuration
-export MISTRAL_API_KEY=your_key
+- `workflows/*.json` : workflows canoniques
+- `workflows/templates/*.json` : templates de creation
+- `.crazy-life/runs/` : etat des runs locaux
+- `.crazy-life/backups/workflows/` : revisions et restores
 
-# Outils dans tools/mistral/
-python tools/mistral/generate.py --spec specs/my_feature.md
-```
+## CAD et MCP
+
+La stack CAD est documentee dans [`deploy/cad/README.md`](deploy/cad/README.md) et pilotee par [`tools/hw/cad_stack.sh`](tools/hw/cad_stack.sh).
+
+- cible actuelle: KiCad 10 first
+- launcher MCP: [`tools/hw/run_kicad_mcp.sh`](tools/hw/run_kicad_mcp.sh)
+- configuration MCP: [`docs/MCP_SETUP.md`](docs/MCP_SETUP.md) et [`mcp.json`](mcp.json)
 
 ## Ecosysteme
 
-Ce repo fait partie de l'ecosysteme [Mascarade](https://github.com/electron-rare/mascarade) :
-
-- **[mascarade](https://github.com/electron-rare/mascarade)** -- Orchestrateur agentique, LLM routing
-- **[mascarade-datasets](https://github.com/electron-rare/mascarade-datasets)** -- Datasets de fine-tuning
-- **[mascarade-cockpit](https://github.com/electron-rare/mascarade-cockpit)** -- Console ops
-- **[crazy_life](https://github.com/electron-rare/crazy_life)** -- Frontend cockpit
-- **[Kill_LIFE](https://github.com/electron-rare/Kill_LIFE)** -- Ce repo
+- [`crazy_life`](https://github.com/electron-rare/crazy_life) : frontend + backend web/devops
+- [`mascarade`](https://github.com/electron-rare/mascarade) : repo compagnon et bridge historique
+- [`docs/MASCARADE_BRIDGE.md`](docs/MASCARADE_BRIDGE.md) : articulation locale entre les depots
 
 ## Licence
 
-MIT -- voir [licenses/MIT.txt](licenses/MIT.txt)
+MIT. Voir [`licenses/MIT.txt`](licenses/MIT.txt).

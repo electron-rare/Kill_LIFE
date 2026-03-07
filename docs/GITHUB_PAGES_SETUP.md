@@ -13,7 +13,7 @@ Pour que GitHub Pages serve correctement les artefacts et endpoints JSON :
   - **Source** : `gh-pages`
   - **Dossier** : `/` (root)
 - Sauvegardez.
-- Relancez le workflow `pages_publish.yml` si besoin.
+- Relancez le workflow Pages valide (`static.yml`) si besoin.
 
 ## Points d’attention
 - Le workflow doit créer le dossier `public/` et le publier sur `gh-pages`.

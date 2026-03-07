@@ -11,6 +11,7 @@ Ce repo est un **socle** :
 - Installation : `docs/INSTALL.md`
 - Runbook opérateur : `docs/RUNBOOK.md`
 - FAQ : `docs/FAQ.md`
+- Pont vers le repo compagnon d’exécution : `docs/MASCARADE_BRIDGE.md`
 
 ## Workflows professionnels (opérationnels)
 

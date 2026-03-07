@@ -18,7 +18,7 @@ jobs:
         run: |
           mkdir -p docs
           if [ -f tools/ai/validate_model.py ]; then
-            python tools/ai/validate_model.py > docs/model-validation-report.json
+            python3 tools/ai/validate_model.py > docs/model-validation-report.json
           else
             echo '{"status":"skipped","reason":"missing tools/ai/validate_model.py"}' > docs/model-validation-report.json
           fi

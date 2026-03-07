@@ -22,7 +22,7 @@ jobs:
 
       - name: Generate repo state
         run: |
-          python tools/repo_state/collect.py --repo-name Kill_LIFE
+          python3 tools/repo_state/collect.py --repo-name Kill_LIFE
 
       - name: Upload repo-state artifact
         uses: actions/upload-artifact@v4
