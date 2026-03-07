@@ -7,6 +7,6 @@ if [[ -z "${SCHEMATIC}" ]]; then
   exit 2
 fi
 
-python tools/hw/schops/schops.py erc --schematic "${SCHEMATIC}"
-python tools/hw/schops/schops.py netlist --schematic "${SCHEMATIC}"
-python tools/hw/schops/schops.py bom --schematic "${SCHEMATIC}"
+python3 tools/hw/schops/schops.py erc --schematic "${SCHEMATIC}"
+python3 tools/hw/schops/schops.py netlist --schematic "${SCHEMATIC}"
+python3 tools/hw/schops/schops.py bom --schematic "${SCHEMATIC}"

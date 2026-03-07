@@ -1,0 +1,38 @@
+ARG KICAD_MCP_BASE_IMAGE=kicad/kicad:nightly-full
+FROM ${KICAD_MCP_BASE_IMAGE}
+
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+USER root
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        nodejs \
+        npm \
+        python3-pip \
+        python3-venv \
+    && rm -rf /var/lib/apt/lists/* \
+    && python3 -m venv /opt/kicad-mcp/venv \
+    && /opt/kicad-mcp/venv/bin/pip install --no-cache-dir --upgrade pip
+
+WORKDIR /opt/kicad-mcp/server
+
+COPY requirements.txt /tmp/kicad-mcp-requirements.txt
+RUN /opt/kicad-mcp/venv/bin/pip install --no-cache-dir -r /tmp/kicad-mcp-requirements.txt
+
+COPY package.json package-lock.json tsconfig.json ./
+RUN npm ci --ignore-scripts
+
+COPY src ./src
+COPY python ./python
+RUN npx tsc --declaration false --sourceMap false --skipLibCheck
+
+ENV PATH=/opt/kicad-mcp/venv/bin:${PATH} \
+    KICAD_PYTHON=/opt/kicad-mcp/venv/bin/python
+
+WORKDIR /workspace
+
+CMD ["sleep", "infinity"]

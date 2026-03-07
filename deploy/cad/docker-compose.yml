@@ -1,0 +1,39 @@
+name: kill_life_cad
+
+services:
+  kicad-headless:
+    image: ${KICAD_DOCKER_IMAGE:-kicad/kicad:nightly-full}
+    working_dir: /workspace
+    command: ["sleep", "infinity"]
+    volumes:
+      - ${CAD_WORKSPACE_DIR:-../..}:/workspace
+
+  kicad-mcp:
+    image: ${KICAD_MCP_IMAGE:-kill_life_cad-kicad-mcp:latest}
+    build:
+      context: ${KICAD_MCP_CONTEXT_DIR:-../../../mascarade/finetune/kicad_mcp_server}
+      dockerfile: ../../../Kill_LIFE/deploy/cad/Dockerfile.kicad-mcp
+      args:
+        KICAD_MCP_BASE_IMAGE: ${KICAD_DOCKER_IMAGE:-kicad/kicad:nightly-full}
+    working_dir: ${CAD_WORKSPACE_DIR:-/workspace}
+    command: ["sleep", "infinity"]
+    volumes:
+      - ${CAD_HOST_ROOT:-/tmp/cad-host}:${CAD_HOST_ROOT:-/tmp/cad-host}
+
+  freecad-headless:
+    build:
+      context: .
+      dockerfile: Dockerfile.freecad-headless
+    working_dir: /workspace
+    command: ["sleep", "infinity"]
+    volumes:
+      - ${CAD_WORKSPACE_DIR:-../..}:/workspace
+
+  platformio:
+    build:
+      context: .
+      dockerfile: Dockerfile.platformio
+    working_dir: /workspace
+    command: ["sleep", "infinity"]
+    volumes:
+      - ${CAD_WORKSPACE_DIR:-../..}:/workspace

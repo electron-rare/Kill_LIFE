@@ -1,7 +1,7 @@
-# Hardware quickstart (KiCad)
+# Hardware quickstart (KiCad 10)
 
 ## Prérequis
-- KiCad 9 installé (inclut `kicad-cli`)
+- KiCad 10 installé ou une image Docker KiCad 10 compatible (inclut `kicad-cli`)
 - Python 3.11+
 - (optionnel) venv
 

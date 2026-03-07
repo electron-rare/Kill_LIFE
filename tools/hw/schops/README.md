@@ -3,7 +3,7 @@
 CLI local pour :
 - ERC/BOM/netlist via `kicad-cli`
 - bulk edits via `kicad-sch-api` (si installé)
-- Design Blocks KiCad 9 (structure + metadata)
+- Design Blocks KiCad 10 (structure + metadata)
 
 > Philosophie : **bulk edits safe** (backup + report) + exports déterministes (kicad-cli).
 
@@ -66,7 +66,7 @@ python tools/hw/schops/schops.py snapshot --schematic ... --name before.json
 python tools/hw/schops/schops.py snapshot --schematic ... --name after.json
 ```
 
-## Design Blocks (KiCad 9)
+## Design Blocks (KiCad 10)
 Les design blocks sont des dossiers `*.kicad_block` stockés dans une librairie `*.kicad_blocks`.
 
 ```bash

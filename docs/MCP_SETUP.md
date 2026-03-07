@@ -1,35 +1,74 @@
 # MCP setup (KiCad)
 
-## Option A — Schematic MCP (recommended)
-`kicad-sch-api` inclut un serveur MCP : `kicad-sch-mcp`. citeturn0search9
+Source canonique pour la configuration MCP locale de `Kill_LIFE`.
 
-Installation :
+Spec de perimetre:
+
+- `specs/kicad_mcp_scope_spec.md`
+
+## Chemin supporté
+
+- Serveur MCP supporté: `mascarade/finetune/kicad_mcp_server`
+- Launcher supporté côté `Kill_LIFE`: `tools/hw/run_kicad_mcp.sh`
+- Transport supporté: `stdio` local uniquement
+
+`kicad-sch-mcp` n’est plus le chemin recommandé dans ce repo. Il reste un ancien axe documentaire, mais il n’est ni installé ni supporté ici comme runtime principal.
+
+## Prérequis
+
+- le repo compagnon `mascarade` existe en voisin (`../mascarade`) ou via `MASCARADE_DIR`
+- `node` est disponible sur la machine
+- le serveur est buildé dans `mascarade/finetune/kicad_mcp_server/dist/index.js`
+- KiCad et son Python sont visibles par le runtime du serveur
+
+Diagnostic rapide :
+
 ```bash
-pip install kicad-sch-api
-# ou via uv
-# uv tool install kicad-sch-mcp
+tools/hw/run_kicad_mcp.sh --doctor
+python3 tools/hw/mcp_smoke.py
 ```
 
-Lancer le serveur (dans le repo) :
-```bash
-kicad-sch-mcp
-```
+## Configuration locale
 
-Exemple (Claude Desktop) — à adapter selon ton OS :
+Le fichier versionné [mcp.json](../mcp.json) pointe déjà vers le launcher supporté :
+
 ```json
 {
   "mcpServers": {
-    "kicad_schematic": {
-      "command": "kicad-sch-mcp",
-      "args": []
+    "kicad": {
+      "type": "local",
+      "command": "bash",
+      "args": ["tools/hw/run_kicad_mcp.sh"],
+      "tools": ["*"]
     }
   }
 }
 ```
 
-## Option B — KiCad “live/PCB” MCP (expérimental)
-Il existe des serveurs MCP orientés PCB / IPC API (dépend de ta version KiCad et du serveur choisi). citeturn0search1turn0search16
+Le launcher prépare un runtime local writable sous `.cad-home/kicad-mcp/` et exporte `KICAD_MCP_DATA_DIR` pour éviter les écritures dans un préfixe immuable.
 
-Dans ce repo, l’approche “robuste” reste :
-- bulk edits schéma via `kicad-sch-api`
-- exports/DRC via `kicad-cli`
+## Serveur auxiliaire
+
+`Kill_LIFE` expose aussi un serveur MCP auxiliaire `validate-specs` pour la validation repo/specs :
+
+```bash
+python3 tools/validate_specs.py --json
+python3 tools/validate_specs.py --mcp
+```
+
+Ce serveur ne remplace pas le runtime KiCad. Il sert à vérifier les specs, la conformité et l’usage RFC2119 côté dépôt.
+
+## Usage
+
+Depuis `Kill_LIFE` :
+
+```bash
+tools/hw/run_kicad_mcp.sh
+```
+
+## Politique de support
+
+- `stdio` reste le seul transport supporté par défaut
+- aucun serveur MCP réseau n’est exposé par défaut
+- les serveurs mock/demo restent hors chemin de production tant qu’ils ne parlent pas à un backend réel
+- `tools/hw/cad_stack.sh mcp` reste un chemin legacy à réaligner avant d’être re-documenté ici

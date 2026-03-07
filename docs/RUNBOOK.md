@@ -33,22 +33,31 @@ Ajoute un label `ai:*` :
 
 ## 3) CI/CD multi-cible hardware-in-the-loop
 
-Le workflow CI/CD compile, teste et valide le firmware sur ESP, STM et Linux.
+Le workflow CI/CD compile, teste et valide le firmware sur ESP et Linux.
 Les scripts d’automatisation sont dans `tools/` :
 - `build_firmware.py` : build par cible
 - `test_firmware.py` : tests par cible
 - `collect_evidence.py` : génération evidence pack
+
+Les wrappers PlatformIO utilisent `pio` en natif si disponible, sinon basculent automatiquement sur la stack conteneurisée `tools/hw/cad_stack.sh pio`.
+Override possible :
+- `KILL_LIFE_PIO_MODE=native`
+- `KILL_LIFE_PIO_MODE=container`
 
 Les evidence packs sont stockés dans `docs/evidence/`.
 La couverture est générée via `coverage_badge.py`.
 
 Pour vérifier manuellement :
 ```bash
-python tools/build_firmware.py esp
-python tools/test_firmware.py esp
-python tools/collect_evidence.py esp
+python3 tools/build_firmware.py esp
+python3 tools/collect_evidence.py esp
+python3 tools/verify_evidence.py esp
+
+python3 tools/test_firmware.py linux
+python3 tools/collect_evidence.py linux
+python3 tools/verify_evidence.py linux
 ```
-Remplace `esp` par `stm` ou `linux`.
+`stm` reste non supporté tant qu’aucune cible STM n’existe pas dans `firmware/platformio.ini`.
 
 Vérifie la présence des artefacts et evidence packs après chaque run.
 
@@ -64,7 +73,7 @@ ajoute un check statique de parité routes API.
 
 Exemple (adapté au repo cible) :
 ```bash
-python tools/gates/route_parity_check.py \
+python3 tools/gates/route_parity_check.py \
   --backend "src/**/*.cpp" \
   --backend "src/**/*.h" \
   --frontend "data/webui/**/*.js" \

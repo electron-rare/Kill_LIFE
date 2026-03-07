@@ -24,12 +24,12 @@ fi
 echo "Using schematic: ${SCHEM:-<none>}"
 echo "Using pcb: ${PCB:-<none>}"
 
-OUTDIR="$(python tools/hw/exports.py ${SCHEM:+--schematic "$SCHEM"} ${PCB:+--pcb "$PCB"})"
+OUTDIR="$(python3 tools/hw/exports.py ${SCHEM:+--schematic "$SCHEM"} ${PCB:+--pcb "$PCB"})"
 echo "Previews: ${OUTDIR}"
 
-python tools/hw/blocks/lint_blocks.py --blocks-dir hardware/blocks
-python tools/hw/blocks/generate_registry.py --blocks-dir hardware/blocks --out hardware/blocks/REGISTRY.md
+python3 tools/hw/blocks/lint_blocks.py --blocks-dir hardware/blocks
+python3 tools/hw/blocks/generate_registry.py --blocks-dir hardware/blocks --out hardware/blocks/REGISTRY.md
 
-python tools/compliance/validate.py
+python3 tools/compliance/validate.py
 
 echo "OK"

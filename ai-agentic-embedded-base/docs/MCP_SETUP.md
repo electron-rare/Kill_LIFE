@@ -1,35 +1,6 @@
 # MCP setup (KiCad)
 
-## Option A — Schematic MCP (recommended)
-`kicad-sch-api` inclut un serveur MCP : `kicad-sch-mcp`. citeturn0search9
+Source canonique: `../../docs/MCP_SETUP.md`
 
-Installation :
-```bash
-pip install kicad-sch-api
-# ou via uv
-# uv tool install kicad-sch-mcp
-```
-
-Lancer le serveur (dans le repo) :
-```bash
-kicad-sch-mcp
-```
-
-Exemple (Claude Desktop) — à adapter selon ton OS :
-```json
-{
-  "mcpServers": {
-    "kicad_schematic": {
-      "command": "kicad-sch-mcp",
-      "args": []
-    }
-  }
-}
-```
-
-## Option B — KiCad “live/PCB” MCP (expérimental)
-Il existe des serveurs MCP orientés PCB / IPC API (dépend de ta version KiCad et du serveur choisi). citeturn0search1turn0search16
-
-Dans ce repo, l’approche “robuste” reste :
-- bulk edits schéma via `kicad-sch-api`
-- exports/DRC via `kicad-cli`
+Ce dépôt miroir ne maintient plus une copie indépendante de la procédure MCP.  
+Le chemin supporté reste le launcher `Kill_LIFE/tools/hw/run_kicad_mcp.sh`, qui délègue au serveur KiCad MCP versionné dans le repo compagnon `mascarade`.

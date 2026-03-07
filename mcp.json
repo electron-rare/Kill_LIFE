@@ -1,9 +1,15 @@
 {
   "mcpServers": {
+    "kicad": {
+      "type": "local",
+      "command": "bash",
+      "args": ["tools/hw/run_kicad_mcp.sh"],
+      "tools": ["*"]
+    },
     "validate-specs": {
       "type": "local",
       "command": "python3",
-      "args": ["tools/validate_specs.py"],
+      "args": ["tools/validate_specs.py", "--mcp"],
       "tools": ["*"]
     }
   }
