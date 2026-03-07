@@ -60,12 +60,14 @@ Faire de `Kill_LIFE` le repo de consommation et de gouvernance MCP, sans mainten
 
 1. Rejouer le smoke sur une machine avec `pcbnew` disponible
 2. Confirmer que le chemin hote reste coherent avec le fallback conteneur
+3. Le helper `python3 tools/hw/kicad_host_mcp_smoke.py --json --quick` est disponible pour qualifier la readiness avant validation live
 
 ### Priorite 4 — Classement des surfaces auxiliaires
 
 1. Fait
 2. `component_database` et `kicad_tools` sont classes `supporte avec dependance externe`.
 3. `nexar_api` reste `experimental` tant qu'il n'est pas valide en mode live.
+4. Le helper `python3 tools/nexar_mcp_smoke.py --json` qualifie le mode demo; `--live` sert a valider un vrai token.
 
 ## Criteres de sortie
 

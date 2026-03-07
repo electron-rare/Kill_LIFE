@@ -245,9 +245,7 @@ EOF
   exit 0
 fi
 
-command -v "$NODE_BIN" >/dev/null 2>&1 || die "node executable not found: $NODE_BIN"
 [ -d "$MASCARADE_DIR" ] || die "companion repo not found: $MASCARADE_DIR"
-[ -f "$ENTRYPOINT" ] || die "MCP entrypoint missing: $ENTRYPOINT (run npm build in mascarade/finetune/kicad_mcp_server)"
 [ -n "$PROBE_PYTHON" ] || die "no Python executable found for KiCad MCP runtime"
 
 mkdir -p "$MCP_HOME" "$CONFIG_HOME" "$CACHE_HOME" "$DATA_DIR"
@@ -261,6 +259,8 @@ if [ -n "$PYTHONPATH_VALUE" ]; then
 fi
 
 if [ "$RUNTIME" = "host" ]; then
+  command -v "$NODE_BIN" >/dev/null 2>&1 || die "node executable not found: $NODE_BIN"
+  [ -f "$ENTRYPOINT" ] || die "MCP entrypoint missing: $ENTRYPOINT (run npm build in mascarade/finetune/kicad_mcp_server)"
   probe_pcbnew "$PROBE_PYTHON" "${KICAD_PYTHONPATH:-}" || die "pcbnew is not importable from $PROBE_PYTHON. Install KiCad with Python bindings, set KICAD_PYTHON/KICAD_PYTHONPATH, or use --container."
   debug "exec host $NODE_BIN $ENTRYPOINT $*"
   exec "$NODE_BIN" "$ENTRYPOINT" "$@"
