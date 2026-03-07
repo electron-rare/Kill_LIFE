@@ -23,6 +23,14 @@
       "command": "bash",
       "args": ["tools/run_github_dispatch_mcp.sh"],
       "tools": ["*"]
+    },
+    "huggingface": {
+      "type": "url",
+      "url": "https://huggingface.co/mcp",
+      "headers": {
+        "Authorization": "Bearer ${HUGGINGFACE_API_KEY}"
+      },
+      "note": "Use https://huggingface.co/mcp?login for OAuth browser login instead of token auth"
     }
   }
 }
