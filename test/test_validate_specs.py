@@ -47,6 +47,8 @@ class ValidateSpecsTests(unittest.TestCase):
         self.assertIn("ok", payload)
         self.assertIn("compliance", payload)
         self.assertIn("rfc2119", payload)
+        self.assertIn("mirror_sync", payload)
+        self.assertTrue(payload["mirror_sync"]["ok"])
 
     def test_mcp_server_supports_initialize_and_tools_list(self):
         proc = subprocess.Popen(
@@ -72,6 +74,9 @@ class ValidateSpecsTests(unittest.TestCase):
             self.assertEqual(initialize["id"], 1)
             self.assertEqual(
                 initialize["result"]["serverInfo"]["name"], "validate-specs"
+            )
+            self.assertEqual(
+                initialize["result"]["protocolVersion"], "2025-03-26"
             )
 
             write_message(

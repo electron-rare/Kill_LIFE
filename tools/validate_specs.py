@@ -13,6 +13,8 @@ from typing import Any, Dict
 
 
 ROOT = Path(__file__).resolve().parents[1]
+CANONICAL_SPECS_DIR = ROOT / "specs"
+MIRROR_SPECS_DIR = ROOT / "ai-agentic-embedded-base" / "specs"
 RFC2119_TERMS = ("MUST", "SHOULD", "MAY")
 RFC2119_FORBIDDEN = ("must", "should", "may", "Must", "Should", "May")
 
@@ -34,7 +36,7 @@ def run_repo_command(args: list[str]) -> Dict[str, Any]:
 
 
 def scan_rfc2119() -> Dict[str, Any]:
-    files = sorted((ROOT / "specs").rglob("*.md"))
+    files = sorted(CANONICAL_SPECS_DIR.rglob("*.md"))
     counts = {term: 0 for term in RFC2119_TERMS}
     forbidden_matches: list[str] = []
     file_summary: Dict[str, Dict[str, Any]] = {}
@@ -65,6 +67,39 @@ def scan_rfc2119() -> Dict[str, Any]:
     }
 
 
+def compare_spec_mirror() -> Dict[str, Any]:
+    if not MIRROR_SPECS_DIR.exists():
+        return {
+            "ok": False,
+            "mirror_exists": False,
+            "missing_in_mirror": [],
+            "extra_in_mirror": [],
+            "content_mismatch": [],
+        }
+
+    canonical_files = {p.relative_to(CANONICAL_SPECS_DIR).as_posix(): p for p in CANONICAL_SPECS_DIR.rglob("*") if p.is_file()}
+    mirror_files = {p.relative_to(MIRROR_SPECS_DIR).as_posix(): p for p in MIRROR_SPECS_DIR.rglob("*") if p.is_file()}
+
+    missing_in_mirror = sorted(set(canonical_files) - set(mirror_files))
+    extra_in_mirror = sorted(set(mirror_files) - set(canonical_files))
+    shared = sorted(set(canonical_files) & set(mirror_files))
+
+    content_mismatch: list[str] = []
+    for relative in shared:
+        if canonical_files[relative].read_bytes() != mirror_files[relative].read_bytes():
+            content_mismatch.append(relative)
+
+    return {
+        "ok": not missing_in_mirror and not extra_in_mirror and not content_mismatch,
+        "mirror_exists": True,
+        "missing_in_mirror": missing_in_mirror,
+        "extra_in_mirror": extra_in_mirror,
+        "content_mismatch": content_mismatch,
+        "canonical_file_count": len(canonical_files),
+        "mirror_file_count": len(mirror_files),
+    }
+
+
 def validate_specs(strict: bool = False) -> Dict[str, Any]:
     required_files = [
         "specs/03_plan.md",
@@ -79,14 +114,16 @@ def validate_specs(strict: bool = False) -> Dict[str, Any]:
     compliance = run_repo_command(compliance_cmd)
 
     rfc2119 = scan_rfc2119()
+    mirror_sync = compare_spec_mirror()
 
-    ok = not missing_files and compliance["ok"] and rfc2119["ok"]
+    ok = not missing_files and compliance["ok"] and rfc2119["ok"] and mirror_sync["ok"]
     return {
         "ok": ok,
         "missing_files": missing_files,
         "strict": strict,
         "compliance": compliance,
         "rfc2119": rfc2119,
+        "mirror_sync": mirror_sync,
     }
 
 
@@ -94,6 +131,7 @@ def format_cli_summary(result: Dict[str, Any]) -> str:
     status = "OK" if result["ok"] else "FAIL"
     compliance = result["compliance"]
     rfc2119 = result["rfc2119"]
+    mirror_sync = result["mirror_sync"]
     lines = [
         f"{status}: spec validation",
         f"- missing files: {len(result['missing_files'])}",
@@ -105,10 +143,22 @@ def format_cli_summary(result: Dict[str, Any]) -> str:
             f"MAY={rfc2119['counts']['MAY']}"
         ),
         f"- RFC2119 forbidden terms: {len(rfc2119['forbidden'])}",
+        (
+            "- mirror sync: "
+            f"missing={len(mirror_sync['missing_in_mirror'])} "
+            f"extra={len(mirror_sync['extra_in_mirror'])} "
+            f"mismatch={len(mirror_sync['content_mismatch'])}"
+        ),
     ]
 
     if result["missing_files"]:
         lines.append("- missing: " + ", ".join(result["missing_files"]))
+    if mirror_sync["missing_in_mirror"]:
+        lines.append("- mirror missing: " + ", ".join(mirror_sync["missing_in_mirror"]))
+    if mirror_sync["extra_in_mirror"]:
+        lines.append("- mirror extra: " + ", ".join(mirror_sync["extra_in_mirror"]))
+    if mirror_sync["content_mismatch"]:
+        lines.append("- mirror mismatch: " + ", ".join(mirror_sync["content_mismatch"]))
     if compliance["stdout"]:
         lines.append("- compliance stdout: " + compliance["stdout"])
     if compliance["stderr"]:
@@ -218,7 +268,7 @@ def serve_mcp() -> int:
                 make_response(
                     request_id,
                     {
-                        "protocolVersion": "2025-06-18",
+                        "protocolVersion": "2025-03-26",
                         "capabilities": {"tools": {"listChanged": False}},
                         "serverInfo": {
                             "name": "validate-specs",
