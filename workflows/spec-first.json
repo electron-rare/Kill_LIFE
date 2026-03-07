@@ -1,0 +1,145 @@
+{
+  "id": "spec-first",
+  "title": "Spec First",
+  "category": "product",
+  "version": 1,
+  "status": "draft",
+  "description": "Drive an issue from intake to specification, plan, tasks, and implementation readiness.",
+  "tags": [
+    "spec",
+    "planning",
+    "docs"
+  ],
+  "execution_modes": [
+    "local"
+  ],
+  "viewport": {
+    "width": 1700,
+    "height": 860
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "type": "note",
+      "label": "Issue Intake",
+      "description": "Capture user intent, severity, and the targeted scope.",
+      "x": 80,
+      "y": 300,
+      "runner": {
+        "kind": "none"
+      },
+      "config": {}
+    },
+    {
+      "id": "triage",
+      "type": "manual-gate",
+      "label": "Triage",
+      "description": "Add labels, set risk, and pick the right AI lane.",
+      "x": 330,
+      "y": 300,
+      "runner": {
+        "kind": "none"
+      },
+      "config": {
+        "labels": [
+          "type:*",
+          "ai:*",
+          "risk:*",
+          "scope:*"
+        ]
+      }
+    },
+    {
+      "id": "spec",
+      "type": "note",
+      "label": "Specification",
+      "description": "Formalize requirements and acceptance criteria.",
+      "x": 590,
+      "y": 170,
+      "runner": {
+        "kind": "none"
+      },
+      "config": {
+        "target_doc": "specs/01_spec.md"
+      }
+    },
+    {
+      "id": "plan",
+      "type": "note",
+      "label": "Plan",
+      "description": "Pick the technical path and define interfaces.",
+      "x": 590,
+      "y": 430,
+      "runner": {
+        "kind": "none"
+      },
+      "config": {
+        "target_doc": "specs/03_plan.md"
+      }
+    },
+    {
+      "id": "tasks",
+      "type": "note",
+      "label": "Tasks",
+      "description": "Translate the plan into implementable TODO items.",
+      "x": 900,
+      "y": 300,
+      "runner": {
+        "kind": "none"
+      },
+      "config": {
+        "target_doc": "specs/04_tasks.md"
+      }
+    },
+    {
+      "id": "impl-ready",
+      "type": "manual-gate",
+      "label": "Implementation Ready",
+      "description": "Final operator checkpoint before opening implementation work.",
+      "x": 1210,
+      "y": 300,
+      "runner": {
+        "kind": "none"
+      },
+      "config": {
+        "criteria": [
+          "Spec approved",
+          "Plan approved",
+          "Tasks actionable"
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "intake-triage",
+      "source": "intake",
+      "target": "triage"
+    },
+    {
+      "id": "triage-spec",
+      "source": "triage",
+      "target": "spec"
+    },
+    {
+      "id": "triage-plan",
+      "source": "triage",
+      "target": "plan"
+    },
+    {
+      "id": "spec-tasks",
+      "source": "spec",
+      "target": "tasks"
+    },
+    {
+      "id": "plan-tasks",
+      "source": "plan",
+      "target": "tasks"
+    },
+    {
+      "id": "tasks-impl-ready",
+      "source": "tasks",
+      "target": "impl-ready"
+    }
+  ]
+}

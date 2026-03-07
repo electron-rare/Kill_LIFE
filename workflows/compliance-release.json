@@ -1,0 +1,118 @@
+{
+  "id": "compliance-release",
+  "title": "Compliance Release",
+  "category": "release",
+  "version": 1,
+  "status": "ready",
+  "description": "Run compliance and CI audit locally, then dispatch the signed release workflow on GitHub.",
+  "tags": [
+    "compliance",
+    "release",
+    "github"
+  ],
+  "execution_modes": [
+    "local",
+    "github"
+  ],
+  "viewport": {
+    "width": 1500,
+    "height": 760
+  },
+  "nodes": [
+    {
+      "id": "start",
+      "type": "note",
+      "label": "Start",
+      "description": "Prepare release inputs and verify repository posture.",
+      "x": 80,
+      "y": 250,
+      "runner": {
+        "kind": "none"
+      },
+      "config": {}
+    },
+    {
+      "id": "compliance",
+      "type": "local-action",
+      "label": "Compliance Validate",
+      "description": "Strict validation of the active compliance profile.",
+      "x": 280,
+      "y": 250,
+      "runner": {
+        "kind": "local-action",
+        "action": "compliance.validate"
+      },
+      "config": {}
+    },
+    {
+      "id": "ci-audit",
+      "type": "local-action",
+      "label": "CI Audit",
+      "description": "Parse and validate the currently tracked workflow files.",
+      "x": 540,
+      "y": 250,
+      "runner": {
+        "kind": "local-action",
+        "action": "ci.audit"
+      },
+      "config": {}
+    },
+    {
+      "id": "manual-review",
+      "type": "manual-gate",
+      "label": "Manual Review",
+      "description": "Operator reviews evidence and confirms readiness before the GitHub dispatch.",
+      "x": 800,
+      "y": 250,
+      "runner": {
+        "kind": "none"
+      },
+      "config": {
+        "checklist": [
+          "Release notes drafted",
+          "Evidence reviewed",
+          "Branch protections green"
+        ]
+      }
+    },
+    {
+      "id": "dispatch-release",
+      "type": "github-dispatch",
+      "label": "Dispatch Release Signing",
+      "description": "Dispatch the GitHub workflow responsible for release signing.",
+      "x": 1110,
+      "y": 250,
+      "runner": {
+        "kind": "github-dispatch",
+        "workflow_file": "release_signing.yml",
+        "ref": "main",
+        "inputs": {
+          "source": "mascarade-kill-life-editor"
+        }
+      },
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "id": "start-compliance",
+      "source": "start",
+      "target": "compliance"
+    },
+    {
+      "id": "compliance-audit",
+      "source": "compliance",
+      "target": "ci-audit"
+    },
+    {
+      "id": "audit-review",
+      "source": "ci-audit",
+      "target": "manual-review"
+    },
+    {
+      "id": "review-dispatch",
+      "source": "manual-review",
+      "target": "dispatch-release"
+    }
+  ]
+}
