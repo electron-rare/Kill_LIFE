@@ -4,7 +4,9 @@ Test automatisé pour la sanitisation des commentaires OpenClaw.
 Vérifie que le sanitizer retire les patterns à risque et ne laisse aucun secret, code ou mention.
 """
 import sys
-sys.path.insert(0, "../../tools/ai")
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools" / "ai"))
 from sanitize_issue import sanitize_text
 
 def test_sanitize_basic():

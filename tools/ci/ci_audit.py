@@ -4,15 +4,17 @@
 import glob
 import yaml
 import json
-from datetime import datetime
+import sys
+from datetime import datetime, timezone
 
 workflows = glob.glob('.github/workflows/*.yml')
 
 report = {
     'schemaVersion': 1,
     'label': 'Audit CI/CD',
-    'timestamp': datetime.utcnow().isoformat() + 'Z',
+    'timestamp': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
     'workflows': {},
+    'invalid_workflows': {},
     'summary': {
         'tests': 0,
         'coverage': 0,
@@ -20,13 +22,23 @@ report = {
         'compliance': 0,
         'docs': 0,
         'hardware': 0,
-        'ai': 0
+        'ai': 0,
+        'invalid': 0
     }
 }
 
 for wf in workflows:
-    with open(wf, 'r') as f:
-        data = yaml.safe_load(f)
+    with open(wf, 'r', encoding='utf-8') as f:
+        try:
+            data = yaml.safe_load(f)
+        except yaml.YAMLError as exc:
+            report['invalid_workflows'][wf] = str(exc)
+            report['summary']['invalid'] += 1
+            continue
+    if not isinstance(data, dict):
+        report['invalid_workflows'][wf] = 'workflow did not parse to a mapping'
+        report['summary']['invalid'] += 1
+        continue
     wf_name = data.get('name', wf)
     jobs = data.get('jobs', {})
     wf_info = {'tests': False, 'coverage': False, 'badges': False, 'compliance': False, 'docs': False, 'hardware': False, 'ai': False}
@@ -57,3 +69,7 @@ with open('docs/ci-audit-summary.json', 'w') as f:
     json.dump(report, f, indent=2)
 
 print(f"Rapport d’audit CI/CD généré : docs/ci-audit-summary.json")
+if report['invalid_workflows']:
+    for wf, err in report['invalid_workflows'].items():
+        print(f"Workflow invalide: {wf}: {err}", file=sys.stderr)
+    raise SystemExit(1)

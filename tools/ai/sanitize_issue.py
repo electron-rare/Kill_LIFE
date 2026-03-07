@@ -34,6 +34,15 @@ def remove_code_blocks(s: str) -> str:
   s = re.sub(r"`[^`]*`", "", s)
   return s
 
+def remove_html_blocks(s: str) -> str:
+  """
+  Remove paired HTML-like blocks with their content.
+
+  This intentionally fails closed: if a user wraps sensitive content in a tag
+  such as `<secret>token</secret>`, the content is discarded with the tag.
+  """
+  return re.sub(r"<([A-Za-z][A-Za-z0-9:_-]*)\b[^>]*>.*?</\1\s*>", "", s, flags=re.DOTALL)
+
 def strip_html_tags(s: str) -> str:
   """Remove all HTML tags from the input."""
   return re.sub(r"<[^>]+>", "", s)
@@ -83,7 +92,7 @@ def sanitize_text(s: str) -> str:
 
   1. Remove HTML comments (already done by `strip_html_comments`).
   2. Remove fenced/indented/inline code blocks.
-  3. Strip remaining HTML tags.
+  3. Remove HTML-like blocks with their content, then strip remaining tags.
   4. Neutralize mentions, issue references and email addresses.
   5. Remove lines with suspicious shell patterns.
   6. Strip URLs.
@@ -93,6 +102,7 @@ def sanitize_text(s: str) -> str:
   """
   s = strip_html_comments(s)
   s = remove_code_blocks(s)
+  s = remove_html_blocks(s)
   s = strip_html_tags(s)
   s = neutralize_mentions_and_refs(s)
   s = remove_suspicious_patterns(s)

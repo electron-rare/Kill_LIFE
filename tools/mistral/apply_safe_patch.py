@@ -11,18 +11,46 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from jsonschema import Draft202012Validator
 
 from tools.mistral.scope_allowlists import is_path_allowed, explain_scope
 
 SCHEMA_PATH = Path(__file__).parent / "schemas" / "safe_patch.schema.json"
+WINDOWS_DRIVE_RE = re.compile(r"^[A-Za-z]:[/\\]")
 
 
 def safe_write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+
+def normalize_relative_path(raw_path: str) -> str:
+    rel = raw_path.replace("\\", "/").strip()
+    while rel.startswith("./"):
+        rel = rel[2:]
+    if not rel or rel.startswith("/") or WINDOWS_DRIVE_RE.match(rel):
+        raise SystemExit(f"Refusing absolute patch path: {raw_path}")
+    parts = rel.split("/")
+    if any(part in ("", ".", "..") for part in parts):
+        raise SystemExit(f"Refusing unsafe patch path: {raw_path}")
+    return "/".join(parts)
+
+
+def resolve_destination(root: Path, rel: str) -> Path:
+    dst = (root / rel).resolve()
+    try:
+        dst.relative_to(root)
+    except ValueError as exc:
+        raise SystemExit(f"Refusing out-of-repo path: {rel}") from exc
+    return dst
 
 
 def main() -> int:
@@ -48,7 +76,7 @@ def main() -> int:
     edits = patch.get("edits", [])
     blocked = []
     for e in edits:
-        p = e["path"].replace("\\", "/").lstrip("/")
+        p = normalize_relative_path(e["path"])
         if not is_path_allowed(args.scope, p):
             blocked.append(p)
 
@@ -64,9 +92,9 @@ def main() -> int:
 
     applied = []
     for e in edits:
-        rel = e["path"].replace("\\", "/").lstrip("/")
+        rel = normalize_relative_path(e["path"])
         action = e["action"]
-        dst = root / rel
+        dst = resolve_destination(root, rel)
 
         if action in ("create", "update"):
             safe_write(dst, e.get("content", ""))
@@ -74,6 +102,8 @@ def main() -> int:
         elif action == "delete":
             if not args.allow_delete:
                 raise SystemExit(f"Refusing to delete {rel} (pass --allow-delete)")
+            if dst.is_dir():
+                raise SystemExit(f"Refusing to delete directory {rel}")
             if dst.exists():
                 dst.unlink()
                 applied.append(f"delete: {rel}")
