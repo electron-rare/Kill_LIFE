@@ -59,9 +59,12 @@ tools/hw/run_kicad_mcp.sh --doctor
 tools/hw/cad_stack.sh mcp --doctor
 tools/run_notion_mcp.sh --doctor
 tools/run_github_dispatch_mcp.sh --doctor
+tools/run_nexar_mcp.sh --doctor
 python3 tools/validate_specs_mcp_smoke.py --json --quick
 python3 tools/notion_mcp_smoke.py --json --quick
 python3 tools/github_dispatch_mcp_smoke.py --json --quick
+python3 tools/nexar_mcp_smoke.py --json
+python3 tools/hw/kicad_host_mcp_smoke.py --json --quick
 python3 tools/hw/mcp_smoke.py --json --quick --timeout 30
 python3 tools/hw/mcp_smoke.py --timeout 30
 python3 tools/validate_specs.py --json
@@ -74,6 +77,8 @@ Sur cette machine auditee, le smoke KiCad passe via le fallback conteneur:
 - `python3 tools/hw/mcp_smoke.py --timeout 30` passe
 - `python3 tools/notion_mcp_smoke.py --json --quick` retourne `degraded` tant que `NOTION_API_KEY` est absent
 - `python3 tools/github_dispatch_mcp_smoke.py --json --quick` retourne `degraded` tant que le token GitHub est absent
+- `python3 tools/nexar_mcp_smoke.py --json` retourne `degraded` tant que `NEXAR_TOKEN` ou `NEXAR_API_KEY` est absent
+- `python3 tools/hw/kicad_host_mcp_smoke.py --json --quick` retourne `degraded` tant que `pcbnew` n'est pas importable cote hote
 
 ## Configuration locale
 
@@ -142,6 +147,8 @@ Le chemin d'observabilite synthetique n'est pas fourni par `Kill_LIFE` seul. Si 
 
 ## Outils auxiliaires
 
+- `tools/run_nexar_mcp.sh` et `python3 tools/nexar_mcp_smoke.py` sont des helpers experimentaux pour qualifier `nexar_api` sans le promouvoir en point d'entree operateur
+- `tools/hw/kicad_host_mcp_smoke.py` est un helper de readiness pour verifier explicitement le chemin host-native
 - `tools/hw/sync_kicad_v10_libs.sh` est un helper auxiliaire optionnel, hors chemin operateur principal, pour prechauffer les libs/cache KiCad v10 des micro-serveurs auxiliaires
 - ce helper depend:
   - d'une image Docker locale `kill_life_cad-kicad-mcp:latest`

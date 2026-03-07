@@ -25,7 +25,7 @@ Vue plus large de l'ecosysteme:
 | `github-dispatch` | `tools/run_github_dispatch_mcp.sh` | launcher `Kill_LIFE`, backend `mascarade/core/mascarade/integrations/github_dispatch.py` | `2025-03-26` observe en test | supporte avec dependance externe | MCP local pour workflows allowlistes; requiert `KILL_LIFE_GITHUB_TOKEN` ou `GITHUB_TOKEN` et le repo compagnon |
 | `component_database` | `python3 -m mcp_servers.component_db` | `mascarade/finetune/kicad_kic_ai` | `2025-03-26` observe au handshake | supporte avec dependance externe | micro-serveur auxiliaire; depend du repo compagnon `mascarade`, du cache KiCad v10 et d'un index local prechauffe |
 | `kicad_tools` | `python3 -m mcp_servers.kicad_tools` | `mascarade/finetune/kicad_kic_ai` | `2025-03-26` observe au handshake | supporte avec dependance externe | micro-serveur auxiliaire; analyses reelles si les fichiers KiCad et dependances associees sont disponibles |
-| `nexar_api` | `python3 -m mcp_servers.nexar` | `mascarade/finetune/kicad_kic_ai` | `2025-03-26` observe au handshake | experimental | micro-serveur auxiliaire; sans `NEXAR_TOKEN`, reste en mode demo; validation live encore ouverte |
+| `nexar_api` | `tools/run_nexar_mcp.sh` | launcher `Kill_LIFE`, serveur `mascarade/finetune/kicad_kic_ai/mcp_servers/nexar.py` | `2025-03-26` observe au handshake | experimental | micro-serveur auxiliaire; sans `NEXAR_TOKEN`, reste en mode demo; validation live encore ouverte |
 
 ## Hors chaine supportee
 

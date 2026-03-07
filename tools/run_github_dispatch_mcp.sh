@@ -3,8 +3,32 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MASCARADE_DIR="${MASCARADE_DIR:-$ROOT_DIR/../mascarade}"
-CORE_PYTHON="${MASCARADE_CORE_PYTHON:-$MASCARADE_DIR/core/.venv/bin/python}"
 SERVER_SCRIPT="$ROOT_DIR/tools/github_dispatch_mcp.py"
+
+detect_core_python() {
+  local candidate="${MASCARADE_CORE_PYTHON:-}"
+  if [[ -n "$candidate" && -x "$candidate" ]]; then
+    printf '%s' "$candidate"
+    return 0
+  fi
+
+  candidate="$MASCARADE_DIR/core/.venv/bin/python"
+  if [[ -x "$candidate" ]]; then
+    printf '%s' "$candidate"
+    return 0
+  fi
+
+  if command -v python3 >/dev/null 2>&1; then
+    if PYTHONPATH="$MASCARADE_DIR/core${PYTHONPATH:+:$PYTHONPATH}" python3 -c 'import mascarade' >/dev/null 2>&1; then
+      printf '%s' "$(command -v python3)"
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+CORE_PYTHON="$(detect_core_python || true)"
 
 if [[ "${1:-}" == "--doctor" ]]; then
   cat <<EOF
@@ -16,9 +40,10 @@ EOF
   exit 0
 fi
 
-[[ -x "$CORE_PYTHON" ]] || {
+[[ -n "$CORE_PYTHON" && -x "$CORE_PYTHON" ]] || {
   echo "Missing Mascarade core python: $CORE_PYTHON" >&2
   exit 1
 }
 
+export PYTHONPATH="$MASCARADE_DIR/core${PYTHONPATH:+:$PYTHONPATH}"
 exec "$CORE_PYTHON" "$SERVER_SCRIPT" "$@"

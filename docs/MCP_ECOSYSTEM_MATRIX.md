@@ -22,7 +22,7 @@ Matrice transverse des surfaces MCP et non-MCP observees dans `Kill_LIFE`, `masc
 | `github-dispatch` | `Kill_LIFE` + `mascarade` | serveur MCP | `tools/run_github_dispatch_mcp.sh` | supporte avec dependance externe | MCP local branche sur `mascarade/core/mascarade/integrations/github_dispatch.py`; garde l'API directe existante |
 | `component_database` | `mascarade` | micro-serveur MCP | `python3 -m mcp_servers.component_db` | supporte avec dependance externe | serveur auxiliaire; depend du cache KiCad v10 et du repo compagnon |
 | `kicad_tools` | `mascarade` | micro-serveur MCP | `python3 -m mcp_servers.kicad_tools` | supporte avec dependance externe | serveur auxiliaire; depend des fichiers KiCad reels et du repo compagnon |
-| `nexar_api` | `mascarade` | micro-serveur MCP | `python3 -m mcp_servers.nexar` | experimental | serveur auxiliaire; mode demo sans token, validation live encore ouverte |
+| `nexar_api` | `Kill_LIFE` + `mascarade` | micro-serveur MCP | `tools/run_nexar_mcp.sh` | experimental | wrapper `Kill_LIFE` sur le serveur auxiliaire `mascarade`; mode demo sans token, validation live encore ouverte |
 
 ## 2. Consommateurs et configs MCP
 
