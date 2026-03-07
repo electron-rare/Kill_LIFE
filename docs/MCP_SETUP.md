@@ -11,6 +11,8 @@ Spec de perimetre:
 - Serveur MCP supporté: `mascarade/finetune/kicad_mcp_server`
 - Launcher supporté côté `Kill_LIFE`: `tools/hw/run_kicad_mcp.sh`
 - Transport supporté: `stdio` local uniquement
+- Profil supporté par défaut: `v1`
+- Profil étendu optionnel: `v2`
 
 `kicad-sch-mcp` n’est plus le chemin recommandé dans ce repo. Il reste un ancien axe documentaire, mais il n’est ni installé ni supporté ici comme runtime principal.
 
@@ -28,6 +30,14 @@ tools/hw/run_kicad_mcp.sh --doctor
 python3 tools/hw/mcp_smoke.py
 ```
 
+Sélection de profil :
+
+```bash
+tools/hw/run_kicad_mcp.sh --profile v1
+tools/hw/run_kicad_mcp.sh --profile v2
+python3 tools/hw/mcp_smoke.py --profile v2
+```
+
 ## Configuration locale
 
 Le fichier versionné [mcp.json](../mcp.json) pointe déjà vers le launcher supporté :
@@ -38,7 +48,7 @@ Le fichier versionné [mcp.json](../mcp.json) pointe déjà vers le launcher sup
     "kicad": {
       "type": "local",
       "command": "bash",
-      "args": ["tools/hw/run_kicad_mcp.sh"],
+      "args": ["tools/hw/run_kicad_mcp.sh", "--profile", "v1"],
       "tools": ["*"]
     }
   }
@@ -46,6 +56,7 @@ Le fichier versionné [mcp.json](../mcp.json) pointe déjà vers le launcher sup
 ```
 
 Le launcher prépare un runtime local writable sous `.cad-home/kicad-mcp/` et exporte `KICAD_MCP_DATA_DIR` pour éviter les écritures dans un préfixe immuable.
+Il applique aussi par défaut un niveau de logs discret (`warn`) pour éviter de polluer les clients MCP sur le chemin nominal.
 
 ## Serveur auxiliaire
 

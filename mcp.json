@@ -3,7 +3,7 @@
     "kicad": {
       "type": "local",
       "command": "bash",
-      "args": ["tools/hw/run_kicad_mcp.sh"],
+      "args": ["tools/hw/run_kicad_mcp.sh", "--profile", "v1"],
       "tools": ["*"]
     },
     "validate-specs": {
