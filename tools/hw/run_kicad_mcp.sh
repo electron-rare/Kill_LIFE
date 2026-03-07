@@ -6,16 +6,20 @@ COMPOSE_FILE="$ROOT_DIR/deploy/cad/docker-compose.yml"
 VERBOSE=0
 DOCTOR=0
 RUNTIME="${KICAD_MCP_RUNTIME:-auto}"
+FORCE_BUILD=0
 
 usage() {
   cat <<'EOF'
-Usage: tools/hw/run_kicad_mcp.sh [--doctor] [--verbose] [-- <server args>]
+Usage: tools/hw/run_kicad_mcp.sh [--doctor] [--verbose] [--debug] [--profile v1|v2] [--rebuild] [-- <server args>]
 
 Launch the supported KiCad MCP server from the companion `mascarade` repo.
 
 Options:
   --doctor    Print resolved paths and exit
   --verbose   Print resolved command before exec
+  --debug     Enable verbose launcher + server logs
+  --profile   Select MCP profile (`v1` default, `v2` for extended tools)
+  --rebuild   Force a rebuild of the container image before launch
   -h, --help  Show this help
 
 Environment:
@@ -25,6 +29,8 @@ Environment:
   NODE_BIN             Override the Node executable (default: node)
   KICAD_MCP_DATA_DIR   Override the writable data directory used by the server
   KICAD_MCP_RUNTIME    host | container | auto (default: auto)
+  KICAD_MCP_PROFILE    v1 | v2 (default: v1)
+  KICAD_MCP_LOG_LEVEL  error | warn | info | debug (default: warn)
 EOF
 }
 
@@ -139,6 +145,26 @@ while [ "$#" -gt 0 ]; do
       VERBOSE=1
       shift
       ;;
+    --debug)
+      VERBOSE=1
+      export KICAD_MCP_LOG_LEVEL="${KICAD_MCP_LOG_LEVEL:-debug}"
+      export KICAD_PYTHON_STDERR_LOG_LEVEL="${KICAD_PYTHON_STDERR_LOG_LEVEL:-DEBUG}"
+      export KICAD_PYTHON_FILE_LOG_LEVEL="${KICAD_PYTHON_FILE_LOG_LEVEL:-DEBUG}"
+      shift
+      ;;
+    --profile)
+      [ "$#" -ge 2 ] || die "--profile requires a value"
+      export KICAD_MCP_PROFILE="$2"
+      shift 2
+      ;;
+    --profile=*)
+      export KICAD_MCP_PROFILE="${1#*=}"
+      shift
+      ;;
+    --rebuild)
+      FORCE_BUILD=1
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -157,6 +183,10 @@ REPO_PARENT="$(cd "$ROOT_DIR/.." && pwd)"
 export CAD_HOST_ROOT="${CAD_HOST_ROOT:-$REPO_PARENT}"
 export CAD_WORKSPACE_DIR="${CAD_WORKSPACE_DIR:-$ROOT_DIR}"
 export KICAD_MCP_IMAGE="${KICAD_MCP_IMAGE:-kill_life_cad-kicad-mcp:latest}"
+export KICAD_MCP_PROFILE="${KICAD_MCP_PROFILE:-v1}"
+export KICAD_MCP_LOG_LEVEL="${KICAD_MCP_LOG_LEVEL:-warn}"
+export KICAD_PYTHON_STDERR_LOG_LEVEL="${KICAD_PYTHON_STDERR_LOG_LEVEL:-WARNING}"
+export KICAD_PYTHON_FILE_LOG_LEVEL="${KICAD_PYTHON_FILE_LOG_LEVEL:-INFO}"
 MASCARADE_DIR="${MASCARADE_DIR:-$REPO_PARENT/mascarade}"
 SERVER_DIR="$MASCARADE_DIR/finetune/kicad_mcp_server"
 ENTRYPOINT="${KICAD_MCP_ENTRYPOINT:-$SERVER_DIR/dist/index.js}"
@@ -196,6 +226,9 @@ KICAD_PYTHONPATH=$PYTHONPATH_VALUE
 HOST_PCBNEW_IMPORT=$HOST_PCBNEW_STATUS
 CONTAINER_STATUS=$CONTAINER_STATUS
 KICAD_MCP_IMAGE=$KICAD_MCP_IMAGE
+KICAD_MCP_PROFILE=$KICAD_MCP_PROFILE
+KICAD_MCP_LOG_LEVEL=$KICAD_MCP_LOG_LEVEL
+KICAD_PYTHON_STDERR_LOG_LEVEL=$KICAD_PYTHON_STDERR_LOG_LEVEL
 SELECTED_RUNTIME=$RUNTIME
 EOF
   exit 0
@@ -240,7 +273,7 @@ fi
 command -v docker >/dev/null 2>&1 || die "docker is required for container runtime"
 [ -f "$COMPOSE_FILE" ] || die "compose file not found: $COMPOSE_FILE"
 
-if ! docker image inspect "$KICAD_MCP_IMAGE" >/dev/null 2>&1; then
+if [ "$FORCE_BUILD" -eq 1 ] || ! docker image inspect "$KICAD_MCP_IMAGE" >/dev/null 2>&1; then
   log "Building kicad-mcp container (KiCad v10 via kicad/kicad:nightly-full)"
   compose build kicad-mcp >&2
 fi
@@ -249,14 +282,20 @@ ACTIVE_CONTAINER_NAME="${KICAD_MCP_CONTAINER_NAME:-kill-life-kicad-mcp-$(id -u)-
 trap cleanup_container EXIT INT TERM
 
 debug "exec container kicad-mcp $*"
-compose run --rm --no-deps -T \
+docker run --rm -i --init \
   --name "$ACTIVE_CONTAINER_NAME" \
   --user "$(id -u):$(id -g)" \
+  --workdir "$CAD_WORKSPACE_DIR" \
+  -v "$CAD_HOST_ROOT:$CAD_HOST_ROOT" \
   -e HOME="$MCP_HOME" \
   -e XDG_CONFIG_HOME="$CONFIG_HOME" \
   -e XDG_CACHE_HOME="$CACHE_HOME" \
   -e KICAD_MCP_DATA_DIR="$DATA_DIR" \
-  kicad-mcp \
+  -e KICAD_MCP_PROFILE="$KICAD_MCP_PROFILE" \
+  -e KICAD_MCP_LOG_LEVEL="$KICAD_MCP_LOG_LEVEL" \
+  -e KICAD_PYTHON_STDERR_LOG_LEVEL="$KICAD_PYTHON_STDERR_LOG_LEVEL" \
+  -e KICAD_PYTHON_FILE_LOG_LEVEL="$KICAD_PYTHON_FILE_LOG_LEVEL" \
+  "$KICAD_MCP_IMAGE" \
   sh -lc 'set -e; mkdir -p "$HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME" "$KICAD_MCP_DATA_DIR"; exec node /opt/kicad-mcp/server/dist/index.js "$@"' sh "$@"
 status=$?
 trap - EXIT INT TERM

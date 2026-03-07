@@ -69,6 +69,13 @@ debian-openclaw.qcow2
 
 # Documentation générée
 site/
+docs/ci-audit-summary.json
+docs/rfc2119-summary.json
+docs/evidence/ci_cd_audit_summary.json
+docs/evidence/*/summary.json
+docs/evidence/*/*.result.json
+docs/evidence/*/*.stdout.txt
+docs/evidence/*/*.stderr.txt
 
 # Assets prompts (spécifique projet)
 KIKIFOU/assets_prompts.md

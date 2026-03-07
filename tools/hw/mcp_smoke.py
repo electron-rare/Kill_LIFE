@@ -26,6 +26,12 @@ def parse_args() -> argparse.Namespace:
         default=20.0,
         help="Seconds to wait for each MCP response.",
     )
+    parser.add_argument(
+        "--profile",
+        choices=("v1", "v2"),
+        default=None,
+        help="Optional MCP profile override for the launcher.",
+    )
     return parser.parse_args()
 
 
@@ -83,9 +89,14 @@ def main() -> int:
     args = parse_args()
     launcher = ROOT / "tools" / "hw" / "run_kicad_mcp.sh"
 
+    env = os.environ.copy()
+    if args.profile:
+        env["KICAD_MCP_PROFILE"] = args.profile
+
     proc = subprocess.Popen(
         ["bash", str(launcher)],
         cwd=ROOT,
+        env=env,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -155,7 +166,7 @@ def main() -> int:
                 stderr_output = proc.stderr.read().strip()
             except Exception:
                 stderr_output = ""
-        if stderr_output:
+        if stderr_output and proc.returncode not in (0, None):
             sys.stderr.write(stderr_output + "\n")
 
 

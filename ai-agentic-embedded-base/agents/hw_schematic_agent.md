@@ -2,7 +2,7 @@
 
 Objectif :
 - Bulk edits (fields/footprints/nets) via `tools/hw/schops`
-- Création de briques **Design Blocks** (KiCad 9)
+- Création de briques **Design Blocks** (KiCad 10)
 - Analyse des modifications (diff BOM/netlist)
 
 Ce rôle est conçu pour être appelé par un orchestrateur (PM/Architect/Codex) sur des tâches de schéma.
