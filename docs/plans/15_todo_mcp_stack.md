@@ -2,20 +2,15 @@
 
 Last updated: 2026-03-07
 
-## Sprint actuel
+Ce fichier n'est plus le TODO MCP canonique.
 
-- [x] Implémenter `tools/validate_specs.py`.
-- [x] Rendre `mcp.json` lançable.
-- [x] Ajouter un test de handshake MCP minimal.
-- [ ] Documenter le périmètre exact de `validate-specs`.
+Source de vérité actuelle:
 
-## J7
+- backlog exécutable: `specs/mcp_tasks.md`
+- doc opérateur: `docs/MCP_SETUP.md`
+- matrice de support: `docs/MCP_SUPPORT_MATRIX.md`
 
-- [ ] Aligner la doc KiCad MCP sur un seul chemin opérateur supporté.
-- [ ] Décrire la dépendance éventuelle à `mascarade` pour le runtime KiCad avancé.
-- [ ] Ajouter une preuve d’exécution `tools/hw/cad_stack.sh mcp`.
+Raison:
 
-## J30
-
-- [ ] Transformer `docs/MCP_SETUP.md` en doc canonique unique ou en simple pointeur.
-- [ ] Ajouter une matrice `supporté / expérimental / démo`.
+- le backlog MCP ne doit plus être dupliqué entre `docs/plans` et `specs`
+- `specs/mcp_tasks.md` porte maintenant l'état courant et les actions restantes

@@ -1,46 +1,83 @@
-# MCP setup (KiCad)
+# MCP setup
 
-Source canonique pour la configuration MCP locale de `Kill_LIFE`.
+Source canonique pour l'usage MCP local de `Kill_LIFE`.
 
-Spec de perimetre:
+References canoniques:
 
-- `specs/kicad_mcp_scope_spec.md`
+- spec de perimetre: `specs/kicad_mcp_scope_spec.md`
+- matrice de support: `docs/MCP_SUPPORT_MATRIX.md`
+- matrice ecosysteme: `docs/MCP_ECOSYSTEM_MATRIX.md`
+- backlog MCP: `specs/mcp_tasks.md`
 
-## Chemin supporté
+## Source de verite et ownership
 
-- Serveur MCP supporté: `mascarade/finetune/kicad_mcp_server`
-- Launcher supporté côté `Kill_LIFE`: `tools/hw/run_kicad_mcp.sh`
-- Transport supporté: `stdio` local uniquement
-- Profil supporté par défaut: `v1`
-- Profil étendu optionnel: `v2`
+- `Kill_LIFE` own le lancement, la consommation et la gouvernance documentaire MCP locale
+- `mascarade` own l'implementation du serveur KiCad principal et l'observabilite compagnon
+- `specs/` a la racine de `Kill_LIFE` est la source de verite canonique
+- `ai-agentic-embedded-base/specs/` n'est qu'un miroir exporte
 
-`kicad-sch-mcp` n’est plus le chemin recommandé dans ce repo. Il reste un ancien axe documentaire, mais il n’est ni installé ni supporté ici comme runtime principal.
+## Chemins supportes
 
-## Prérequis
+- serveur MCP KiCad supporte: `../mascarade/finetune/kicad_mcp_server`
+- launcher supporte cote `Kill_LIFE`: `tools/hw/run_kicad_mcp.sh`
+- alias operateur supporte: `tools/hw/cad_stack.sh mcp`
+- serveur auxiliaire supporte: `python3 tools/validate_specs.py --mcp`
+- serveur MCP Notion supporte: `tools/run_notion_mcp.sh`
+- serveur MCP GitHub dispatch supporte: `tools/run_github_dispatch_mcp.sh`
+- transport supporte: `stdio` local uniquement
+
+`kicad-sch-mcp` n'est plus un chemin supporte dans ce repo. Il reste un ancien axe documentaire, pas un runtime principal.
+
+## Ce qui est reellement supporte
+
+- `kicad`: runtime MCP KiCad canonique, avec `tools`, `resources` et `prompts`
+- `validate-specs`: validation repo/specs cote `Kill_LIFE`, sans role CAD
+- `notion`: MCP local sur le backend Notion existant de `mascarade`
+- `github-dispatch`: MCP local pour workflows GitHub allowlistes
+
+Les micro-serveurs `kicad_kic_ai` de `mascarade` sont suivis comme surfaces auxiliaires. Ils ne sont pas des points d'entree operateur `Kill_LIFE`, et leur statut doit etre lu avec leurs dependances externes dans `docs/MCP_SUPPORT_MATRIX.md`.
+
+## Prerequis
 
 - le repo compagnon `mascarade` existe en voisin (`../mascarade`) ou via `MASCARADE_DIR`
 - `node` est disponible sur la machine
-- le serveur est buildé dans `mascarade/finetune/kicad_mcp_server/dist/index.js`
-- KiCad et son Python sont visibles par le runtime du serveur
+- le serveur est builde dans `mascarade/finetune/kicad_mcp_server/dist/index.js`
+- le venv `mascarade/core/.venv` existe, ou `MASCARADE_CORE_PYTHON` pointe vers un Python avec `notion-client` et `httpx`
+- Docker est disponible pour le fallback conteneur KiCad v10
+- `pcbnew` cote hote est optionnel: s'il est absent, le launcher bascule vers le conteneur supporte
+- `NOTION_API_KEY` est requis pour les outils `notion`
+- `KILL_LIFE_GITHUB_TOKEN` ou `GITHUB_TOKEN` est requis pour `dispatch_workflow`
 
-Diagnostic rapide :
+Le runtime prepare un environnement writable sous `.cad-home/kicad-mcp/` et exporte `KICAD_MCP_DATA_DIR` pour eviter les ecritures dans un prefixe immuable.
+
+## Diagnostic rapide
+
+Depuis `Kill_LIFE`:
 
 ```bash
 tools/hw/run_kicad_mcp.sh --doctor
-python3 tools/hw/mcp_smoke.py
+tools/hw/cad_stack.sh mcp --doctor
+tools/run_notion_mcp.sh --doctor
+tools/run_github_dispatch_mcp.sh --doctor
+python3 tools/validate_specs_mcp_smoke.py --json --quick
+python3 tools/notion_mcp_smoke.py --json --quick
+python3 tools/github_dispatch_mcp_smoke.py --json --quick
+python3 tools/hw/mcp_smoke.py --json --quick --timeout 30
+python3 tools/hw/mcp_smoke.py --timeout 30
+python3 tools/validate_specs.py --json
 ```
 
-Sélection de profil :
+Sur cette machine auditee, le smoke KiCad passe via le fallback conteneur:
 
-```bash
-tools/hw/run_kicad_mcp.sh --profile v1
-tools/hw/run_kicad_mcp.sh --profile v2
-python3 tools/hw/mcp_smoke.py --profile v2
-```
+- `HOST_PCBNEW_IMPORT=missing`
+- `CONTAINER_STATUS=available`
+- `python3 tools/hw/mcp_smoke.py --timeout 30` passe
+- `python3 tools/notion_mcp_smoke.py --json --quick` retourne `degraded` tant que `NOTION_API_KEY` est absent
+- `python3 tools/github_dispatch_mcp_smoke.py --json --quick` retourne `degraded` tant que le token GitHub est absent
 
 ## Configuration locale
 
-Le fichier versionné [mcp.json](../mcp.json) pointe déjà vers le launcher supporté :
+Le fichier versionne [mcp.json](../mcp.json) pointe vers les serveurs MCP reellement supportes:
 
 ```json
 {
@@ -48,38 +85,80 @@ Le fichier versionné [mcp.json](../mcp.json) pointe déjà vers le launcher sup
     "kicad": {
       "type": "local",
       "command": "bash",
-      "args": ["tools/hw/run_kicad_mcp.sh", "--profile", "v1"],
+      "args": ["tools/hw/run_kicad_mcp.sh"],
+      "tools": ["*"]
+    },
+    "validate-specs": {
+      "type": "local",
+      "command": "python3",
+      "args": ["tools/validate_specs.py", "--mcp"],
+      "tools": ["*"]
+    },
+    "notion": {
+      "type": "local",
+      "command": "bash",
+      "args": ["tools/run_notion_mcp.sh"],
+      "tools": ["*"]
+    },
+    "github-dispatch": {
+      "type": "local",
+      "command": "bash",
+      "args": ["tools/run_github_dispatch_mcp.sh"],
       "tools": ["*"]
     }
   }
 }
 ```
 
-Le launcher prépare un runtime local writable sous `.cad-home/kicad-mcp/` et exporte `KICAD_MCP_DATA_DIR` pour éviter les écritures dans un préfixe immuable.
-Il applique aussi par défaut un niveau de logs discret (`warn`) pour éviter de polluer les clients MCP sur le chemin nominal.
-
-## Serveur auxiliaire
-
-`Kill_LIFE` expose aussi un serveur MCP auxiliaire `validate-specs` pour la validation repo/specs :
-
-```bash
-python3 tools/validate_specs.py --json
-python3 tools/validate_specs.py --mcp
-```
-
-Ce serveur ne remplace pas le runtime KiCad. Il sert à vérifier les specs, la conformité et l’usage RFC2119 côté dépôt.
-
 ## Usage
 
-Depuis `Kill_LIFE` :
+Depuis `Kill_LIFE`:
 
 ```bash
 tools/hw/run_kicad_mcp.sh
+tools/hw/cad_stack.sh mcp
+python3 tools/validate_specs.py --mcp
+tools/run_notion_mcp.sh
+tools/run_github_dispatch_mcp.sh
 ```
+
+Le smoke `tools/hw/mcp_smoke.py` valide actuellement la surface cible suivante:
+
+- `initialize`
+- `tools/list`
+- `resources/list`
+- `prompts/list`
+- creation de projet
+- lecture de resources stables
+- lecture d'un prompt stable
+
+Les smokes dedies supplementaires sont:
+
+- `tools/validate_specs_mcp_smoke.py`: handshake MCP de `validate-specs`
+- `tools/notion_mcp_smoke.py`: handshake MCP de `notion`, puis validation live si le secret est disponible
+- `tools/github_dispatch_mcp_smoke.py`: handshake MCP de `github-dispatch`, puis validation allowlist et live optionnelle
+
+Le chemin d'observabilite synthetique n'est pas fourni par `Kill_LIFE` seul. Si la stack compagnon `mascarade` tourne, `/api/ops/summary` expose un bloc `mcp` qui remonte le statut, le runtime reellement choisi, la version de protocole et les compteurs de surface.
+
+## Outils auxiliaires
+
+- `tools/hw/sync_kicad_v10_libs.sh` est un helper auxiliaire optionnel, hors chemin operateur principal, pour prechauffer les libs/cache KiCad v10 des micro-serveurs auxiliaires
+- ce helper depend:
+  - d'une image Docker locale `kill_life_cad-kicad-mcp:latest`
+  - du repo compagnon `mascarade`
+- ce helper n'est pas requis pour lancer le runtime `kicad` canonique
 
 ## Politique de support
 
-- `stdio` reste le seul transport supporté par défaut
-- aucun serveur MCP réseau n’est exposé par défaut
-- les serveurs mock/demo restent hors chemin de production tant qu’ils ne parlent pas à un backend réel
-- `tools/hw/cad_stack.sh mcp` reste un chemin legacy à réaligner avant d’être re-documenté ici
+- `stdio` reste le seul transport supporte par defaut
+- aucun serveur MCP reseau n'est expose par defaut
+- `tools/hw/cad_stack.sh mcp` est un alias supporte du launcher canonique
+- le runtime KiCad canonique est celui de `mascarade/finetune/kicad_mcp_server`
+- `validate-specs` reste un MCP auxiliaire repo/specs, pas un runtime CAD
+- `notion` et `github-dispatch` restent en `stdio` local et reutilisent les backends existants
+- les micro-serveurs `kicad_kic_ai` sont des surfaces auxiliaires suivies, mais restent hors chemin operateur `Kill_LIFE`
+
+## Points encore ouverts
+
+- le chemin host-native avec `pcbnew` doit encore etre revalide sur une machine qui expose reellement KiCad Python
+- `nexar_api` doit encore etre valide en mode live avec `NEXAR_TOKEN`

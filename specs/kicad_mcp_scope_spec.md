@@ -6,7 +6,7 @@ Last updated: 2026-03-07
 
 - O1. Definir le perimetre fonctionnel du serveur MCP KiCad supporte par `Kill_LIFE`.
 - O2. Eviter la derive entre implementation serveur, launcher local, docs et attentes des agents.
-- O3. Fixer une frontiere claire entre ce que le MCP KiCad MUST couvrir en v1, ce qui SHOULD venir en v2, et ce qui reste hors scope.
+- O3. Fixer une frontiere claire entre le contrat stable du MCP KiCad, les extensions futures legitimes et ce qui reste hors scope.
 
 ## Non-objectifs
 
@@ -34,6 +34,7 @@ Last updated: 2026-03-07
   - Le serveur MUST exposer `stdio` local uniquement.
   - Le serveur MUST parler JSON-RPC compatible MCP avec framing ligne par ligne, conforme au SDK utilise.
   - Le serveur MUST fonctionner via `tools/hw/run_kicad_mcp.sh`.
+  - Le serveur MUST exposer une seule surface stable; aucun profil runtime alternatif ne doit etre requis.
 
 - F2. Cycle projet
   - Le serveur MUST permettre de creer, ouvrir, sauvegarder et inspecter un projet KiCad.
@@ -68,7 +69,13 @@ Last updated: 2026-03-07
   - Le serveur SHOULD permettre la recherche de composants JLCPCB/LCSC, les alternatives proches et l'acces aux datasheets.
   - Les integrations de sourcing MAY utiliser un backend local ou une API externe si les credentials sont presents.
 
-- F10. Runtime
+- F10. Resources / prompts / UI
+  - Le serveur MUST exposer `tools`, `resources` et `prompts` comme surface stable unique.
+  - Toute resource exposee MUST correspondre a un backend reel et testable.
+  - Les prompts MUST referencer uniquement des capabilities supportees.
+  - Les actions UI supportees MUST retourner un resultat deterministe ou une erreur structuree quand le contexte graphique est indisponible.
+
+- F11. Runtime
   - Le serveur MUST preferer un backend KiCad reel.
   - Le backend SHOULD preferer IPC quand disponible.
   - Le backend MUST pouvoir retomber sur SWIG si IPC n'est pas disponible.
@@ -82,7 +89,7 @@ Last updated: 2026-03-07
   - Le serveur MUST NOT exiger de secrets pour les usages locaux de base.
 
 - Fiabilite
-  - `initialize` puis `tools/list` MUST passer sur une machine supportee.
+  - `initialize`, `tools/list`, `resources/list` et `prompts/list` MUST passer sur une machine supportee.
   - Le launcher MUST gerer le fallback host -> container quand l'hote n'expose pas `pcbnew`.
   - Les erreurs MUST etre actionnables et non silencieuses.
 
@@ -99,13 +106,13 @@ Last updated: 2026-03-07
   - Le contrat de transport MUST rester stable pour les consommateurs locaux de `Kill_LIFE`.
   - Le runtime conteneur supporte SHOULD rester aligne avec la version KiCad cible du projet, y compris la trajectoire v10.
 
-## V2 / extensions legitimes
+## Extensions futures legitimes
 
-- V2.1. Session IPC plus riche, synchronisee avec une UI KiCad vivante.
-- V2.2. Coverage schematic plus avancee: edition structurelle plus large, contraintes electriques plus fines, automation de patterns repetitifs.
-- V2.3. Workflows de revue plus riches: snapshots, diff de board/schema, previews avant mutation.
-- V2.4. Sourcing plus fort: BOM, substitutions, scoring cout/disponibilite.
-- V2.5. Dry-run systematique pour les mutations a fort impact.
+- E1. Session IPC plus riche, synchronisee avec une UI KiCad vivante.
+- E2. Coverage schematic plus avancee: edition structurelle plus large, contraintes electriques plus fines, automation de patterns repetitifs.
+- E3. Workflows de revue plus riches: snapshots, diff de board/schema, previews avant mutation.
+- E4. Sourcing plus fort: BOM, substitutions, scoring cout/disponibilite.
+- E5. Dry-run systematique pour les mutations a fort impact.
 
 ## Hors scope
 
@@ -125,11 +132,15 @@ Last updated: 2026-03-07
   - `initialize`
   - `notifications/initialized`
   - `tools/list`
+  - `resources/list`
+  - `prompts/list`
+  - `resources/read` sur au moins une resource stable
+  - `prompts/get` sur au moins un prompt stable
 
 ## Critieres d'acceptation
 
 - AC1. Le repo documente un seul serveur KiCad MCP supporte en v1.
-- AC2. Le serveur expose au moins une famille d'outils fonctionnelle pour: projet, schema, PCB, librairies, validation, export.
+- AC2. Le serveur expose une surface stable fonctionnelle pour: projet, schema, PCB, librairies, validation, export, resources, prompts et sourcing.
 - AC3. `python3 tools/hw/mcp_smoke.py` passe sur un environnement supporte.
 - AC4. En absence de `pcbnew` host, le launcher supporte bascule vers le runtime conteneur.
 - AC5. La doc d'usage locale renvoie explicitement vers cette spec de perimetre.

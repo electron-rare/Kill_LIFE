@@ -9,7 +9,7 @@ Run one orchestration layer that can:
 - converse against `RTC_BL_PHONE` and `le-mystere-professeur-zacus` independently,
 - keep workspace boundaries strict per repo,
 - run low-cost autonomous loops with guarded command allowlists,
-- stay ready for connected hardware checks before any upload/flash action.
+- enforce upload/flash/serial-monitor loops by default on connected hardware.
 
 ## 2) Scope
 
@@ -18,6 +18,7 @@ In scope:
 - local ZeroClaw profile bootstrap for both repos,
 - deterministic workspace switch (`rtc` vs `zacus`) from one CLI entrypoint,
 - hardware discovery/introspection preflight,
+- forced-by-default firmware loop (build + upload + monitor) per repo target,
 - lightweight CI validation for orchestration scripts/spec.
 
 Out of scope:
@@ -64,23 +65,57 @@ This keeps `autonomy.workspace_only = true` effective on a per-repo boundary.
 - `tools/ai/zeroclaw_dual_chat.sh`
   - target switch by alias (`rtc`, `zacus`) or absolute path,
   - message mode (`-m`) or interactive mode,
-  - provider auto-fallback (`copilot` -> `openai-codex` -> `openrouter`),
+  - `--cheap` mode to prefer local provider routing for low-credit runs,
+  - loads local auth env file `~/.zeroclaw/env` when present,
+  - provider auto-fallback (`ollama` when local preferred -> `copilot` -> `openai-codex` -> `gemini` -> `openrouter` -> `anthropic` -> `openai`),
   - token sourcing from `gh auth token` at runtime only when `copilot` is selected.
 - `tools/ai/zeroclaw_stack_up.sh`
   - starts local gateway and local follow server,
   - reuses existing listeners when ports are already bound (prevents duplicate-start failures),
+  - loads local auth env file `~/.zeroclaw/env` when present,
+  - auto-aligns gateway provider/model for autonomous cost control:
+    - default uses `openai-codex` when auth profile exists (reliable baseline),
+    - optionally prefers local `ollama` when `ZEROCLAW_PREFER_LOCAL_AI=1`,
+    - otherwise uses `openrouter` when API key exists,
+  - writes reliability fallback chain in config (`ollama -> openai-codex -> openrouter` when available),
+  - attempts automatic gateway pairing and token refresh,
+  - validates bearer token with a malformed webhook probe (`{}` payload) and re-pairs when possible,
   - generates live follow dashboard at `http://127.0.0.1:8788/`,
   - dashboard includes live polling panels for `/conversations.jsonl` and `/gateway.log` (1s polling),
   - preserves direct raw links: `/conversations.jsonl` and `/gateway.log`,
+  - starts `tools/ai/zeroclaw_watch_1min.sh` watcher and exposes `/realtime_1min.log`,
   - writes `artifacts/zeroclaw/prometheus.yml` scrape config,
-  - supports local Prometheus startup via `ZEROCLAW_PROM_MODE` (`off`, `auto`, `binary`, `docker`),
+  - supports local Prometheus startup via `ZEROCLAW_PROM_MODE` (`off`, `auto`, `binary`, `docker`) with `auto` fallback `binary -> docker`,
+  - on macOS, auto-attempts Docker Desktop startup before Prometheus docker mode,
   - stores pair token in `artifacts/zeroclaw/pair_token.txt`.
 - `tools/ai/zeroclaw_stack_down.sh`
   - stops local gateway/follow processes,
   - stops local Prometheus process/container if managed by the stack,
+  - stops `tools/ai/zeroclaw_watch_1min.sh` watcher process,
   - confirms logs remain in `artifacts/zeroclaw/`.
+- `tools/ai/zeroclaw_watch_1min.sh`
+  - supports `start|stop|status|run|once`,
+  - appends one status line every 60s by default to `artifacts/zeroclaw/realtime_1min.log`,
+  - line format:
+    - `<ts> | paired=<...> | uptime=<...> | prom=<...> | convo=<last line> | gateway=<last line>`
+- `tools/ai/zeroclaw_hw_firmware_loop.sh`
+  - target switch `rtc|zacus`,
+  - validates `platformio.ini` env exists before running,
+  - forces `build -> upload -> serial monitor` by default,
+  - auto-retries with a compatible env when chip mismatch is detected (`ESP32` vs `ESP32-S3`),
+  - auto-detects serial port when not specified,
+  - on macOS, wraps monitor with `script` pseudo-TTY to avoid `termios` non-interactive failures,
+  - monitor timeout default 60s.
+- `tools/ai/ollama_local_setup.sh`
+  - installs `ollama` via Homebrew when missing,
+  - starts local service,
+  - optionally pulls/warms a local model,
+  - prints zero-credit defaults for stack usage.
 - `tools/ai/zeroclaw_webhook_send.sh`
-  - requires `--allow-model-call` before any real webhook send,
+  - sends webhook by default (no mandatory allow flag),
+  - keeps `--allow-model-call` as backward-compatible legacy option,
+  - supports `--dry-run` to validate payload/limits without network send,
+  - enforces autonomous local quotas with `artifacts/zeroclaw/webhook_budget.json`,
   - supports `--repo-hint <hint>` metadata tagging,
   - appends enriched JSONL traces to `artifacts/zeroclaw/conversations.jsonl`.
 
@@ -89,9 +124,19 @@ This keeps `autonomy.workspace_only = true` effective on a per-repo boundary.
 Auto provider selection order in `zeroclaw_dual_chat.sh`:
 
 1. explicit `ZEROCLAW_PROVIDER` override,
-2. `copilot` when `gh` auth is valid and Copilot billing endpoint is accessible,
-3. `openai-codex` when a ZeroClaw auth profile exists,
-4. `openrouter` when `OPENROUTER_API_KEY` is present.
+2. `ollama` when `ZEROCLAW_PREFER_LOCAL_AI=1` and local model is available,
+3. `copilot` when `gh` auth is valid and Copilot billing endpoint is accessible,
+4. `openai-codex` when a ZeroClaw auth profile exists,
+5. `gemini` when `GEMINI_API_KEY`/`GOOGLE_API_KEY` is present,
+6. `openrouter` when `OPENROUTER_API_KEY` is present,
+7. `anthropic` when `ANTHROPIC_API_KEY`/`ANTHROPIC_OAUTH_TOKEN` is present,
+8. `openai` when `OPENAI_API_KEY` is present.
+
+Gateway bootstrap provider order in `zeroclaw_stack_up.sh`:
+
+1. `openai-codex` when auth profile exists (default mode),
+2. `openrouter` when `OPENROUTER_API_KEY` exists,
+3. `ollama` only when `ZEROCLAW_PREFER_LOCAL_AI=1` and local model is available.
 
 Observed on current machine:
 
@@ -140,6 +185,7 @@ Raw URLs:
 
 - `http://127.0.0.1:8788/conversations.jsonl`
 - `http://127.0.0.1:8788/gateway.log`
+- `http://127.0.0.1:8788/realtime_1min.log`
 - `http://127.0.0.1:8788/prometheus.yml`
 
 Conversation JSONL line schema (append-only):
@@ -155,22 +201,58 @@ Compatibility rule:
 
 - viewer tolerates legacy lines that only contain `ts`, `message`, `response_raw`.
 
-Credit-protection rule:
+Webhook execution and cost controls:
 
-- without `--allow-model-call`, `zeroclaw_webhook_send.sh` exits non-zero and does not send/write logs.
+- webhook send is enabled by default.
+- `--dry-run` performs validation only (no network call, no execution log append).
+- hourly quota and message-size limits are enforced by environment variables:
+  - `ZEROCLAW_WEBHOOK_MAX_CALLS_PER_HOUR` (default: `40`)
+  - `ZEROCLAW_WEBHOOK_MAX_CHARS` (default: `1200`)
+- quota state is stored in `artifacts/zeroclaw/webhook_budget.json`.
 
 ## 9) Prometheus Integration
 
 Economical default:
 
-- `ZEROCLAW_PROM_MODE=auto` (start only if local `prometheus` binary exists)
+- `ZEROCLAW_PROM_MODE=auto` (try local `prometheus` binary first, then Docker fallback)
 
 Optional modes:
 
 - `ZEROCLAW_PROM_MODE=off` disables Prometheus startup
 - `ZEROCLAW_PROM_MODE=binary` requires local `prometheus` binary
 - `ZEROCLAW_PROM_MODE=docker` runs `prom/prometheus:latest` locally
+- `ZEROCLAW_DOCKER_WAIT_SECS` controls Docker daemon wait timeout (default: `90`)
+- `ZEROCLAW_PROM_READY_WAIT_SECS` controls Prometheus readiness wait (default: `15`)
 
 Default local endpoint when running:
 
 - `http://127.0.0.1:9090/targets`
+
+## 10) Local Auth Bootstrap
+
+Recommended local secret file:
+
+- `~/.zeroclaw/env` (permissions `600`)
+
+Suggested contents:
+
+- `OPENROUTER_API_KEY=...`
+
+Behavior:
+
+- `zeroclaw_dual_chat.sh`, `zeroclaw_stack_up.sh`, and `zeroclaw_webhook_send.sh` auto-load this file if present.
+
+## 11) Firmware Loop Defaults (local hardware)
+
+Default execution policy:
+
+- with hardware connected, upload/flash and serial monitor are forced by default.
+- if no serial port is detected, loop fails fast (non-zero) instead of silently skipping upload.
+- only declared PlatformIO envs are allowed; no `-e native` or `-e test` shortcuts.
+
+Default commands:
+
+- RTC:
+  - `tools/ai/zeroclaw_hw_firmware_loop.sh rtc`
+- Zacus:
+  - `tools/ai/zeroclaw_hw_firmware_loop.sh zacus`

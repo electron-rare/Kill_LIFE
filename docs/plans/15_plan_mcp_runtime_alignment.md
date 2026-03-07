@@ -1,42 +1,80 @@
-# 15) Plan d’alignement MCP local
+# 15) Plan d'alignement MCP local
 
 Last updated: 2026-03-07
 
+Ce fichier est le plan MCP canonique cote `Kill_LIFE`.
+
+Sources de verite associees:
+
+- `docs/MCP_SETUP.md`
+- `docs/MCP_SUPPORT_MATRIX.md`
+- `specs/kicad_mcp_scope_spec.md`
+- `specs/mcp_tasks.md`
+
 ## Objectif
 
-Faire de `Kill_LIFE` le repo de consommation et de gouvernance MCP, sans maintenir un second serveur MCP concurrent.
+Faire de `Kill_LIFE` le repo de consommation et de gouvernance MCP, sans maintenir un second serveur KiCad concurrent.
 
-## Cible supportée
+## Etat actuel
 
-- serveur: `../mascarade/finetune/kicad_mcp_server`
-- launcher local: `tools/hw/run_kicad_mcp.sh`
-- config MCP versionnée: `mcp.json`
-- transport: `stdio`
-- serveur auxiliaire repo/specs: `tools/validate_specs.py --mcp`
+- `mcp.json` pointe vers des launchers MCP reels pour `kicad`, `validate-specs`, `notion` et `github-dispatch`
+- `tools/hw/run_kicad_mcp.sh` est le point d'entree canonique pour le runtime KiCad
+- `tools/hw/cad_stack.sh mcp` est deja aligne sur ce launcher
+- `python3 tools/hw/mcp_smoke.py --timeout 30` passe sur la machine auditee via fallback conteneur
+- `validate-specs` existe comme CLI et comme serveur MCP `stdio`
+- la pile MCP locale converge sur `2025-03-26`
+- l'observabilite synthetique MCP est exposee via `/api/ops/summary` si la stack compagnon `mascarade` tourne
 
-## Actions
+## Decisions figees
 
-### 1. Source de vérité
+- `Kill_LIFE` ne publie pas de second runtime KiCad host-side concurrent
+- `mascarade/finetune/kicad_mcp_server` reste l'implementation serveur KiCad de reference
+- `stdio` reste le seul transport supporte par defaut
+- la matrice de support MCP est centralisee dans `docs/MCP_SUPPORT_MATRIX.md`
+- le backlog executable est centralise dans `specs/mcp_tasks.md`
+- `specs/` a la racine est la source de verite canonique; `ai-agentic-embedded-base/specs/` reste un miroir exporte
 
-1. Retirer toute promesse de serveur fantôme.
-2. Pointer `mcp.json` vers le launcher supporté et les MCP auxiliaires réels.
-3. Basculer la doc MCP canonique sur `docs/MCP_SETUP.md`.
+## Travail deja absorbe
 
-### 2. Runtime opérable
+1. Retirer les promesses cassees de `mcp.json`
+2. Rendre `validate-specs` executable en CLI et en MCP
+3. Rendre le launcher KiCad operable avec runtime writable
+4. Aligner `cad_stack.sh mcp` sur le launcher supporte
+5. Stabiliser le fallback conteneur KiCad v10
+6. Ajouter un smoke consommateur versionne
+7. Fixer une doc d'usage canonique et une matrice de support
 
-1. Faire de `tools/hw/cad_stack.sh mcp` un simple wrapper vers le launcher supporté.
-2. Préparer un runtime writable sous `.cad-home/kicad-mcp`.
-3. Garder `MASCARADE_DIR` comme override explicite, pas comme dépendance cachée.
+## Travail restant
 
-### 3. Documentation
+### Priorite 1 — Alignement protocole
 
-1. Transformer les duplications `ai-agentic-embedded-base/docs/*` en pointeurs vers les docs canoniques.
-2. Corriger les références à `validate_specs.py`.
-3. Garder `stdio only` comme politique MCP locale.
+1. Fait
+2. Les launchers MCP supportes et les surfaces auxiliaires suivies convergent vers `2025-03-26`.
 
-## Critères de sortie
+### Priorite 2 — Observabilite
 
-- `mcp.json` ne référence plus de fichier absent
-- `tools/hw/run_kicad_mcp.sh --doctor` résout un serveur réel
-- `tools/hw/cad_stack.sh mcp` utilise le même chemin que `mcp.json`
-- la doc root n’annonce plus `kicad-sch-mcp` comme chemin principal
+1. Fait
+2. `/api/ops/summary` expose l'etat synthetique MCP quand la stack compagnon `mascarade` est presente.
+
+### Priorite 3 — Validation host-native
+
+1. Rejouer le smoke sur une machine avec `pcbnew` disponible
+2. Confirmer que le chemin hote reste coherent avec le fallback conteneur
+
+### Priorite 4 — Classement des surfaces auxiliaires
+
+1. Fait
+2. `component_database` et `kicad_tools` sont classes `supporte avec dependance externe`.
+3. `nexar_api` reste `experimental` tant qu'il n'est pas valide en mode live.
+
+## Criteres de sortie
+
+- `Kill_LIFE` publie une seule doc operateur MCP canonique
+- la matrice de support ne laisse plus de statut implicite
+- les TODOs MCP ne sont plus dupliques entre `docs/plans` et `specs`
+- le prochain lecteur sait immediatement:
+  - quel serveur lancer
+  - quel alias utiliser
+  - ce qui est supporte localement
+  - ce qui depend encore de `mascarade`
+  - ce qui reste reellement ouvert

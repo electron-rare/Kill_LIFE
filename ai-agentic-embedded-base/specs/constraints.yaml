@@ -4,7 +4,7 @@ project:
   targets:
     - esp32s3
     - esp32
-    - native
+    - esp32dev
 
 ai:
   triggers:

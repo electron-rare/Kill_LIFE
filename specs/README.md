@@ -1,25 +1,29 @@
 # Specs (Spec-driven)
 
-Flux conseillé (itératif) :
-1) `00_intake.md` : idée brute + contexte
+Flux conseille (iteratif) :
+1) `00_intake.md` : idee brute + contexte
 2) `01_spec.md` : spec claire + AC
 3) `02_arch.md` : architecture + ADR
-4) `03_plan.md` : plan découpé, risques, validations
-5) `04_tasks.md` : backlog exécutable (issues / PRs)
-6) Implémentation (firmware/hardware) + tests + doc
+4) `03_plan.md` : plan decoupe, risques, validations
+5) `04_tasks.md` : backlog executable (issues / PRs)
+6) Implementation (firmware/hardware) + tests + doc
 
-Le fichier `constraints.yaml` est la **source de vérité** des contraintes non-fonctionnelles et règles repo.
+Le fichier `constraints.yaml` est la **source de verite** des contraintes non-fonctionnelles et regles repo.
 
-Specs complémentaires:
+Specs complementaires:
 
+- `github_mcp_conversion_spec.md`: prep de conversion de `workflow_dispatch` vers une surface MCP future.
 - `kicad_mcp_scope_spec.md`: perimetre fonctionnel, hors scope et criteres d'acceptation du MCP KiCad supporte.
-- `zeroclaw_dual_hw_orchestration_spec.md`: architecture d'orchestration ZeroClaw multi-repo + double matériel.
-- `zeroclaw_dual_hw_todo.md`: backlog opérationnel court terme pour autonomie contrôlée.
+- `mcp_tasks.md`: backlog canonique des actions MCP locales, partage entre runtime, doc et gouvernance.
+- `notion_mcp_conversion_spec.md`: prep de conversion du bridge Notion actuel vers une surface MCP future.
+- `zeroclaw_dual_hw_orchestration_spec.md`: architecture d'orchestration ZeroClaw multi-repo + double materiel.
+- `zeroclaw_dual_hw_todo.md`: backlog operationnel court terme pour autonomie controlee.
 
 Synchronisation `spec_kit`:
 
-- `specs/` (racine repo) et `ai-agentic-embedded-base/specs/` doivent rester alignés.
-- Après toute mise à jour, synchroniser avec:
+- `specs/` (racine repo) est la source de verite canonique.
+- `ai-agentic-embedded-base/specs/` est un miroir exporte.
+- Apres toute mise a jour canonique, synchroniser le miroir avec:
   - `rsync -a --delete specs/ ai-agentic-embedded-base/specs/`
-- Vérifier l'absence d'écart avec:
+- Verifier l'absence d'ecart avec:
   - `diff -ru ai-agentic-embedded-base/specs specs`
