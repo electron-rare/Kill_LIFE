@@ -63,7 +63,8 @@ CHECKS: tuple[dict[str, Any], ...] = (
         "cmd": ["python3", "tools/nexar_mcp_smoke.py", "--json"],
         "accept_degraded": True,
         "task": "K-014",
-        "blocked_when": "token missing or demo mode",
+        "blocked_when": "live Nexar unavailable (token missing, demo mode, or external account/quota limit)",
+        "optional_degraded_when_live_validation": ("quota_exceeded",),
     },
 )
 
@@ -140,6 +141,12 @@ def run_check(spec: dict[str, Any]) -> dict[str, Any]:
     payload["name"] = spec["name"]
     payload["accept_degraded"] = spec.get("accept_degraded", False)
     payload["optional_degraded"] = spec.get("optional_degraded", False)
+    live_validation = payload.get("live_validation")
+    if (
+        payload.get("status") == "degraded"
+        and live_validation in spec.get("optional_degraded_when_live_validation", ())
+    ):
+        payload["optional_degraded"] = True
     if "task" in spec:
         payload["task"] = spec["task"]
     if "blocked_when" in spec:

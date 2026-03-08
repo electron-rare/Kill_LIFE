@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import json
+import subprocess
 import unittest
+from unittest import mock
 
-from tools.mcp_runtime_status import classify_overall, derive_blockers
+from tools.mcp_runtime_status import classify_overall, derive_blockers, run_check
 
 
 class McpRuntimeStatusTests(unittest.TestCase):
@@ -73,6 +76,33 @@ class McpRuntimeStatusTests(unittest.TestCase):
                 }
             ],
         )
+
+    def test_run_check_marks_external_quota_limit_as_optional_degraded(self):
+        spec = {
+            "name": "nexar-api",
+            "cmd": ["python3", "tools/nexar_mcp_smoke.py", "--json"],
+            "accept_degraded": True,
+            "task": "K-014",
+            "blocked_when": "live Nexar unavailable",
+            "optional_degraded_when_live_validation": ("quota_exceeded",),
+        }
+        stdout = json.dumps(
+            {
+                "status": "degraded",
+                "live_validation": "quota_exceeded",
+                "error": "quota exceeded",
+            }
+        )
+        completed = subprocess.CompletedProcess(
+            args=spec["cmd"],
+            returncode=0,
+            stdout=stdout,
+            stderr="",
+        )
+        with mock.patch("tools.mcp_runtime_status.subprocess.run", return_value=completed):
+            payload = run_check(spec)
+        self.assertTrue(payload["optional_degraded"])
+        self.assertEqual(payload["task"], "K-014")
 
 
 if __name__ == "__main__":
