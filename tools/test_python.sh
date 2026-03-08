@@ -54,7 +54,7 @@ EOF
     mcp)
       cat <<'EOF'
 mcp:
-  test/test_notion_mcp.py
+  test/test_knowledge_base_mcp.py
   test/test_github_dispatch_mcp.py
   test/test_nexar_mcp.py
 EOF
@@ -140,7 +140,7 @@ if [[ "${SUITE}" == "stable" || "${SUITE}" == "all" ]]; then
 fi
 
 if [[ "${SUITE}" == "mcp" || "${SUITE}" == "all" ]]; then
-  run_discover test 'test_notion_mcp.py'
+  run_discover test 'test_knowledge_base_mcp.py'
   run_discover test 'test_github_dispatch_mcp.py'
   run_discover test 'test_nexar_mcp.py'
 fi
