@@ -1,17 +1,19 @@
 # Local Change Bundles — 2026-03-08
 
-But: sortir le worktree `Kill_LIFE` en lots publiables reellement alignes sur
-le delta courant, et non plus seulement "reviewables par sujet".
+But: figer l'etat reel de `Kill_LIFE` apres fermeture locale de la vague
+`MCP/agentics`, puis documenter ce qui reste vraiment a publier.
 
 ## Etat courant
 
-Le delta `Kill_LIFE` se lit maintenant en `3` lots publiables plus un reliquat
-runtime local non versionnable:
+Le repo suivi est maintenant propre hors mise a jour documentaire de ce fichier.
 
-1. `mcp-runtime`
-2. `cad-mcp`
-3. `python-local`
-4. `.mascarade/` = runtime local genere, a exclure des commits
+Etat reel:
+
+- aucun delta fonctionnel repo-suivi n'est encore ouvert dans `Kill_LIFE`
+- le runtime MCP canonique est `ready`
+- les validations live `knowledge-base`, `github-dispatch` et `nexar_api`
+  ont deja ete rejouees sur la machine de reference
+- seul `.mascarade/` reste genere localement et doit rester hors commit
 
 Le helper de revue associe reste:
 
@@ -19,7 +21,30 @@ Le helper de revue associe reste:
 bash tools/review_local_change_bundle.sh <bundle> [status|diff|paths]
 ```
 
-## Lot 1 — `mcp-runtime`
+Checks canoniques rejoues avec succes:
+
+```bash
+cd /home/clems/Kill_LIFE && bash tools/test_python.sh --suite stable
+cd /home/clems/Kill_LIFE && python3 tools/mcp_runtime_status.py --json
+cd /home/clems/Kill_LIFE && python3 tools/knowledge_base_mcp_smoke.py --json
+cd /home/clems/Kill_LIFE && python3 tools/github_dispatch_mcp_smoke.py --json --live
+cd /home/clems/Kill_LIFE && python3 tools/nexar_mcp_smoke.py --json --live
+```
+
+Resultat courant:
+
+- `mcp_runtime_status.py --json` => `status=ready`, `blockers=[]`
+- `knowledge-base` => `ready`, `live_validation=passed`
+- `github-dispatch` => `ready`, `live_validation=passed`
+- `nexar_api` => chemin live valide, `demo_mode=false`, limite externe de quota
+
+## Lots logiques deja figes
+
+Les lots ci-dessous restent utiles comme cartographie de publication si un
+push/commit local doit encore etre reconstruit ailleurs, mais ils ne
+correspondent plus a un delta ouvert dans ce worktree.
+
+### Lot 1 — `mcp-runtime`
 
 Objet:
 
@@ -33,7 +58,6 @@ Fichiers:
 - `ai-agentic-embedded-base/specs/README.md`
 - `ai-agentic-embedded-base/specs/knowledge_base_mcp_spec.md`
 - `ai-agentic-embedded-base/specs/mcp_tasks.md`
-- `ai-agentic-embedded-base/specs/notion_mcp_conversion_spec.md`
 - `ai-agentic-embedded-base/specs/zeroclaw_dual_hw_todo.md`
 - `docs/LOCAL_CHANGE_BUNDLES_2026-03-08.md`
 - `docs/MCP_ECOSYSTEM_MATRIX.md`
@@ -46,30 +70,18 @@ Fichiers:
 - `specs/README.md`
 - `specs/knowledge_base_mcp_spec.md`
 - `specs/mcp_tasks.md`
-- `specs/notion_mcp_conversion_spec.md`
 - `test/test_knowledge_base_mcp.py`
-- `test/test_notion_mcp.py`
 - `tools/github_dispatch_mcp_smoke.py`
 - `tools/knowledge_base_mcp.py`
 - `tools/knowledge_base_mcp_smoke.py`
 - `tools/lib/runtime_home.sh`
 - `tools/mcp_runtime_status.py`
 - `tools/mcp_smoke_common.py`
-- `tools/notion_mcp.py`
-- `tools/notion_mcp_smoke.py`
 - `tools/review_local_change_bundle.sh`
 - `tools/run_github_dispatch_mcp.sh`
 - `tools/run_knowledge_base_mcp.sh`
-- `tools/run_notion_mcp.sh`
 
-Validation minimale:
-
-```bash
-cd /home/clems/Kill_LIFE && bash tools/test_python.sh --suite stable
-cd /home/clems/Kill_LIFE && python3 tools/validate_specs.py --json
-```
-
-## Lot 2 — `cad-mcp`
+### Lot 2 — `cad-mcp`
 
 Objet:
 
@@ -103,14 +115,7 @@ Fichiers:
 - `tools/run_freecad_mcp.sh`
 - `tools/run_openscad_mcp.sh`
 
-Validation minimale:
-
-```bash
-cd /home/clems/Kill_LIFE && bash tools/hw/cad_stack.sh doctor
-cd /home/clems/Kill_LIFE && bash tools/hw/cad_stack.sh doctor-mcp
-```
-
-## Lot 3 — `python-local`
+### Lot 3 — `python-local`
 
 Objet:
 
@@ -121,12 +126,6 @@ Fichiers:
 
 - `tools/test_python.sh`
 
-Validation repo-locale:
-
-```bash
-cd /home/clems/Kill_LIFE && bash tools/test_python.sh --suite stable
-```
-
 ## Exclusion explicite
 
 Ne pas versionner le runtime local genere:
@@ -135,7 +134,7 @@ Ne pas versionner le runtime local genere:
 
 Ces fichiers servent d'evidence locale runtime, pas de source de verite repo.
 
-## Ordre recommande
+## Ordre recommande si reconstruction de publication
 
 1. publier `mcp-runtime`
 2. publier `cad-mcp`
@@ -143,6 +142,6 @@ Ces fichiers servent d'evidence locale runtime, pas de source de verite repo.
 
 Ce decoupage evite de melanger:
 
-- la migration `notion -> knowledge-base` et la hygiene runtime MCP
+- la migration `knowledge-base` et la hygiene runtime MCP
 - la pile CAD/MCP et ses smokes associes
 - le contrat Python repo-local minimal

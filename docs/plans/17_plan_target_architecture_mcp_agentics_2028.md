@@ -85,9 +85,10 @@ Etat courant:
 
 ## Sequence restante
 
-1. ne rejouer `K-012` que si le host-native devient une exigence runtime
-2. n'ouvrir un chantier `nexar_api` supplementaire que si un token/plan Nexar avec quota de parts non nul est requis en production
-3. ne rouvrir `A2A` que si un besoin inter-runtime reel apparait
+1. sortir les bundles locaux multi-repo restants sans rouvrir la ligne `MCP/agentics`
+2. ne rejouer `K-012` que si le host-native devient une exigence runtime
+3. n'ouvrir un chantier `nexar_api` supplementaire que si un token/plan Nexar avec quota de parts non nul est requis en production
+4. ne rouvrir `A2A` que si un besoin inter-runtime reel apparait
 
 ## Criteres de sortie
 
