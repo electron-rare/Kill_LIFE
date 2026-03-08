@@ -32,8 +32,9 @@ CHECKS: tuple[dict[str, Any], ...] = (
         "name": "kicad-host",
         "cmd": ["python3", "tools/hw/kicad_host_mcp_smoke.py", "--json", "--quick"],
         "accept_degraded": True,
+        "optional_degraded": True,
         "task": "K-012",
-        "blocked_when": "host_pcbnew_import != ok",
+        "blocked_when": "host_pcbnew_import != ok (optional host-native path)",
     },
     {
         "name": "knowledge-base",
@@ -85,6 +86,8 @@ def classify_overall(results: list[dict[str, Any]], *, strict: bool) -> str:
         if status == "degraded" and (strict or not result.get("accept_degraded", False)):
             any_failed = True
             continue
+        if status == "degraded" and result.get("optional_degraded", False):
+            continue
         if status == "degraded":
             any_degraded = True
     if any_failed:
@@ -98,7 +101,7 @@ def derive_blockers(results: list[dict[str, Any]]) -> list[dict[str, str]]:
     blockers: list[dict[str, str]] = []
     for result in results:
         task = result.get("task")
-        if not task or result.get("status") != "degraded":
+        if not task or result.get("status") != "degraded" or result.get("optional_degraded", False):
             continue
         name = result.get("name", "unknown")
         error = str(result.get("error") or "blocked by environment")
@@ -136,6 +139,7 @@ def run_check(spec: dict[str, Any]) -> dict[str, Any]:
     payload.setdefault("error", None)
     payload["name"] = spec["name"]
     payload["accept_degraded"] = spec.get("accept_degraded", False)
+    payload["optional_degraded"] = spec.get("optional_degraded", False)
     if "task" in spec:
         payload["task"] = spec["task"]
     if "blocked_when" in spec:

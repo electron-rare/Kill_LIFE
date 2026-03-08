@@ -22,6 +22,23 @@ class McpRuntimeStatusTests(unittest.TestCase):
         self.assertEqual(classify_overall(results, strict=False), "degraded")
         self.assertEqual(classify_overall(results, strict=True), "failed")
 
+    def test_optional_degraded_path_does_not_block_non_strict_runtime(self):
+        results = [
+            {"status": "ready", "accept_degraded": False},
+            {
+                "name": "kicad-host",
+                "status": "degraded",
+                "accept_degraded": True,
+                "optional_degraded": True,
+                "task": "K-012",
+                "blocked_when": "host_pcbnew_import != ok (optional host-native path)",
+                "error": "pcbnew not importable on host runtime",
+            },
+        ]
+        self.assertEqual(classify_overall(results, strict=False), "ready")
+        self.assertEqual(classify_overall(results, strict=True), "failed")
+        self.assertEqual(derive_blockers(results), [])
+
     def test_classify_failed_when_hard_failure_exists(self):
         results = [
             {"status": "ready", "accept_degraded": False},

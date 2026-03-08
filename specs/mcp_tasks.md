@@ -21,9 +21,8 @@ Format:
   - `kicad`, `validate-specs` et `huggingface` sont `ready`
   - `knowledge-base` est `ready` sur le provider actif `memos`, avec smoke live valide
   - `github-dispatch` est `ready`, avec smoke live valide via token GitHub persiste
-  - le backlog MCP restant est limite a deux blocages specialises constates sur cette machine:
-    - `K-012`: `pcbnew` absent sur l'hote, donc validation host-native impossible ici
-    - `K-014`: `NEXAR_TOKEN` absent, donc `nexar_api` reste en mode demo
+  - le seul blocage specialise actif sur cette machine est `K-014`: `NEXAR_TOKEN` absent, donc `nexar_api` reste en mode demo
+  - `K-012` est maintenant classe comme validation host-native optionnelle tant que le runtime canonique reste le conteneur MCP KiCad
 
 - [x] K-001 — Rendre `validate-specs` réel
   - AC: `mcp.json` ne référence plus de chemin absent.
@@ -62,6 +61,7 @@ Format:
 
 - [ ] K-012 — Rejouer la validation host-native sur une machine avec `pcbnew`
   - AC: le smoke passe aussi sur le chemin hote, pas seulement via le fallback conteneur.
+  - Statut: optionnel tant que le runtime canonique reste `container` et valide en production locale.
   - Helper pret: `python3 tools/hw/kicad_host_mcp_smoke.py --json --quick` degrade proprement si `pcbnew` est absent.
   - Derniere verification: `2026-03-08` sur cette machine -> `blocked by host environment`
   - Evidence: `python3 tools/hw/kicad_host_mcp_smoke.py --json --quick`
@@ -97,7 +97,7 @@ Format:
   - AC: `python3 tools/nexar_mcp_smoke.py --json` distingue mode demo et mode live.
 
 - [x] K-021 — Ajouter un rapport MCP local synthetique
-  - AC: `python3 tools/mcp_runtime_status.py --json` agrege les smokes supportes et rend visibles les blocages K-012/K-014.
+  - AC: `python3 tools/mcp_runtime_status.py --json` agrege les smokes supportes, traite `K-012` comme chemin host-native optionnel, et rend visible `K-014` comme blocage specialise actif.
 
 - [x] K-022 — Valider la knowledge base active en live via le MCP `knowledge-base`
   - AC: un run avec le provider actif et sa cible de smoke confirme `search_pages` et `read_page`.
