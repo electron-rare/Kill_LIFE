@@ -6,13 +6,21 @@ Ce document rattache les décisions et implémentations produites pendant la ses
 
 Garder une séparation propre entre :
 
+- `crazy_life` : repo canonique web/devops et release du shell cockpit.
 - `Kill_LIFE` : repo de méthode, specs, gates, evidence packs, workflows hardware/firmware.
 - `Mascarade` : repo compagnon d’exécution locale pour orchestration LLM, distillation/fine-tuning, et outillage CAD conteneurisé.
 
-En local, les deux dépôts sont côte à côte :
+En local, les trois dépôts sont côte à côte :
 
+- `crazy_life` : `../crazy_life`
 - `Kill_LIFE` : `../Kill_LIFE`
 - `Mascarade` : `../mascarade`
+
+Règle de bridge retenue :
+
+- `crazy_life` reste la source canonique pour le shell web et sa release.
+- `mascarade/web` reste un mécanisme de sync et de snapshot local, pas un gate de release.
+- `Kill_LIFE` reste la source de vérité pour le runtime, les workflows JSON, l’evidence, le firmware, le CAD et la compliance.
 
 ## Ce qui a été mis en place côté Mascarade
 
@@ -59,6 +67,7 @@ Ce pipeline sert à produire de petits modèles spécialisés exploitables local
 
 | Besoin | Repo recommandé | Raison |
 |---|---|---|
+| Shell web, Hono API, publication du cockpit | `crazy_life` | c’est le repo canonique web/devops |
 | Specs, ADR, gates, evidence packs | `Kill_LIFE` | c’est la source de vérité méthodologique |
 | Exécution LLM locale et orchestration provider/model | `Mascarade` | c’est le cockpit d’exécution |
 | KiCad/FreeCAD/PlatformIO en conteneur | `Kill_LIFE` | stack CAD désormais intégrée localement |
@@ -66,6 +75,12 @@ Ce pipeline sert à produire de petits modèles spécialisés exploitables local
 | Rapports finaux, runbooks, conformité | `Kill_LIFE` | cohérence des artefacts et traçabilité |
 
 ## Comment relier les deux dépôts
+
+Le flux web/release reste à part :
+
+1. stabiliser et publier `crazy_life` depuis son propre repo
+2. n'utiliser `mascarade/scripts/sync_crazy_life.sh` qu'après ce gate
+3. ne jamais traiter `mascarade/web` comme source de vérité de release
 
 ### Pour le hardware / CAD
 
