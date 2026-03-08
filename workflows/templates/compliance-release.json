@@ -71,7 +71,8 @@
         "checklist": [
           "Release notes drafted",
           "Evidence reviewed",
-          "Branch protections green"
+          "Branch protections green",
+          "Release tag chosen"
         ]
       }
     },
@@ -87,7 +88,8 @@
         "workflow_file": "release_signing.yml",
         "ref": "main",
         "inputs": {
-          "source": "crazy-life-kill-life-editor"
+          "source": "crazy-life-kill-life-editor",
+          "release_tag": "v0.0.0-manual"
         }
       },
       "config": {}

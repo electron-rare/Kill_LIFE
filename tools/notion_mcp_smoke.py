@@ -23,6 +23,20 @@ SERVER = ROOT / "tools" / "run_notion_mcp.sh"
 PAGE_ID_ENV = "NOTION_MCP_SMOKE_PAGE_ID"
 
 
+def notion_auth_configured() -> bool:
+    auth_mode = os.getenv("NOTION_AUTH_MODE", "api_key").strip().lower()
+    if auth_mode == "oauth_oidc":
+        return bool(
+            os.getenv("NOTION_OAUTH_CLIENT_ID", "").strip()
+            and os.getenv("NOTION_OAUTH_CLIENT_SECRET", "").strip()
+            and (
+                os.getenv("NOTION_OAUTH_ACCESS_TOKEN", "").strip()
+                or os.getenv("NOTION_OAUTH_REFRESH_TOKEN", "").strip()
+            )
+        )
+    return bool(os.getenv("NOTION_API_KEY"))
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--timeout", type=float, default=15.0)
@@ -34,7 +48,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    secret_configured = bool(os.getenv("NOTION_API_KEY"))
+    secret_configured = notion_auth_configured()
     proc = spawn_server(["bash", str(SERVER)], ROOT)
     payload = {
         "status": "failed",
@@ -67,7 +81,7 @@ def main() -> int:
             else:
                 payload["status"] = "degraded"
                 payload["live_validation"] = "missing_secret"
-                payload["error"] = "NOTION_API_KEY missing"
+                payload["error"] = "NOTION auth missing"
             return emit_payload(payload, json_output=args.json)
 
         search_result = call_tool(

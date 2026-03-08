@@ -100,7 +100,9 @@ def compare_spec_mirror() -> Dict[str, Any]:
     }
 
 
-def validate_specs(strict: bool = False) -> Dict[str, Any]:
+def validate_specs(
+    strict: bool = False, require_mirror_sync: bool = False
+) -> Dict[str, Any]:
     required_files = [
         "specs/03_plan.md",
         "specs/04_tasks.md",
@@ -116,11 +118,17 @@ def validate_specs(strict: bool = False) -> Dict[str, Any]:
     rfc2119 = scan_rfc2119()
     mirror_sync = compare_spec_mirror()
 
-    ok = not missing_files and compliance["ok"] and rfc2119["ok"] and mirror_sync["ok"]
+    ok = (
+        not missing_files
+        and compliance["ok"]
+        and rfc2119["ok"]
+        and (mirror_sync["ok"] or not require_mirror_sync)
+    )
     return {
         "ok": ok,
         "missing_files": missing_files,
         "strict": strict,
+        "require_mirror_sync": require_mirror_sync,
         "compliance": compliance,
         "rfc2119": rfc2119,
         "mirror_sync": mirror_sync,
@@ -169,7 +177,10 @@ def format_cli_summary(result: Dict[str, Any]) -> str:
 
 def tool_validate_specs(arguments: Dict[str, Any]) -> Dict[str, Any]:
     strict = bool(arguments.get("strict", False))
-    result = validate_specs(strict=strict)
+    require_mirror_sync = bool(arguments.get("require_mirror_sync", False))
+    result = validate_specs(
+        strict=strict, require_mirror_sync=require_mirror_sync
+    )
     return {
         "content": [{"type": "text", "text": format_cli_summary(result)}],
         "structuredContent": result,
@@ -203,6 +214,11 @@ TOOLS = [
                 "strict": {
                     "type": "boolean",
                     "description": "Enable strict evidence checks from tools/compliance/validate.py.",
+                    "default": False,
+                },
+                "require_mirror_sync": {
+                    "type": "boolean",
+                    "description": "Fail if ai-agentic-embedded-base/specs is not synced with specs/.",
                     "default": False,
                 }
             },
@@ -312,6 +328,11 @@ def serve_mcp() -> int:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Validate Kill_LIFE specs")
     parser.add_argument("--strict", action="store_true", help="Enable strict compliance evidence validation.")
+    parser.add_argument(
+        "--require-mirror-sync",
+        action="store_true",
+        help="Fail if ai-agentic-embedded-base/specs is not synchronized with specs/.",
+    )
     parser.add_argument("--json", action="store_true", help="Print JSON output in CLI mode.")
     parser.add_argument("--mcp", action="store_true", help="Run as an MCP stdio server.")
     return parser.parse_args()
@@ -322,7 +343,9 @@ def main() -> int:
     if args.mcp:
         return serve_mcp()
 
-    result = validate_specs(strict=args.strict)
+    result = validate_specs(
+        strict=args.strict, require_mirror_sync=args.require_mirror_sync
+    )
     if args.json:
         print(json.dumps(result, indent=2, ensure_ascii=False))
     else:

@@ -50,6 +50,40 @@ cd Kill_LIFE
 bash install_kill_life.sh
 ```
 
+### Bootstrap Python repo-local
+
+```bash
+bash tools/bootstrap_python_env.sh
+```
+
+Options utiles:
+- `--venv-dir /tmp/kill-life-venv` pour verifier le bootstrap sur une machine ou un environnement vierge
+- `--reinstall` pour recreer proprement le venv cible
+
+Le chemin supporte pour le Python du repo est `./.venv/bin/python`.
+
+### Tests Python repo-local
+
+```bash
+bash tools/test_python.sh
+```
+
+Ce chemin couvre la suite Python repo-locale stable (`setup_repo`, `mcp_runtime_status`, `openclaw_sanitizer`, `apply_safe_patch`, `validate_specs`, `tools/hw/schops/tests`) sans dependre du `python3` systeme.
+Les checks dependants du mirror specs ou des runtimes MCP restent des commandes d'integration separees.
+
+Options utiles:
+- `--suite stable` pour le chemin repo-local supporte par defaut
+- `--suite mcp` pour les tests MCP locaux (`notion`, `github-dispatch`, `nexar`)
+- `--suite all` pour enchainer les deux
+- `--bootstrap` pour creer le venv cible avant de lancer les tests
+- `--list` pour afficher exactement les commandes couvertes
+
+Exemple de verification sur un venv temporaire:
+
+```bash
+bash tools/test_python.sh --bootstrap --venv-dir /tmp/kill-life-venv --suite stable
+```
+
 ### Verifications utiles
 
 ```bash
@@ -78,9 +112,20 @@ La stack CAD est documentee dans [`deploy/cad/README.md`](deploy/cad/README.md) 
 
 ## Ecosysteme
 
-- [`crazy_life`](https://github.com/electron-rare/crazy_life) : frontend + backend web/devops
-- [`mascarade`](https://github.com/electron-rare/mascarade) : repo compagnon et bridge historique
+- [`crazy_life`](https://github.com/electron-rare/crazy_life) : repo canonique web/devops
+- [`mascarade`](https://github.com/electron-rare/mascarade) : repo compagnon/orchestration et bridge historique optionnel
 - [`docs/MASCARADE_BRIDGE.md`](docs/MASCARADE_BRIDGE.md) : articulation locale entre les depots
+
+Contrat multi-repo:
+- `crazy_life` publie la surface web/devops et le workflow editor.
+- `Kill_LIFE` reste la source de verite pour `workflows/*.json`, le runtime, les evidence packs, le firmware, le CAD et la compliance.
+- `mascarade` ne redevient pas la source canonique de release web; le bridge reste un mecanisme de sync seulement.
+
+## CI et release
+
+- `.github/workflows/ci.yml` porte le gate repo-local stable: bootstrap Python + `bash tools/test_python.sh --suite stable`.
+- `.github/workflows/release_signing.yml` reste le workflow de release versionnee; il attend un tag `v*` ou un `workflow_dispatch` avec `release_tag` explicite.
+- GitHub Pages n'est pas un gate canonique pour la release `Crazy Lane`; les workflows Pages de `Kill_LIFE` restent des surfaces secondaires docs/evidence.
 
 ## Licence
 

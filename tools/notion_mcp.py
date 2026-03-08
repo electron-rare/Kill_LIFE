@@ -26,8 +26,10 @@ MASCARADE_CORE_DIR = MASCARADE_DIR / "core"
 if str(MASCARADE_CORE_DIR) not in sys.path:
     sys.path.insert(0, str(MASCARADE_CORE_DIR))
 
-from mascarade.config import is_secret_configured, settings  # noqa: E402
-from mascarade.integrations.notion import NotionClient  # noqa: E402
+from mascarade.integrations.notion import (  # noqa: E402
+    NotionClient,
+    notion_auth_configured,
+)
 
 
 TOOLS = [
@@ -95,15 +97,18 @@ def _missing_secret_payload() -> dict[str, Any]:
         "ok": False,
         "error": {
             "code": "missing_secret",
-            "message": "Notion non configure (NOTION_API_KEY manquant)",
+            "message": (
+                "Notion non configure "
+                "(NOTION_API_KEY ou credentials OAuth Notion manquants)"
+            ),
         },
     }
 
 
 async def _with_client(callback):
-    if not is_secret_configured(settings.notion_api_key):
+    if not notion_auth_configured():
         return error_tool_result(
-            "Notion non configure (NOTION_API_KEY manquant)",
+            "Notion non configure (NOTION_API_KEY ou credentials OAuth Notion manquants)",
             _missing_secret_payload(),
         )
 

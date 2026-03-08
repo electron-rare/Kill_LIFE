@@ -22,6 +22,19 @@ ROOT = Path(__file__).resolve().parents[1]
 SERVER = ROOT / "tools" / "run_github_dispatch_mcp.sh"
 
 
+def github_dispatch_auth_configured() -> bool:
+    auth_mode = os.getenv("GITHUB_DISPATCH_AUTH_MODE", "token").strip().lower()
+    if auth_mode == "app":
+        return bool(
+            os.getenv("GITHUB_APP_ID", "").strip()
+            and os.getenv("GITHUB_APP_PRIVATE_KEY", "").strip()
+            and os.getenv("GITHUB_APP_INSTALLATION_ID", "").strip()
+        )
+    return bool(
+        os.getenv("KILL_LIFE_GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN")
+    )
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--timeout", type=float, default=15.0)
@@ -42,9 +55,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    token_configured = bool(
-        os.getenv("KILL_LIFE_GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN")
-    )
+    token_configured = github_dispatch_auth_configured()
     proc = spawn_server(["bash", str(SERVER)], ROOT)
     payload = {
         "status": "failed",
@@ -78,7 +89,7 @@ def main() -> int:
             else:
                 payload["status"] = "degraded"
                 payload["live_validation"] = "missing_secret"
-                payload["error"] = "KILL_LIFE_GITHUB_TOKEN or GITHUB_TOKEN missing"
+                payload["error"] = "GitHub dispatch auth missing"
             return emit_payload(payload, json_output=args.json)
 
         list_result = call_tool(
@@ -109,7 +120,7 @@ def main() -> int:
             payload["checks"].append("dispatch_workflow_missing_secret")
             payload["status"] = "degraded"
             payload["live_validation"] = "missing_secret"
-            payload["error"] = "KILL_LIFE_GITHUB_TOKEN or GITHUB_TOKEN missing"
+            payload["error"] = "GitHub dispatch auth missing"
             return emit_payload(payload, json_output=args.json)
 
         if not args.live:

@@ -4,6 +4,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MASCARADE_DIR="${MASCARADE_DIR:-$ROOT_DIR/../mascarade}"
 SERVER_SCRIPT="$ROOT_DIR/tools/github_dispatch_mcp.py"
+source "$ROOT_DIR/tools/lib/runtime_home.sh"
+kill_life_runtime_home_init "$ROOT_DIR" "github-dispatch-mcp"
 
 detect_core_python() {
   local candidate="${MASCARADE_CORE_PYTHON:-}"
@@ -36,6 +38,9 @@ ROOT_DIR=$ROOT_DIR
 MASCARADE_DIR=$MASCARADE_DIR
 CORE_PYTHON=$CORE_PYTHON
 SERVER_SCRIPT=$SERVER_SCRIPT
+HOME=$RUNTIME_HOME
+XDG_CONFIG_HOME=$XDG_CONFIG_HOME
+XDG_CACHE_HOME=$XDG_CACHE_HOME
 EOF
   exit 0
 fi
@@ -45,5 +50,6 @@ fi
   exit 1
 }
 
+kill_life_runtime_home_ensure
 export PYTHONPATH="$MASCARADE_DIR/core${PYTHONPATH:+:$PYTHONPATH}"
 exec "$CORE_PYTHON" "$SERVER_SCRIPT" "$@"

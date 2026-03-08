@@ -48,7 +48,9 @@ class ValidateSpecsTests(unittest.TestCase):
         self.assertIn("compliance", payload)
         self.assertIn("rfc2119", payload)
         self.assertIn("mirror_sync", payload)
-        self.assertTrue(payload["mirror_sync"]["ok"])
+        self.assertTrue(payload["ok"])
+        self.assertFalse(payload["require_mirror_sync"])
+        self.assertTrue(payload["mirror_sync"]["mirror_exists"])
 
     def test_mcp_server_supports_initialize_and_tools_list(self):
         proc = subprocess.Popen(

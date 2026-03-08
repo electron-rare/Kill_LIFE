@@ -76,6 +76,8 @@ tools/hw/cad_stack.sh pio system info
 
 Le workspace monté est `Kill_LIFE` par défaut.
 
+Les wrappers locaux qui lancent des runtimes Python/Node ou des conteneurs remappés utilisent un `HOME` explicite local au repo. La règle est documentée dans [RUNTIME_HOME.md](RUNTIME_HOME.md).
+
 ---
 
 ## 🤝 Contribuer

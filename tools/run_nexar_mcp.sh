@@ -6,6 +6,8 @@ MASCARADE_DIR="${MASCARADE_DIR:-$ROOT_DIR/../mascarade}"
 KICAD_KIC_AI_DIR="${KICAD_KIC_AI_DIR:-$MASCARADE_DIR/finetune/kicad_kic_ai}"
 PYTHON_BIN="${NEXAR_MCP_PYTHON:-}"
 TOKEN_CONFIGURED="no"
+source "$ROOT_DIR/tools/lib/runtime_home.sh"
+kill_life_runtime_home_init "$ROOT_DIR" "nexar-mcp"
 
 if [ -n "${NEXAR_TOKEN:-${NEXAR_API_KEY:-}}" ]; then
   TOKEN_CONFIGURED="yes"
@@ -27,6 +29,9 @@ KICAD_KIC_AI_DIR=$KICAD_KIC_AI_DIR
 NEXAR_MCP_PYTHON=$PYTHON_BIN
 SERVER_MODULE=mcp_servers.nexar
 NEXAR_TOKEN_CONFIGURED=$TOKEN_CONFIGURED
+HOME=$RUNTIME_HOME
+XDG_CONFIG_HOME=$XDG_CONFIG_HOME
+XDG_CACHE_HOME=$XDG_CACHE_HOME
 EOF
   exit 0
 fi
@@ -41,6 +46,7 @@ fi
   exit 1
 }
 
+kill_life_runtime_home_ensure
 if [ -n "${PYTHONPATH:-}" ]; then
   export PYTHONPATH="$KICAD_KIC_AI_DIR:$PYTHONPATH"
 else

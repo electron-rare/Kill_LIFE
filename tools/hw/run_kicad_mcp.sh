@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "$ROOT_DIR/tools/lib/runtime_home.sh"
 COMPOSE_FILE="$ROOT_DIR/deploy/cad/docker-compose.yml"
 VERBOSE=0
 DOCTOR=0
@@ -187,9 +188,13 @@ MASCARADE_DIR="${MASCARADE_DIR:-$REPO_PARENT/mascarade}"
 SERVER_DIR="$MASCARADE_DIR/finetune/kicad_mcp_server"
 ENTRYPOINT="${KICAD_MCP_ENTRYPOINT:-$SERVER_DIR/dist/index.js}"
 NODE_BIN="${NODE_BIN:-node}"
-MCP_HOME="${KICAD_MCP_HOME:-$ROOT_DIR/.cad-home/kicad-mcp}"
-CONFIG_HOME="${XDG_CONFIG_HOME:-$MCP_HOME/.config}"
-CACHE_HOME="${XDG_CACHE_HOME:-$MCP_HOME/.cache}"
+if [ -n "${KICAD_MCP_HOME:-}" ] && [ -z "${KILL_LIFE_RUNTIME_HOME:-}" ]; then
+  export KILL_LIFE_RUNTIME_HOME="$KICAD_MCP_HOME"
+fi
+kill_life_runtime_home_init "$ROOT_DIR" "kicad-mcp" "$ROOT_DIR/.cad-home"
+MCP_HOME="$HOME"
+CONFIG_HOME="$XDG_CONFIG_HOME"
+CACHE_HOME="$XDG_CACHE_HOME"
 DATA_DIR="${KICAD_MCP_DATA_DIR:-$MCP_HOME/data}"
 PYTHONPATH_VALUE="$(build_pythonpath)"
 PROBE_PYTHON="$(resolve_probe_python)"
@@ -248,7 +253,8 @@ fi
 [ -d "$MASCARADE_DIR" ] || die "companion repo not found: $MASCARADE_DIR"
 [ -n "$PROBE_PYTHON" ] || die "no Python executable found for KiCad MCP runtime"
 
-mkdir -p "$MCP_HOME" "$CONFIG_HOME" "$CACHE_HOME" "$DATA_DIR"
+kill_life_runtime_home_ensure
+mkdir -p "$DATA_DIR"
 
 export HOME="$MCP_HOME"
 export XDG_CONFIG_HOME="$CONFIG_HOME"

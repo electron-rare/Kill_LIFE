@@ -1,5 +1,9 @@
 # Publication automatique des artefacts et endpoints sur GitHub Pages
 
+> Exemple secondaire seulement. Ce flux ne remplace pas le contrat canonique de
+> release, qui reste `crazy_life` pour le web/devops et `Kill_LIFE` pour le
+> runtime/evidence/versioning.
+
 ## Objectif
 Rendre accessibles publiquement les endpoints JSON des badges dynamiques et les artefacts CI/CD via GitHub Pages.
 

@@ -91,6 +91,7 @@ node_modules/
 *.pid
 docker-compose.override.yml
 .cad-home/
+.runtime-home/
 
 # Autres outils CI/CD
 coverage/

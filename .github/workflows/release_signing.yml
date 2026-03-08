@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Version tag to publish (for example v1.2.3)'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -15,10 +20,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Resolve release tag
+        id: resolve_tag
+        env:
+          INPUT_RELEASE_TAG: ${{ github.event.inputs.release_tag || '' }}
+        run: |
+          RELEASE_TAG="${INPUT_RELEASE_TAG:-${GITHUB_REF_NAME:-}}"
+          case "$RELEASE_TAG" in
+            v*) ;;
+            *)
+              echo "release_tag must start with 'v': $RELEASE_TAG" >&2
+              exit 1
+              ;;
+          esac
+          echo "release_tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
       - name: Build artefacts
         run: |
           mkdir -p build
-          printf 'Kill_LIFE release %s\n' "${GITHUB_REF_NAME:-dev}" > build/artefact.bin
+          printf 'Kill_LIFE release %s\n' "${{ steps.resolve_tag.outputs.release_tag }}" > build/artefact.bin
       - name: Sign artefacts (cosign)
         env:
           COSIGN_KEY: ${{ secrets.SIGNING_KEY }}
@@ -32,6 +51,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: build/artefact.bin
-          tag_name: ${{ github.ref_name }}
-          name: "Release ${{ github.ref_name }}"
+          tag_name: ${{ steps.resolve_tag.outputs.release_tag }}
+          target_commitish: ${{ github.sha }}
+          name: "Release ${{ steps.resolve_tag.outputs.release_tag }}"
           body: "Release automatisée avec artefacts signés."

@@ -1036,10 +1036,8 @@ cat >"$INDEX_FILE" <<EOF
       <a href="/orchestrator.log">/orchestrator.log</a>
       <a href="/prometheus.yml">/prometheus.yml</a>
       <a href="/integrations/README.md">/integrations/README.md</a>
-      <a href="/integrations/openwebui/zeroclaw_orchestrator_pipe.py">openwebui pipe</a>
       <a href="/integrations/n8n/zeroclaw_orchestrator_workflow.json">n8n workflow</a>
       <a href="/integrations/n8n/zeroclaw_pr_autotriage_workflow.json">n8n pr-autotriage workflow</a>
-      <a href="/integrations/docker/docker-compose.openwebui-n8n.yml">compose openwebui+n8n</a>
       <a href="/integrations/langgraph/README.md">langgraph runbook</a>
       <a href="/integrations/autogen/README.md">autogen runbook</a>
       <a href="http://$GATEWAY_HOST:$GATEWAY_PORT/health">/health</a>
@@ -1162,7 +1160,6 @@ cat >"$INDEX_FILE" <<EOF
         <div class="body">
           <pre id="integrationsStatus">(integrations status)</pre>
           <div class="btn-row">
-            <button onclick="window.open('http://127.0.0.1:3001','_blank')">Open WebUI</button>
             <button onclick="window.open('http://127.0.0.1:5678','_blank')">Open n8n</button>
           </div>
         </div>
@@ -1196,8 +1193,7 @@ cat >"$INDEX_FILE" <<EOF
           <pre id="hubQuickStart">1) tools/ai/zeroclaw_stack_up.sh
 2) tools/ai/zeroclaw_integrations_up.sh
 3) Ouvrir http://127.0.0.1:8788/ (monitoring)
-4) Ouvrir http://127.0.0.1:3001/ (Open WebUI)
-5) Ouvrir http://127.0.0.1:5678/ (n8n)</pre>
+4) Ouvrir http://127.0.0.1:5678/ (n8n)</pre>
         </div>
       </section>
     </div>
@@ -2060,7 +2056,6 @@ cat >"$INDEX_FILE" <<EOF
           " paired=" + boolText(health.paired) +
           " prom_ok=" + boolText(health.prometheus_ok) +
           " prom_status=" + safeText(health.prometheus_status) +
-          " openwebui_ok=" + boolText(health.openwebui_ok) +
           " n8n_ok=" + boolText(health.n8n_ok) +
           "\nactive_alerts: " + safeText(alerts.active_count || 0) +
           "\nlast_convo: " + safeText(last.conversation || "(none)") +
@@ -2068,10 +2063,7 @@ cat >"$INDEX_FILE" <<EOF
         document.getElementById("opsStatus").textContent = ops;
 
         const integrationsText =
-          "openwebui_url=" + safeText(integrations.openwebui_url || "http://127.0.0.1:3001") +
-          " status=" + safeText(health.openwebui_status) +
-          " ok=" + boolText(health.openwebui_ok) +
-          "\nn8n_url=" + safeText(integrations.n8n_url || "http://127.0.0.1:5678") +
+          "n8n_url=" + safeText(integrations.n8n_url || "http://127.0.0.1:5678") +
           " status=" + safeText(health.n8n_status) +
           " ok=" + boolText(health.n8n_ok);
         document.getElementById("integrationsStatus").textContent = integrationsText;
