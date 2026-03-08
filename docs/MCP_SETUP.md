@@ -125,6 +125,53 @@ Le fichier versionne [mcp.json](../mcp.json) pointe vers les serveurs MCP reelle
 }
 ```
 
+## Setup Mac local
+
+Pour un poste Mac operateur, le chemin supporte est maintenant scriptable.
+
+Prerequis:
+
+- `Kill_LIFE` et `mascarade` clones cote a cote sur le Mac
+- `codex` installe si tu veux enregistrer directement les serveurs dans Codex
+- `node`, `python3` et `docker` disponibles
+
+Bootstrap Codex en dry-run:
+
+```bash
+bash tools/bootstrap_mac_mcp.sh codex
+```
+
+Application directe sur le Mac cible:
+
+```bash
+bash tools/bootstrap_mac_mcp.sh codex --apply
+```
+
+Export d'une config JSON `mcpServers` a paths absolus:
+
+```bash
+bash tools/bootstrap_mac_mcp.sh json > ~/mcp.kill-life.mac.json
+```
+
+Ce bootstrap enregistre:
+
+- `kicad`
+- `validate-specs`
+- `knowledge-base`
+- `github-dispatch`
+- `freecad`
+- `openscad`
+- `huggingface`
+- `playwright`
+
+`playwright` utilise le package officiel:
+
+```bash
+npx -y @playwright/mcp@latest
+```
+
+Le bootstrap ajoute `MASCARADE_DIR` aux launchers qui en ont besoin pour retrouver le repo compagnon depuis le Mac.
+
 ## Usage
 
 Depuis `Kill_LIFE`:

@@ -7,7 +7,7 @@ la vague `MCP/agentics`, puis documenter ce qui reste vraiment hors repo-suivi.
 
 Etat reel:
 
-- aucun delta repo-suivi n'est encore ouvert dans `Kill_LIFE`
+- un petit lot `mac-local-mcp` peut vivre seul sans rouvrir le runtime MCP canonique
 - le runtime MCP canonique est `ready`
 - les validations live `knowledge-base`, `github-dispatch` et `nexar_api`
   ont deja ete rejouees sur la machine de reference
@@ -124,6 +124,18 @@ Objet:
 Fichiers:
 
 - `tools/test_python.sh`
+
+### Lot 4 — `mac-local-mcp`
+
+Objet:
+
+- donner un chemin reproductible de bootstrap MCP sur un Mac operateur
+- ajouter `Playwright MCP` au bootstrap local sans changer le runtime MCP canonique
+
+Fichiers:
+
+- `docs/MCP_SETUP.md`
+- `tools/bootstrap_mac_mcp.sh`
 
 ## Exclusion explicite
 
