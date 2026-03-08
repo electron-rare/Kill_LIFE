@@ -64,6 +64,7 @@ Last updated: 2026-02-21
 - [x] I-203 - Add local docker compose stack for n8n (`5678`).
 - [x] I-204 - Add runtime scripts (`integrations_up/down/status`, `import_n8n`).
 - [ ] I-205 - Validate end-to-end import + activation on local Docker runtime.
+  - status: Deferred (post-stabilization)
   - command: `tools/ai/zeroclaw_integrations_up.sh`
   - command: `tools/ai/zeroclaw_integrations_status.sh`
   - command: `tools/ai/zeroclaw_integrations_import_n8n.sh`

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Smoke checks for the local Notion MCP server."""
+"""Smoke checks for the local knowledge-base MCP server."""
 
 from __future__ import annotations
 
@@ -14,27 +14,30 @@ from mcp_smoke_common import (
     emit_payload,
     initialize,
     list_tools,
+    load_runtime_env,
     spawn_server,
     terminate_server,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-SERVER = ROOT / "tools" / "run_notion_mcp.sh"
-PAGE_ID_ENV = "NOTION_MCP_SMOKE_PAGE_ID"
+SERVER = ROOT / "tools" / "run_knowledge_base_mcp.sh"
+PAGE_ID_ENV = "KNOWLEDGE_BASE_SMOKE_PAGE_ID"
 
 
-def notion_auth_configured() -> bool:
-    auth_mode = os.getenv("NOTION_AUTH_MODE", "api_key").strip().lower()
-    if auth_mode == "oauth_oidc":
+def knowledge_base_auth_configured() -> bool:
+    provider = os.getenv("KNOWLEDGE_BASE_PROVIDER", "memos").strip().lower() or "memos"
+    if provider == "memos":
         return bool(
-            os.getenv("NOTION_OAUTH_CLIENT_ID", "").strip()
-            and os.getenv("NOTION_OAUTH_CLIENT_SECRET", "").strip()
-            and (
-                os.getenv("NOTION_OAUTH_ACCESS_TOKEN", "").strip()
-                or os.getenv("NOTION_OAUTH_REFRESH_TOKEN", "").strip()
-            )
+            os.getenv("MEMOS_BASE_URL", "").strip()
+            and os.getenv("MEMOS_ACCESS_TOKEN", "").strip()
         )
-    return bool(os.getenv("NOTION_API_KEY"))
+    if provider == "docmost":
+        return bool(
+            os.getenv("DOCMOST_BASE_URL", "").strip()
+            and os.getenv("DOCMOST_EMAIL", "").strip()
+            and os.getenv("DOCMOST_PASSWORD", "").strip()
+        )
+    return False
 
 
 def parse_args() -> argparse.Namespace:
@@ -42,18 +45,24 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--timeout", type=float, default=15.0)
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--quick", action="store_true")
-    parser.add_argument("--page-id", default=os.getenv(PAGE_ID_ENV, ""))
+    parser.add_argument(
+        "--page-id",
+        default=os.getenv(PAGE_ID_ENV, "").strip(),
+    )
     return parser.parse_args()
 
 
 def main() -> int:
+    load_runtime_env()
     args = parse_args()
-    secret_configured = notion_auth_configured()
+    secret_configured = knowledge_base_auth_configured()
     proc = spawn_server(["bash", str(SERVER)], ROOT)
+    provider = os.getenv("KNOWLEDGE_BASE_PROVIDER", "memos").strip().lower() or "memos"
     payload = {
         "status": "failed",
         "protocol_version": None,
-        "server_name": "notion",
+        "server_name": "knowledge-base",
+        "provider": provider,
         "tool_count": 0,
         "checks": [],
         "secret_configured": secret_configured,
@@ -62,15 +71,19 @@ def main() -> int:
     }
 
     try:
-        init = initialize(proc, args.timeout, "kill-life-notion-mcp-smoke")
+        init = initialize(proc, args.timeout, "kill-life-knowledge-base-mcp-smoke")
         tools = list_tools(proc, args.timeout)
         tool_names = {tool.get("name") for tool in tools}
         expected = {"search_pages", "read_page", "append_to_page", "create_page"}
         if expected - tool_names:
-            raise SmokeError(f"notion tools missing: {sorted(expected - tool_names)}")
+            raise SmokeError(
+                f"knowledge-base tools missing: {sorted(expected - tool_names)}"
+            )
 
         payload["protocol_version"] = init.get("protocolVersion", PROTOCOL_VERSION)
-        payload["server_name"] = (init.get("serverInfo") or {}).get("name", "notion")
+        payload["server_name"] = (
+            init.get("serverInfo") or {}
+        ).get("name", "knowledge-base")
         payload["tool_count"] = len(tools)
         payload["checks"] = ["initialize", "tools/list"]
 
@@ -81,7 +94,7 @@ def main() -> int:
             else:
                 payload["status"] = "degraded"
                 payload["live_validation"] = "missing_secret"
-                payload["error"] = "NOTION auth missing"
+                payload["error"] = f"{provider} auth missing"
             return emit_payload(payload, json_output=args.json)
 
         search_result = call_tool(

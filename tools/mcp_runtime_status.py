@@ -10,6 +10,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
+try:
+    from .mcp_smoke_common import load_runtime_env
+except ImportError:  # pragma: no cover - script entrypoint fallback
+    from mcp_smoke_common import load_runtime_env
+
 ROOT = Path(__file__).resolve().parents[1]
 
 CHECKS: tuple[dict[str, Any], ...] = (
@@ -31,14 +36,26 @@ CHECKS: tuple[dict[str, Any], ...] = (
         "blocked_when": "host_pcbnew_import != ok",
     },
     {
-        "name": "notion",
-        "cmd": ["python3", "tools/notion_mcp_smoke.py", "--json", "--quick"],
+        "name": "knowledge-base",
+        "cmd": ["python3", "tools/knowledge_base_mcp_smoke.py", "--json", "--quick"],
         "accept_degraded": True,
     },
     {
         "name": "github-dispatch",
         "cmd": ["python3", "tools/github_dispatch_mcp_smoke.py", "--json", "--quick"],
         "accept_degraded": True,
+    },
+    {
+        "name": "freecad",
+        "cmd": ["python3", "tools/freecad_mcp_smoke.py", "--json", "--quick"],
+        "accept_degraded": False,
+        "task": "F-101",
+    },
+    {
+        "name": "openscad",
+        "cmd": ["python3", "tools/openscad_mcp_smoke.py", "--json", "--quick"],
+        "accept_degraded": False,
+        "task": "O-101",
     },
     {
         "name": "nexar-api",
@@ -144,6 +161,7 @@ def emit(payload: dict[str, Any], *, json_output: bool) -> int:
 
 def main() -> int:
     args = parse_args()
+    load_runtime_env()
     results = [run_check(spec) for spec in CHECKS]
     payload = {
         "status": classify_overall(results, strict=args.strict),

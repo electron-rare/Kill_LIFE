@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = REPO_ROOT / "tools" / "run_notion_mcp.sh"
+SCRIPT = REPO_ROOT / "tools" / "run_knowledge_base_mcp.sh"
 
 
 def write_message(proc: subprocess.Popen[str], payload: dict) -> None:
@@ -34,10 +34,11 @@ def read_message(proc: subprocess.Popen[str]) -> dict:
     return json.loads(body)
 
 
-class NotionMcpTests(unittest.TestCase):
+class KnowledgeBaseMcpTests(unittest.TestCase):
     def test_server_supports_initialize_and_tools_list(self):
         env = os.environ.copy()
-        env.pop("NOTION_API_KEY", None)
+        env["KNOWLEDGE_BASE_PROVIDER"] = "memos"
+        env.pop("MEMOS_ACCESS_TOKEN", None)
         proc = subprocess.Popen(
             ["bash", str(SCRIPT)],
             cwd=REPO_ROOT,
@@ -59,7 +60,9 @@ class NotionMcpTests(unittest.TestCase):
                 },
             )
             initialize = read_message(proc)
-            self.assertEqual(initialize["result"]["serverInfo"]["name"], "notion")
+            self.assertEqual(
+                initialize["result"]["serverInfo"]["name"], "knowledge-base"
+            )
             self.assertEqual(initialize["result"]["protocolVersion"], "2025-03-26")
 
             write_message(
@@ -89,7 +92,8 @@ class NotionMcpTests(unittest.TestCase):
 
     def test_search_pages_returns_structured_missing_secret_error(self):
         env = os.environ.copy()
-        env.pop("NOTION_API_KEY", None)
+        env["KNOWLEDGE_BASE_PROVIDER"] = "memos"
+        env.pop("MEMOS_ACCESS_TOKEN", None)
         proc = subprocess.Popen(
             ["bash", str(SCRIPT)],
             cwd=REPO_ROOT,

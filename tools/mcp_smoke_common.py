@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -13,10 +14,53 @@ from threading import Thread
 from typing import Any
 
 PROTOCOL_VERSION = "2025-03-26"
+ENV_ASSIGN_RE = re.compile(r"^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$")
+DEFAULT_MASCARADE_DIR = Path(
+    os.environ.get("MASCARADE_DIR", Path(__file__).resolve().parents[2] / "mascarade")
+).resolve()
 
 
 class SmokeError(RuntimeError):
     """Raised when a smoke check fails."""
+
+
+def _decode_env_value(raw_value: str) -> str:
+    value = raw_value.strip()
+    if not value:
+        return ""
+    if len(value) >= 2 and value[0] == value[-1] == '"':
+        inner = value[1:-1]
+        return inner.replace("\\n", "\n").replace('\\"', '"').replace("\\\\", "\\")
+    if len(value) >= 2 and value[0] == value[-1] == "'":
+        return value[1:-1]
+    return value
+
+
+def resolve_mascarade_env_file() -> Path:
+    return Path(
+        os.environ.get("MASCARADE_ENV_FILE", DEFAULT_MASCARADE_DIR / ".env")
+    ).resolve()
+
+
+def load_runtime_env(*, override: bool = False) -> dict[str, str]:
+    env_file = resolve_mascarade_env_file()
+    loaded: dict[str, str] = {}
+    if not env_file.exists():
+        return loaded
+
+    for raw_line in env_file.read_text(encoding="utf-8").splitlines():
+        stripped = raw_line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        match = ENV_ASSIGN_RE.match(stripped)
+        if not match:
+            continue
+        key = match.group(1)
+        value = _decode_env_value(match.group(2))
+        if override or key not in os.environ or not os.environ.get(key, "").strip():
+            os.environ[key] = value
+            loaded[key] = value
+    return loaded
 
 
 def spawn_server(command: list[str], cwd: Path) -> subprocess.Popen[str]:

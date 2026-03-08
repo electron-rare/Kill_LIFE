@@ -82,7 +82,7 @@ docker run --rm \
 
 - [tools/hw/kicad_cli.sh](../tools/hw/kicad_cli.sh)
 - [tools/hw/run_kicad_mcp.sh](../tools/hw/run_kicad_mcp.sh)
-- [tools/run_notion_mcp.sh](../tools/run_notion_mcp.sh)
+- [tools/run_knowledge_base_mcp.sh](../tools/run_knowledge_base_mcp.sh)
 - [tools/run_github_dispatch_mcp.sh](../tools/run_github_dispatch_mcp.sh)
 - [tools/run_nexar_mcp.sh](../tools/run_nexar_mcp.sh)
 

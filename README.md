@@ -73,7 +73,7 @@ Les checks dependants du mirror specs ou des runtimes MCP restent des commandes 
 
 Options utiles:
 - `--suite stable` pour le chemin repo-local supporte par defaut
-- `--suite mcp` pour les tests MCP locaux (`notion`, `github-dispatch`, `nexar`)
+- `--suite mcp` pour les tests MCP locaux (`knowledge-base`, `github-dispatch`, `nexar`)
 - `--suite all` pour enchainer les deux
 - `--bootstrap` pour creer le venv cible avant de lancer les tests
 - `--list` pour afficher exactement les commandes couvertes

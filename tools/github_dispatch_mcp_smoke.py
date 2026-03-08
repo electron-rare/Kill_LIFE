@@ -14,6 +14,7 @@ from mcp_smoke_common import (
     emit_payload,
     initialize,
     list_tools,
+    load_runtime_env,
     spawn_server,
     terminate_server,
 )
@@ -54,6 +55,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    load_runtime_env()
     args = parse_args()
     token_configured = github_dispatch_auth_configured()
     proc = spawn_server(["bash", str(SERVER)], ROOT)

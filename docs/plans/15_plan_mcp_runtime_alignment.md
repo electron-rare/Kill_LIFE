@@ -17,7 +17,7 @@ Faire de `Kill_LIFE` le repo de consommation et de gouvernance MCP, sans mainten
 
 ## Etat actuel
 
-- `mcp.json` pointe vers des launchers MCP reels pour `kicad`, `validate-specs`, `notion` et `github-dispatch`
+- `mcp.json` pointe vers des launchers MCP reels pour `kicad`, `validate-specs`, `knowledge-base` et `github-dispatch`
 - `tools/hw/run_kicad_mcp.sh` est le point d'entree canonique pour le runtime KiCad
 - `tools/hw/cad_stack.sh mcp` est deja aligne sur ce launcher
 - `python3 tools/hw/mcp_smoke.py --timeout 30` passe sur la machine auditee via fallback conteneur

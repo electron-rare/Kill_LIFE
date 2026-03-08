@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Local MCP server for the existing Mascarade Notion integration."""
+"""Local MCP server for the configured Mascarade knowledge-base integration."""
 
 from __future__ import annotations
 
@@ -26,16 +26,19 @@ MASCARADE_CORE_DIR = MASCARADE_DIR / "core"
 if str(MASCARADE_CORE_DIR) not in sys.path:
     sys.path.insert(0, str(MASCARADE_CORE_DIR))
 
-from mascarade.integrations.notion import (  # noqa: E402
-    NotionClient,
-    notion_auth_configured,
+from mascarade.integrations.knowledge_base import (  # noqa: E402
+    KnowledgeBaseClient,
+    knowledge_base_auth_configured,
+    knowledge_base_provider_label,
+    knowledge_base_status_detail,
+    normalized_knowledge_base_provider,
 )
 
 
 TOOLS = [
     {
         "name": "search_pages",
-        "description": "Search pages through the existing Mascarade Notion integration.",
+        "description": "Search pages through the configured Mascarade knowledge-base integration.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -51,22 +54,22 @@ TOOLS = [
     },
     {
         "name": "read_page",
-        "description": "Read a Notion page and return its plain-text content.",
+        "description": "Read a knowledge-base page and return its plain-text content.",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "page_id": {"type": "string", "description": "Notion page identifier"}
+                "page_id": {"type": "string", "description": "Knowledge-base page identifier"}
             },
             "required": ["page_id"],
         },
     },
     {
         "name": "append_to_page",
-        "description": "Append a paragraph block to an existing Notion page.",
+        "description": "Append content to an existing knowledge-base page.",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "page_id": {"type": "string", "description": "Notion page identifier"},
+                "page_id": {"type": "string", "description": "Knowledge-base page identifier"},
                 "content": {"type": "string", "description": "Paragraph content to append"},
             },
             "required": ["page_id", "content"],
@@ -74,7 +77,7 @@ TOOLS = [
     },
     {
         "name": "create_page",
-        "description": "Create a page under a parent page using the existing Notion integration.",
+        "description": "Create a page under a parent page using the configured knowledge-base integration.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -93,26 +96,26 @@ TOOLS = [
 
 
 def _missing_secret_payload() -> dict[str, Any]:
+    label = knowledge_base_provider_label()
     return {
         "ok": False,
+        "provider": normalized_knowledge_base_provider(),
         "error": {
             "code": "missing_secret",
-            "message": (
-                "Notion non configure "
-                "(NOTION_API_KEY ou credentials OAuth Notion manquants)"
-            ),
+            "message": knowledge_base_status_detail(),
         },
+        "provider_label": label,
     }
 
 
 async def _with_client(callback):
-    if not notion_auth_configured():
+    if not knowledge_base_auth_configured():
         return error_tool_result(
-            "Notion non configure (NOTION_API_KEY ou credentials OAuth Notion manquants)",
+            knowledge_base_status_detail(),
             _missing_secret_payload(),
         )
 
-    client = NotionClient()
+    client = KnowledgeBaseClient()
     try:
         return await callback(client)
     finally:
@@ -129,11 +132,17 @@ async def tool_search_pages(arguments: dict[str, Any]) -> dict[str, Any]:
             {"ok": False, "error": {"code": "invalid_arguments", "message": "query is required"}},
         )
 
-    async def _run(client: NotionClient) -> dict[str, Any]:
-        results = await client.search(query)
-        payload = {"ok": True, "query": query, "results": results[:limit]}
+    async def _run(client: KnowledgeBaseClient) -> dict[str, Any]:
+        results = await client.search(query, limit=limit)
+        payload = {
+            "ok": True,
+            "provider": client.provider,
+            "provider_label": client.label,
+            "query": query,
+            "results": results[:limit],
+        }
         return ok_tool_result(
-            f"Found {len(payload['results'])} Notion page(s) for '{query}'",
+            f"Found {len(payload['results'])} {client.label} page(s) for '{query}'",
             payload,
         )
 
@@ -151,11 +160,17 @@ async def tool_read_page(arguments: dict[str, Any]) -> dict[str, Any]:
             },
         )
 
-    async def _run(client: NotionClient) -> dict[str, Any]:
+    async def _run(client: KnowledgeBaseClient) -> dict[str, Any]:
         content = await client.read_page(page_id)
-        payload = {"ok": True, "page_id": page_id, "content": content}
+        payload = {
+            "ok": True,
+            "provider": client.provider,
+            "provider_label": client.label,
+            "page_id": page_id,
+            "content": content,
+        }
         return ok_tool_result(
-            f"Read Notion page {page_id}",
+            f"Read {client.label} page {page_id}",
             payload,
         )
 
@@ -177,11 +192,17 @@ async def tool_append_to_page(arguments: dict[str, Any]) -> dict[str, Any]:
             },
         )
 
-    async def _run(client: NotionClient) -> dict[str, Any]:
+    async def _run(client: KnowledgeBaseClient) -> dict[str, Any]:
         await client.append_to_page(page_id, content)
-        payload = {"ok": True, "page_id": page_id, "content_length": len(content)}
+        payload = {
+            "ok": True,
+            "provider": client.provider,
+            "provider_label": client.label,
+            "page_id": page_id,
+            "content_length": len(content),
+        }
         return ok_tool_result(
-            f"Appended content to Notion page {page_id}",
+            f"Appended content to {client.label} page {page_id}",
             payload,
         )
 
@@ -204,11 +225,18 @@ async def tool_create_page(arguments: dict[str, Any]) -> dict[str, Any]:
             },
         )
 
-    async def _run(client: NotionClient) -> dict[str, Any]:
+    async def _run(client: KnowledgeBaseClient) -> dict[str, Any]:
         page_id = await client.create_page(parent_id, title, content)
-        payload = {"ok": True, "page_id": page_id, "parent_id": parent_id, "title": title}
+        payload = {
+            "ok": True,
+            "provider": client.provider,
+            "provider_label": client.label,
+            "page_id": page_id,
+            "parent_id": parent_id,
+            "title": title,
+        }
         return ok_tool_result(
-            f"Created Notion page '{title}'",
+            f"Created {client.label} page '{title}'",
             payload,
         )
 
@@ -232,7 +260,7 @@ def serve_mcp() -> int:
                     {
                         "protocolVersion": PROTOCOL_VERSION,
                         "capabilities": {"tools": {"listChanged": False}},
-                        "serverInfo": {"name": "notion", "version": "1.0.0"},
+                        "serverInfo": {"name": "knowledge-base", "version": "1.0.0"},
                     },
                 )
             )

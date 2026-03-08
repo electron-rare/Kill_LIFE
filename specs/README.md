@@ -13,9 +13,11 @@ Le fichier `constraints.yaml` est la **source de verite** des contraintes non-fo
 Specs complementaires:
 
 - `github_mcp_conversion_spec.md`: prep de conversion de `workflow_dispatch` vers une surface MCP future.
+- `cad_modeling_tasks.md`: backlog canonique `FreeCAD/OpenSCAD` pour la stack CAD locale hors MCP.
 - `kicad_mcp_scope_spec.md`: perimetre fonctionnel, hors scope et criteres d'acceptation du MCP KiCad supporte.
+- `mcp_agentics_target_backlog.md`: backlog cible 2026 -> 2028 pour `MCP`, `agentics`, `A2A`, avec ownership par repo.
 - `mcp_tasks.md`: backlog canonique des actions MCP locales, partage entre runtime, doc et gouvernance.
-- `notion_mcp_conversion_spec.md`: prep de conversion du bridge Notion actuel vers une surface MCP future.
+- `knowledge_base_mcp_spec.md`: spec canonique du bridge et du MCP knowledge base (`memos` / `docmost`).
 - `zeroclaw_dual_hw_orchestration_spec.md`: architecture d'orchestration ZeroClaw multi-repo + double materiel.
 - `zeroclaw_dual_hw_todo.md`: backlog operationnel court terme pour autonomie controlee.
 

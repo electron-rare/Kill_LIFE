@@ -12,16 +12,28 @@
       "args": ["tools/validate_specs.py", "--mcp"],
       "tools": ["*"]
     },
-    "notion": {
+    "knowledge-base": {
       "type": "local",
       "command": "bash",
-      "args": ["tools/run_notion_mcp.sh"],
+      "args": ["tools/run_knowledge_base_mcp.sh"],
       "tools": ["*"]
     },
     "github-dispatch": {
       "type": "local",
       "command": "bash",
       "args": ["tools/run_github_dispatch_mcp.sh"],
+      "tools": ["*"]
+    },
+    "freecad": {
+      "type": "local",
+      "command": "bash",
+      "args": ["tools/run_freecad_mcp.sh"],
+      "tools": ["*"]
+    },
+    "openscad": {
+      "type": "local",
+      "command": "bash",
+      "args": ["tools/run_openscad_mcp.sh"],
       "tools": ["*"]
     },
     "huggingface": {
