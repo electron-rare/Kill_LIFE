@@ -14,6 +14,11 @@ import time
 from pathlib import Path
 from typing import Any
 
+try:
+    from .mcp_smoke_common import load_runtime_env
+except ImportError:  # pragma: no cover - script entrypoint fallback
+    from mcp_smoke_common import load_runtime_env
+
 ROOT = Path(__file__).resolve().parents[1]
 SERVER = ROOT / "tools" / "run_nexar_mcp.sh"
 PROTOCOL_VERSION = "2025-03-26"
@@ -150,6 +155,7 @@ def emit_payload(payload: dict[str, Any], *, json_output: bool) -> int:
 
 def main() -> int:
     args = parse_args()
+    load_runtime_env()
     token_configured = bool(os.getenv("NEXAR_TOKEN") or os.getenv("NEXAR_API_KEY"))
     proc = spawn_server()
     payload: dict[str, Any] = {
@@ -161,6 +167,7 @@ def main() -> int:
         "token_configured": token_configured,
         "parts_found": 0,
         "demo_mode": None,
+        "live_validation": "pending" if args.live else "observed",
         "error": None,
     }
 
@@ -210,30 +217,41 @@ def main() -> int:
         search_result = expect_result(read_message(proc, args.timeout), "tools/call search_parts")
         if search_result.get("isError"):
             structured = search_result.get("structuredContent") or {}
-            raise SmokeError(
-                ((structured.get("error") or {}).get("message"))
-                if isinstance(structured, dict)
-                else "search_parts returned isError=true"
-            )
+            error = (structured.get("error") or {}) if isinstance(structured, dict) else {}
+            message = error.get("message") or "search_parts returned isError=true"
+            code = error.get("code") or "upstream_error"
+            payload["demo_mode"] = structured.get("demo_mode")
+            payload["live_validation"] = code
+            payload["error"] = message
+            payload["status"] = "degraded"
+            return emit_payload(payload, json_output=args.json)
         payload["checks"].append("search_parts")
 
+        structured = search_result.get("structuredContent") or {}
         meta = search_result.get("_meta") or {}
         parts = meta.get("parts") or search_result.get("parts") or []
+        if isinstance(structured, dict):
+            parts = structured.get("parts") or parts
         if not parts:
             raise SmokeError("nexar search did not expose any parts")
 
-        demo_mode = bool(meta.get("demo_mode", search_result.get("demo_mode", False)))
+        demo_mode = bool(
+            meta.get("demo_mode", structured.get("demo_mode", search_result.get("demo_mode", False)))
+            if isinstance(structured, dict)
+            else meta.get("demo_mode", search_result.get("demo_mode", False))
+        )
         payload["parts_found"] = len(parts)
         payload["demo_mode"] = demo_mode
 
         if demo_mode:
             payload["status"] = "degraded"
             payload["error"] = "NEXAR token missing or server running in demo mode"
+            payload["live_validation"] = "demo_mode"
             if args.live and token_configured:
-                payload["status"] = "failed"
                 payload["error"] = "Nexar MCP stayed in demo mode despite configured token"
         else:
             payload["status"] = "ready"
+            payload["live_validation"] = "passed"
 
         return emit_payload(payload, json_output=args.json)
     except Exception as exc:
