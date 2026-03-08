@@ -139,7 +139,7 @@ Familles d'IDs:
 
 ## Prochaine sequence canonique
 
-1. sortir les bundles locaux multi-repo restants sans rouvrir de chantier `MCP/agentics`
+1. garder `MCP/agentics` ferme localement tant qu'aucun besoin concret ne reapparait
 2. ne rejouer `K-012` que si le host-native devient une exigence runtime
 3. n'ouvrir un chantier `nexar_api` supplementaire que si un plan/quota Nexar utile devient necessaire
-4. rouvrir `A2A` seulement si un besoin inter-runtime reel apparait
+4. ne requalifier `A2A` que si un besoin inter-runtime reel apparait

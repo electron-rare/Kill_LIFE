@@ -92,6 +92,7 @@ node_modules/
 docker-compose.override.yml
 .cad-home/
 .runtime-home/
+.mascarade/
 
 # Autres outils CI/CD
 coverage/

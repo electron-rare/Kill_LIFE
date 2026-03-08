@@ -52,7 +52,7 @@ Format:
 - [x] K-009 — Décider du sort du chemin `cad_stack.sh mcp`
   - AC: ce n'est plus un chemin legacy, mais un alias supporté du launcher canonique.
 
-## À faire ensuite
+## Suites externes ou optionnelles
 
 - [x] K-010 — Aligner la matrice de protocoles MCP
   - AC: le runtime KiCad principal, `validate-specs` et les micro-serveurs auxiliaires exposent une compatibilité documentée et non contradictoire.

@@ -1,19 +1,18 @@
 # Local Change Bundles — 2026-03-08
 
-But: figer l'etat reel de `Kill_LIFE` apres fermeture locale de la vague
-`MCP/agentics`, puis documenter ce qui reste vraiment a publier.
+But: figer l'etat reel de `Kill_LIFE` apres fermeture locale et publication de
+la vague `MCP/agentics`, puis documenter ce qui reste vraiment hors repo-suivi.
 
 ## Etat courant
 
-Le repo suivi est maintenant propre hors mise a jour documentaire de ce fichier.
-
 Etat reel:
 
-- aucun delta fonctionnel repo-suivi n'est encore ouvert dans `Kill_LIFE`
+- aucun delta repo-suivi n'est encore ouvert dans `Kill_LIFE`
 - le runtime MCP canonique est `ready`
 - les validations live `knowledge-base`, `github-dispatch` et `nexar_api`
   ont deja ete rejouees sur la machine de reference
-- seul `.mascarade/` reste genere localement et doit rester hors commit
+- `.mascarade/` reste genere localement mais est maintenant ignore explicitement
+  par le repo
 
 Le helper de revue associe reste:
 
@@ -40,9 +39,9 @@ Resultat courant:
 
 ## Lots logiques deja figes
 
-Les lots ci-dessous restent utiles comme cartographie de publication si un
-push/commit local doit encore etre reconstruit ailleurs, mais ils ne
-correspondent plus a un delta ouvert dans ce worktree.
+Les lots ci-dessous restent utiles comme cartographie historique si une
+publication doit etre reconstruite ailleurs, mais ils ne correspondent plus a
+un delta ouvert dans ce worktree.
 
 ### Lot 1 — `mcp-runtime`
 
@@ -130,6 +129,7 @@ Fichiers:
 
 Ne pas versionner le runtime local genere:
 
+- `.mascarade/`
 - `.mascarade/mcp/github-dispatch/*.json`
 
 Ces fichiers servent d'evidence locale runtime, pas de source de verite repo.
@@ -145,3 +145,8 @@ Ce decoupage evite de melanger:
 - la migration `knowledge-base` et la hygiene runtime MCP
 - la pile CAD/MCP et ses smokes associes
 - le contrat Python repo-local minimal
+
+## Regle
+
+Ne pas rouvrir un chantier `Kill_LIFE` repo-suivi tant qu'un besoin reel ne
+requalifie pas un sujet externe ou optionnel.
