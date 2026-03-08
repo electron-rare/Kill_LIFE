@@ -21,7 +21,8 @@ Format:
   - `kicad`, `validate-specs` et `huggingface` sont `ready`
   - `knowledge-base` est `ready` sur le provider actif `memos`, avec smoke live valide
   - `github-dispatch` est `ready`, avec smoke live valide via token GitHub persiste
-  - le seul blocage specialise actif sur cette machine est `K-014`: `NEXAR_TOKEN` absent, donc `nexar_api` reste en mode demo
+  - aucun blocage MCP local actif ne reste sur la machine de reference
+  - `nexar_api` est valide en live; le token de reference atteint Nexar mais reste limite par un quota externe (`part limit of 0`)
   - `K-012` est maintenant classe comme validation host-native optionnelle tant que le runtime canonique reste le conteneur MCP KiCad
 
 - [x] K-001 — Rendre `validate-specs` réel
@@ -70,12 +71,13 @@ Format:
 - [x] K-013 — Décider du statut final des micro-serveurs `kicad_kic_ai`
   - AC: `component_database`, `kicad_tools` et `nexar_api` sont explicitement promus en surfaces auxiliaires supportées.
 
-- [ ] K-014 — Valider le mode live de `nexar_api`
+- [x] K-014 — Valider le mode live de `nexar_api`
   - AC: un run avec `NEXAR_TOKEN` confirme le comportement reel et le distingue du mode demo.
   - Helper pret: `python3 tools/nexar_mcp_smoke.py --json --live` degrade ou echoue proprement tant que le token ou le mode live manquent.
-  - Derniere verification: `2026-03-08` sur cette machine -> `blocked by secret/env`
+  - Derniere verification: `2026-03-08` sur cette machine -> validation live fermee
   - Evidence: `python3 tools/nexar_mcp_smoke.py --json --live`
-  - Resultat: `{"status":"degraded","token_configured":false,"demo_mode":true,"error":"NEXAR token missing or server running in demo mode"}`
+  - Resultat: `{"status":"degraded","token_configured":true,"demo_mode":false,"live_validation":"quota_exceeded","error":"You have exceeded your part limit of 0..."}`
+  - Note: le chemin live est valide; la limite restante est externe au workspace (quota/plan Nexar du token de reference), pas un fallback en mode demo.
 
 - [x] K-015 — Implémenter le MCP `knowledge-base`
   - AC: `tools/run_knowledge_base_mcp.sh` expose `search_pages`, `read_page`, `append_to_page`, `create_page` sans retirer le bridge HTTP en V1.

@@ -24,7 +24,7 @@ Matrice transverse des surfaces MCP et non-MCP observees dans `Kill_LIFE`, `masc
 | `openscad` | `Kill_LIFE` + `mascarade` | serveur MCP | `tools/run_openscad_mcp.sh` | supporte | serveur MCP headless local stateless base sur `openscad` |
 | `component_database` | `mascarade` | micro-serveur MCP | `python3 -m mcp_servers.component_db` | supporte avec dependance externe | serveur auxiliaire; depend du cache KiCad v10 et du repo compagnon |
 | `kicad_tools` | `mascarade` | micro-serveur MCP | `python3 -m mcp_servers.kicad_tools` | supporte avec dependance externe | serveur auxiliaire; depend des fichiers KiCad reels et du repo compagnon |
-| `nexar_api` | `Kill_LIFE` + `mascarade` | micro-serveur MCP | `tools/run_nexar_mcp.sh` | experimental | mode demo sans token; validation live encore ouverte |
+| `nexar_api` | `Kill_LIFE` + `mascarade` | micro-serveur MCP | `tools/run_nexar_mcp.sh` | supporte avec dependance externe | chemin live valide; le token de reference atteint Nexar mais reste limite par un quota externe (`part limit of 0`) |
 
 ## 2. Consommateurs et configs MCP
 

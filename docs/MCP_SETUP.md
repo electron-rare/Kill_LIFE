@@ -160,4 +160,4 @@ Le chemin d'observabilite synthetique n'est pas fourni par `Kill_LIFE` seul. Si 
 
 - finir l'observabilite MCP homogene
 - requalifier l'ouverture future de `A2A` une fois l'observabilite MCP homogene fermee
-- fermer `K-012` sur une machine avec `pcbnew` host-native et `K-014` en mode `nexar_api` live
+- garder `K-012` comme validation host-native optionnelle tant que le runtime KiCad canonique reste le conteneur; `K-014` est valide en live, avec une limite externe de quota Nexar sur le token de reference

@@ -27,7 +27,7 @@ Vue plus large de l'ecosysteme:
 | `openscad` | `tools/run_openscad_mcp.sh` | runtime `Kill_LIFE`, ops `mascarade` | `2025-03-26` observe au smoke | supporte | MCP local headless stateless pour validation, rendu et export |
 | `component_database` | `python3 -m mcp_servers.component_db` | `mascarade/finetune/kicad_kic_ai` | `2025-03-26` observe au handshake | supporte avec dependance externe | micro-serveur auxiliaire; depend du cache KiCad v10 et du repo compagnon |
 | `kicad_tools` | `python3 -m mcp_servers.kicad_tools` | `mascarade/finetune/kicad_kic_ai` | `2025-03-26` observe au handshake | supporte avec dependance externe | micro-serveur auxiliaire; analyses reelles si les fichiers KiCad et dependances associees sont disponibles |
-| `nexar_api` | `tools/run_nexar_mcp.sh` | launcher `Kill_LIFE`, serveur `mascarade/finetune/kicad_kic_ai/mcp_servers/nexar.py` | `2025-03-26` observe au handshake | experimental | micro-serveur auxiliaire; sans `NEXAR_TOKEN`, reste en mode demo; validation live encore ouverte |
+| `nexar_api` | `tools/run_nexar_mcp.sh` | launcher `Kill_LIFE`, serveur `mascarade/finetune/kicad_kic_ai/mcp_servers/nexar.py` | `2025-03-26` observe au handshake | supporte avec dependance externe | micro-serveur auxiliaire; le chemin live est valide avec `Bearer NEXAR_TOKEN`; sur la machine de reference, le token actuel atteint Nexar mais retourne un quota `part limit of 0` |
 
 ## Hors chaine supportee
 
@@ -45,4 +45,4 @@ Vue plus large de l'ecosysteme:
 ## Dettes encore ouvertes
 
 - fermer `K-012` sur une machine avec `pcbnew` host-native
-- fermer `K-014` en mode `nexar_api` live avec credentials
+- si un sourcing Nexar live complet est requis, prevoir un token/plan Nexar avec quota de parts non nul

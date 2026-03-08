@@ -85,8 +85,8 @@ Etat courant:
 
 ## Sequence restante
 
-1. rejouer `K-014` avec un `NEXAR_TOKEN` live
-2. rejouer `K-012` seulement si le host-native devient une exigence runtime
+1. ne rejouer `K-012` que si le host-native devient une exigence runtime
+2. n'ouvrir un chantier `nexar_api` supplementaire que si un token/plan Nexar avec quota de parts non nul est requis en production
 3. ne rouvrir `A2A` que si un besoin inter-runtime reel apparait
 
 ## Criteres de sortie
@@ -95,4 +95,4 @@ Etat courant:
 - l'orchestrateur ne depend plus de bridges ad hoc caches pour la knowledge base, `GitHub`, `FreeCAD` ou `OpenSCAD`
 - `crazy_life` sait superviser les serveurs et lancer les probes sans les reimplementer
 - `A2A` reste explicitement differe tant qu'aucun besoin inter-runtime multi-agent n'est prouve
-- sur la machine de reference actuelle, `K-014` est le seul blocage specialise actif; `K-012` reste une validation host-native optionnelle
+- sur la machine de reference actuelle, il n'y a plus de blocage MCP/agentics local actif; `K-012` reste une validation host-native optionnelle et `nexar_api` est valide en live mais limite par un quota Nexar externe

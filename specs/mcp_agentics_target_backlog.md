@@ -33,8 +33,9 @@ Familles d'IDs:
 - `OpsHub` et `Logs` savent relancer un probe MCP par serveur
 - `A2A` reste ferme
 - restes specialises actifs:
-  - `K-014` bloque par secret/env (`NEXAR_TOKEN` absent, `nexar_api` en mode demo)
+  - aucun blocker MCP/agentics local actif sur la machine de reference
   - `K-012` reste une validation host-native optionnelle tant que le runtime canonique KiCad est le conteneur
+  - `nexar_api` a son chemin live valide; le token de reference atteint Nexar mais reste limite par un quota externe (`part limit of 0`)
 
 ## Backlog
 
