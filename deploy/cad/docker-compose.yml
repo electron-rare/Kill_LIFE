@@ -29,6 +29,15 @@ services:
     volumes:
       - ${CAD_WORKSPACE_DIR:-../..}:/workspace
 
+  openscad-headless:
+    build:
+      context: .
+      dockerfile: Dockerfile.openscad-headless
+    working_dir: /workspace
+    command: ["sleep", "infinity"]
+    volumes:
+      - ${CAD_WORKSPACE_DIR:-../..}:/workspace
+
   platformio:
     build:
       context: .

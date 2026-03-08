@@ -6,7 +6,7 @@ coverage:
 CAD_STACK ?= ./tools/hw/cad_stack.sh
 CAD_ARGS ?=
 
-.PHONY: coverage fw hw s0 docs compliance cad-up cad-down cad-ps cad-build cad-doctor cad-mcp cad-kicad cad-freecad cad-pio
+.PHONY: coverage fw hw s0 docs compliance cad-up cad-down cad-ps cad-build cad-doctor cad-mcp cad-kicad cad-freecad cad-openscad cad-pio
 
 s0:
 	python3 tools/cockpit/cockpit.py gate_s0
@@ -50,6 +50,10 @@ cad-kicad:
 cad-freecad:
 	@if [ -z "$(CAD_ARGS)" ]; then echo "usage: make cad-freecad CAD_ARGS='-c \"import FreeCAD; print(FreeCAD.Version())\"'"; exit 1; fi
 	$(CAD_STACK) freecad-cmd $(CAD_ARGS)
+
+cad-openscad:
+	@if [ -z "$(CAD_ARGS)" ]; then echo "usage: make cad-openscad CAD_ARGS='--version'"; exit 1; fi
+	$(CAD_STACK) openscad $(CAD_ARGS)
 
 cad-pio:
 	@if [ -z "$(CAD_ARGS)" ]; then echo "usage: make cad-pio CAD_ARGS='system info'"; exit 1; fi

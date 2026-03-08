@@ -17,8 +17,10 @@ Commands:
   ps                     Show CAD container status
   build [services...]    Build local CAD images
   doctor                 Print tool versions from the containers
+  doctor-mcp             Print MCP runtime homes and run quick MCP smokes
   kicad-cli <args...>    Run kicad-cli with Kill_LIFE mounted as workspace
   freecad-cmd <args...>  Run FreeCADCmd with Kill_LIFE mounted as workspace
+  openscad <args...>     Run OpenSCAD with Kill_LIFE mounted as workspace
   pio <args...>          Run PlatformIO with Kill_LIFE mounted as workspace
   mcp [args...]          Run the KiCad MCP server in stdio mode
   help                   Show this help
@@ -112,14 +114,14 @@ build_cmd() {
     compose build "$@"
     for service in "$@"; do
       case "$service" in
-        kicad-headless|freecad-headless|platformio)
+        kicad-headless|freecad-headless|openscad-headless|platformio)
           restart_services+=("$service")
           ;;
       esac
     done
   else
     compose build
-    restart_services=(kicad-headless freecad-headless platformio)
+    restart_services=(kicad-headless freecad-headless openscad-headless platformio)
   fi
 
   if [ "${#restart_services[@]}" -gt 0 ]; then
@@ -134,12 +136,13 @@ up_cmd() {
     return
   fi
 
-  compose up -d kicad-headless freecad-headless platformio
+  compose up -d kicad-headless freecad-headless openscad-headless platformio
 }
 
 doctor_cmd() {
   ensure_service_up kicad-headless
   ensure_service_up freecad-headless
+  ensure_service_up openscad-headless
   ensure_service_up platformio
 
   run_shell_as_host_user \
@@ -153,9 +156,24 @@ doctor_cmd() {
     'mkdir -p "$HOME" && freecadcmd -c "import FreeCAD; print(\".\".join(FreeCAD.Version()[:3]))"'
 
   run_shell_as_host_user \
+    openscad-headless \
+    /workspace/.cad-home/openscad-headless \
+    'mkdir -p "$HOME" && openscad --version'
+
+  run_shell_as_host_user \
     platformio \
     /workspace/.cad-home/platformio \
     'mkdir -p "$HOME" "$HOME/.platformio" && export PLATFORMIO_CORE_DIR="$HOME/.platformio" && pio --version'
+}
+
+doctor_mcp_cmd() {
+  "$ROOT_DIR/tools/run_freecad_mcp.sh" --doctor
+  "$ROOT_DIR/tools/run_openscad_mcp.sh" --doctor
+  (
+    cd "$ROOT_DIR"
+    python3 tools/freecad_mcp_smoke.py --json --quick
+    python3 tools/openscad_mcp_smoke.py --json --quick
+  )
 }
 
 kicad_cli_cmd() {
@@ -175,6 +193,16 @@ freecad_cmd() {
     /workspace/.cad-home/freecad-headless \
     ":" \
     freecadcmd \
+    "$@"
+}
+
+openscad_cmd() {
+  ensure_service_up openscad-headless
+  run_tool_as_host_user \
+    openscad-headless \
+    /workspace/.cad-home/openscad-headless \
+    ":" \
+    openscad \
     "$@"
 }
 
@@ -223,7 +251,7 @@ if [ "$CMD" = "help" ]; then
 fi
 
 case "$CMD" in
-  up|down|ps|build|doctor|kicad-cli|freecad-cmd|pio|mcp)
+  up|down|ps|build|doctor|doctor-mcp|kicad-cli|freecad-cmd|openscad|pio|mcp)
     ;;
   *)
     usage >&2
@@ -252,6 +280,9 @@ case "$CMD" in
   doctor)
     doctor_cmd
     ;;
+  doctor-mcp)
+    doctor_mcp_cmd
+    ;;
   kicad-cli)
     if [ "$#" -eq 0 ]; then
       echo "cad_stack.sh kicad-cli: missing arguments" >&2
@@ -265,6 +296,13 @@ case "$CMD" in
       exit 2
     fi
     freecad_cmd "$@"
+    ;;
+  openscad)
+    if [ "$#" -eq 0 ]; then
+      echo "cad_stack.sh openscad: missing arguments" >&2
+      exit 2
+    fi
+    openscad_cmd "$@"
     ;;
   pio)
     if [ "$#" -eq 0 ]; then
