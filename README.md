@@ -13,6 +13,11 @@ Kill_LIFE structure un projet embarque autour de specs testables, d'agents speci
 - CAD headless KiCad 10 first
 - evidence, compliance et workflows canoniques
 
+Le runtime operateur local `ZeroClaw` reste supporte pour les boucles
+agentiques et les integrations. `LangGraph` et `AutoGen` sont gardes comme
+patterns d'integration optionnels autour de `ZeroClaw`, pas comme chemins
+critiques du gate stable repo-local.
+
 ## Structure utile
 
 ```text
@@ -49,6 +54,36 @@ git clone https://github.com/electron-rare/Kill_LIFE.git
 cd Kill_LIFE
 bash install_kill_life.sh
 ```
+
+### ZeroClaw natif (optionnel)
+
+Le runtime operateur `ZeroClaw` peut aussi tourner nativement sur la machine
+operateur. Le chemin supporte dans ce repo est le binaire officiel installe
+dans `~/.cargo/bin`, avec compatibilite maintenue pour
+`zeroclaw/target/release/zeroclaw`.
+
+```bash
+git clone https://github.com/zeroclaw-labs/zeroclaw.git zeroclaw
+bash zeroclaw/bootstrap.sh --no-guided --prefer-prebuilt
+mkdir -p "$HOME/.local/bin" zeroclaw/target/release
+ln -sfn "$HOME/.cargo/bin/zeroclaw" "$HOME/.local/bin/zeroclaw"
+ln -sfn "$HOME/.cargo/bin/zeroclaw" zeroclaw/target/release/zeroclaw
+zeroclaw --version
+```
+
+Les launchers `tools/ai/zeroclaw_*.sh` resolvent maintenant la racine du repo
+dynamiquement et retombent sur `command -v zeroclaw` si besoin.
+
+Chemin operateur supporte:
+
+```bash
+bash tools/ai/zeroclaw_stack_up.sh
+bash tools/ai/zeroclaw_stack_down.sh
+```
+
+Le runtime `ZeroClaw` reste on-demand. Les runbooks et index d'integration
+servis via `mascarade`/`edge-proxy` viennent de [`tools/ai/integrations/`](tools/ai/integrations/).
+Ils restent consultables meme quand le runtime `ZeroClaw` n'est pas demarre.
 
 ### Bootstrap Python repo-local
 

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="/Users/cils/Documents/Lelectron_rare/Kill_LIFE"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="${ZEROCLAW_ROOT_DIR:-$(cd -- "$SCRIPT_DIR/../.." && pwd)}"
 ART_DIR="${ZEROCLAW_ART_DIR:-$ROOT_DIR/artifacts/zeroclaw}"
 HOST="${ZEROCLAW_GATEWAY_HOST:-127.0.0.1}"
 PORT="${ZEROCLAW_GATEWAY_PORT:-3000}"

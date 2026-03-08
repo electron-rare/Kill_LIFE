@@ -4,7 +4,14 @@
 - Standards injection: Agent OS (standards versionnés + profils) citeturn0search3
 - Role workflows + gates: BMAD-METHOD
 - Tool-first runtime (local): Agent Zero
+- Native operator runtime: ZeroClaw CLI/gateway on the operator machine
+- Optional orchestration overlay: LangGraph around ZeroClaw
 - Interop tools: MCP local en `stdio` via le runtime `kicad-mcp`
+
+Posture operateur retenue:
+- `ZeroClaw` reste un runtime local demarrable a la demande.
+- `LangGraph`, `AutoGen` et `n8n` restent des overlays/runbooks autour de ce runtime.
+- les surfaces publiques `zeroclaw.saillant.cc` et `langgraph.saillant.cc` servent les runbooks operateur, pas un service coeur always-on.
 
 Le repo fournit :
 - `specs/` pour la source de vérité

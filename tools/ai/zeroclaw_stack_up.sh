@@ -13,7 +13,8 @@ load_local_env() {
 
 load_local_env
 
-ROOT_DIR="/Users/cils/Documents/Lelectron_rare/Kill_LIFE"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="${ZEROCLAW_ROOT_DIR:-$(cd -- "$SCRIPT_DIR/../.." && pwd)}"
 ART_DIR="${ZEROCLAW_ART_DIR:-$ROOT_DIR/artifacts/zeroclaw}"
 ZEROCLAW_BIN="${ZEROCLAW_BIN:-$ROOT_DIR/zeroclaw/target/release/zeroclaw}"
 GATEWAY_HOST="${ZEROCLAW_GATEWAY_HOST:-127.0.0.1}"
@@ -37,6 +38,44 @@ OLLAMA_WARMUP="${ZEROCLAW_OLLAMA_WARMUP:-1}"
 LMSTUDIO_BASE_URL="${ZEROCLAW_LMSTUDIO_BASE_URL:-http://127.0.0.1:1234/v1}"
 LMSTUDIO_MODEL="${ZEROCLAW_LMSTUDIO_MODEL:-}"
 LOCAL_PROVIDER_ORDER="${ZEROCLAW_LOCAL_PROVIDER_ORDER:-ollama,lmstudio}"
+
+usage() {
+  cat <<USAGE
+Usage: $(basename "$0")
+
+Start the local ZeroClaw operator stack on demand:
+  - gateway
+  - follow UI
+  - optional Prometheus backend
+  - synced integration runbooks from tools/ai/integrations/
+
+Companion commands:
+  bash tools/ai/zeroclaw_stack_up.sh
+  bash tools/ai/zeroclaw_stack_down.sh    Stop the local stack
+
+Environment overrides:
+  ZEROCLAW_ROOT_DIR
+  ZEROCLAW_ART_DIR
+  ZEROCLAW_BIN
+  ZEROCLAW_GATEWAY_HOST / ZEROCLAW_GATEWAY_PORT
+  ZEROCLAW_FOLLOW_PORT
+  ZEROCLAW_PROM_MODE
+USAGE
+}
+
+if [[ $# -gt 0 ]]; then
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "[fail] unknown option: $1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+fi
 
 GW_PID_FILE="$ART_DIR/gateway.pid"
 FW_PID_FILE="$ART_DIR/follow.pid"
@@ -1036,8 +1075,8 @@ cat >"$INDEX_FILE" <<EOF
       <a href="/orchestrator.log">/orchestrator.log</a>
       <a href="/prometheus.yml">/prometheus.yml</a>
       <a href="/integrations/README.md">/integrations/README.md</a>
-      <a href="/integrations/n8n/zeroclaw_orchestrator_workflow.json">n8n workflow</a>
-      <a href="/integrations/n8n/zeroclaw_pr_autotriage_workflow.json">n8n pr-autotriage workflow</a>
+      <a href="/integrations/zeroclaw/">zeroclaw runbook</a>
+      <a href="/integrations/n8n/README.md">n8n runbook</a>
       <a href="/integrations/langgraph/README.md">langgraph runbook</a>
       <a href="/integrations/autogen/README.md">autogen runbook</a>
       <a href="http://$GATEWAY_HOST:$GATEWAY_PORT/health">/health</a>
@@ -1191,7 +1230,7 @@ cat >"$INDEX_FILE" <<EOF
         <div class="body">
           <p class="hint">Point d'entrée recommandé.</p>
           <pre id="hubQuickStart">1) tools/ai/zeroclaw_stack_up.sh
-2) tools/ai/zeroclaw_integrations_up.sh
+2) Integrations served from /integrations/ (synced automatically from tools/ai/integrations/)
 3) Ouvrir http://127.0.0.1:8788/ (monitoring)
 4) Ouvrir http://127.0.0.1:5678/ (n8n)</pre>
         </div>

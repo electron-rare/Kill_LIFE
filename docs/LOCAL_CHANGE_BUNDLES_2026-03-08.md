@@ -1,16 +1,19 @@
 # Local Change Bundles — 2026-03-08
 
 But: figer l'etat reel de `Kill_LIFE` apres fermeture locale et publication de
-la vague `MCP/agentics`, puis documenter ce qui reste vraiment hors repo-suivi.
+la vague `MCP/agentics`, puis suivre le lot local `zeroclaw-operator-runtime`
+sans rouvrir le backlog MCP canonique.
 
 ## Etat courant
 
 Etat reel:
 
-- un petit lot `mac-local-mcp` peut vivre seul sans rouvrir le runtime MCP canonique
-- le runtime MCP canonique est `ready`
+- le runtime MCP canonique reste `ready`
 - les validations live `knowledge-base`, `github-dispatch` et `nexar_api`
   ont deja ete rejouees sur la machine de reference
+- le lot `zeroclaw-operator-runtime` est implemente, verifie et publie
+- un petit lot `mac-local-mcp` peut toujours vivre seul sans rouvrir le runtime
+  MCP canonique
 - `.mascarade/` reste genere localement mais est maintenant ignore explicitement
   par le repo
 
@@ -36,6 +39,60 @@ Resultat courant:
 - `knowledge-base` => `ready`, `live_validation=passed`
 - `github-dispatch` => `ready`, `live_validation=passed`
 - `nexar_api` => chemin live valide, `demo_mode=false`, limite externe de quota
+
+## Lot logique publie
+
+### `zeroclaw-operator-runtime`
+
+Objet:
+
+- rendre les launchers `ZeroClaw` portables hors chemins Mac hardcodes
+- documenter `ZeroClaw` comme runtime operateur on-demand
+- versionner les assets `tools/ai/integrations/` servis par le proxy operateur
+- garder `LangGraph`, `AutoGen` et `n8n` comme overlays/runbooks, pas comme
+  services coeur
+
+Fichiers:
+
+- `README.md`
+- `docs/AGENTIC_LANDSCAPE.md`
+- `docs/LOCAL_CHANGE_BUNDLES_2026-03-08.md`
+- `tools/ai/integrations/README.md`
+- `tools/ai/integrations/index.html`
+- `tools/ai/integrations/autogen/README.md`
+- `tools/ai/integrations/autogen/index.html`
+- `tools/ai/integrations/langgraph/README.md`
+- `tools/ai/integrations/langgraph/index.html`
+- `tools/ai/integrations/n8n/README.md`
+- `tools/ai/integrations/n8n/index.html`
+- `tools/ai/integrations/zeroclaw/README.md`
+- `tools/ai/integrations/zeroclaw/index.html`
+- `tools/ai/zeroclaw_dual_bootstrap.sh`
+- `tools/ai/zeroclaw_dual_chat.sh`
+- `tools/ai/zeroclaw_hw_firmware_loop.sh`
+- `tools/ai/zeroclaw_stack_down.sh`
+- `tools/ai/zeroclaw_stack_up.sh`
+- `tools/ai/zeroclaw_watch_1min.sh`
+- `tools/ai/zeroclaw_webhook_send.sh`
+
+Checks canoniques de fermeture:
+
+```bash
+cd /home/clems/Kill_LIFE && zeroclaw --version
+cd /home/clems/Kill_LIFE && bash -n tools/ai/zeroclaw_dual_bootstrap.sh tools/ai/zeroclaw_dual_chat.sh tools/ai/zeroclaw_hw_firmware_loop.sh tools/ai/zeroclaw_stack_down.sh tools/ai/zeroclaw_stack_up.sh tools/ai/zeroclaw_watch_1min.sh tools/ai/zeroclaw_webhook_send.sh
+cd /home/clems/Kill_LIFE && bash tools/ai/zeroclaw_stack_up.sh
+cd /home/clems/Kill_LIFE && bash tools/ai/zeroclaw_stack_down.sh
+```
+
+Resultat local:
+
+- `zeroclaw --version` -> `0.1.7`
+- `zeroclaw_stack_up.sh --help` et `zeroclaw_stack_down.sh --help` n'ont plus
+  d'effet de bord sur le runtime
+- le demarrage on-demand remonte bien `gateway`, `follow UI` et `Prometheus`
+- le runtime s'arrete proprement sans effacer les artefacts
+- `tools/ai/integrations/` devient la source de verite des runbooks servis par
+  le proxy operateur
 
 ## Lots logiques deja figes
 
