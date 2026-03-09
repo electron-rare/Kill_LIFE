@@ -14,7 +14,9 @@ def menu():
   print("1) gate S0 (spec ready)")
   print("2) firmware build+test")
   print("3) hardware check (ERC/netlist/BOM)")
-  print("4) exit")
+  print("4) useful lots status")
+  print("5) useful lots run")
+  print("6) exit")
   choice = input("> ").strip()
   if choice == "1":
     return gate_s0()
@@ -23,6 +25,10 @@ def menu():
   if choice == "3":
     schem = input("Path to .kicad_sch: ").strip()
     return hardware(schem)
+  if choice == "4":
+    return lot_chain_status()
+  if choice == "5":
+    return lot_chain_run()
   return 0
 
 def gate_s0():
@@ -52,12 +58,20 @@ def firmware():
 def hardware(schematic):
   return sh(["bash", "tools/hw/hw_check.sh", schematic], cwd=str(ROOT))
 
+def lot_chain_status():
+  return sh(["bash", "tools/cockpit/lot_chain.sh", "status"], cwd=str(ROOT))
+
+def lot_chain_run():
+  return sh(["bash", "tools/cockpit/lot_chain.sh", "all", "--yes"], cwd=str(ROOT))
+
 def main():
   ap = argparse.ArgumentParser()
   sub = ap.add_subparsers(dest="cmd", required=True)
   sub.add_parser("menu")
   sub.add_parser("gate_s0")
   sub.add_parser("fw")
+  sub.add_parser("lots-status")
+  sub.add_parser("lots-run")
   p = sub.add_parser("hw")
   p.add_argument("--schematic", required=True)
   args = ap.parse_args()
@@ -68,6 +82,10 @@ def main():
     return gate_s0()
   if args.cmd == "fw":
     return firmware()
+  if args.cmd == "lots-status":
+    return lot_chain_status()
+  if args.cmd == "lots-run":
+    return lot_chain_run()
   if args.cmd == "hw":
     return hardware(args.schematic)
   return 0

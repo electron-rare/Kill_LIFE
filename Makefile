@@ -6,13 +6,19 @@ coverage:
 CAD_STACK ?= ./tools/hw/cad_stack.sh
 CAD_ARGS ?=
 
-.PHONY: coverage fw hw s0 docs compliance cad-up cad-down cad-ps cad-build cad-doctor cad-mcp cad-kicad cad-freecad cad-openscad cad-pio
+.PHONY: coverage fw hw s0 lots-status lots-run docs compliance cad-up cad-down cad-ps cad-build cad-doctor cad-mcp cad-kicad cad-freecad cad-openscad cad-pio
 
 s0:
 	python3 tools/cockpit/cockpit.py gate_s0
 
 fw:
 	python3 tools/cockpit/cockpit.py fw
+
+lots-status:
+	python3 tools/cockpit/cockpit.py lots-status
+
+lots-run:
+	python3 tools/cockpit/cockpit.py lots-run
 
 hw:
 	@echo "usage: make hw SCHEM=hardware/kicad/<p>/<p>.kicad_sch"

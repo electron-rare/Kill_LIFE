@@ -1,0 +1,81 @@
+name: Bureau d'etudes - Ingenierie systeme
+description: Architecture HW/FW, interfaces, budgets, validation et backlog.
+title: "[systems] "
+labels:
+  - needs:triage
+  - type:systems
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Utilise ce template pour un lot d'ingenierie systeme.
+
+        Triage attendu apres creation :
+        - ajouter `prio:*`, `risk:*` et `scope:*`
+        - passer ensuite par `ai:spec`, `ai:plan`, `ai:tasks`, puis `ai:impl` / `ai:qa` selon le lot
+  - type: textarea
+    id: requirement
+    attributes:
+      label: Besoin systeme
+      description: Quel systeme ou sous-systeme faut-il concevoir, corriger ou faire evoluer ?
+      placeholder: "Contexte, interfaces attendues, cibles HW/FW, symptomes ou objectifs."
+    validations:
+      required: true
+  - type: textarea
+    id: interfaces
+    attributes:
+      label: Interfaces et contraintes
+      description: Protocoles, budgets, modes de panne, exigences de validation.
+      placeholder: "Bus, alim, radio, timing, memoire, power, HIL, endurance..."
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: Livrables attendus
+      placeholder: "Spec, architecture, ADR, matrice de validation, backlog, PR d'impl..."
+    validations:
+      required: true
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Priorite souhaitee
+      options:
+        - p0
+        - p1
+        - p2
+        - p3
+    validations:
+      required: true
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risque estime
+      options:
+        - low
+        - med
+        - high
+    validations:
+      required: true
+  - type: checkboxes
+    id: scopes
+    attributes:
+      label: Scopes concernes
+      description: Coche les labels `scope:*` a ajouter au triage.
+      options:
+        - label: hardware
+        - label: firmware
+        - label: docs
+        - label: ci
+  - type: dropdown
+    id: next_ai
+    attributes:
+      label: Etape d'automation la plus probable
+      options:
+        - ai:spec
+        - ai:plan
+        - ai:tasks
+        - ai:impl
+        - ai:qa
+        - ai:docs
+        - ai:hold
+    validations:
+      required: true

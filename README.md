@@ -263,7 +263,7 @@ La stack CAD est documentée dans [`deploy/cad/README.md`](deploy/cad/README.md)
 
 ## 🤖 ZeroClaw & intégrations agentiques (optionnel)
 
-Le runtime opérateur `ZeroClaw` peut tourner nativement sur la machine opérateur. Le chemin supporté est le binaire officiel installé dans `~/.cargo/bin`.
+Le runtime opérateur `ZeroClaw` peut tourner nativement sur la machine opérateur. Le launcher supporté essaie d'abord le binaire repo-local `zeroclaw/target/release/zeroclaw`, puis retombe sur `command -v zeroclaw` (typiquement `~/.cargo/bin/zeroclaw`).
 
 ```bash
 bash tools/ai/zeroclaw_stack_up.sh    # démarrer
@@ -294,8 +294,8 @@ Les workflows éditables par `crazy_life` vivent dans [`workflows/`](workflows/)
 | Compliance release | `workflows/compliance-release.json` |
 
 - `workflows/templates/*.json` : templates de création
-- `.crazy-life/runs/` : état des runs locaux
-- `.crazy-life/backups/workflows/` : révisions et restores
+- `.crazy-life/runs/` : état des runs locaux généré par `crazy_life` si l'éditeur est utilisé
+- `.crazy-life/backups/workflows/` : révisions/restores générés localement par `crazy_life` (non versionnés)
 
 ---
 
@@ -316,7 +316,7 @@ Les workflows éditables par `crazy_life` vivent dans [`workflows/`](workflows/)
 
 ### 2. Bulk Edit Hardware KiCad
 
-1. Ouvre une issue avec le label `ai:hw`.
+1. Ouvre une issue `type:systems` + `scope:hardware`, puis ajoute `ai:plan` (ou `ai:impl` si le batch est déjà cadré).
 2. L'agent HW effectue un bulk edit via `tools/hw/schops`.
 3. Exporte ERC/DRC, BOM, netlist.
 4. Snapshot avant/après dans `artifacts/hw/<timestamp>/`.
@@ -329,7 +329,7 @@ Les workflows éditables par `crazy_life` vivent dans [`workflows/`](workflows/)
 
 1. Ouvre une issue avec le label `ai:docs` ou `ai:qa`.
 2. L'agent Doc met à jour `docs/` et le README.
-3. L'agent Conformité valide le profil et génère le rapport.
+3. L'agent QA valide le profil de conformité et génère le rapport, avec relais doc si nécessaire.
 
 <div align="center" style="margin: 16px 0;">
   <img src="docs/assets/gate_validation_generated.png" alt="Gate Validation" width="200" />
@@ -374,8 +374,8 @@ compliance/
 Contraintes projet (depuis [`specs/constraints.yaml`](specs/constraints.yaml)) :
 - **Orientation** : ESP-first (cibles : esp32s3, esp32, esp32dev)
 - **Firmware** : PlatformIO + Unity (tests requis)
-- **Hardware** : KiCad ≥ 9, bulk edits autorisés, ERC green requis
-- **IA** : label `ai:codex` requis, secrets interdits, pas d'hypothèse réseau
+- **Hardware** : KiCad ≥ 9 minimum, chemin préféré KiCad 10-first, bulk edits autorisés, ERC green requis
+- **IA** : un label `ai:*` adapte a l'etape est requis, secrets interdits, pas d'hypothese reseau
 - **Compliance** : profil actif injecté, validé par `tools/compliance/validate.py`
 
 ---

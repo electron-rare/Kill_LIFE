@@ -26,6 +26,8 @@ Synchronisation `spec_kit`:
 - `specs/` (racine repo) est la source de verite canonique.
 - `ai-agentic-embedded-base/specs/` est un miroir exporte.
 - Apres toute mise a jour canonique, synchroniser le miroir avec:
-  - `rsync -a --delete specs/ ai-agentic-embedded-base/specs/`
+  - `bash tools/specs/sync_spec_mirror.sh all --yes`
 - Verifier l'absence d'ecart avec:
-  - `diff -ru ai-agentic-embedded-base/specs specs`
+  - `bash tools/specs/sync_spec_mirror.sh check`
+- Pour enchaîner automatiquement les lots locaux utiles:
+  - `bash tools/cockpit/lot_chain.sh all --yes`

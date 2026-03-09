@@ -1,0 +1,85 @@
+name: Cabinet - Intake / Cadrage
+description: Transformer une demande floue en decision, spec, plan et backlog actionnables.
+title: "[consulting] "
+labels:
+  - needs:triage
+  - type:consulting
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Utilise ce template pour le cadrage, le diagnostic et l'arbitrage.
+
+        Triage attendu apres creation :
+        - ajouter `prio:*`, `risk:*` et `scope:*`
+        - choisir ensuite un seul label `ai:*` pour la phase suivante
+  - type: textarea
+    id: problem
+    attributes:
+      label: Probleme a resoudre
+      description: Quel probleme concret faut-il traiter et pour qui ?
+      placeholder: "Probleme, symptomes observes, impacts metier ou techniques."
+    validations:
+      required: true
+  - type: textarea
+    id: outcomes
+    attributes:
+      label: Resultats attendus
+      description: Quels livrables ou decisions doivent sortir de ce lot ?
+      placeholder: "Decision, spec RFC2119, ADR, roadmap, backlog, evidence pack..."
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Contraintes et hypotheses
+      description: Delai, budget, compliance, supply, limites techniques, hypotheses.
+      placeholder: "Contraintes du lot et hypotheses deja connues."
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Priorite souhaitee
+      options:
+        - p0
+        - p1
+        - p2
+        - p3
+    validations:
+      required: true
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risque estime
+      options:
+        - low
+        - med
+        - high
+    validations:
+      required: true
+  - type: checkboxes
+    id: scopes
+    attributes:
+      label: Scopes concernes
+      description: Coche les zones a traduire ensuite en labels `scope:*`.
+      options:
+        - label: hardware
+        - label: firmware
+        - label: docs
+        - label: ux
+        - label: content
+        - label: ci
+  - type: dropdown
+    id: next_ai
+    attributes:
+      label: Etape d'automation la plus probable
+      description: Indication pour le triage humain.
+      options:
+        - ai:spec
+        - ai:plan
+        - ai:tasks
+        - ai:impl
+        - ai:qa
+        - ai:docs
+        - ai:hold
+    validations:
+      required: true
