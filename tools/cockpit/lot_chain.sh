@@ -19,6 +19,7 @@ MIRROR_STATUS="unknown"
 STRICT_STATUS="not_run"
 PYTHON_STATUS="not_run"
 UPSTREAM_STATUS="unknown"
+UPSTREAM_MODE="status"
 NEXT_LOT="pending"
 QUESTION_COUNT=0
 
@@ -144,8 +145,11 @@ refresh_auto_lot_status() {
 }
 
 refresh_upstream_autonomous_lane() {
-  if bash "${ROOT_DIR}/tools/run_autonomous_next_lots.sh" status >/dev/null 2>&1; then
+  local mode="${1:-${UPSTREAM_MODE}}"
+
+  if bash "${ROOT_DIR}/tools/run_autonomous_next_lots.sh" "${mode}" >/dev/null 2>&1; then
     UPSTREAM_STATUS="synced"
+    UPSTREAM_MODE="${mode}"
   else
     UPSTREAM_STATUS="failed"
   fi
@@ -377,8 +381,7 @@ run_auto_lots() {
   MIRROR_STATUS="done"
 
   log "Refreshing upstream autonomous next-lots lane"
-  bash "${ROOT_DIR}/tools/run_autonomous_next_lots.sh" run >/dev/null
-  UPSTREAM_STATUS="synced"
+  refresh_upstream_autonomous_lane run
 }
 
 run_validations() {
@@ -429,7 +432,7 @@ finalize_tracked_updates() {
 refresh_state() {
   load_validation_state
   refresh_auto_lot_status
-  refresh_upstream_autonomous_lane
+  refresh_upstream_autonomous_lane "${UPSTREAM_MODE}"
   collect_manual_questions
   write_status_report
 }

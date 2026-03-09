@@ -15,6 +15,17 @@ ROOT = Path(__file__).resolve().parents[1]
 PLAN_DOC = ROOT / "docs" / "plans" / "18_plan_enchainement_autonome_des_lots_utiles.md"
 TODO_DOC = ROOT / "docs" / "plans" / "18_todo_enchainement_autonome_des_lots_utiles.md"
 
+NOISE_PATHS: tuple[str, ...] = (
+    "docs/plans/18_plan_enchainement_autonome_des_lots_utiles.md",
+    "docs/plans/18_todo_enchainement_autonome_des_lots_utiles.md",
+)
+NOISE_PREFIXES: tuple[str, ...] = (
+    "artifacts/",
+    ".venv/",
+    ".mypy_cache/",
+    ".ruff_cache/",
+)
+
 
 @dataclass(frozen=True)
 class Validation:
@@ -66,6 +77,7 @@ LOTS: tuple[Lot, ...] = (
             "tools/ai/zeroclaw_integrations_import_n8n.sh",
             "tools/ai/zeroclaw_integrations_down.sh",
             "tools/ai/zeroclaw_integrations_lot.sh",
+            "tools/cockpit/run_next_lots_autonomously.sh",
         ),
         plan_refs=(
             "specs/zeroclaw_dual_hw_todo.md",
@@ -75,10 +87,6 @@ LOTS: tuple[Lot, ...] = (
             Validation(
                 name="zeroclaw_integrations_lot_verify",
                 cmd=("bash", "tools/ai/zeroclaw_integrations_lot.sh", "verify", "--json"),
-            ),
-            Validation(
-                name="strict_spec_contract",
-                cmd=("python3", "tools/validate_specs.py", "--strict", "--require-mirror-sync"),
             ),
             Validation(
                 name="python_stable_suite",
@@ -201,6 +209,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("mode", choices=("status", "run", "json"), nargs="?", default="status")
     parser.add_argument("--max-lots", type=int, default=0, help="Limit execution to the first N detected lots.")
     parser.add_argument(
+        "--include-noise",
+        action="store_true",
+        help="Include generated artifacts and lane docs in dirty-path detection.",
+    )
+    parser.add_argument(
         "--no-write",
         action="store_true",
         help="Do not rewrite plan/todo markdown files.",
@@ -222,7 +235,19 @@ def run_cmd(cmd: tuple[str, ...]) -> subprocess.CompletedProcess[str]:
     )
 
 
-def git_status() -> tuple[str, list[str], int, int]:
+def is_noise_path(path: str) -> bool:
+    if path in NOISE_PATHS:
+        return True
+    return any(path.startswith(prefix) for prefix in NOISE_PREFIXES)
+
+
+def filter_noise_paths(paths: list[str], include_noise: bool) -> list[str]:
+    if include_noise:
+        return paths
+    return [path for path in paths if not is_noise_path(path)]
+
+
+def git_status(include_noise: bool = False) -> tuple[str, list[str], int, int]:
     proc = run_cmd(("git", "status", "--short", "--branch"))
     if proc.returncode != 0:
         raise SystemExit(proc.stderr.strip() or proc.stdout.strip() or "git status failed")
@@ -246,7 +271,7 @@ def git_status() -> tuple[str, list[str], int, int]:
         if " -> " in payload:
             payload = payload.split(" -> ", 1)[1]
         dirty_paths.append(payload.strip())
-    return branch, dirty_paths, ahead, behind
+    return branch, filter_noise_paths(dirty_paths, include_noise), ahead, behind
 
 
 def matches_path(candidate: str, tracked: str) -> bool:
@@ -449,7 +474,7 @@ def write_docs(plan_text: str, todo_text: str) -> None:
 
 def main() -> int:
     args = parse_args()
-    branch, dirty_paths, ahead, behind = git_status()
+    branch, dirty_paths, ahead, behind = git_status(include_noise=args.include_noise)
     lots = detect_lots(dirty_paths)
     if args.max_lots > 0:
         lots = lots[: args.max_lots]

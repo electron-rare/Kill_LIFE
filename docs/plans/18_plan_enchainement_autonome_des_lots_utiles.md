@@ -1,6 +1,6 @@
 # 18) Plan d'enchainement autonome des lots utiles
 
-Last updated: 2026-03-09 06:29:29
+Last updated: 2026-03-09 09:24:59
 
 Ce plan est regenere localement par `tools/autonomous_next_lots.py`.
 
@@ -19,14 +19,27 @@ mettre a jour un plan/todo operateur, puis relancer les validations associees.
 ## Etat Git courant
 
 - branche: `## main...origin/main`
-- dirty paths: `0`
+- dirty paths: `6`
 - ahead: `0`
 - behind: `0`
 
+### Fichiers dirty detectes
+
+- `ai-agentic-embedded-base/specs/03_plan.md`
+- `specs/03_plan.md`
+- `tools/autonomous_next_lots.py`
+- `tools/cockpit/README.md`
+- `tools/cockpit/lot_chain.sh`
+- `tools/cockpit/run_next_lots_autonomously.sh`
+
 ## Lots detectes
 
-- Aucun lot local utile detecte.
-- Si le repo est clean et a jour, le prochain lot utile devient un chantier decide par l'operateur.
+### 1. `zeroclaw-integrations` — Runtime local ZeroClaw / n8n
+
+Fermer la lane d'integrations locales ZeroClaw/n8n, les evidences I-205 associees, puis resynchroniser les plans versionnes d'enchainement autonome et le cockpit local.
+
+- references: `specs/zeroclaw_dual_hw_todo.md`, `docs/plans/18_plan_enchainement_autonome_des_lots_utiles.md`
+- validations: `2` done, `0` advisory, `0` blocked
 
 ## Questions a poser seulement si besoin reel
 

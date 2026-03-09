@@ -37,6 +37,7 @@ Faire tourner une boucle locale simple:
 
 - `bash tools/cockpit/lot_chain.sh status`
 - `bash tools/cockpit/lot_chain.sh all --yes`
+- `bash tools/cockpit/run_next_lots_autonomously.sh --update-tracker`
 - `bash tools/run_autonomous_next_lots.sh status`
 - `bash tools/run_autonomous_next_lots.sh run`
 - `bash tools/specs/sync_spec_mirror.sh all --yes`

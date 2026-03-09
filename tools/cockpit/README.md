@@ -7,6 +7,7 @@ Entrée unique pour piloter le repo en local.
 - `hw` : gates hardware (ERC/netlist/BOM)
 - `lots-status` : état des lots locaux utiles + prochaine vraie question + resynchronisation de `docs/plans/18_*`
 - `lots-run` : enchaîne les lots auto-fix, la lane `autonomous_next_lots`, les validations, puis met à jour le suivi
+- `run_next_lots_autonomously.sh` : enchaîne automatiquement tous les lots utiles détectés, un à un, puis stoppe proprement quand la chaîne est vide.
 - `bash tools/ai/zeroclaw_integrations_lot.sh verify` : valide en un point les wrappers `ZeroClaw/n8n` et le smoke workflow suivi
 
 Note:
