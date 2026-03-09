@@ -177,7 +177,10 @@ Etat de validation courant:
 - syntaxe du script validee
 - sortie `codex` dry-run validee localement
 - sortie `json` validee localement
-- execution cible sur le Mac operateur reel encore a faire
+- bootstrap `codex --apply` execute avec succes sur le Mac operateur reel
+- `codex mcp list` contient bien `kicad`, `validate-specs`, `knowledge-base`, `github-dispatch`, `freecad`, `openscad`, `huggingface` et `playwright`
+- `Playwright MCP` est valide sur le Mac cible via `npx -y @playwright/mcp@latest --help`
+- seul reliquat Mac connu: le worktree `/Users/electron/mascarade` est dirty, donc aucun `git pull` n'a ete force sur ce clone
 
 ## Usage
 
