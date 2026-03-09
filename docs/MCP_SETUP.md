@@ -172,6 +172,13 @@ npx -y @playwright/mcp@latest
 
 Le bootstrap ajoute `MASCARADE_DIR` aux launchers qui en ont besoin pour retrouver le repo compagnon depuis le Mac.
 
+Etat de validation courant:
+
+- syntaxe du script validee
+- sortie `codex` dry-run validee localement
+- sortie `json` validee localement
+- execution cible sur le Mac operateur reel encore a faire
+
 ## Usage
 
 Depuis `Kill_LIFE`:
