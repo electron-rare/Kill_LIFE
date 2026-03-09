@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 import unittest
 from pathlib import Path
 
@@ -36,7 +37,7 @@ def read_message(proc: subprocess.Popen[str]) -> dict:
 class ValidateSpecsTests(unittest.TestCase):
     def test_cli_json_mode_emits_machine_readable_summary(self):
         proc = subprocess.run(
-            ["python3", str(SCRIPT), "--json"],
+            [sys.executable, str(SCRIPT), "--json"],
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
@@ -54,7 +55,7 @@ class ValidateSpecsTests(unittest.TestCase):
 
     def test_mcp_server_supports_initialize_and_tools_list(self):
         proc = subprocess.Popen(
-            ["python3", str(SCRIPT), "--mcp"],
+            [sys.executable, str(SCRIPT), "--mcp"],
             cwd=REPO_ROOT,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
