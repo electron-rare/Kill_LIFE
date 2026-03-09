@@ -48,6 +48,10 @@ Kill_LIFE est un modèle agentique pour systèmes embarqués IA, orienté spec-f
 > « La réponse à la question ultime de la vie, de l'univers et du développement embarqué IA : 42 specs, 7 agents, et un pipeline qui ne panique jamais. »
 > — Le README qui ne panique jamais
 
+<div align="center" style="margin: 8px 0;">
+  <img src="docs/assets/badge_42_generated.gif" alt="42" width="80" />
+</div>
+
 ([Les particules font-elles l'amour ?](https://lelectron-fou.bandcamp.com/album/les-particules-font-elles-l-amour-la-physique))
 
 ---
@@ -328,6 +332,14 @@ Les workflows éditables par `crazy_life` vivent dans [`workflows/`](workflows/)
 - Workflows CI : validation, sanitisation, scope guard, anti-prompt injection.
 - Evidence packs : tous les rapports dans `artifacts/<domaine>/<timestamp>/`.
 - Tests hardware reproductibles via scripts documentés.
+
+<div align="center" style="margin: 8px 0;">
+  <img src="docs/assets/openclaw_cicd_success.png" alt="CI Success" width="64" />
+  <img src="docs/assets/openclaw_cicd_running.png" alt="CI Running" width="64" />
+  <img src="docs/assets/openclaw_cicd_error.png" alt="CI Error" width="64" />
+  <img src="docs/assets/openclaw_cicd_cancel.png" alt="CI Cancel" width="64" />
+  <img src="docs/assets/openclaw_cicd_inactive.png" alt="CI Inactive" width="64" />
+</div>
 
 ### Chaîne de compliance
 
