@@ -40,7 +40,8 @@ LOTS: tuple[Lot, ...] = (
         title="Runtime local ZeroClaw / n8n",
         description=(
             "Fermer la lane d'integrations locales ZeroClaw/n8n, les evidences "
-            "I-205 associees et la documentation/spec sync qui l'accompagne."
+            "I-205 associees, puis resynchroniser les plans versionnes "
+            "d'enchainement autonome et le cockpit local."
         ),
         priority=5,
         paths=(
@@ -64,6 +65,7 @@ LOTS: tuple[Lot, ...] = (
             "tools/ai/zeroclaw_integrations_status.sh",
             "tools/ai/zeroclaw_integrations_import_n8n.sh",
             "tools/ai/zeroclaw_integrations_down.sh",
+            "tools/ai/zeroclaw_integrations_lot.sh",
         ),
         plan_refs=(
             "specs/zeroclaw_dual_hw_todo.md",
@@ -71,16 +73,8 @@ LOTS: tuple[Lot, ...] = (
         ),
         validations=(
             Validation(
-                name="zeroclaw_integrations_up",
-                cmd=("bash", "tools/ai/zeroclaw_integrations_up.sh", "--json"),
-            ),
-            Validation(
-                name="zeroclaw_integrations_status",
-                cmd=("bash", "tools/ai/zeroclaw_integrations_status.sh", "--json"),
-            ),
-            Validation(
-                name="zeroclaw_integrations_import_n8n",
-                cmd=("bash", "tools/ai/zeroclaw_integrations_import_n8n.sh", "--json"),
+                name="zeroclaw_integrations_lot_verify",
+                cmd=("bash", "tools/ai/zeroclaw_integrations_lot.sh", "verify", "--json"),
             ),
             Validation(
                 name="strict_spec_contract",

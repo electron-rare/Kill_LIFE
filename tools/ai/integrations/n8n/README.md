@@ -20,6 +20,7 @@ Current posture:
 Current local validation commands:
 
 ```bash
+bash tools/ai/zeroclaw_integrations_lot.sh verify
 bash tools/ai/zeroclaw_integrations_up.sh
 bash tools/ai/zeroclaw_integrations_status.sh --json
 bash tools/ai/zeroclaw_integrations_import_n8n.sh --json

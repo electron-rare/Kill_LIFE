@@ -60,5 +60,5 @@ Faire tourner une boucle locale simple:
 - MCP/CAD runtime lane sync: `synced`
 - Strict spec contract: `passed`
 - Stable Python suite: `passed`
-- Next real need: ask the operator to choose the next manual lot from `artifacts/cockpit/next_question.md`.
+- Next real need: none detected in the curated backlog list.
 <!-- END AUTO LOT-CHAIN PLAN -->

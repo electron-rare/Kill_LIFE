@@ -22,6 +22,6 @@ Last updated: 2026-03-09
   - Evidence: `python3 tools/validate_specs.py --strict --require-mirror-sync`
 - [x] T-LC-005 - Re-run the stable Python suite after the chained lots.
   - Evidence: `bash tools/test_python.sh --suite stable`
-- [ ] T-LC-006 - Choose the next manual lot once automation reaches a real fork.
+- [x] T-LC-006 - Choose the next manual lot once automation reaches a real fork.
   - Evidence: `artifacts/cockpit/next_question.md`
 <!-- END AUTO LOT-CHAIN TASKS -->

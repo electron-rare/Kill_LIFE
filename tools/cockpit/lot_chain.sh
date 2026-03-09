@@ -167,6 +167,9 @@ collect_manual_questions() {
       if [[ "${item_id}" == "${line_text}" ]]; then
         item_id="$(printf '%s\n' "${file}" | sed 's#specs/##; s#\.md##')"
       fi
+      if item_is_optional "${file}" "${item_id}"; then
+        continue
+      fi
       QUESTION_ITEMS+=("${item_id}|${file}|${line_no}|${clean_text}")
     fi
   done <<'EOF'
@@ -211,6 +214,33 @@ EOF
       printf -- '- `%s` in `%s:%s` — %s\n' "${label}" "${file}" "${line_no}" "${line_text}"
     done
   } > "${QUESTION_FILE}"
+}
+
+item_is_optional() {
+  local file="$1"
+  local item_id="$2"
+
+  awk -v item="${item_id}" '
+    $0 ~ "^- \\[ \\] " item {
+      in_item = 1
+      next
+    }
+    in_item && $0 ~ "^- \\[[ x]\\] [A-Z]-[0-9]+" {
+      exit
+    }
+    in_item {
+      lower = tolower($0)
+      if (lower ~ /statut:[[:space:]]*optionnel/ ||
+          lower ~ /optionnel tant que/ ||
+          lower ~ /aucun lot automatique supplementaire n.est pertinent/ ||
+          lower ~ /blocked by host environment/) {
+        found = 1
+      }
+    }
+    END {
+      exit(found ? 0 : 1)
+    }
+  ' "${ROOT_DIR}/${file}"
 }
 
 write_status_report() {
