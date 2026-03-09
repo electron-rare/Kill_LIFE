@@ -5,9 +5,18 @@
 [![Licence MIT](https://img.shields.io/badge/license-MIT-blue)](licenses/MIT.txt)
 [![Compliance](https://img.shields.io/badge/compliance-passed-brightgreen)](docs/COMPLIANCE.md)
 
+<div align="center">
+  <img src="docs/assets/banner_kill_life_generated.png" alt="Bannière Kill_LIFE" width="600" />
+</div>
+
 ---
 
 Bienvenue dans **Kill_LIFE**, le modèle open source pour systèmes embarqués IA où chaque étape est traçable, chaque evidence pack est rangé, et chaque agent suit un workflow sécurisé. Ce projet vise la reproductibilité, la conformité et l'automatisation pour l'embarqué IA multi-cibles.
+
+<div align="center" style="margin: 16px 0;">
+  <img src="docs/assets/dont_panic_generated.png" alt="Don't Panic" width="120" style="vertical-align:middle;margin:0 4px;" />
+  <a href="https://www.youtube.com/playlist?list=PLApocalypse42" target="_blank">Playlist apocalypse</a>
+</div>
 
 ## 🧩 Présentation
 
@@ -15,17 +24,6 @@ Kill_LIFE est un modèle agentique pour systèmes embarqués IA, orienté spec-f
 
 > « Bienvenue dans le meilleur des mondes : ici, chaque commit est validé, chaque gate est passé, et chaque agent sait que la vraie liberté, c'est d'avoir un evidence pack bien rangé. »
 > — Aldous Huxley, version CI/CD
-
-<div align="center">
-  <img src="docs/assets/banner_kill_life_generated.png" alt="Bannière Kill_LIFE" width="600" />
-</div>
-<div align="center" style="margin: 8px 0;">
-  <img src="docs/assets/dont_panic_generated.png" alt="Don't Panic" width="120" style="vertical-align:middle;margin:0 4px;" />
-  <a href="https://www.youtube.com/playlist?list=PLApocalypse42" target="_blank">Playlist apocalypse</a>
-</div>
-<div align="center" style="margin: 8px 0;">
-  <img src="docs/assets/arborescence_kill_life_generated.png" alt="Arborescence du projet Kill_LIFE" width="400" />
-</div>
 
 ---
 
@@ -35,22 +33,19 @@ Kill_LIFE est un modèle agentique pour systèmes embarqués IA, orienté spec-f
   > _Schaeffer : Les agents du pipeline écoutent le bruit des specs comme une symphonie de sons trouvés._
 - **Injection de standards** : Standards versionnés et profils injectés (Agent OS).
 - **BMAD / BMAD-METHOD** : Agents par rôles (PM, Architecte, Firmware, QA, Doc, HW), rituels, gates, handoffs ([agents/](agents/), [bmad/](bmad/)).
-<div align="center" style="margin: 8px 0;">
-  <img src="docs/assets/agents_bmad_generated.png" alt="Schéma des agents BMAD" width="400" />
-</div>
-
 - **Tool-first** : Scripts reproductibles ([tools/](tools/)), evidence pack dans `artifacts/`.
 - **Pipeline hardware/firmware** : Bulk edits, exports, tests, conformité, snapshots.
 - **CAD headless** : KiCad 10 first + FreeCAD + OpenSCAD via MCP, conteneurisés.
 - **Sécurité & conformité** : Sanitisation, sorties sûres, sandboxing, scope guard, anti-prompt injection ([OpenClaw Sandbox](https://www.openclaw.io/)).
 - **Runtime agentique** : `ZeroClaw` en local on-demand, `LangGraph` et `AutoGen` comme patterns d'intégration optionnels.
 
+<div align="center" style="margin: 16px 0;">
+  <img src="docs/assets/agents_bmad_generated.png" alt="Schéma des agents BMAD" width="400" />
+</div>
+
 > « La réponse à la question ultime de la vie, de l'univers et du développement embarqué IA : 42 specs, 7 agents, et un pipeline qui ne panique jamais. »
 > — Le README qui ne panique jamais
-
-<div align="center" style="margin: 8px 0;">
-  <img src="docs/assets/badge_42_generated.gif" alt="42" width="80" />
-</div>
+> <img src="docs/assets/badge_42_generated.gif" alt="42" width="42" style="vertical-align:middle;" />
 
 ([Les particules font-elles l'amour ?](https://lelectron-fou.bandcamp.com/album/les-particules-font-elles-l-amour-la-physique))
 
@@ -62,13 +57,13 @@ Kill_LIFE est un modèle agentique pour systèmes embarqués IA, orienté spec-f
 - **Automatisation** : Issue → PR avec tests unitaires, sanitisation, evidence pack.
 - **Multi-cibles** : ESP32, STM32, Linux, tests natifs.
 - **Pipeline matériel** : KiCad, exports SVG/ERC/DRC/BOM/netlist, bulk edits.
-<div align="center" style="margin: 8px 0;">
-  <img src="docs/assets/pipeline_hw_fw_generated.png" alt="Pipeline hardware/firmware" width="400" />
-</div>
-
 - **Conformité** : Profils injectés, validation automatique.
 - **OpenClaw** : Labels & commentaires sanitisés, jamais de commit/push, sandbox obligatoire.
-- **Workflow catalog** : Workflows JSON éditables par [`crazy_life`](https://github.com/electron-rare/crazy_life), validés contre un schéma JSON.
+- **Workflow catalog** : Workflows JSON éditables par `crazy_life`, validés contre un schéma JSON.
+
+<div align="center" style="margin: 16px 0;">
+  <img src="docs/assets/pipeline_hw_fw_generated.png" alt="Pipeline hardware/firmware" width="400" />
+</div>
 
 ---
 
@@ -113,6 +108,10 @@ flowchart TD
 ---
 
 ## 🗺️ Structure du projet
+
+<div align="center" style="margin: 16px 0;">
+  <img src="docs/assets/arborescence_kill_life_generated.png" alt="Arborescence du projet Kill_LIFE" width="400" />
+</div>
 
 ```text
 Kill_LIFE/
@@ -311,6 +310,10 @@ Les workflows éditables par `crazy_life` vivent dans [`workflows/`](workflows/)
 5. L'agent QA ajoute des tests Unity.
 6. Evidence pack généré automatiquement.
 
+<div align="center" style="margin: 16px 0;">
+  <img src="docs/assets/evidence_pack_generated.png" alt="Evidence Pack" width="200" />
+</div>
+
 ### 2. Bulk Edit Hardware KiCad
 
 1. Ouvre une issue avec le label `ai:hw`.
@@ -318,11 +321,19 @@ Les workflows éditables par `crazy_life` vivent dans [`workflows/`](workflows/)
 3. Exporte ERC/DRC, BOM, netlist.
 4. Snapshot avant/après dans `artifacts/hw/<timestamp>/`.
 
+<div align="center" style="margin: 16px 0;">
+  <img src="docs/assets/bulk_edit_party_generated.png" alt="Bulk Edit Party" width="200" />
+</div>
+
 ### 3. Documentation & Conformité
 
 1. Ouvre une issue avec le label `ai:docs` ou `ai:qa`.
 2. L'agent Doc met à jour `docs/` et le README.
 3. L'agent Conformité valide le profil et génère le rapport.
+
+<div align="center" style="margin: 16px 0;">
+  <img src="docs/assets/gate_validation_generated.png" alt="Gate Validation" width="200" />
+</div>
 
 ---
 
@@ -333,12 +344,14 @@ Les workflows éditables par `crazy_life` vivent dans [`workflows/`](workflows/)
 - Evidence packs : tous les rapports dans `artifacts/<domaine>/<timestamp>/`.
 - Tests hardware reproductibles via scripts documentés.
 
-<div align="center" style="margin: 8px 0;">
-  <img src="docs/assets/openclaw_cicd_success.png" alt="CI Success" width="64" />
-  <img src="docs/assets/openclaw_cicd_running.png" alt="CI Running" width="64" />
-  <img src="docs/assets/openclaw_cicd_error.png" alt="CI Error" width="64" />
-  <img src="docs/assets/openclaw_cicd_cancel.png" alt="CI Cancel" width="64" />
-  <img src="docs/assets/openclaw_cicd_inactive.png" alt="CI Inactive" width="64" />
+<div align="center" style="margin: 16px 0;">
+  <img src="docs/assets/openclaw_sandbox_generated.png" alt="OpenClaw Sandbox" width="200" />
+  <br/><br/>
+  <img src="docs/assets/openclaw_cicd_success.png" alt="CI Success" width="48" />
+  <img src="docs/assets/openclaw_cicd_running.png" alt="CI Running" width="48" />
+  <img src="docs/assets/openclaw_cicd_error.png" alt="CI Error" width="48" />
+  <img src="docs/assets/openclaw_cicd_cancel.png" alt="CI Cancel" width="48" />
+  <img src="docs/assets/openclaw_cicd_inactive.png" alt="CI Inactive" width="48" />
 </div>
 
 ### Chaîne de compliance
@@ -364,28 +377,6 @@ Contraintes projet (depuis [`specs/constraints.yaml`](specs/constraints.yaml)) :
 - **Hardware** : KiCad ≥ 9, bulk edits autorisés, ERC green requis
 - **IA** : label `ai:codex` requis, secrets interdits, pas d'hypothèse réseau
 - **Compliance** : profil actif injecté, validé par `tools/compliance/validate.py`
-
----
-
-## 🛠️ Fonctions clés
-
-- **specs/** : Source de vérité, plans, backlog.
-- **standards/** : Standards globaux, profils injectés.
-- **bmad/** : Gates, rituels, templates.
-- **agents/** : Prompts pour chaque rôle.
-- **tools/** : Scripts IA, cockpit, conformité, watch.
-- **firmware/** : PlatformIO, tests Unity, multi-cibles.
-- **hardware/** : KiCad, bulk edits, exports.
-- **openclaw/** : Labels, commentaires, sandbox.
-<div align="center" style="margin: 8px 0;">
-  <img src="docs/assets/bulk_edit_party_generated.png" alt="Bulk Edit Party" width="200" />
-  <img src="docs/assets/evidence_pack_generated.png" alt="Evidence Pack" width="200" />
-  <img src="docs/assets/gate_validation_generated.png" alt="Gate Validation" width="200" />
-  <img src="docs/assets/openclaw_sandbox_generated.png" alt="OpenClaw Sandbox" width="200" />
-</div>
-
-- **.github/** : Workflows CI, scope guard, enforcement labels.
-- **licenses/** : MIT, CERN OHL v2, CC-BY 4.0.
 
 ---
 
