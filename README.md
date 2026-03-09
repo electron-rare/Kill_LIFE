@@ -77,21 +77,29 @@ flowchart TD
   Issue[Issue label ai:*] --> PR[Pull Request]
   PR --> Gate[Gate tests + conformité]
   Gate --> Evidence[Evidence Pack]
-  Evidence --> CI[CI/CD]
+  Evidence --> CI[18 workflows CI/CD]
   CI --> Deploy[Déploiement multi-cible]
-  PR --> Agents[Agents PM Architecte Firmware QA Doc HW]
-  Agents --> Specs[specs/]
-  Agents --> Firmware[firmware/]
-  Agents --> Hardware[hardware/]
+  PR --> Agents[6 Agents PM Archi FW QA Doc HW]
+  Agents --> Specs[specs/ — 16 specs]
+  Agents --> Firmware[firmware/ PlatformIO]
+  Agents --> Hardware[hardware/ KiCad]
   Agents --> Docs[docs/]
   Agents --> Compliance[compliance/]
   Agents --> Tools[tools/]
   Agents --> OpenClaw[openclaw/]
   Specs --> Standards[standards/]
-  Firmware --> Tests[tests/]
-  Hardware --> Exports[exports/]
+  Firmware --> Tests[test/]
+  Hardware --> MCP{7 serveurs MCP}
+  MCP --> KiCad[KiCad MCP]
+  MCP --> FreeCAD[FreeCAD MCP]
+  MCP --> OpenSCAD[OpenSCAD MCP]
+  MCP --> HF[HuggingFace MCP]
   Compliance --> Evidence
   OpenClaw --> Sandbox[Sandbox]
+  Agents -.-> ZeroClaw[ZeroClaw runtime]
+  ZeroClaw -.-> LangGraph[LangGraph]
+  ZeroClaw -.-> AutoGen[AutoGen]
+  ZeroClaw -.-> N8N[n8n]
 ```
 
 </div>
@@ -106,24 +114,65 @@ flowchart TD
 Kill_LIFE/
 ├── firmware/                    # Code PlatformIO (ESP32/STM32)
 ├── hardware/                    # Assets hardware et blocs KiCad
-├── specs/                       # Specs et tâches canoniques
-├── workflows/                   # Workflows JSON canoniques + templates
+├── specs/                       # 16 specs et tâches canoniques (00_intake → 04_tasks + MCP/ZeroClaw/CAD)
+├── workflows/                   # Workflows JSON canoniques + templates + schéma
 ├── agents/                      # 6 agents spécialisés (PM, Archi, FW, QA, Doc, HW)
-├── bmad/                        # Gates, rituels, handoffs
-├── compliance/                  # Profils réglementaires, evidence
+├── bmad/                        # Gates (S0, S1), rituels (kickoff), templates (handoff, status)
+├── compliance/                  # Profils réglementaires, standards catalog, evidence
+├── standards/                   # Standards globaux versionnés
 ├── openclaw/                    # Labels, sandbox, onboarding
 ├── tools/
 │   ├── compliance/              # Validation compliance
-│   ├── hw/                      # Stack CAD, MCP, exports, smoke
-│   ├── ai/                      # ZeroClaw launchers, intégrations
+│   ├── hw/                      # Stack CAD, MCP, exports, smoke, schops
+│   ├── ai/                      # ZeroClaw launchers, intégrations (langgraph, autogen, n8n)
 │   ├── mistral/                 # Safe patch et outils Mistral
 │   └── ci/                      # Audit CI
 ├── deploy/cad/                  # Dockerfiles et compose CAD/runtime
 ├── docs/                        # Docs opérateur, bridge, plans, workflows
-├── test/                        # Tests Python
-├── mcp.json                     # Profil MCP par défaut
+├── test/                        # Tests Python (stable + MCP)
+├── .github/
+│   ├── agents/                  # 6 définitions agents GitHub
+│   ├── prompts/                 # 37 prompts (plan_wizard_*, start_*, Eureka_*)
+│   └── workflows/               # 18 workflows CI/CD
+├── KIKIFOU/                     # Diagnostic, diagramme, mapping, recommandations
+├── mcp.json                     # 7 serveurs MCP configurés
 └── mkdocs.yml                   # Site docs
 ```
+
+### Chaîne de specs
+
+Le workflow spec-first suit une séquence canonique dans `specs/` :
+
+```text
+00_intake.md → 01_spec.md → 02_arch.md → 03_plan.md → 04_tasks.md
+```
+
+Specs spécialisées : `kicad_mcp_scope_spec.md`, `knowledge_base_mcp_spec.md`, `github_mcp_conversion_spec.md`, `cad_modeling_tasks.md`, `zeroclaw_dual_hw_orchestration_spec.md`, `mcp_agentics_target_backlog.md`.
+
+Contraintes : [`specs/constraints.yaml`](specs/constraints.yaml) — source de vérité pour cibles, toolchain, sécurité IA et compliance.
+
+### Agents & prompts
+
+6 agents spécialisés dans [`agents/`](agents/) et [`.github/agents/`](.github/agents/) :
+
+| Agent | Rôle |
+|---|---|
+| `pm_agent` | Gestion de projet, planning, backlog |
+| `architect_agent` | Architecture système, ADR |
+| `firmware_agent` | Code embarqué PlatformIO |
+| `hw_schematic_agent` | Schémas KiCad, bulk edits |
+| `qa_agent` | Tests, qualité, evidence packs |
+| `doc_agent` | Documentation, onboarding |
+
+37 prompts dans [`.github/prompts/`](.github/prompts/) couvrent : brainstorming, spécification, coordination agents, CI/CD, compliance, troubleshooting, release, bulk edit HW, et les prompts de démarrage (`start_*`) et d'idéation (`Eureka_*`).
+
+### BMAD (gates & rituels)
+
+Le framework BMAD dans [`bmad/`](bmad/) structure la progression :
+
+- **Gates** : `gate_s0.md` (pré-spec), `gate_s1.md` (pré-implémentation)
+- **Rituels** : `kickoff.md`
+- **Templates** : `handoff.md`, `status_update.md`
 
 Voir [KIKIFOU/diagramme.md](KIKIFOU/diagramme.md) pour le diagramme complet et [KIKIFOU/mapping.md](KIKIFOU/mapping.md) pour la table de mapping.
 
@@ -187,7 +236,19 @@ KILL_LIFE_PIO_MODE=container .venv/bin/python tools/auto_check_ci_cd.py
 
 ---
 
-## 🔧 CAD & MCP
+## 🔧 Serveurs MCP
+
+Le projet expose **7 serveurs MCP** (Model Context Protocol) configurés dans [`mcp.json`](mcp.json) :
+
+| Serveur | Type | Rôle |
+|---|---|---|
+| `kicad` | local | Gestion de projet, schémas, PCB, bibliothèques, validation, exports, sourcing |
+| `validate-specs` | local | Validation specs, compliance, RFC2119 (CLI + MCP stdio) |
+| `knowledge-base` | local | Recherche, lecture, ajout de memos (docmost) |
+| `github-dispatch` | local | Dispatch de workflows GitHub allowlistés |
+| `freecad` | local | Modélisation 3D, rendu, export, validation |
+| `openscad` | local | Modélisation paramétrique, export, validation |
+| `huggingface` | distant | Accès au Hub HuggingFace (datasets, modèles, papers) |
 
 La stack CAD est documentée dans [`deploy/cad/README.md`](deploy/cad/README.md) et pilotée par [`tools/hw/cad_stack.sh`](tools/hw/cad_stack.sh).
 
@@ -197,7 +258,7 @@ La stack CAD est documentée dans [`deploy/cad/README.md`](deploy/cad/README.md)
 
 ---
 
-## 🤖 ZeroClaw (optionnel)
+## 🤖 ZeroClaw & intégrations agentiques (optionnel)
 
 Le runtime opérateur `ZeroClaw` peut tourner nativement sur la machine opérateur. Le chemin supporté est le binaire officiel installé dans `~/.cargo/bin`.
 
@@ -206,7 +267,16 @@ bash tools/ai/zeroclaw_stack_up.sh    # démarrer
 bash tools/ai/zeroclaw_stack_down.sh  # arrêter
 ```
 
-Les runbooks et intégrations vivent dans [`tools/ai/integrations/`](tools/ai/integrations/) et restent consultables même quand le runtime n'est pas démarré.
+Les runbooks et intégrations vivent dans [`tools/ai/integrations/`](tools/ai/integrations/) :
+
+| Intégration | Rôle |
+|---|---|
+| `zeroclaw/` | Runtime opérateur local, boucles agentiques |
+| `langgraph/` | Pattern d'intégration LangGraph |
+| `autogen/` | Pattern d'intégration AutoGen |
+| `n8n/` | Orchestration no-code / workflows externes |
+
+Ces intégrations restent consultables même quand le runtime n'est pas démarré.
 
 ---
 
@@ -214,7 +284,12 @@ Les runbooks et intégrations vivent dans [`tools/ai/integrations/`](tools/ai/in
 
 Les workflows éditables par `crazy_life` vivent dans [`workflows/`](workflows/) et sont validés contre [`workflows/workflow.schema.json`](workflows/workflow.schema.json).
 
-- `workflows/*.json` : workflows canoniques
+| Workflow | Fichier |
+|---|---|
+| Spec-first | `workflows/spec-first.json` |
+| Embedded CI local | `workflows/embedded-ci-local.json` |
+| Compliance release | `workflows/compliance-release.json` |
+
 - `workflows/templates/*.json` : templates de création
 - `.crazy-life/runs/` : état des runs locaux
 - `.crazy-life/backups/workflows/` : révisions et restores
@@ -254,6 +329,30 @@ Les workflows éditables par `crazy_life` vivent dans [`workflows/`](workflows/)
 - Evidence packs : tous les rapports dans `artifacts/<domaine>/<timestamp>/`.
 - Tests hardware reproductibles via scripts documentés.
 
+### Chaîne de compliance
+
+```text
+compliance/
+├── active_profile.yaml          # Profil actif (ex: "prototype")
+├── profiles/
+│   ├── prototype.yaml           # Standards requis + evidence pour prototype
+│   └── iot_wifi_eu.yaml         # Profil IoT WiFi marché EU
+├── standards_catalog.yaml       # Catalogue de standards versionnés
+├── plan.yaml                    # Produit, marché, radio, alimentation
+└── evidence/
+    ├── risk_assessment.md       # Évaluation des risques
+    ├── security_architecture.md # Architecture de sécurité
+    ├── test_plan_radio_emc.md   # Plan de test radio/EMC
+    └── supply_chain_declarations.md
+```
+
+Contraintes projet (depuis [`specs/constraints.yaml`](specs/constraints.yaml)) :
+- **Orientation** : ESP-first (cibles : esp32s3, esp32, esp32dev)
+- **Firmware** : PlatformIO + Unity (tests requis)
+- **Hardware** : KiCad ≥ 9, bulk edits autorisés, ERC green requis
+- **IA** : label `ai:codex` requis, secrets interdits, pas d'hypothèse réseau
+- **Compliance** : profil actif injecté, validé par `tools/compliance/validate.py`
+
 ---
 
 ## 🛠️ Fonctions clés
@@ -286,15 +385,30 @@ Les workflows éditables par `crazy_life` vivent dans [`workflows/`](workflows/)
 | **crazy_life** | Surface web/devops et workflow editor | 🔒 privé |
 | **mascarade** | Orchestration et bridge historique (sync uniquement) | 🔒 privé |
 
+### Datasets HuggingFace
+
+8 datasets de fine-tuning publiés sur [HuggingFace](https://huggingface.co/clemsail) (JSON, 1K-10K entrées chacun) :
+
+`mascarade-stm32` · `mascarade-spice` · `mascarade-iot` · `mascarade-power` · `mascarade-dsp` · `mascarade-emc` · `mascarade-kicad` · `mascarade-embedded`
+
 Articulation détaillée : [`docs/MASCARADE_BRIDGE.md`](docs/MASCARADE_BRIDGE.md)
 
 ---
 
 ## ⚙️ CI & release
 
-- `.github/workflows/ci.yml` : gate repo-local stable (bootstrap Python + `bash tools/test_python.sh --suite stable`)
-- `.github/workflows/release_signing.yml` : release versionnée (tag `v*` ou `workflow_dispatch`)
-- GitHub Pages : surfaces secondaires docs/evidence (pas un gate canonique)
+**18 workflows GitHub Actions** couvrent l'ensemble du cycle :
+
+| Catégorie | Workflows |
+|---|---|
+| **Gate principal** | `ci.yml` (bootstrap Python + suite stable) |
+| **Release** | `release_signing.yml` (tag `v*` ou `workflow_dispatch`) |
+| **Qualité** | `badges.yml`, `evidence_pack.yml`, `repo_state.yml`, `repo_state_header_gate.yml` |
+| **Sécurité** | `secret_scan.yml`, `sbom_validation.yml`, `supply_chain.yml`, `incident_response.yml` |
+| **Tests avancés** | `api_contract.yml`, `model_validation.yml`, `performance_hil.yml` |
+| **Infra** | `dependency_update.yml`, `community_accessibility.yml` |
+| **Pages** | `jekyll-gh-pages.yml`, `static.yml` (surfaces secondaires docs/evidence) |
+| **Orchestration** | `zeroclaw_dual_orchestrator.yml` |
 
 ---
 
