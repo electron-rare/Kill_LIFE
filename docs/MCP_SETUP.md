@@ -22,7 +22,7 @@ References canoniques:
 ## Chemins supportes
 
 - `kicad`: `tools/hw/run_kicad_mcp.sh`
-- `validate-specs`: `python3 tools/validate_specs.py --mcp`
+- `validate-specs`: `tools/run_validate_specs_mcp.sh`
 - `knowledge-base`: `tools/run_knowledge_base_mcp.sh`
 - `github-dispatch`: `tools/run_github_dispatch_mcp.sh`
 - `freecad`: `tools/run_freecad_mcp.sh`
@@ -43,7 +43,11 @@ Les micro-serveurs `kicad_kic_ai` de `mascarade` restent suivis comme surfaces a
 ## Prerequis
 
 - le repo compagnon `mascarade` existe en voisin (`../mascarade`) ou via `MASCARADE_DIR`
-- Docker est disponible pour `kicad`, `freecad` et `openscad`
+- les runtimes hote suivants sont auto-detectes si presents:
+  - KiCad app macOS avec `kicad-cli`
+  - FreeCAD app macOS avec `freecadcmd`
+  - OpenSCAD CLI local; si plusieurs binaires existent, le chemin CLI stable est prefere au snapshot `.app`
+- Docker reste le fallback pour `kicad`, `freecad` et `openscad`
 - `node` est disponible pour le build/API compagnon
 - le venv `mascarade/core/.venv` existe, ou `MASCARADE_CORE_PYTHON` pointe vers un Python avec les dependances knowledge base (`httpx`)
 - `KNOWLEDGE_BASE_PROVIDER` selectionne `memos` ou `docmost`
@@ -93,8 +97,8 @@ Le fichier versionne [mcp.json](../mcp.json) pointe vers les serveurs MCP reelle
     },
     "validate-specs": {
       "type": "local",
-      "command": "python3",
-      "args": ["tools/validate_specs.py", "--mcp"],
+      "command": "bash",
+      "args": ["tools/run_validate_specs_mcp.sh"],
       "tools": ["*"]
     },
     "knowledge-base": {
@@ -181,6 +185,15 @@ Etat de validation courant:
 - `codex mcp list` contient bien `kicad`, `validate-specs`, `knowledge-base`, `github-dispatch`, `freecad`, `openscad`, `huggingface` et `playwright`
 - `Playwright MCP` est valide sur le Mac cible via `npx -y @playwright/mcp@latest --help`
 - seul reliquat Mac connu: le worktree `/Users/electron/mascarade` est dirty, donc aucun `git pull` n'a ete force sur ce clone
+- execution cible sur le Mac operateur reel validee avec enregistrement effectif des serveurs dans Codex
+
+## Sources hote macOS retenues
+
+- KiCad: application locale macOS detectee dans `/Applications/KiCad/KiCad.app`
+- FreeCAD: releases officielles `https://github.com/FreeCAD/FreeCAD/releases`
+- OpenSCAD:
+  - snapshot app possible via `https://files.openscad.org/snapshots/OpenSCAD-2026.03.07.dmg`
+  - pour le runtime MCP local, le binaire CLI `OpenSCAD 2021.01` est prefere quand il est installe et repond correctement en non-interactif
 
 ## Usage
 
@@ -188,7 +201,7 @@ Depuis `Kill_LIFE`:
 
 ```bash
 tools/hw/run_kicad_mcp.sh
-python3 tools/validate_specs.py --mcp
+tools/run_validate_specs_mcp.sh
 tools/run_knowledge_base_mcp.sh
 tools/run_github_dispatch_mcp.sh
 tools/run_freecad_mcp.sh

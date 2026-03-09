@@ -69,6 +69,7 @@ build_pythonpath() {
     value="${PYTHONPATH}"
   else
     candidates=(
+      /Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages
       /usr/lib/kicad/lib/python3/dist-packages
       /usr/local/lib/kicad/lib/python3/dist-packages
       /usr/lib/python3/dist-packages
@@ -93,6 +94,11 @@ build_pythonpath() {
 resolve_probe_python() {
   if [ -n "${KICAD_PYTHON:-}" ]; then
     printf '%s' "$KICAD_PYTHON"
+    return 0
+  fi
+
+  if [ -x /Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/Versions/3.9/bin/python3.9 ]; then
+    printf '%s' /Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/Versions/3.9/bin/python3.9
     return 0
   fi
 
@@ -184,7 +190,11 @@ export KICAD_MCP_IMAGE="${KICAD_MCP_IMAGE:-kill_life_cad-kicad-mcp:latest}"
 export KICAD_MCP_LOG_LEVEL="${KICAD_MCP_LOG_LEVEL:-warn}"
 export KICAD_PYTHON_STDERR_LOG_LEVEL="${KICAD_PYTHON_STDERR_LOG_LEVEL:-WARNING}"
 export KICAD_PYTHON_FILE_LOG_LEVEL="${KICAD_PYTHON_FILE_LOG_LEVEL:-INFO}"
-MASCARADE_DIR="${MASCARADE_DIR:-$REPO_PARENT/mascarade}"
+MASCARADE_DIR="$(
+  kill_life_resolve_mascarade_dir \
+    "$ROOT_DIR" \
+    "finetune/kicad_mcp_server"
+)"
 SERVER_DIR="$MASCARADE_DIR/finetune/kicad_mcp_server"
 ENTRYPOINT="${KICAD_MCP_ENTRYPOINT:-$SERVER_DIR/dist/index.js}"
 NODE_BIN="${NODE_BIN:-node}"
