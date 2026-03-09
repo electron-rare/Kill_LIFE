@@ -1,6 +1,6 @@
 # 18) Plan d'enchainement autonome des lots utiles
 
-Last updated: 2026-03-09 06:06:59
+Last updated: 2026-03-09 06:24:48
 
 Ce plan est regenere localement par `tools/autonomous_next_lots.py`.
 
@@ -18,52 +18,43 @@ mettre a jour un plan/todo operateur, puis relancer les validations associees.
 
 ## Etat Git courant
 
-- branche: `## feat/mac-mcp-cad-host-bootstrap`
-- dirty paths: `16`
+- branche: `## main...origin/main`
+- dirty paths: `21`
 - ahead: `0`
 - behind: `0`
 
 ### Fichiers dirty detectes
 
-- `docs/MCP_SETUP.md`
-- `docs/plans/README.md`
-- `mcp.json`
-- `tools/bootstrap_mac_mcp.sh`
-- `tools/hw/cad_stack.sh`
-- `tools/hw/run_kicad_mcp.sh`
-- `tools/lib/runtime_home.sh`
-- `tools/mcp_smoke_common.py`
-- `tools/run_github_dispatch_mcp.sh`
-- `tools/run_knowledge_base_mcp.sh`
-- `tools/validate_specs_mcp_smoke.py`
+- `ai-agentic-embedded-base/specs/03_plan.md`
+- `ai-agentic-embedded-base/specs/04_tasks.md`
+- `ai-agentic-embedded-base/specs/README.md`
+- `ai-agentic-embedded-base/specs/mcp_tasks.md`
+- `ai-agentic-embedded-base/specs/zeroclaw_dual_hw_todo.md`
 - `docs/plans/18_plan_enchainement_autonome_des_lots_utiles.md`
 - `docs/plans/18_todo_enchainement_autonome_des_lots_utiles.md`
+- `specs/03_plan.md`
+- `specs/04_tasks.md`
+- `specs/README.md`
+- `specs/mcp_tasks.md`
+- `specs/zeroclaw_dual_hw_todo.md`
+- `tools/ai/integrations/n8n/README.md`
 - `tools/autonomous_next_lots.py`
-- `tools/run_autonomous_next_lots.sh`
-- `tools/run_validate_specs_mcp.sh`
+- `tools/cockpit/README.md`
+- `tools/cockpit/lot_chain.sh`
+- `tools/ai/integrations/n8n/kill_life_smoke_workflow.json`
+- `tools/ai/zeroclaw_integrations_down.sh`
+- `tools/ai/zeroclaw_integrations_import_n8n.sh`
+- `tools/ai/zeroclaw_integrations_status.sh`
+- `tools/ai/zeroclaw_integrations_up.sh`
 
 ## Lots detectes
 
-### 1. `mcp-runtime` — Alignement MCP runtime local
+### 1. `zeroclaw-integrations` — Runtime local ZeroClaw / n8n
 
-Stabiliser les launchers MCP, le bootstrap Mac, la resolution du repo compagnon et la doc operateur associee.
+Fermer la lane d'integrations locales ZeroClaw/n8n, les evidences I-205 associees et la documentation/spec sync qui l'accompagne.
 
-- references: `docs/plans/15_plan_mcp_runtime_alignment.md`, `docs/plans/17_plan_target_architecture_mcp_agentics_2028.md`
-- validations: `3` done, `2` advisory, `0` blocked
-
-### 2. `cad-mcp-host` — Runtime CAD host-first
-
-Qualifier KiCad, FreeCAD et OpenSCAD en host-first sur macOS tout en gardant le fallback conteneur operable.
-
-- references: `docs/plans/16_plan_cad_modeling_stack.md`, `docs/plans/17_plan_target_architecture_mcp_agentics_2028.md`
-- validations: `4` done, `0` advisory, `0` blocked
-
-### 3. `python-local` — Execution Python repo-locale
-
-Garder les scripts et smokes sur l'interpreteur repo-local plutot que sur le Python systeme.
-
-- references: `docs/plans/15_plan_mcp_runtime_alignment.md`
-- validations: `1` done, `0` advisory, `0` blocked
+- references: `specs/zeroclaw_dual_hw_todo.md`, `docs/plans/18_plan_enchainement_autonome_des_lots_utiles.md`
+- validations: `5` done, `0` advisory, `0` blocked
 
 ## Questions a poser seulement si besoin reel
 

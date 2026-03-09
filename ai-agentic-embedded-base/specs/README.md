@@ -31,3 +31,6 @@ Synchronisation `spec_kit`:
   - `bash tools/specs/sync_spec_mirror.sh check`
 - Pour enchaîner automatiquement les lots locaux utiles:
   - `bash tools/cockpit/lot_chain.sh all --yes`
+- Pour resynchroniser la lane runtime/MCP/CAD versionnée dans `docs/plans/18_*`:
+  - `bash tools/run_autonomous_next_lots.sh status`
+  - `bash tools/run_autonomous_next_lots.sh run`

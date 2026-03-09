@@ -64,9 +64,10 @@ Format:
   - AC: le smoke passe aussi sur le chemin hote, pas seulement via le fallback conteneur.
   - Statut: optionnel tant que le runtime canonique reste `container` et valide en production locale.
   - Helper pret: `python3 tools/hw/kicad_host_mcp_smoke.py --json --quick` degrade proprement si `pcbnew` est absent.
-  - Derniere verification: `2026-03-08` sur cette machine -> `blocked by host environment`
+  - Derniere verification: `2026-03-09` sur cette machine -> `blocked by host environment`
   - Evidence: `python3 tools/hw/kicad_host_mcp_smoke.py --json --quick`
-  - Resultat: `{"status":"degraded","host_pcbnew_import":"missing","error":"pcbnew not importable on host runtime"}`
+  - Resultat: `{"status":"degraded","requested_runtime":"host","runtime_mode":"host","quick":true,"host_pcbnew_import":"missing","error":"pcbnew not importable on host runtime"}`
+  - Note: `command -v pcbnew` retourne vide sur cette machine; aucun lot automatique supplementaire n'est pertinent tant que le runtime host KiCad n'est pas installe.
 
 - [x] K-013 — Décider du statut final des micro-serveurs `kicad_kic_ai`
   - AC: `component_database`, `kicad_tools` et `nexar_api` sont explicitement promus en surfaces auxiliaires supportées.

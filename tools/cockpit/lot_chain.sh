@@ -18,6 +18,7 @@ README_STATUS="unknown"
 MIRROR_STATUS="unknown"
 STRICT_STATUS="not_run"
 PYTHON_STATUS="not_run"
+UPSTREAM_STATUS="unknown"
 NEXT_LOT="pending"
 QUESTION_COUNT=0
 
@@ -142,6 +143,14 @@ refresh_auto_lot_status() {
   fi
 }
 
+refresh_upstream_autonomous_lane() {
+  if bash "${ROOT_DIR}/tools/run_autonomous_next_lots.sh" status >/dev/null 2>&1; then
+    UPSTREAM_STATUS="synced"
+  else
+    UPSTREAM_STATUS="failed"
+  fi
+}
+
 collect_manual_questions() {
   local file match line_no line_text clean_text item_id recommended recommended_text
 
@@ -219,6 +228,9 @@ write_status_report() {
     printf -- '- Spec mirror sync: `%s`\n' "${MIRROR_STATUS}"
     printf -- '  - Command: `bash tools/specs/sync_spec_mirror.sh all --yes`\n'
     printf -- '  - Evidence: `artifacts/specs/mirror_sync_report.md`\n\n'
+    printf -- '- MCP/CAD runtime lane sync: `%s`\n' "${UPSTREAM_STATUS}"
+    printf -- '  - Command: `bash tools/run_autonomous_next_lots.sh status`\n'
+    printf -- '  - Evidence: `docs/plans/18_plan_enchainement_autonome_des_lots_utiles.md`\n\n'
 
     printf '## Validations\n\n'
     printf -- '- Strict spec contract: `%s`' "${STRICT_STATUS}"
@@ -262,6 +274,7 @@ update_plan_files() {
     fi
     printf -- '- README/repo coherence: `%s`\n' "${README_STATUS}"
     printf -- '- Spec mirror sync: `%s`\n' "${MIRROR_STATUS}"
+    printf -- '- MCP/CAD runtime lane sync: `%s`\n' "${UPSTREAM_STATUS}"
     printf -- '- Strict spec contract: `%s`\n' "${STRICT_STATUS}"
     printf -- '- Stable Python suite: `%s`\n' "${PYTHON_STATUS}"
     if [[ "${NEXT_LOT}" == "question" ]]; then
@@ -282,31 +295,38 @@ update_plan_files() {
     printf -- '  - Evidence: `artifacts/doc/readme_repo_audit.md`\n'
 
     if [[ "${MIRROR_STATUS}" == "done" ]]; then
-      printf -- '- [x] T-LC-002 - Keep the exported spec mirror synchronized with the canonical `specs/` tree.\n'
+    printf -- '- [x] T-LC-002 - Keep the exported spec mirror synchronized with the canonical `specs/` tree.\n'
     else
       printf -- '- [ ] T-LC-002 - Keep the exported spec mirror synchronized with the canonical `specs/` tree.\n'
     fi
     printf -- '  - Evidence: `artifacts/specs/mirror_sync_report.md`\n'
 
-    if [[ "${STRICT_STATUS}" == "passed" ]]; then
-      printf -- '- [x] T-LC-003 - Revalidate the strict spec contract after each auto-fix run.\n'
+    if [[ "${UPSTREAM_STATUS}" == "synced" ]]; then
+      printf -- '- [x] T-LC-003 - Keep the upstream MCP/CAD runtime lane docs synchronized with the current local state.\n'
     else
-      printf -- '- [ ] T-LC-003 - Revalidate the strict spec contract after each auto-fix run.\n'
+      printf -- '- [ ] T-LC-003 - Keep the upstream MCP/CAD runtime lane docs synchronized with the current local state.\n'
+    fi
+    printf -- '  - Evidence: `docs/plans/18_plan_enchainement_autonome_des_lots_utiles.md`\n'
+
+    if [[ "${STRICT_STATUS}" == "passed" ]]; then
+      printf -- '- [x] T-LC-004 - Revalidate the strict spec contract after each auto-fix run.\n'
+    else
+      printf -- '- [ ] T-LC-004 - Revalidate the strict spec contract after each auto-fix run.\n'
     fi
     printf -- '  - Evidence: `python3 tools/validate_specs.py --strict --require-mirror-sync`\n'
 
     if [[ "${PYTHON_STATUS}" == "passed" ]]; then
-      printf -- '- [x] T-LC-004 - Re-run the stable Python suite after the chained lots.\n'
+      printf -- '- [x] T-LC-005 - Re-run the stable Python suite after the chained lots.\n'
     else
-      printf -- '- [ ] T-LC-004 - Re-run the stable Python suite after the chained lots.\n'
+      printf -- '- [ ] T-LC-005 - Re-run the stable Python suite after the chained lots.\n'
     fi
     printf -- '  - Evidence: `bash tools/test_python.sh --suite stable`\n'
 
     if [[ "${NEXT_LOT}" == "question" ]]; then
-      printf -- '- [ ] T-LC-005 - Choose the next manual lot once automation reaches a real fork.\n'
+      printf -- '- [ ] T-LC-006 - Choose the next manual lot once automation reaches a real fork.\n'
       printf -- '  - Evidence: `%s`\n' "${QUESTION_FILE#${ROOT_DIR}/}"
     else
-      printf -- '- [x] T-LC-005 - Choose the next manual lot once automation reaches a real fork.\n'
+      printf -- '- [x] T-LC-006 - Choose the next manual lot once automation reaches a real fork.\n'
       printf -- '  - Evidence: `%s`\n' "${QUESTION_FILE#${ROOT_DIR}/}"
     fi
   } > "${tasks_tmp}"
@@ -325,6 +345,10 @@ run_auto_lots() {
   log "Running spec mirror sync loop"
   bash "${ROOT_DIR}/tools/specs/sync_spec_mirror.sh" all --yes
   MIRROR_STATUS="done"
+
+  log "Refreshing upstream autonomous next-lots lane"
+  bash "${ROOT_DIR}/tools/run_autonomous_next_lots.sh" run >/dev/null
+  UPSTREAM_STATUS="synced"
 }
 
 run_validations() {
@@ -375,6 +399,7 @@ finalize_tracked_updates() {
 refresh_state() {
   load_validation_state
   refresh_auto_lot_status
+  refresh_upstream_autonomous_lane
   collect_manual_questions
   write_status_report
 }

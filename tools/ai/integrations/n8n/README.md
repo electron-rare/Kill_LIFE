@@ -17,6 +17,18 @@ Current posture:
 - If you need concrete n8n workflow files again, regenerate them as explicit
   tracked artifacts instead of relying on dead links.
 
+Current local validation commands:
+
+```bash
+bash tools/ai/zeroclaw_integrations_up.sh
+bash tools/ai/zeroclaw_integrations_status.sh --json
+bash tools/ai/zeroclaw_integrations_import_n8n.sh --json
+```
+
+Tracked smoke artifact:
+
+- `tools/ai/integrations/n8n/kill_life_smoke_workflow.json`
+
 Historical workflow names:
 
 - `zeroclaw_orchestrator_workflow`

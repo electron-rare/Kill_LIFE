@@ -36,6 +36,63 @@ class Lot:
 
 LOTS: tuple[Lot, ...] = (
     Lot(
+        key="zeroclaw-integrations",
+        title="Runtime local ZeroClaw / n8n",
+        description=(
+            "Fermer la lane d'integrations locales ZeroClaw/n8n, les evidences "
+            "I-205 associees et la documentation/spec sync qui l'accompagne."
+        ),
+        priority=5,
+        paths=(
+            "specs/03_plan.md",
+            "specs/04_tasks.md",
+            "specs/README.md",
+            "specs/mcp_tasks.md",
+            "specs/zeroclaw_dual_hw_todo.md",
+            "ai-agentic-embedded-base/specs/03_plan.md",
+            "ai-agentic-embedded-base/specs/04_tasks.md",
+            "ai-agentic-embedded-base/specs/README.md",
+            "ai-agentic-embedded-base/specs/mcp_tasks.md",
+            "ai-agentic-embedded-base/specs/zeroclaw_dual_hw_todo.md",
+            "docs/plans/18_plan_enchainement_autonome_des_lots_utiles.md",
+            "docs/plans/18_todo_enchainement_autonome_des_lots_utiles.md",
+            "tools/cockpit/README.md",
+            "tools/cockpit/lot_chain.sh",
+            "tools/ai/integrations/n8n/README.md",
+            "tools/ai/integrations/n8n/kill_life_smoke_workflow.json",
+            "tools/ai/zeroclaw_integrations_up.sh",
+            "tools/ai/zeroclaw_integrations_status.sh",
+            "tools/ai/zeroclaw_integrations_import_n8n.sh",
+            "tools/ai/zeroclaw_integrations_down.sh",
+        ),
+        plan_refs=(
+            "specs/zeroclaw_dual_hw_todo.md",
+            "docs/plans/18_plan_enchainement_autonome_des_lots_utiles.md",
+        ),
+        validations=(
+            Validation(
+                name="zeroclaw_integrations_up",
+                cmd=("bash", "tools/ai/zeroclaw_integrations_up.sh", "--json"),
+            ),
+            Validation(
+                name="zeroclaw_integrations_status",
+                cmd=("bash", "tools/ai/zeroclaw_integrations_status.sh", "--json"),
+            ),
+            Validation(
+                name="zeroclaw_integrations_import_n8n",
+                cmd=("bash", "tools/ai/zeroclaw_integrations_import_n8n.sh", "--json"),
+            ),
+            Validation(
+                name="strict_spec_contract",
+                cmd=("python3", "tools/validate_specs.py", "--strict", "--require-mirror-sync"),
+            ),
+            Validation(
+                name="python_stable_suite",
+                cmd=("bash", "tools/test_python.sh", "--suite", "stable"),
+            ),
+        ),
+    ),
+    Lot(
         key="mcp-runtime",
         title="Alignement MCP runtime local",
         description=(
