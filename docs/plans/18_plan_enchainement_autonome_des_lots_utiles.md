@@ -1,6 +1,6 @@
 # 18) Plan d'enchainement autonome des lots utiles
 
-Last updated: 2026-03-09 06:24:48
+Last updated: 2026-03-09 06:25:09
 
 Ce plan est regenere localement par `tools/autonomous_next_lots.py`.
 
@@ -19,42 +19,14 @@ mettre a jour un plan/todo operateur, puis relancer les validations associees.
 ## Etat Git courant
 
 - branche: `## main...origin/main`
-- dirty paths: `21`
+- dirty paths: `0`
 - ahead: `0`
 - behind: `0`
 
-### Fichiers dirty detectes
-
-- `ai-agentic-embedded-base/specs/03_plan.md`
-- `ai-agentic-embedded-base/specs/04_tasks.md`
-- `ai-agentic-embedded-base/specs/README.md`
-- `ai-agentic-embedded-base/specs/mcp_tasks.md`
-- `ai-agentic-embedded-base/specs/zeroclaw_dual_hw_todo.md`
-- `docs/plans/18_plan_enchainement_autonome_des_lots_utiles.md`
-- `docs/plans/18_todo_enchainement_autonome_des_lots_utiles.md`
-- `specs/03_plan.md`
-- `specs/04_tasks.md`
-- `specs/README.md`
-- `specs/mcp_tasks.md`
-- `specs/zeroclaw_dual_hw_todo.md`
-- `tools/ai/integrations/n8n/README.md`
-- `tools/autonomous_next_lots.py`
-- `tools/cockpit/README.md`
-- `tools/cockpit/lot_chain.sh`
-- `tools/ai/integrations/n8n/kill_life_smoke_workflow.json`
-- `tools/ai/zeroclaw_integrations_down.sh`
-- `tools/ai/zeroclaw_integrations_import_n8n.sh`
-- `tools/ai/zeroclaw_integrations_status.sh`
-- `tools/ai/zeroclaw_integrations_up.sh`
-
 ## Lots detectes
 
-### 1. `zeroclaw-integrations` — Runtime local ZeroClaw / n8n
-
-Fermer la lane d'integrations locales ZeroClaw/n8n, les evidences I-205 associees et la documentation/spec sync qui l'accompagne.
-
-- references: `specs/zeroclaw_dual_hw_todo.md`, `docs/plans/18_plan_enchainement_autonome_des_lots_utiles.md`
-- validations: `5` done, `0` advisory, `0` blocked
+- Aucun lot local utile detecte.
+- Si le repo est clean et a jour, le prochain lot utile devient un chantier decide par l'operateur.
 
 ## Questions a poser seulement si besoin reel
 
