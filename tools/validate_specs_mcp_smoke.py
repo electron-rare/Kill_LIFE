@@ -18,7 +18,7 @@ from mcp_smoke_common import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-SERVER = ROOT / "tools" / "validate_specs.py"
+SERVER = ROOT / "tools" / "run_validate_specs_mcp.sh"
 
 
 def parse_args() -> argparse.Namespace:
@@ -31,7 +31,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    proc = spawn_server(["python3", str(SERVER), "--mcp"], ROOT)
+    proc = spawn_server(["bash", str(SERVER)], ROOT)
     payload = {
         "status": "failed",
         "protocol_version": None,

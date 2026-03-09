@@ -15,9 +15,35 @@ from typing import Any
 
 PROTOCOL_VERSION = "2025-03-26"
 ENV_ASSIGN_RE = re.compile(r"^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$")
-DEFAULT_MASCARADE_DIR = Path(
-    os.environ.get("MASCARADE_DIR", Path(__file__).resolve().parents[2] / "mascarade")
-).resolve()
+def resolve_default_mascarade_dir() -> Path:
+    env_value = os.environ.get("MASCARADE_DIR", "").strip()
+    candidates = []
+    if env_value:
+        candidates.append(Path(env_value))
+
+    root = Path(__file__).resolve().parents[2]
+    candidates.extend([root / "mascarade", root / "mascarade-main"])
+
+    preferred_paths = (
+        "core/mascarade/integrations/knowledge_base.py",
+        "core/mascarade/integrations/github_dispatch.py",
+        "finetune/kicad_mcp_server",
+    )
+
+    for candidate in candidates:
+        resolved = candidate.resolve()
+        if all((resolved / rel).exists() for rel in preferred_paths):
+            return resolved
+
+    for candidate in candidates:
+        resolved = candidate.resolve()
+        if (resolved / "core/mascarade").exists():
+            return resolved
+
+    return (root / "mascarade").resolve()
+
+
+DEFAULT_MASCARADE_DIR = resolve_default_mascarade_dir()
 
 
 class SmokeError(RuntimeError):

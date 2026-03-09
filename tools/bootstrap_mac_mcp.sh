@@ -5,10 +5,11 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MODE="${1:-codex}"
 
 KILL_LIFE_DIR="$REPO_DIR"
-MASCARADE_DIR="${MASCARADE_DIR:-$(cd "$REPO_DIR/../mascarade" 2>/dev/null && pwd || true)}"
 CODEX_BIN="${CODEX_BIN:-codex}"
 INCLUDE_PLAYWRIGHT=1
 APPLY=0
+
+source "$REPO_DIR/tools/lib/runtime_home.sh"
 
 usage() {
   cat <<'EOF'
@@ -59,8 +60,8 @@ emit_json() {
     },
     "validate-specs": {
       "type": "local",
-      "command": "python3",
-      "args": ["$KILL_LIFE_DIR/tools/validate_specs.py", "--mcp"],
+      "command": "bash",
+      "args": ["$KILL_LIFE_DIR/tools/run_validate_specs_mcp.sh"],
       "tools": ["*"]
     },
     "knowledge-base": {
@@ -161,7 +162,7 @@ codex_add() {
 
 emit_codex() {
   codex_add kicad --env "MASCARADE_DIR=$MASCARADE_DIR" -- bash "$KILL_LIFE_DIR/tools/hw/run_kicad_mcp.sh"
-  codex_add validate-specs -- python3 "$KILL_LIFE_DIR/tools/validate_specs.py" --mcp
+  codex_add validate-specs -- bash "$KILL_LIFE_DIR/tools/run_validate_specs_mcp.sh"
   codex_add knowledge-base --env "MASCARADE_DIR=$MASCARADE_DIR" -- bash "$KILL_LIFE_DIR/tools/run_knowledge_base_mcp.sh"
   codex_add github-dispatch --env "MASCARADE_DIR=$MASCARADE_DIR" -- bash "$KILL_LIFE_DIR/tools/run_github_dispatch_mcp.sh"
   codex_add freecad --env "MASCARADE_DIR=$MASCARADE_DIR" -- bash "$KILL_LIFE_DIR/tools/run_freecad_mcp.sh"
@@ -204,6 +205,15 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ -n "$KILL_LIFE_DIR" ]] || { echo "Unable to resolve Kill_LIFE path" >&2; exit 1; }
+if [[ -z "${MASCARADE_DIR:-}" ]]; then
+  MASCARADE_DIR="$(
+    kill_life_resolve_mascarade_dir \
+      "$REPO_DIR" \
+      "core/mascarade/integrations/knowledge_base.py" \
+      "core/mascarade/integrations/github_dispatch.py" \
+      "finetune/kicad_mcp_server"
+  )"
+fi
 [[ -n "$MASCARADE_DIR" ]] || { echo "Unable to resolve mascarade companion path" >&2; exit 1; }
 
 case "$MODE" in

@@ -2,11 +2,15 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MASCARADE_DIR="${MASCARADE_DIR:-$ROOT_DIR/../mascarade}"
-MASCARADE_ENV_FILE="${MASCARADE_ENV_FILE:-$MASCARADE_DIR/.env}"
 SERVER_SCRIPT="$ROOT_DIR/tools/github_dispatch_mcp.py"
 source "$ROOT_DIR/tools/lib/runtime_home.sh"
 kill_life_runtime_home_init "$ROOT_DIR" "github-dispatch-mcp"
+MASCARADE_DIR="$(
+  kill_life_resolve_mascarade_dir \
+    "$ROOT_DIR" \
+    "core/mascarade/integrations/github_dispatch.py"
+)"
+MASCARADE_ENV_FILE="${MASCARADE_ENV_FILE:-$MASCARADE_DIR/.env}"
 
 load_mascarade_env() {
   [[ -r "$MASCARADE_ENV_FILE" ]] || return 0
@@ -62,5 +66,6 @@ fi
 }
 
 kill_life_runtime_home_ensure
+export MASCARADE_DIR
 export PYTHONPATH="$MASCARADE_DIR/core${PYTHONPATH:+:$PYTHONPATH}"
 exec "$CORE_PYTHON" "$SERVER_SCRIPT" "$@"

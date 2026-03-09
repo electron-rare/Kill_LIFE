@@ -25,6 +25,7 @@ Ces plans sont des **runbooks** : tu peux les suivre tels quels, ou les transfor
 15. [Plan d'alignement MCP local](15_plan_mcp_runtime_alignment.md)
 16. [Plan de stack CAD modelling locale](16_plan_cad_modeling_stack.md)
 17. [Plan cible MCP + agentics + A2A](17_plan_target_architecture_mcp_agentics_2028.md)
+18. [Plan d'enchainement autonome des lots utiles](18_plan_enchainement_autonome_des_lots_utiles.md)
 
 ---
 

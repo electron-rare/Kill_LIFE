@@ -52,6 +52,54 @@ compose() {
   docker compose -f "$COMPOSE_FILE" "$@"
 }
 
+resolve_host_kicad_cli() {
+  if [ -n "${KICAD_CLI:-}" ] && [ -x "${KICAD_CLI}" ]; then
+    printf '%s' "$KICAD_CLI"
+    return 0
+  fi
+  if [ -x /Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli ]; then
+    printf '%s' /Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli
+    return 0
+  fi
+  command -v kicad-cli 2>/dev/null || true
+}
+
+resolve_host_freecad_cmd() {
+  if [ -n "${FREECAD_CMD:-}" ] && [ -x "${FREECAD_CMD}" ]; then
+    printf '%s' "$FREECAD_CMD"
+    return 0
+  fi
+  if [ -x /Applications/FreeCAD.app/Contents/Resources/bin/freecadcmd ]; then
+    printf '%s' /Applications/FreeCAD.app/Contents/Resources/bin/freecadcmd
+    return 0
+  fi
+  command -v freecadcmd 2>/dev/null || command -v FreeCADCmd 2>/dev/null || true
+}
+
+resolve_host_openscad() {
+  local -a candidates=()
+  local candidate=""
+
+  if [ -n "${OPENSCAD_BIN:-}" ] && [ -x "${OPENSCAD_BIN}" ]; then
+    candidates+=("${OPENSCAD_BIN}")
+  fi
+  if command -v openscad >/dev/null 2>&1; then
+    candidates+=("$(command -v openscad)")
+  fi
+  if [ -x /Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD ]; then
+    candidates+=(/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD)
+  fi
+
+  for candidate in "${candidates[@]}"; do
+    if "$candidate" --version >/dev/null 2>&1; then
+      printf '%s' "$candidate"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 ensure_service_up() {
   local service="$1"
   if ! compose ps --status running --services | grep -qx "$service"; then
@@ -140,25 +188,51 @@ up_cmd() {
 }
 
 doctor_cmd() {
-  ensure_service_up kicad-headless
-  ensure_service_up freecad-headless
-  ensure_service_up openscad-headless
+  local host_kicad=""
+  local host_freecad=""
+  local host_openscad=""
+
+  host_kicad="$(resolve_host_kicad_cli)"
+  host_freecad="$(resolve_host_freecad_cmd)"
+  host_openscad="$(resolve_host_openscad)"
+
+  if [ -z "$host_kicad" ]; then
+    ensure_service_up kicad-headless
+  fi
+  if [ -z "$host_freecad" ]; then
+    ensure_service_up freecad-headless
+  fi
+  if [ -z "$host_openscad" ]; then
+    ensure_service_up openscad-headless
+  fi
   ensure_service_up platformio
 
-  run_shell_as_host_user \
-    kicad-headless \
-    /workspace/.cad-home/kicad-headless \
-    'mkdir -p "$HOME" && kicad-cli version'
+  if [ -n "$host_kicad" ]; then
+    "$host_kicad" version
+  else
+    run_shell_as_host_user \
+      kicad-headless \
+      /workspace/.cad-home/kicad-headless \
+      'mkdir -p "$HOME" && kicad-cli version'
+  fi
 
-  run_shell_in_service_user \
-    freecad-headless \
-    /workspace/.cad-home/freecad-headless \
-    'mkdir -p "$HOME" && freecadcmd -c "import FreeCAD; print(\".\".join(FreeCAD.Version()[:3]))"'
+  if [ -n "$host_freecad" ]; then
+    "$host_freecad" -c 'import FreeCAD; print(".".join(FreeCAD.Version()[:3]))'
+  else
+    run_shell_in_service_user \
+      freecad-headless \
+      /workspace/.cad-home/freecad-headless \
+      'mkdir -p "$HOME" && freecadcmd -c "import FreeCAD; print(\".\".join(FreeCAD.Version()[:3]))"'
+  fi
 
-  run_shell_as_host_user \
-    openscad-headless \
-    /workspace/.cad-home/openscad-headless \
-    'mkdir -p "$HOME" && openscad --version'
+  if [ -n "$host_openscad" ]; then
+    "$host_openscad" --version
+  else
+    run_shell_as_host_user \
+      openscad-headless \
+      /workspace/.cad-home/openscad-headless \
+      'mkdir -p "$HOME" && openscad --version'
+  fi
 
   run_shell_as_host_user \
     platformio \
@@ -177,6 +251,12 @@ doctor_mcp_cmd() {
 }
 
 kicad_cli_cmd() {
+  local host_kicad=""
+  host_kicad="$(resolve_host_kicad_cli)"
+  if [ -n "$host_kicad" ]; then
+    "$host_kicad" "$@"
+    return
+  fi
   ensure_service_up kicad-headless
   run_tool_as_host_user \
     kicad-headless \
@@ -187,6 +267,12 @@ kicad_cli_cmd() {
 }
 
 freecad_cmd() {
+  local host_freecad=""
+  host_freecad="$(resolve_host_freecad_cmd)"
+  if [ -n "$host_freecad" ]; then
+    "$host_freecad" "$@"
+    return
+  fi
   ensure_service_up freecad-headless
   run_tool_in_service_user \
     freecad-headless \
@@ -197,6 +283,12 @@ freecad_cmd() {
 }
 
 openscad_cmd() {
+  local host_openscad=""
+  host_openscad="$(resolve_host_openscad)"
+  if [ -n "$host_openscad" ]; then
+    "$host_openscad" "$@"
+    return
+  fi
   ensure_service_up openscad-headless
   run_tool_as_host_user \
     openscad-headless \
