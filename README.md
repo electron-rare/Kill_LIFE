@@ -280,11 +280,11 @@ Les workflows éditables par `crazy_life` vivent dans [`workflows/`](workflows/)
 
 ## 🌐 Écosystème
 
-| Repo | Rôle |
-|---|---|
-| **Kill_LIFE** | Source de vérité : workflows, runtime, evidence packs, firmware, CAD, compliance |
-| [**crazy_life**](https://github.com/electron-rare/crazy_life) | Surface web/devops et workflow editor |
-| [**mascarade**](https://github.com/electron-rare/mascarade) | Orchestration et bridge historique (sync uniquement) |
+| Repo | Rôle | Accès |
+|---|---|---|
+| **Kill_LIFE** | Source de vérité : workflows, runtime, evidence packs, firmware, CAD, compliance | 🌍 public |
+| **crazy_life** | Surface web/devops et workflow editor | 🔒 privé |
+| **mascarade** | Orchestration et bridge historique (sync uniquement) | 🔒 privé |
 
 Articulation détaillée : [`docs/MASCARADE_BRIDGE.md`](docs/MASCARADE_BRIDGE.md)
 
