@@ -18,10 +18,13 @@ not required for the canonical repo-local stable path.
 Operator posture:
 
 - `ZeroClaw` runtime is started on demand via `tools/ai/zeroclaw_stack_up.sh`.
-- `zeroclaw.saillant.cc` and `langgraph.saillant.cc` are expected to serve these
-  runbooks behind the authenticated `edge-proxy`.
-- The static runbooks remain available even when the local `ZeroClaw` runtime is
-  stopped.
+- `zeroclaw.saillant.cc` is the live runtime surface when the native stack is up.
+- `zeroclaw-docs.saillant.cc` serves the ZeroClaw runbooks behind the
+  authenticated `edge-proxy`.
+- `langgraph.saillant.cc` serves the LangGraph runbook behind the authenticated
+  `edge-proxy`.
+- When the local `ZeroClaw` runtime is stopped, `zeroclaw.saillant.cc` should
+  present an operator-friendly offline page instead of raw proxy errors.
 
 Available runbooks:
 

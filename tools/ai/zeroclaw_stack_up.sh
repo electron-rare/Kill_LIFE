@@ -19,6 +19,7 @@ ART_DIR="${ZEROCLAW_ART_DIR:-$ROOT_DIR/artifacts/zeroclaw}"
 ZEROCLAW_BIN="${ZEROCLAW_BIN:-$ROOT_DIR/zeroclaw/target/release/zeroclaw}"
 GATEWAY_HOST="${ZEROCLAW_GATEWAY_HOST:-127.0.0.1}"
 GATEWAY_PORT="${ZEROCLAW_GATEWAY_PORT:-3000}"
+FOLLOW_HOST="${ZEROCLAW_FOLLOW_HOST:-$GATEWAY_HOST}"
 FOLLOW_PORT="${ZEROCLAW_FOLLOW_PORT:-8788}"
 PROM_MODE="${ZEROCLAW_PROM_MODE:-auto}"
 PROM_HOST="${ZEROCLAW_PROM_HOST:-127.0.0.1}"
@@ -31,7 +32,7 @@ PROM_READY_WAIT_SECS="${ZEROCLAW_PROM_READY_WAIT_SECS:-15}"
 AUTO_REPAIR_ON_INVALID_TOKEN="${ZEROCLAW_AUTO_REPAIR_ON_INVALID_TOKEN:-1}"
 OPENAI_CODEX_MODEL="${ZEROCLAW_OPENAI_CODEX_MODEL:-gpt-5.3-codex}"
 OPENROUTER_MODEL="${ZEROCLAW_OPENROUTER_MODEL:-openrouter/auto}"
-PREFER_LOCAL_AI="${ZEROCLAW_PREFER_LOCAL_AI:-0}"
+PREFER_LOCAL_AI="${ZEROCLAW_PREFER_LOCAL_AI:-1}"
 OLLAMA_MODEL="${ZEROCLAW_OLLAMA_MODEL:-llama3.2:1b}"
 OLLAMA_AUTO_PULL="${ZEROCLAW_OLLAMA_AUTO_PULL:-0}"
 OLLAMA_WARMUP="${ZEROCLAW_OLLAMA_WARMUP:-1}"
@@ -58,6 +59,7 @@ Environment overrides:
   ZEROCLAW_ART_DIR
   ZEROCLAW_BIN
   ZEROCLAW_GATEWAY_HOST / ZEROCLAW_GATEWAY_PORT
+  ZEROCLAW_FOLLOW_HOST / ZEROCLAW_FOLLOW_PORT
   ZEROCLAW_FOLLOW_PORT
   ZEROCLAW_PROM_MODE
 USAGE
@@ -148,7 +150,7 @@ ensure_preferred_provider_config() {
         sleep 1
       fi
       if ! ollama list >/dev/null 2>&1; then
-        nohup ollama serve >"$ART_DIR/ollama.log" 2>&1 &
+        start_detached "$ART_DIR/ollama.log" ollama serve >/dev/null
         sleep 1
       fi
     fi
@@ -377,6 +379,19 @@ is_running() {
 listener_pid_on_port() {
   local port="$1"
   lsof -nP -iTCP:"$port" -sTCP:LISTEN -t 2>/dev/null | head -n 1
+}
+
+start_detached() {
+  local log_file="$1"
+  shift
+  if command -v setsid >/dev/null 2>&1; then
+    nohup setsid "$@" >>"$log_file" 2>&1 < /dev/null &
+  else
+    nohup "$@" >>"$log_file" 2>&1 < /dev/null &
+  fi
+  local pid="$!"
+  disown "$pid" >/dev/null 2>&1 || true
+  printf '%s\n' "$pid"
 }
 
 ensure_docker_daemon() {
@@ -662,8 +677,7 @@ ensure_gateway_pairing() {
           fi
         fi
 
-        nohup "$ZEROCLAW_BIN" gateway --port "$GATEWAY_PORT" --host "$GATEWAY_HOST" >"$GW_LOG" 2>&1 &
-        echo "$!" >"$GW_PID_FILE"
+        start_detached "$GW_LOG" "$ZEROCLAW_BIN" gateway --port "$GATEWAY_PORT" --host "$GATEWAY_HOST" >"$GW_PID_FILE"
         wait_for_gateway_health || true
 
         for _ in $(seq 1 40); do
@@ -690,8 +704,7 @@ elif [[ -n "$(listener_pid_on_port "$GATEWAY_PORT")" ]]; then
   printf '%s\n' "$existing_gateway_pid" >"$GW_PID_FILE"
   rm -f "$GW_MANAGED_FILE"
 else
-  nohup "$ZEROCLAW_BIN" gateway --port "$GATEWAY_PORT" --host "$GATEWAY_HOST" >"$GW_LOG" 2>&1 &
-  echo "$!" >"$GW_PID_FILE"
+  start_detached "$GW_LOG" "$ZEROCLAW_BIN" gateway --port "$GATEWAY_PORT" --host "$GATEWAY_HOST" >"$GW_PID_FILE"
   printf '%s\n' "1" >"$GW_MANAGED_FILE"
 fi
 
@@ -704,18 +717,16 @@ elif [[ -n "$(listener_pid_on_port "$FOLLOW_PORT")" ]]; then
   rm -f "$FW_MANAGED_FILE"
 else
   if [[ -f "$ORCHESTRATOR_SERVER" ]]; then
-    nohup python3 "$ORCHESTRATOR_SERVER" \
-      --host 127.0.0.1 \
+    start_detached "$FW_LOG" python3 "$ORCHESTRATOR_SERVER" \
+      --host "$FOLLOW_HOST" \
       --port "$FOLLOW_PORT" \
       --directory "$ART_DIR" \
       --root-dir "$ROOT_DIR" \
       --gateway-url "http://$GATEWAY_HOST:$GATEWAY_PORT" \
-      --prom-url "http://$PROM_HOST:$PROM_PORT" \
-      >"$FW_LOG" 2>&1 &
+      --prom-url "http://$PROM_HOST:$PROM_PORT" >"$FW_PID_FILE"
   else
-    nohup python3 -m http.server "$FOLLOW_PORT" --bind 127.0.0.1 --directory "$ART_DIR" >"$FW_LOG" 2>&1 &
+    start_detached "$FW_LOG" python3 -m http.server "$FOLLOW_PORT" --bind "$FOLLOW_HOST" --directory "$ART_DIR" >"$FW_PID_FILE"
   fi
-  echo "$!" >"$FW_PID_FILE"
   printf '%s\n' "1" >"$FW_MANAGED_FILE"
 fi
 
@@ -2287,9 +2298,9 @@ if [[ -x "$WATCHER_SCRIPT" ]]; then
 fi
 
 echo "Gateway: http://$GATEWAY_HOST:$GATEWAY_PORT/health"
-echo "Follow : http://127.0.0.1:$FOLLOW_PORT/"
+echo "Follow : http://$FOLLOW_HOST:$FOLLOW_PORT/"
 echo "Prom   : http://$PROM_HOST:$PROM_PORT/targets ($PROM_STATUS)"
-echo "RT 1m  : http://127.0.0.1:$FOLLOW_PORT/realtime_1min.log"
+echo "RT 1m  : http://$FOLLOW_HOST:$FOLLOW_PORT/realtime_1min.log"
 echo "Logs   : $GW_LOG"
 echo "Token  : $TOKEN_FILE"
 if [[ ! -s "$TOKEN_FILE" ]]; then

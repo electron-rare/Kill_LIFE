@@ -11,7 +11,9 @@
 Posture operateur retenue:
 - `ZeroClaw` reste un runtime local demarrable a la demande.
 - `LangGraph`, `AutoGen` et `n8n` restent des overlays/runbooks autour de ce runtime.
-- les surfaces publiques `zeroclaw.saillant.cc` et `langgraph.saillant.cc` servent les runbooks operateur, pas un service coeur always-on.
+- `zeroclaw.saillant.cc` sert la surface live du runtime natif quand il est demarre.
+- `zeroclaw-docs.saillant.cc` et `langgraph.saillant.cc` servent les runbooks operateur derriere le proxy.
+- Le fallback provider `OpenRouter` est valide en runtime sur le gateway natif.
 
 Le repo fournit :
 - `specs/` pour la source de vérité

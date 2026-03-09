@@ -74,6 +74,15 @@ zeroclaw --version
 Les launchers `tools/ai/zeroclaw_*.sh` resolvent maintenant la racine du repo
 dynamiquement et retombent sur `command -v zeroclaw` si besoin.
 
+Posture operateur retenue:
+- `zeroclaw.saillant.cc` = surface live du runtime natif quand la stack est
+  demarree
+- `zeroclaw-docs.saillant.cc` = runbook ZeroClaw statique
+- `langgraph.saillant.cc` = runbook LangGraph statique
+- la stack native reste demarrable a la demande via `tools/ai/zeroclaw_stack_up.sh`
+- le fallback provider `OpenRouter` est supporte et valide sur un appel webhook
+  reel
+
 Chemin operateur supporte:
 
 ```bash
