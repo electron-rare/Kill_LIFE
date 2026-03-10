@@ -3,8 +3,12 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 import unittest
+from pathlib import Path
 from unittest import mock
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from tools.mcp_runtime_status import classify_overall, derive_blockers, run_check
 

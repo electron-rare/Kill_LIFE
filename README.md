@@ -465,3 +465,51 @@ R : [docs/index.md](docs/index.md), [RUNBOOK.md](RUNBOOK.md), [INSTALL.md](INSTA
 ## 📜 Licence
 
 MIT. Voir [`licenses/MIT.txt`](licenses/MIT.txt).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- CHANTIER:AUDIT START -->
+## Audit & Execution Plan (2026-03-10)
+
+### Snapshot
+- Priority: `P2`
+- Tech profile: `other`
+- Workflows: `yes`
+- Tests: `yes`
+- Debt markers: `6`
+- Source files: `156`
+
+### Corrections Prioritaires
+- [ ] Optimisation ciblée perf/maintenabilité
+- [ ] Ajouter/fiabiliser les commandes de vérification automatiques.
+- [ ] Clore les points bloquants avant optimisation avancée.
+
+### Optimisation
+- [ ] Identifier le hotspot principal et mesurer avant/après.
+- [ ] Réduire la complexité des modules les plus touchés.
+
+### Mémoire chantier
+- Control plane: `/Users/electron/.codex/memories/electron_rare_chantier`
+- Repo card: `/Users/electron/.codex/memories/electron_rare_chantier/REPOS/Kill_LIFE.md`
+
+<!-- CHANTIER:AUDIT END -->

@@ -24,6 +24,7 @@ firmware:
 hardware:
   kicad:
     version_min: 9
+    version_preferred: 10
   schematic_ops:
     allow_bulk_edits: true
     require_erc_green: true
@@ -34,3 +35,4 @@ repo_rules:
 
 compliance:
   profile: prototype
+  active_profile_path: "compliance/active_profile.yaml"
