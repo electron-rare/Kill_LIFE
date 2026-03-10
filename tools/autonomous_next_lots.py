@@ -271,7 +271,15 @@ def git_status(include_noise: bool = False) -> tuple[str, list[str], int, int]:
         if " -> " in payload:
             payload = payload.split(" -> ", 1)[1]
         dirty_paths.append(payload.strip())
-    return branch, filter_noise_paths(dirty_paths, include_noise), ahead, behind
+    filtered_paths = filter_noise_paths(dirty_paths, include_noise)
+    unique_paths: list[str] = []
+    seen: set[str] = set()
+    for path in filtered_paths:
+        if path in seen:
+            continue
+        seen.add(path)
+        unique_paths.append(path)
+    return branch, unique_paths, ahead, behind
 
 
 def matches_path(candidate: str, tracked: str) -> bool:
@@ -279,10 +287,15 @@ def matches_path(candidate: str, tracked: str) -> bool:
 
 
 def detect_lots(dirty_paths: list[str]) -> list[Lot]:
+    if not dirty_paths:
+        return []
     matched: list[Lot] = []
+    dirty_unique = tuple(dict.fromkeys(dirty_paths))
     for lot in LOTS:
-        if any(matches_path(path, dirty) for path in lot.paths for dirty in dirty_paths):
-            matched.append(lot)
+        for dirty in dirty_unique:
+            if any(matches_path(path, dirty) for path in lot.paths):
+                matched.append(lot)
+                break
     matched.sort(key=lambda item: item.priority)
     return matched
 
