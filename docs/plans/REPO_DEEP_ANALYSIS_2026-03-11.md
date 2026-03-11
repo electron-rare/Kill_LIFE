@@ -28,8 +28,9 @@ Rendre `Kill_LIFE` plus lisible comme socle canonique runtime/spec-first:
 
 - `K-DA-001` ferme par `docs/KILL_LIFE_FEATURE_MAP_2026-03-11.md`
 - `K-DA-002` ferme par `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`
+- `K-DA-003` ferme par `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
 
 ## Next tasks
 
-- `K-DA-003` diagramme de sequence `workflow github`
 - `K-DA-004` synchroniser README, plans et doc operator
+- `K-DA-005` synchroniser la doc operateur avec la carte et les preuves CI
