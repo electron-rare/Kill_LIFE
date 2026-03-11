@@ -13,11 +13,15 @@ Ce repo est un **socle** :
 - FAQ : `docs/FAQ.md`
 - Runtime home : `docs/RUNTIME_HOME.md`
 - Pont vers le repo compagnon d’exécution : `docs/MASCARADE_BRIDGE.md`
+- Carte fonctionnelle canonique : `docs/KILL_LIFE_FEATURE_MAP_2026-03-11.md`
+- Séquences opératoires : `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`, `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
 
 ## Workflows professionnels (opérationnels)
 
 - `docs/workflows/README.md` (menu)
 - Templates d’issues : `.github/ISSUE_TEMPLATE/`
+- Dispatch distant et checks GitHub : `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
+- Validation locale et evidence locale : `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`
 
 ## Plans (runbooks)
 

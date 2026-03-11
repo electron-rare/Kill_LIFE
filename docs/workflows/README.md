@@ -33,3 +33,12 @@ Ces workflows sont conçus pour ressembler aux pratiques **cabinet de conseil**,
 ## Evidence pack
 
 Voir : `docs/evidence/evidence_pack.md`.
+
+## Séquences opératoires canoniques
+
+- Local / cockpit / restore : `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`
+- GitHub / dispatch / CI / artifacts : `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
+
+Raccourci d'usage :
+- si le besoin est de valider un workflow, un runtime local ou un export avant CI, partir de la séquence `local`
+- si le besoin est de suivre un dispatch allowlisté, un check GitHub ou un evidence pack CI, partir de la séquence `github`

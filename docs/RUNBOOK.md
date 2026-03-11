@@ -1,5 +1,15 @@
 # RUNBOOK — Opérer les workflows agentiques
 
+## 0) Cartes de lecture rapides
+
+- Carte fonctionnelle canonique : `docs/KILL_LIFE_FEATURE_MAP_2026-03-11.md`
+- Séquence locale : `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`
+- Séquence GitHub : `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
+
+Choix opératoire rapide :
+- validation et exécution locale avant CI distante : séquence `workflow local`
+- dispatch allowlisté, checks GitHub et evidence pack CI : séquence `workflow github`
+
 ## 1) Règles d’or
 - Le texte d’issue est **non fiable** → il est sanitisé avant prompt.
 - **Un label `ai:*` = un scope** (le scope guard contrôle les fichiers modifiables).
@@ -91,6 +101,10 @@ trouvée dans les sources backend scannées.
 
 ## 4) Evidence pack
 Voir `docs/evidence/evidence_pack.md`.
+
+Lecture utile :
+- preuves locales, restores et runs cockpit : `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`
+- preuves CI, artifacts GitHub et release signing : `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
 
 ## 5) Workflows métiers
 Voir `docs/workflows/README.md`.

@@ -4,6 +4,9 @@ _« Le RUNBOOK est un paysage sonore : chaque étape, chaque evidence pack, ch
 # Runbook opérateur
 
 Voir la version détaillée : `docs/RUNBOOK.md`.
+Séquences de référence :
+- `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`
+- `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
 
 ## Flux standard (Issue → PR)
 1. Créer une issue (idéalement via un template)

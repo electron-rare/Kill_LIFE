@@ -20,6 +20,15 @@ Dans le repo (docs) :
 - `docs/adr/` : décisions
 - `docs/reviews/` : DR0/DR1, checklists
 
+## Origine des preuves
+
+- voie locale : voir `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`
+- voie GitHub : voir `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
+
+Règle pratique :
+- une preuve locale prépare la revue et le passage en CI
+- une preuve GitHub atteste les checks distants, les artifacts et, si applicable, la release signée
+
 ## Checklist minimum PR
 - [ ] Le label `ai:*` est présent et cohérent avec le contenu
 - [ ] Scope guard passe
