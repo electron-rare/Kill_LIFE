@@ -28,7 +28,7 @@ def ensure_cad_home() -> Path:
 def create_runtime_temp_dir(prefix: str) -> Path:
     ensure_cad_home()
     path = Path(tempfile.mkdtemp(prefix=f"{prefix}-", dir=CAD_HOME))
-    os.chmod(path, 0o777)
+    os.chmod(path, 0o700)
     return path
 
 

@@ -186,7 +186,9 @@ setup_branch_protection() {
   # These MUST match the check names you see in PR -> Checks.
   # If you change workflow/job names, update this list.
   local -a contexts=()
-  mapfile -t contexts < <(load_required_contexts)
+  while IFS= read -r line; do
+    contexts+=("${line}")
+  done < <(load_required_contexts)
 
   # JSON array for contexts
   local contexts_json
