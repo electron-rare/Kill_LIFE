@@ -179,6 +179,11 @@ Le framework BMAD dans [`bmad/`](bmad/) structure la progression :
 
 Voir [KIKIFOU/diagramme.md](KIKIFOU/diagramme.md) pour le diagramme complet et [KIKIFOU/mapping.md](KIKIFOU/mapping.md) pour la table de mapping.
 
+Plan d'analyse repo courant:
+
+- [docs/plans/REPO_DEEP_ANALYSIS_2026-03-11.md](docs/plans/REPO_DEEP_ANALYSIS_2026-03-11.md)
+- [docs/KILL_LIFE_FEATURE_MAP_2026-03-11.md](docs/KILL_LIFE_FEATURE_MAP_2026-03-11.md)
+
 ---
 
 ## 🚀 Installation & démarrage rapide
