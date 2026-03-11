@@ -66,7 +66,7 @@ sequenceDiagram
 | `tools/run_github_dispatch_mcp.sh` | launcher stdio du dispatch GitHub |
 | `.github/workflows/ci.yml` | gate principal `python-stable` sur la branche ou la PR |
 | `.github/workflows/repo_state.yml` | photographie exploitable du repo et artefacts de statut |
-| `.github/workflows/evidence_pack.yml` | bootstrap Python + generation du snapshot `docs/evidence/*` pour GitHub Actions |
+| `.github/workflows/evidence_pack.yml` | bootstrap Python + `platformio` repo-local + evidence lane forcee en `native-pio` pour GitHub Actions |
 | `.github/workflows/release_signing.yml` | chemin de release signee par tag ou `workflow_dispatch` |
 | `docs/evidence/evidence_pack.md` | contrat minimal et chemins canoniques d'un evidence pack |
 | `docs/EVIDENCE_ALIGNMENT_2026-03-11.md` | note d'audit qui ferme l'ecart entre CI, preuves locales et doc |
@@ -76,6 +76,7 @@ sequenceDiagram
 - La machine operateur ne pousse pas elle-meme une logique arbitraire; elle demande le dispatch d'un workflow allowliste.
 - Le retour utile n'est pas seulement `success/fail`, mais un ensemble de checks, artefacts et preuves consultables.
 - L'artifact `evidence-pack` est un dump de `docs/evidence/`; il reste utile meme si un target sort en `incomplete`.
+- La lane evidence GitHub n'a plus besoin du CAD stack Docker pour `PlatformIO`; elle force la voie `native-pio` depuis le venv repo-local.
 - `Kill_LIFE` garde la definition canonique des workflows et de leurs gates; le dispatch n'est qu'un mode d'execution distant.
 
 ## Next lots
@@ -84,4 +85,5 @@ sequenceDiagram
 - `K-DA-004`: resynchroniser plus largement README et docs/plans autour des deux sequences `local` et `github`.
 - `K-DA-005`: synchroniser la doc operateur avec les preuves et artefacts effectivement exposes.
 - `K-DA-006` est ferme par l'alignement du workflow `evidence_pack.yml` avec la chaine reelle `docs/evidence/*`.
-- `K-DA-007`: stabiliser la lane ESP pour produire un evidence pack complet sur runner Ubuntu.
+- `K-DA-007` est ferme par la voie `native-pio` repo-locale et le durcissement anti-artefacts obsoletes.
+- `K-DA-008`: accelerer la lane evidence GitHub avec cache `pip` / `PlatformIO`.

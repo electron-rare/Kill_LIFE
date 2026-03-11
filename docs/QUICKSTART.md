@@ -29,15 +29,20 @@ Le workflow CI/CD actuellement câblé build l’ESP (`esp32s3_arduino`) et test
 Par défaut, les wrappers tentent `pio` en natif, puis basculent automatiquement sur `tools/hw/cad_stack.sh pio` si `pio` n’est pas installé sur l’hôte.
 Tu peux forcer le runner avec `KILL_LIFE_PIO_MODE=native` ou `KILL_LIFE_PIO_MODE=container`.
 
+Si tu veux une voie native reproductible depuis le venv repo-local :
+```bash
+bash tools/bootstrap_python_env.sh --with-platformio
+```
+
 Pour lancer manuellement :
 ```bash
-python3 tools/build_firmware.py esp
-python3 tools/collect_evidence.py esp
-python3 tools/verify_evidence.py esp
+KILL_LIFE_PIO_MODE=native ./.venv/bin/python tools/build_firmware.py esp
+./.venv/bin/python tools/collect_evidence.py esp
+./.venv/bin/python tools/verify_evidence.py esp
 
-python3 tools/test_firmware.py linux
-python3 tools/collect_evidence.py linux
-python3 tools/verify_evidence.py linux
+KILL_LIFE_PIO_MODE=native ./.venv/bin/python tools/test_firmware.py linux
+./.venv/bin/python tools/collect_evidence.py linux
+./.venv/bin/python tools/verify_evidence.py linux
 ```
 `stm` reste non supporté tant qu’aucune cible STM n’existe dans `firmware/platformio.ini`.
 

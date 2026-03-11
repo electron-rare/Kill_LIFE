@@ -5,6 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VENV_DIR="${ROOT_DIR}/.venv"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 REINSTALL=false
+WITH_PLATFORMIO=false
 REQ_FILE="${ROOT_DIR}/tools/compliance/requirements.txt"
 
 usage() {
@@ -17,6 +18,7 @@ Options:
   --python BIN       Python interpreter to use (default: PYTHON_BIN or python3)
   --venv-dir PATH    Virtualenv directory to create/reuse (default: ./.venv)
   --reinstall        Remove and recreate the target virtualenv before install
+  --with-platformio  Install PlatformIO in the target virtualenv
   -h, --help         Show this help
 
 Notes:
@@ -26,6 +28,7 @@ Notes:
 
 Examples:
   bash tools/bootstrap_python_env.sh
+  bash tools/bootstrap_python_env.sh --with-platformio
   bash tools/bootstrap_python_env.sh --venv-dir /tmp/kill-life-venv --reinstall
 EOF
 }
@@ -44,6 +47,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --reinstall)
       REINSTALL=true
+      ;;
+    --with-platformio)
+      WITH_PLATFORMIO=true
       ;;
     -h|--help)
       usage
@@ -80,6 +86,11 @@ if ! "${VENV_DIR}/bin/python" -c "import yaml, jsonschema" >/dev/null 2>&1; then
   "${VENV_DIR}/bin/python" -m pip install --upgrade pip setuptools wheel
   "${VENV_DIR}/bin/python" -m pip install -r "${REQ_FILE}"
   "${VENV_DIR}/bin/python" -m pip install 'jsonschema>=4.21.0'
+fi
+
+if [[ "${WITH_PLATFORMIO}" == true ]] && [[ ! -x "${VENV_DIR}/bin/pio" ]]; then
+  echo "[bootstrap-python] installing PlatformIO"
+  "${VENV_DIR}/bin/python" -m pip install platformio
 fi
 
 echo "[bootstrap-python] python: ${VENV_DIR}/bin/python"

@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -64,8 +65,32 @@ def pio_mode() -> str:
     return value
 
 
+def repo_local_pio_candidates(root: Path | None = None) -> list[Path]:
+    base = root or ROOT
+    return [
+        base / ".venv" / "bin" / "pio",
+        base / ".venv" / "Scripts" / "pio.exe",
+    ]
+
+
+def native_pio_command(root: Path | None = None) -> list[str] | None:
+    host_pio = shutil.which("pio")
+    if host_pio:
+        return [host_pio]
+
+    for candidate in repo_local_pio_candidates(root):
+        if candidate.exists() and os.access(candidate, os.X_OK):
+            return [str(candidate)]
+
+    try:
+        import platformio  # noqa: F401
+    except ImportError:
+        return None
+    return [sys.executable, "-m", "platformio"]
+
+
 def native_pio_available() -> bool:
-    return shutil.which("pio") is not None
+    return native_pio_command() is not None
 
 
 def container_pio_available() -> bool:
@@ -102,7 +127,11 @@ def platformio_command(spec: TargetSpec, step: str) -> tuple[list[str], Path, st
     if use_container:
         return ["bash", str(CAD_STACK), "pio", *args], ROOT, "cad-stack-container"
 
-    return ["pio", *args], ROOT, "native-pio"
+    native_cmd = native_pio_command()
+    if native_cmd is None:
+        return ["bash", str(CAD_STACK), "pio", *args], ROOT, "cad-stack-container"
+
+    return [*native_cmd, *args], ROOT, "native-pio"
 
 
 def resolved_pio_runner(spec: TargetSpec, step: str) -> str:

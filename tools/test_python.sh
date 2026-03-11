@@ -47,6 +47,7 @@ stable:
   test/test_mcp_runtime_status.py
   test/test_openclaw_sanitizer.py
   test/test_apply_safe_patch.py
+  test/test_firmware_evidence.py
   test/test_validate_specs.py
   tools/hw/schops/tests/test_*.py
 EOF
@@ -135,6 +136,7 @@ if [[ "${SUITE}" == "stable" || "${SUITE}" == "all" ]]; then
   run_discover test 'test_mcp_runtime_status.py'
   run_discover test 'test_openclaw_sanitizer.py'
   run_discover test 'test_apply_safe_patch.py'
+  run_discover test 'test_firmware_evidence.py'
   run_discover test 'test_validate_specs.py'
   run_discover tools/hw/schops/tests 'test_*.py'
 fi

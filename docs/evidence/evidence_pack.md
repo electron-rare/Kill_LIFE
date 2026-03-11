@@ -52,8 +52,8 @@ Règle pratique :
 Local ou CI :
 
 ```bash
-bash tools/bootstrap_python_env.sh
-./.venv/bin/python tools/auto_check_ci_cd.py
+bash tools/bootstrap_python_env.sh --with-platformio
+KILL_LIFE_PIO_MODE=native ./.venv/bin/python tools/auto_check_ci_cd.py
 ```
 
 Le script exécute :
@@ -66,7 +66,9 @@ Le script exécute :
 - `tools/collect_evidence.py linux`
 - `tools/verify_evidence.py linux`
 
-Le job peut échouer tout en laissant un evidence pack partiel exploitable. C’est un comportement voulu : les fichiers `*.result.json`, `*.stdout.txt`, `*.stderr.txt` et `summary.json` restent la première preuve de diagnostic.
+La lane evidence CI force `KILL_LIFE_PIO_MODE=native` pour eviter de dependre du Docker CAD stack uniquement pour la collecte de preuves firmware.
+
+Le job peut échouer tout en laissant un evidence pack partiel exploitable. C’est un comportement voulu : les fichiers `*.result.json`, `*.stdout.txt`, `*.stderr.txt` et `summary.json` restent la première preuve de diagnostic. En revanche, `summary.json` ne peut plus sortir `ok` si la commande build/test la plus récente a renvoyé un code non nul.
 
 ## Checklist minimum PR
 - [ ] Le label `ai:*` est présent et cohérent avec le contenu

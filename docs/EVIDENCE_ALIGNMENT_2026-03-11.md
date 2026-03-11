@@ -13,6 +13,7 @@ Fermer `K-DA-006`: verifier que la voie locale, la voie GitHub et la documentati
 ## Contrat canonique retenu
 
 - La CI `evidence_pack.yml` utilise maintenant `bash tools/bootstrap_python_env.sh` puis `./.venv/bin/python tools/auto_check_ci_cd.py`.
+- La lane evidence `esp` force maintenant `KILL_LIFE_PIO_MODE=native` et installe `platformio` dans le venv repo-local.
 - Le rapport global attendu est `docs/evidence/ci_cd_audit_summary.json`.
 - Chaque cible ecrit ses preuves dans `docs/evidence/<target>/`:
   - `build.result.json` ou `test.result.json`
@@ -36,6 +37,23 @@ Observation du 2026-03-11:
 - `esp`: evidence pack partiel, car aucun artefact firmware n'etait disponible dans l'etat du run local
 
 Cette execution confirme que le repo sait deja produire des preuves exploitables meme en cas d'echec partiel. La correction principale consistait donc a faire pointer la CI GitHub sur cette chaine reelle et a documenter la granularite des sorties.
+
+Correctif complementaire du lot suivant:
+
+- `ci_runtime.py` detecte aussi `PlatformIO` dans `.venv/bin/pio` et via `python -m platformio`.
+- `collect_evidence.py` ne valide plus un evidence pack si la derniere commande build/test a echoue, meme si des artefacts plus anciens existent encore dans `.pio/`.
+
+Verification complementaire du 2026-03-11:
+
+```bash
+KILL_LIFE_PIO_MODE=native ./.venv/bin/python tools/auto_check_ci_cd.py
+```
+
+Resultat:
+
+- `compliance`: `rc=0`
+- `esp`: `rc=0`, evidence pack complet dans `docs/evidence/esp/`
+- `linux`: `rc=0`, evidence pack complet dans `docs/evidence/linux/`
 
 ## Consequence operateur
 

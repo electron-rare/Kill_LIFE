@@ -24,10 +24,10 @@ jobs:
           python-version: "3.11"
 
       - name: Bootstrap repo-local venv
-        run: bash tools/bootstrap_python_env.sh
+        run: bash tools/bootstrap_python_env.sh --with-platformio
 
       - name: Generate evidence pack summary
-        run: ./.venv/bin/python tools/auto_check_ci_cd.py
+        run: KILL_LIFE_PIO_MODE=native ./.venv/bin/python tools/auto_check_ci_cd.py
 
       - name: Upload evidence pack artifact
         if: always()

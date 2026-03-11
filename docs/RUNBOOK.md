@@ -54,6 +54,12 @@ Override possible :
 - `KILL_LIFE_PIO_MODE=native`
 - `KILL_LIFE_PIO_MODE=container`
 
+Pour une voie repo-locale sans `pio` systeme mais avec venv dedie :
+```bash
+bash tools/bootstrap_python_env.sh --with-platformio
+KILL_LIFE_PIO_MODE=native ./.venv/bin/python tools/build_firmware.py esp
+```
+
 Les evidence packs sont stockés dans `docs/evidence/`.
 La couverture est générée via `coverage_badge.py`.
 
