@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
 import subprocess
@@ -32,6 +33,16 @@ def run_repo_command(args: list[str]) -> Dict[str, Any]:
         "returncode": proc.returncode,
         "stdout": proc.stdout.strip(),
         "stderr": proc.stderr.strip(),
+    }
+
+
+def check_runtime_dependencies() -> Dict[str, Any]:
+    has_yaml = importlib.util.find_spec("yaml") is not None
+    return {
+        "pyyaml": {
+            "ok": has_yaml,
+            "hint": "Install with: python3 -m pip install PyYAML",
+        }
     }
 
 
@@ -110,10 +121,19 @@ def validate_specs(
     ]
     missing_files = [path for path in required_files if not (ROOT / path).exists()]
 
-    compliance_cmd = [sys.executable, str(ROOT / "tools/compliance/validate.py")]
-    if strict:
-        compliance_cmd.append("--strict")
-    compliance = run_repo_command(compliance_cmd)
+    dependencies = check_runtime_dependencies()
+    if dependencies["pyyaml"]["ok"]:
+        compliance_cmd = [sys.executable, str(ROOT / "tools/compliance/validate.py")]
+        if strict:
+            compliance_cmd.append("--strict")
+        compliance = run_repo_command(compliance_cmd)
+    else:
+        compliance = {
+            "ok": False,
+            "returncode": 127,
+            "stdout": "",
+            "stderr": "PyYAML dependency missing; cannot run compliance validator",
+        }
 
     rfc2119 = scan_rfc2119()
     mirror_sync = compare_spec_mirror()
@@ -130,6 +150,7 @@ def validate_specs(
         "strict": strict,
         "require_mirror_sync": require_mirror_sync,
         "compliance": compliance,
+        "dependencies": dependencies,
         "rfc2119": rfc2119,
         "mirror_sync": mirror_sync,
     }
@@ -144,6 +165,7 @@ def format_cli_summary(result: Dict[str, Any]) -> str:
         f"{status}: spec validation",
         f"- missing files: {len(result['missing_files'])}",
         f"- compliance ok: {compliance['ok']}",
+        f"- PyYAML available: {result.get('dependencies', {}).get('pyyaml', {}).get('ok', True)}",
         (
             "- RFC2119 counts: "
             f"MUST={rfc2119['counts']['MUST']} "

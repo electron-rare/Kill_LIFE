@@ -1,13 +1,31 @@
 from __future__ import annotations
 from pathlib import Path
-import yaml
+
+try:
+    import yaml
+except ModuleNotFoundError as exc:  # pragma: no cover - dependency guard
+    yaml = None
+    _yaml_import_error = exc
+else:
+    _yaml_import_error = None
 
 ROOT = Path(__file__).resolve().parents[2]
 
+
+def _require_yaml() -> None:
+    if yaml is None:
+        raise SystemExit(
+            "ERROR: PyYAML is required. Install with: "
+            f"'{Path(__file__).resolve().parents[2] / '.venv/bin/python'} -m pip install PyYAML' "
+            f"or 'python3 -m pip install PyYAML' ({_yaml_import_error})"
+        )
+
 def load_yaml(path: Path):
+    _require_yaml()
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 def save_yaml(path: Path, data):
+    _require_yaml()
     path.write_text(yaml.safe_dump(data, sort_keys=False, allow_unicode=True), encoding="utf-8")
 
 def repo_path(rel: str) -> Path:
