@@ -44,8 +44,8 @@ sequenceDiagram
             GH->>RS: generer repo_state
             RS-->>ART: docs/REPO_STATE.md + docs/repo_state.json
         and preuves
-            GH->>EV: valider ou produire le rapport evidence pack
-            EV-->>ART: artifact evidence-pack
+            GH->>EV: lancer la chaine canonique `auto_check_ci_cd.py`
+            EV-->>ART: snapshot `docs/evidence/*` + artifact `evidence-pack`
         end
 
         opt workflow de release
@@ -66,14 +66,16 @@ sequenceDiagram
 | `tools/run_github_dispatch_mcp.sh` | launcher stdio du dispatch GitHub |
 | `.github/workflows/ci.yml` | gate principal `python-stable` sur la branche ou la PR |
 | `.github/workflows/repo_state.yml` | photographie exploitable du repo et artefacts de statut |
-| `.github/workflows/evidence_pack.yml` | validation/production du rapport evidence pack |
+| `.github/workflows/evidence_pack.yml` | bootstrap Python + generation du snapshot `docs/evidence/*` pour GitHub Actions |
 | `.github/workflows/release_signing.yml` | chemin de release signee par tag ou `workflow_dispatch` |
-| `docs/evidence/evidence_pack.md` | contrat minimal de contenu d'un evidence pack |
+| `docs/evidence/evidence_pack.md` | contrat minimal et chemins canoniques d'un evidence pack |
+| `docs/EVIDENCE_ALIGNMENT_2026-03-11.md` | note d'audit qui ferme l'ecart entre CI, preuves locales et doc |
 
 ## Reading
 
 - La machine operateur ne pousse pas elle-meme une logique arbitraire; elle demande le dispatch d'un workflow allowliste.
 - Le retour utile n'est pas seulement `success/fail`, mais un ensemble de checks, artefacts et preuves consultables.
+- L'artifact `evidence-pack` est un dump de `docs/evidence/`; il reste utile meme si un target sort en `incomplete`.
 - `Kill_LIFE` garde la definition canonique des workflows et de leurs gates; le dispatch n'est qu'un mode d'execution distant.
 
 ## Next lots
@@ -81,3 +83,5 @@ sequenceDiagram
 - `K-DA-003` est ferme par ce diagramme versionne.
 - `K-DA-004`: resynchroniser plus largement README et docs/plans autour des deux sequences `local` et `github`.
 - `K-DA-005`: synchroniser la doc operateur avec les preuves et artefacts effectivement exposes.
+- `K-DA-006` est ferme par l'alignement du workflow `evidence_pack.yml` avec la chaine reelle `docs/evidence/*`.
+- `K-DA-007`: stabiliser la lane ESP pour produire un evidence pack complet sur runner Ubuntu.

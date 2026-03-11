@@ -30,7 +30,8 @@ Rendre `Kill_LIFE` plus lisible comme socle canonique runtime/spec-first:
 - `K-DA-002` ferme par `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`
 - `K-DA-003` ferme par `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
 - `K-DA-004` ferme par la synchronisation `docs/RUNBOOK.md`, `docs/index.md`, `docs/workflows/README.md`, `docs/AI_WORKFLOWS.md`, `docs/evidence/evidence_pack.md`
+- `K-DA-006` ferme par `.github/workflows/evidence_pack.yml`, `docs/evidence/evidence_pack.md` et `docs/EVIDENCE_ALIGNMENT_2026-03-11.md`
 
 ## Next tasks
 
-- `K-DA-006` verifier l'alignement entre evidence packs CI et preuves documentaires locales
+- `K-DA-007` stabiliser la production d'artefacts firmware `esp` dans la lane CI evidence pack

@@ -33,7 +33,7 @@ Kill_LIFE est un modèle agentique pour systèmes embarqués IA, orienté spec-f
   > _Schaeffer : Les agents du pipeline écoutent le bruit des specs comme une symphonie de sons trouvés._
 - **Injection de standards** : Standards versionnés et profils injectés (Agent OS).
 - **BMAD / BMAD-METHOD** : Agents par rôles (PM, Architecte, Firmware, QA, Doc, HW), rituels, gates, handoffs ([agents/](agents/), [bmad/](bmad/)).
-- **Tool-first** : Scripts reproductibles ([tools/](tools/)), evidence pack dans `artifacts/`.
+- **Tool-first** : Scripts reproductibles ([tools/](tools/)), evidence pack canonique dans `docs/evidence/` et expose en artifact CI.
 - **Pipeline hardware/firmware** : Bulk edits, exports, tests, conformité, snapshots.
 - **CAD headless** : KiCad 10 first + FreeCAD + OpenSCAD via MCP, conteneurisés.
 - **Sécurité & conformité** : Sanitisation, sorties sûres, sandboxing, scope guard, anti-prompt injection ([OpenClaw Sandbox](https://www.openclaw.io/)).
@@ -185,6 +185,7 @@ Plan d'analyse repo courant:
 - [docs/KILL_LIFE_FEATURE_MAP_2026-03-11.md](docs/KILL_LIFE_FEATURE_MAP_2026-03-11.md)
 - [docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md](docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md)
 - [docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md](docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md)
+- [docs/EVIDENCE_ALIGNMENT_2026-03-11.md](docs/EVIDENCE_ALIGNMENT_2026-03-11.md)
 
 ---
 
