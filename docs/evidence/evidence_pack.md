@@ -73,6 +73,8 @@ Pour limiter le temps de bootstrap sur GitHub Actions, la lane evidence cache au
 - le cache `pip` resolu depuis `tools/compliance/requirements.txt` et `tools/compliance/requirements-platformio.txt`
 - le core `PlatformIO` dans `~/.platformio`
 
+Pour la review rapide sur GitHub Actions, `tools/auto_check_ci_cd.py` ecrit aussi un resume Markdown dans le GitHub Step Summary quand la variable `GITHUB_STEP_SUMMARY` est presente.
+
 Le job peut échouer tout en laissant un evidence pack partiel exploitable. C’est un comportement voulu : les fichiers `*.result.json`, `*.stdout.txt`, `*.stderr.txt` et `summary.json` restent la première preuve de diagnostic. En revanche, `summary.json` ne peut plus sortir `ok` si la commande build/test la plus récente a renvoyé un code non nul.
 
 ## Checklist minimum PR

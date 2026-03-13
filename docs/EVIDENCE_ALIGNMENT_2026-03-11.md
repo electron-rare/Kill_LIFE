@@ -61,6 +61,12 @@ Acceleration complementaire du 2026-03-13:
 - La version de `PlatformIO` est figee dans `tools/compliance/requirements-platformio.txt`.
 - Le bootstrap Python et la CI evidence s'appuient maintenant sur la meme source de versionnement, ce qui reduit les retelechargements et rend la lane plus stable.
 
+Lisibilite operateur complementaire du 2026-03-13:
+
+- `tools/auto_check_ci_cd.py` ecrit maintenant un resume Markdown dans `GITHUB_STEP_SUMMARY` quand le job tourne sur GitHub Actions.
+- Le Step Summary reprend `compliance`, `esp`, `linux`, puis le detail des sous-steps `build/test -> collect -> verify`.
+- Le JSON `docs/evidence/ci_cd_audit_summary.json` reste la source canonique; le Step Summary est une projection lisible pour la review.
+
 ## Consequence operateur
 
 - Un echec CI ne doit plus masquer l'evidence pack: les logs et resumes restent telechargeables via l'artifact `evidence-pack`.
