@@ -67,6 +67,11 @@ Lisibilite operateur complementaire du 2026-03-13:
 - Le Step Summary reprend `compliance`, `esp`, `linux`, puis le detail des sous-steps `build/test -> collect -> verify`.
 - Le JSON `docs/evidence/ci_cd_audit_summary.json` reste la source canonique; le Step Summary est une projection lisible pour la review.
 
+Sidecar local complementaire du 2026-03-13:
+
+- le meme rendu Markdown est maintenant ecrit dans `docs/evidence/ci_cd_audit_summary.md`
+- l'artifact `evidence-pack` embarque donc une version lisible sans passer par l'UI GitHub Actions
+
 ## Consequence operateur
 
 - Un echec CI ne doit plus masquer l'evidence pack: les logs et resumes restent telechargeables via l'artifact `evidence-pack`.

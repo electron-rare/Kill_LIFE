@@ -59,13 +59,30 @@ class AutoCheckCiCdTests(unittest.TestCase):
         report = self.sample_report()
         with tempfile.TemporaryDirectory() as tmp:
             summary_path = Path(tmp) / "summary.md"
-            with patch.dict(os.environ, {auto_check_ci_cd.STEP_SUMMARY_ENV: str(summary_path)}, clear=False):
+            markdown_path = Path(tmp) / "ci_cd_audit_summary.md"
+            with patch.object(auto_check_ci_cd, "MARKDOWN_REPORT_PATH", markdown_path), patch.dict(
+                os.environ, {auto_check_ci_cd.STEP_SUMMARY_ENV: str(summary_path)}, clear=False
+            ):
+                auto_check_ci_cd.write_markdown_report(report)
                 written = auto_check_ci_cd.write_step_summary(report)
 
             self.assertEqual(written, summary_path)
             content = summary_path.read_text(encoding="utf-8")
             self.assertIn("Kill_LIFE Evidence Pack Summary", content)
             self.assertIn("Artifact snapshot: `docs/evidence/`", content)
+            self.assertEqual(content, markdown_path.read_text(encoding="utf-8"))
+
+    def test_write_markdown_report_writes_sidecar_in_docs_evidence(self):
+        report = self.sample_report()
+        with tempfile.TemporaryDirectory() as tmp:
+            markdown_path = Path(tmp) / "ci_cd_audit_summary.md"
+            with patch.object(auto_check_ci_cd, "MARKDOWN_REPORT_PATH", markdown_path):
+                written = auto_check_ci_cd.write_markdown_report(report)
+
+            self.assertEqual(written, markdown_path)
+            content = markdown_path.read_text(encoding="utf-8")
+            self.assertIn("# Kill_LIFE Evidence Pack Summary", content)
+            self.assertIn("| linux | `1` | failed (1) |", content)
 
 
 if __name__ == "__main__":

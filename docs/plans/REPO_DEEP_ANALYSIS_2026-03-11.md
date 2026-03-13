@@ -34,7 +34,8 @@ Rendre `Kill_LIFE` plus lisible comme socle canonique runtime/spec-first:
 - `K-DA-007` ferme par `tools/bootstrap_python_env.sh`, `tools/ci_runtime.py`, `tools/collect_evidence.py`, `.github/workflows/evidence_pack.yml` et `test/test_firmware_evidence.py`
 - `K-DA-008` ferme par `.github/workflows/evidence_pack.yml`, `tools/compliance/requirements-platformio.txt` et la mise en cache `pip` / `PlatformIO`
 - `K-DA-009` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et la doc evidence/GitHub workflow
+- `K-DA-010` ferme par `tools/auto_check_ci_cd.py`, `docs/evidence/ci_cd_audit_summary.md` et la doc evidence/GitHub workflow
 
 ## Next tasks
 
-- `K-DA-010` ajouter un sidecar Markdown `docs/evidence/ci_cd_audit_summary.md` pour revue locale et artifact
+- `K-DA-011` ajouter un focus automatique sur les lanes en echec dans le resume Markdown

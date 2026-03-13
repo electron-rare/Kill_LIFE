@@ -79,6 +79,7 @@ sequenceDiagram
 - La lane evidence GitHub n'a plus besoin du CAD stack Docker pour `PlatformIO`; elle force la voie `native-pio` depuis le venv repo-local.
 - Les caches `pip` et `PlatformIO` accelerent la lane sans changer le contrat des preuves produites.
 - Le GitHub Step Summary donne une lecture humaine immediate du lane status sans remplacer le JSON d'audit.
+- Le sidecar `docs/evidence/ci_cd_audit_summary.md` donne la meme lecture dans l'artifact telechargeable.
 - `Kill_LIFE` garde la definition canonique des workflows et de leurs gates; le dispatch n'est qu'un mode d'execution distant.
 
 ## Next lots
@@ -90,4 +91,5 @@ sequenceDiagram
 - `K-DA-007` est ferme par la voie `native-pio` repo-locale et le durcissement anti-artefacts obsoletes.
 - `K-DA-008` est ferme par l'ajout des caches `pip` / `PlatformIO` et du versionnement `requirements-platformio.txt`.
 - `K-DA-009` est ferme par la generation du GitHub Step Summary depuis `tools/auto_check_ci_cd.py`.
-- `K-DA-010`: ajouter un sidecar Markdown `docs/evidence/ci_cd_audit_summary.md` pour revue locale et artifact.
+- `K-DA-010` est ferme par le sidecar Markdown `docs/evidence/ci_cd_audit_summary.md`.
+- `K-DA-011`: ajouter un focus automatique sur les lanes en echec dans le resume Markdown.

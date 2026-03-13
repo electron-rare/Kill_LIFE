@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT_PATH = ROOT / "docs" / "evidence" / "ci_cd_audit_summary.json"
+MARKDOWN_REPORT_PATH = ROOT / "docs" / "evidence" / "ci_cd_audit_summary.md"
 STEP_SUMMARY_ENV = "GITHUB_STEP_SUMMARY"
 
 
@@ -90,13 +91,19 @@ def render_markdown_summary(report: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def write_markdown_report(report: dict) -> Path:
+    MARKDOWN_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    MARKDOWN_REPORT_PATH.write_text(render_markdown_summary(report), encoding="utf-8")
+    return MARKDOWN_REPORT_PATH
+
+
 def write_step_summary(report: dict) -> Path | None:
     summary_path = os.environ.get(STEP_SUMMARY_ENV, "").strip()
     if not summary_path:
         return None
     path = Path(summary_path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(render_markdown_summary(report), encoding="utf-8")
+    path.write_text(MARKDOWN_REPORT_PATH.read_text(encoding="utf-8"), encoding="utf-8")
     return path
 
 
@@ -140,6 +147,7 @@ def check_all_targets() -> tuple[dict, bool]:
 
 if __name__ == '__main__':
     report, failed = check_all_targets()
+    markdown_path = write_markdown_report(report)
     summary_path = write_step_summary(report)
     print("\n=== Rapport de vérification ===")
     print(f"compliance: rc={report['compliance']['returncode']}")
@@ -147,6 +155,7 @@ if __name__ == '__main__':
         rc = target_returncode(steps)
         print(f"{target}: rc={rc}")
     print(f"rapport: {REPORT_PATH}")
+    print(f"rapport markdown: {markdown_path}")
     if summary_path is not None:
         print(f"step summary: {summary_path}")
     raise SystemExit(1 if failed else 0)
