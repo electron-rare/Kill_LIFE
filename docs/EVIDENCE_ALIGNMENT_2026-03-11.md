@@ -72,6 +72,11 @@ Sidecar local complementaire du 2026-03-13:
 - le meme rendu Markdown est maintenant ecrit dans `docs/evidence/ci_cd_audit_summary.md`
 - l'artifact `evidence-pack` embarque donc une version lisible sans passer par l'UI GitHub Actions
 
+Focus erreurs complementaire du 2026-03-13:
+
+- le rendu Markdown ajoute maintenant une section `Focus failures` quand `compliance` ou une lane cible sort en non-zero
+- cette section remonte la lane, les sous-steps en echec et le premier signal utile avant le detail complet
+
 ## Consequence operateur
 
 - Un echec CI ne doit plus masquer l'evidence pack: les logs et resumes restent telechargeables via l'artifact `evidence-pack`.

@@ -79,6 +79,8 @@ Pour la review rapide, `tools/auto_check_ci_cd.py` ecrit aussi:
 - un sidecar local `docs/evidence/ci_cd_audit_summary.md`
 - un resume Markdown dans le GitHub Step Summary quand la variable `GITHUB_STEP_SUMMARY` est presente
 
+Quand une ou plusieurs lanes echouent, le rendu Markdown ajoute une section `Focus failures` en tete, avec les lanes fautives, les sous-steps en erreur et leur premier signal utile.
+
 Le job peut échouer tout en laissant un evidence pack partiel exploitable. C’est un comportement voulu : les fichiers `*.result.json`, `*.stdout.txt`, `*.stderr.txt` et `summary.json` restent la première preuve de diagnostic. En revanche, `summary.json` ne peut plus sortir `ok` si la commande build/test la plus récente a renvoyé un code non nul.
 
 ## Checklist minimum PR

@@ -51,6 +51,49 @@ def first_output_line(result: dict) -> str:
     return ""
 
 
+def failing_lane_entries(report: dict) -> list[dict]:
+    entries: list[dict] = []
+
+    compliance = report["compliance"]
+    if compliance["returncode"] != 0:
+        entries.append(
+            {
+                "lane": "compliance",
+                "returncode": compliance["returncode"],
+                "failed_steps": [
+                    {
+                        "label": command_label(compliance),
+                        "returncode": compliance["returncode"],
+                        "signal": first_output_line(compliance),
+                    }
+                ],
+            }
+        )
+
+    for target, steps in report["targets"].items():
+        rc = target_returncode(steps)
+        if rc == 0:
+            continue
+        failed_steps = [
+            {
+                "label": command_label(result),
+                "returncode": result["returncode"],
+                "signal": first_output_line(result),
+            }
+            for result in steps
+            if result["returncode"] != 0
+        ]
+        entries.append(
+            {
+                "lane": target,
+                "returncode": rc,
+                "failed_steps": failed_steps,
+            }
+        )
+
+    return entries
+
+
 def render_markdown_summary(report: dict) -> str:
     compliance_rc = report["compliance"]["returncode"]
 
@@ -68,6 +111,26 @@ def render_markdown_summary(report: dict) -> str:
     for target, steps in report["targets"].items():
         rc = target_returncode(steps)
         lines.append(f"| {target} | `{rc}` | {result_status_label(rc)} |")
+
+    failing_lanes = failing_lane_entries(report)
+    if failing_lanes:
+        lines.extend(
+            [
+                "",
+                "## Focus failures",
+                "",
+                "| Lane | RC | Failed steps | First signal |",
+                "| --- | --- | --- | --- |",
+            ]
+        )
+        for lane in failing_lanes:
+            failed_step_labels = ", ".join(
+                f"`{step['label']}`" for step in lane["failed_steps"]
+            ) or "-"
+            first_signal = lane["failed_steps"][0]["signal"].replace("|", "\\|") if lane["failed_steps"] else "-"
+            lines.append(
+                f"| {lane['lane']} | `{lane['returncode']}` | {failed_step_labels} | {first_signal or '-'} |"
+            )
 
     for target, steps in report["targets"].items():
         lines.extend(

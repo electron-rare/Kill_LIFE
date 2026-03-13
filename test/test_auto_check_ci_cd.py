@@ -51,9 +51,21 @@ class AutoCheckCiCdTests(unittest.TestCase):
         self.assertIn("| compliance | `0` | ok |", summary)
         self.assertIn("| esp | `0` | ok |", summary)
         self.assertIn("| linux | `1` | failed (1) |", summary)
+        self.assertIn("## Focus failures", summary)
+        self.assertIn("| linux | `1` | `test_firmware` | native test failed |", summary)
         self.assertIn("## esp", summary)
         self.assertIn("`build_firmware`", summary)
         self.assertIn("Build terminé pour esp", summary)
+
+    def test_render_markdown_summary_omits_focus_failures_when_all_green(self):
+        report = self.sample_report()
+        report["targets"]["linux"][0]["returncode"] = 0
+        report["targets"]["linux"][0]["stderr"] = ""
+        report["targets"]["linux"][0]["stdout"] = "Tests terminés pour linux"
+
+        summary = auto_check_ci_cd.render_markdown_summary(report)
+        self.assertNotIn("## Focus failures", summary)
+        self.assertIn("| linux | `0` | ok |", summary)
 
     def test_write_step_summary_writes_markdown_when_env_is_set(self):
         report = self.sample_report()
@@ -83,6 +95,7 @@ class AutoCheckCiCdTests(unittest.TestCase):
             content = markdown_path.read_text(encoding="utf-8")
             self.assertIn("# Kill_LIFE Evidence Pack Summary", content)
             self.assertIn("| linux | `1` | failed (1) |", content)
+            self.assertIn("## Focus failures", content)
 
 
 if __name__ == "__main__":
