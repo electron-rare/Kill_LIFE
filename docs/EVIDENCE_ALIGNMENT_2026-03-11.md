@@ -77,12 +77,17 @@ Focus erreurs complementaire du 2026-03-13:
 - le rendu Markdown ajoute maintenant une section `Focus failures` quand `compliance` ou une lane cible sort en non-zero
 - cette section remonte la lane, les sous-steps en echec et le premier signal utile avant le detail complet
 
+Compaction des chemins complementaire du 2026-03-13:
+
+- le rendu Markdown compresse maintenant les chemins absolus du repo en chemins relatifs, par exemple `docs/evidence/esp`
+- le JSON `docs/evidence/ci_cd_audit_summary.json` reste inchange; seule la projection Markdown est epuree pour la lecture humaine
+
 ## Consequence operateur
 
 - Un echec CI ne doit plus masquer l'evidence pack: les logs et resumes restent telechargeables via l'artifact `evidence-pack`.
 - La doc locale et la doc GitHub parlent maintenant des memes chemins.
-- Le prochain lot pertinent n'est plus l'alignement documentaire, mais la stabilisation de la lane ESP pour obtenir un `summary.json` complet en CI Ubuntu.
+- Le prochain lot pertinent n'est plus l'alignement documentaire, mais la reduction des signaux trop verbeux dans le resume Markdown evidence.
 
 ## Next lot
 
-- `K-DA-007`: stabiliser la production d'artefacts firmware `esp` en CI pour que `docs/evidence/esp/summary.json` sorte en `status=ok` sur la lane nominale.
+- `K-DA-013`: reduire les signaux trop verbeux dans le rendu Markdown evidence.

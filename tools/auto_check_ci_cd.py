@@ -51,6 +51,22 @@ def first_output_line(result: dict) -> str:
     return ""
 
 
+def compact_repo_paths(value: str) -> str:
+    text = value.strip()
+    if not text:
+        return ""
+    root_with_sep = f"{ROOT}{os.sep}"
+    if root_with_sep in text:
+        return text.replace(root_with_sep, "")
+    if text == str(ROOT):
+        return "."
+    return text
+
+
+def markdown_signal(value: str) -> str:
+    return compact_repo_paths(value).replace("|", "\\|")
+
+
 def failing_lane_entries(report: dict) -> list[dict]:
     entries: list[dict] = []
 
@@ -127,7 +143,11 @@ def render_markdown_summary(report: dict) -> str:
             failed_step_labels = ", ".join(
                 f"`{step['label']}`" for step in lane["failed_steps"]
             ) or "-"
-            first_signal = lane["failed_steps"][0]["signal"].replace("|", "\\|") if lane["failed_steps"] else "-"
+            first_signal = (
+                markdown_signal(lane["failed_steps"][0]["signal"])
+                if lane["failed_steps"]
+                else "-"
+            )
             lines.append(
                 f"| {lane['lane']} | `{lane['returncode']}` | {failed_step_labels} | {first_signal or '-'} |"
             )
@@ -146,7 +166,7 @@ def render_markdown_summary(report: dict) -> str:
             label = command_label(result)
             rc = result["returncode"]
             command = " ".join(result.get("command", [])[1:])
-            signal = first_output_line(result).replace("|", "\\|")
+            signal = markdown_signal(first_output_line(result))
             lines.append(
                 f"| `{label}` | `{rc}` | `{command}` | {signal or '-'} |"
             )

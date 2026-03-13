@@ -80,6 +80,7 @@ Pour la review rapide, `tools/auto_check_ci_cd.py` ecrit aussi:
 - un resume Markdown dans le GitHub Step Summary quand la variable `GITHUB_STEP_SUMMARY` est presente
 
 Quand une ou plusieurs lanes echouent, le rendu Markdown ajoute une section `Focus failures` en tete, avec les lanes fautives, les sous-steps en erreur et leur premier signal utile.
+Les chemins du repo y sont affiches en relatif pour garder un resume portable entre machine locale, artifact et UI GitHub.
 
 Le job peut échouer tout en laissant un evidence pack partiel exploitable. C’est un comportement voulu : les fichiers `*.result.json`, `*.stdout.txt`, `*.stderr.txt` et `summary.json` restent la première preuve de diagnostic. En revanche, `summary.json` ne peut plus sortir `ok` si la commande build/test la plus récente a renvoyé un code non nul.
 
@@ -99,4 +100,4 @@ Le job peut échouer tout en laissant un evidence pack partiel exploitable. C’
 
 ## Audit courant
 
-- Voir `docs/EVIDENCE_ALIGNMENT_2026-03-11.md` pour la fermeture de `K-DA-006`.
+- Voir `docs/EVIDENCE_ALIGNMENT_2026-03-11.md` pour la fermeture de `K-DA-006` a `K-DA-012`.

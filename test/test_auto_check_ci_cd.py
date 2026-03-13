@@ -30,7 +30,7 @@ class AutoCheckCiCdTests(unittest.TestCase):
                     {
                         "command": ["python", "tools/collect_evidence.py", "esp"],
                         "returncode": 0,
-                        "stdout": "Evidence pack généré pour esp",
+                        "stdout": "Evidence pack généré pour esp: /Users/electron/Kill_LIFE/docs/evidence/esp",
                         "stderr": "",
                     },
                 ],
@@ -56,6 +56,8 @@ class AutoCheckCiCdTests(unittest.TestCase):
         self.assertIn("## esp", summary)
         self.assertIn("`build_firmware`", summary)
         self.assertIn("Build terminé pour esp", summary)
+        self.assertIn("Evidence pack généré pour esp: docs/evidence/esp", summary)
+        self.assertNotIn("/Users/electron/Kill_LIFE/docs/evidence/esp", summary)
 
     def test_render_markdown_summary_omits_focus_failures_when_all_green(self):
         report = self.sample_report()
@@ -96,6 +98,11 @@ class AutoCheckCiCdTests(unittest.TestCase):
             self.assertIn("# Kill_LIFE Evidence Pack Summary", content)
             self.assertIn("| linux | `1` | failed (1) |", content)
             self.assertIn("## Focus failures", content)
+
+    def test_compact_repo_paths_keeps_markdown_repo_relative(self):
+        signal = "Evidence pack généré: /Users/electron/Kill_LIFE/docs/evidence/linux | prêt"
+        compacted = auto_check_ci_cd.markdown_signal(signal)
+        self.assertEqual(compacted, "Evidence pack généré: docs/evidence/linux \\| prêt")
 
 
 if __name__ == "__main__":

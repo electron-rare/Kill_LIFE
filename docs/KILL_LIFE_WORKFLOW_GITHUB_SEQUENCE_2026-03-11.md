@@ -81,6 +81,7 @@ sequenceDiagram
 - Le GitHub Step Summary donne une lecture humaine immediate du lane status sans remplacer le JSON d'audit.
 - Le sidecar `docs/evidence/ci_cd_audit_summary.md` donne la meme lecture dans l'artifact telechargeable.
 - En cas d'echec, le resume Markdown commence par `Focus failures` pour remonter les lanes et signaux prioritaires.
+- Les chemins du repo y sont maintenant affiches en relatif pour eviter le bruit machine-specifique.
 - `Kill_LIFE` garde la definition canonique des workflows et de leurs gates; le dispatch n'est qu'un mode d'execution distant.
 
 ## Next lots
@@ -94,4 +95,5 @@ sequenceDiagram
 - `K-DA-009` est ferme par la generation du GitHub Step Summary depuis `tools/auto_check_ci_cd.py`.
 - `K-DA-010` est ferme par le sidecar Markdown `docs/evidence/ci_cd_audit_summary.md`.
 - `K-DA-011` est ferme par la section automatique `Focus failures` dans le resume Markdown.
-- `K-DA-012`: reduire les chemins absolus dans le rendu Markdown evidence.
+- `K-DA-012` est ferme par la compaction des chemins absolus dans le rendu Markdown evidence.
+- `K-DA-013`: reduire les signaux trop verbeux dans le rendu Markdown evidence.
