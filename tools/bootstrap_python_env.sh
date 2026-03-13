@@ -7,6 +7,7 @@ PYTHON_BIN="${PYTHON_BIN:-python3}"
 REINSTALL=false
 WITH_PLATFORMIO=false
 REQ_FILE="${ROOT_DIR}/tools/compliance/requirements.txt"
+PIO_REQ_FILE="${ROOT_DIR}/tools/compliance/requirements-platformio.txt"
 
 usage() {
   cat <<'EOF'
@@ -88,9 +89,9 @@ if ! "${VENV_DIR}/bin/python" -c "import yaml, jsonschema" >/dev/null 2>&1; then
   "${VENV_DIR}/bin/python" -m pip install 'jsonschema>=4.21.0'
 fi
 
-if [[ "${WITH_PLATFORMIO}" == true ]] && [[ ! -x "${VENV_DIR}/bin/pio" ]]; then
-  echo "[bootstrap-python] installing PlatformIO"
-  "${VENV_DIR}/bin/python" -m pip install platformio
+if [[ "${WITH_PLATFORMIO}" == true ]]; then
+  echo "[bootstrap-python] ensuring PlatformIO requirement"
+  "${VENV_DIR}/bin/python" -m pip install -r "${PIO_REQ_FILE}"
 fi
 
 echo "[bootstrap-python] python: ${VENV_DIR}/bin/python"

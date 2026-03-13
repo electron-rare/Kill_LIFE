@@ -32,7 +32,8 @@ Rendre `Kill_LIFE` plus lisible comme socle canonique runtime/spec-first:
 - `K-DA-004` ferme par la synchronisation `docs/RUNBOOK.md`, `docs/index.md`, `docs/workflows/README.md`, `docs/AI_WORKFLOWS.md`, `docs/evidence/evidence_pack.md`
 - `K-DA-006` ferme par `.github/workflows/evidence_pack.yml`, `docs/evidence/evidence_pack.md` et `docs/EVIDENCE_ALIGNMENT_2026-03-11.md`
 - `K-DA-007` ferme par `tools/bootstrap_python_env.sh`, `tools/ci_runtime.py`, `tools/collect_evidence.py`, `.github/workflows/evidence_pack.yml` et `test/test_firmware_evidence.py`
+- `K-DA-008` ferme par `.github/workflows/evidence_pack.yml`, `tools/compliance/requirements-platformio.txt` et la mise en cache `pip` / `PlatformIO`
 
 ## Next tasks
 
-- `K-DA-008` accelerer la lane evidence GitHub avec cache `pip` / `PlatformIO`
+- `K-DA-009` exposer un resume evidence lisible dans le GitHub Step Summary

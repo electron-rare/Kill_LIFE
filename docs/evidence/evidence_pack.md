@@ -68,6 +68,11 @@ Le script exécute :
 
 La lane evidence CI force `KILL_LIFE_PIO_MODE=native` pour eviter de dependre du Docker CAD stack uniquement pour la collecte de preuves firmware.
 
+Pour limiter le temps de bootstrap sur GitHub Actions, la lane evidence cache aussi :
+
+- le cache `pip` resolu depuis `tools/compliance/requirements.txt` et `tools/compliance/requirements-platformio.txt`
+- le core `PlatformIO` dans `~/.platformio`
+
 Le job peut échouer tout en laissant un evidence pack partiel exploitable. C’est un comportement voulu : les fichiers `*.result.json`, `*.stdout.txt`, `*.stderr.txt` et `summary.json` restent la première preuve de diagnostic. En revanche, `summary.json` ne peut plus sortir `ok` si la commande build/test la plus récente a renvoyé un code non nul.
 
 ## Checklist minimum PR

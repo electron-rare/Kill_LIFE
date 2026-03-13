@@ -55,6 +55,12 @@ Resultat:
 - `esp`: `rc=0`, evidence pack complet dans `docs/evidence/esp/`
 - `linux`: `rc=0`, evidence pack complet dans `docs/evidence/linux/`
 
+Acceleration complementaire du 2026-03-13:
+
+- `evidence_pack.yml` active des caches separes pour `pip` et `PlatformIO`.
+- La version de `PlatformIO` est figee dans `tools/compliance/requirements-platformio.txt`.
+- Le bootstrap Python et la CI evidence s'appuient maintenant sur la meme source de versionnement, ce qui reduit les retelechargements et rend la lane plus stable.
+
 ## Consequence operateur
 
 - Un echec CI ne doit plus masquer l'evidence pack: les logs et resumes restent telechargeables via l'artifact `evidence-pack`.
