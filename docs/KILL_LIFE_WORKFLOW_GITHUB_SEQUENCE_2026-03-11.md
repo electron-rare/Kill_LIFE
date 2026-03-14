@@ -82,6 +82,7 @@ sequenceDiagram
 - Le sidecar `docs/evidence/ci_cd_audit_summary.md` donne la meme lecture dans l'artifact telechargeable.
 - En cas d'echec, le resume Markdown commence par `Focus failures` pour remonter les lanes et signaux prioritaires.
 - Les chemins du repo y sont maintenant affiches en relatif pour eviter le bruit machine-specifique.
+- Les signaux d'artefacts trop verbeux y sont maintenant resumes en comptes courts pour garder les tableaux lisibles.
 - `Kill_LIFE` garde la definition canonique des workflows et de leurs gates; le dispatch n'est qu'un mode d'execution distant.
 
 ## Next lots
@@ -96,4 +97,5 @@ sequenceDiagram
 - `K-DA-010` est ferme par le sidecar Markdown `docs/evidence/ci_cd_audit_summary.md`.
 - `K-DA-011` est ferme par la section automatique `Focus failures` dans le resume Markdown.
 - `K-DA-012` est ferme par la compaction des chemins absolus dans le rendu Markdown evidence.
-- `K-DA-013`: reduire les signaux trop verbeux dans le rendu Markdown evidence.
+- `K-DA-013` est ferme par la reduction des signaux trop verbeux dans le rendu Markdown evidence.
+- `K-DA-014`: extraire un resume artefacts dedie dans le rendu Markdown evidence.

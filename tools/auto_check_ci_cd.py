@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import ast
 import json
 import os
 import subprocess
@@ -63,8 +64,33 @@ def compact_repo_paths(value: str) -> str:
     return text
 
 
+def compact_artifact_list_signal(value: str) -> str:
+    prefix, separator, suffix = value.partition(": ")
+    if not separator or not suffix.startswith("["):
+        return value
+    try:
+        parsed = ast.literal_eval(suffix)
+    except (SyntaxError, ValueError):
+        return value
+    if not isinstance(parsed, list) or not all(isinstance(item, str) for item in parsed):
+        return value
+    count = len(parsed)
+    if count == 0:
+        return f"{prefix}: 0 artefact"
+    if count == 1:
+        return f"{prefix}: 1 artefact ({parsed[0]})"
+    return f"{prefix}: {count} artefacts"
+
+
+def compact_markdown_signal(value: str, max_length: int = 140) -> str:
+    compacted = compact_artifact_list_signal(compact_repo_paths(value))
+    if len(compacted) <= max_length:
+        return compacted
+    return f"{compacted[: max_length - 3].rstrip()}..."
+
+
 def markdown_signal(value: str) -> str:
-    return compact_repo_paths(value).replace("|", "\\|")
+    return compact_markdown_signal(value).replace("|", "\\|")
 
 
 def failing_lane_entries(report: dict) -> list[dict]:

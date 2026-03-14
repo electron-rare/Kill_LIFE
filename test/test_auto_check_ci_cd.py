@@ -33,6 +33,12 @@ class AutoCheckCiCdTests(unittest.TestCase):
                         "stdout": "Evidence pack généré pour esp: /Users/electron/Kill_LIFE/docs/evidence/esp",
                         "stderr": "",
                     },
+                    {
+                        "command": ["python", "tools/verify_evidence.py", "esp"],
+                        "returncode": 0,
+                        "stdout": "Evidence pack trouvé pour esp: ['firmware/.pio/build/esp32s3_arduino/firmware.bin', 'firmware/.pio/build/esp32s3_arduino/firmware.elf', 'firmware/.pio/build/esp32s3_arduino/firmware.map', 'firmware/.pio/build/esp32s3_arduino']",
+                        "stderr": "",
+                    },
                 ],
                 "linux": [
                     {
@@ -57,7 +63,9 @@ class AutoCheckCiCdTests(unittest.TestCase):
         self.assertIn("`build_firmware`", summary)
         self.assertIn("Build terminé pour esp", summary)
         self.assertIn("Evidence pack généré pour esp: docs/evidence/esp", summary)
+        self.assertIn("Evidence pack trouvé pour esp: 4 artefacts", summary)
         self.assertNotIn("/Users/electron/Kill_LIFE/docs/evidence/esp", summary)
+        self.assertNotIn("firmware.elf', 'firmware.map'", summary)
 
     def test_render_markdown_summary_omits_focus_failures_when_all_green(self):
         report = self.sample_report()
@@ -103,6 +111,17 @@ class AutoCheckCiCdTests(unittest.TestCase):
         signal = "Evidence pack généré: /Users/electron/Kill_LIFE/docs/evidence/linux | prêt"
         compacted = auto_check_ci_cd.markdown_signal(signal)
         self.assertEqual(compacted, "Evidence pack généré: docs/evidence/linux \\| prêt")
+
+    def test_markdown_signal_compacts_artifact_lists(self):
+        signal = (
+            "Evidence pack trouvé pour linux: "
+            "['firmware/.pio/build/native']"
+        )
+        compacted = auto_check_ci_cd.markdown_signal(signal)
+        self.assertEqual(
+            compacted,
+            "Evidence pack trouvé pour linux: 1 artefact (firmware/.pio/build/native)",
+        )
 
 
 if __name__ == "__main__":
