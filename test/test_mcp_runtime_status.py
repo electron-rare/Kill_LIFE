@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import asyncio
 import json
-import subprocess
 import sys
 import unittest
 from pathlib import Path
@@ -14,6 +14,15 @@ from tools.mcp_runtime_status import classify_overall, derive_blockers, run_chec
 
 
 class McpRuntimeStatusTests(unittest.TestCase):
+    class _FakeProc:
+        def __init__(self, stdout: str, stderr: str = "", returncode: int = 0):
+            self._stdout = stdout.encode("utf-8")
+            self._stderr = stderr.encode("utf-8")
+            self.returncode = returncode
+
+        async def communicate(self):
+            return self._stdout, self._stderr
+
     def test_classify_ready(self):
         results = [
             {"status": "ready", "accept_degraded": False},
@@ -97,14 +106,13 @@ class McpRuntimeStatusTests(unittest.TestCase):
                 "error": "quota exceeded",
             }
         )
-        completed = subprocess.CompletedProcess(
-            args=spec["cmd"],
-            returncode=0,
-            stdout=stdout,
-            stderr="",
-        )
-        with mock.patch("tools.mcp_runtime_status.subprocess.run", return_value=completed):
-            payload = run_check(spec)
+        fake_proc = self._FakeProc(stdout=stdout, stderr="", returncode=0)
+
+        async def fake_spawn(*args, **kwargs):
+            return fake_proc
+
+        with mock.patch("tools.mcp_runtime_status.asyncio.create_subprocess_exec", side_effect=fake_spawn):
+            payload = asyncio.run(run_check(spec))
         self.assertTrue(payload["optional_degraded"])
         self.assertEqual(payload["task"], "K-014")
 
