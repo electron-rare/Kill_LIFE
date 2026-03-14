@@ -87,12 +87,18 @@ Compaction des signaux complementaire du 2026-03-13:
 - les signaux listeux du type `Evidence pack trouve ... [artifacts]` sont maintenant resumes en compte court, par exemple `4 artefacts`
 - le fallback garde une troncature legere pour les lignes anormalement longues, sans toucher au JSON source
 
+Resume artefacts dedie complementaire du 2026-03-14:
+
+- le rendu Markdown ajoute maintenant un bloc `Artifact summary` entre l'etat global des lanes et le detail par step
+- ce bloc est derive du report courant et sort, par lane, le statut evidence, le nombre d'artefacts et un echantillon court
+- la colonne `Signal` redevient plus lisible: le detail artefact reste dans le bloc dedie plutot que dans chaque ligne `verify_evidence`
+
 ## Consequence operateur
 
 - Un echec CI ne doit plus masquer l'evidence pack: les logs et resumes restent telechargeables via l'artifact `evidence-pack`.
 - La doc locale et la doc GitHub parlent maintenant des memes chemins.
-- Le prochain lot pertinent n'est plus l'alignement documentaire, mais l'extraction d'un resume artefacts dedie dans le rendu Markdown evidence.
+- Le prochain lot pertinent n'est plus l'alignement documentaire, mais l'explicitation des fichiers requis/manquants quand une lane evidence degrade.
 
 ## Next lot
 
-- `K-DA-014`: extraire un resume artefacts dedie dans le rendu Markdown evidence.
+- `K-DA-015`: expliciter les fichiers requis/manquants dans `Artifact summary` quand une lane evidence degrade.

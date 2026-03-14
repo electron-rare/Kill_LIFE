@@ -59,11 +59,13 @@ class AutoCheckCiCdTests(unittest.TestCase):
         self.assertIn("| linux | `1` | failed (1) |", summary)
         self.assertIn("## Focus failures", summary)
         self.assertIn("| linux | `1` | `test_firmware` | native test failed |", summary)
+        self.assertIn("## Artifact summary", summary)
+        self.assertIn("| esp | ok | `4` | `firmware.bin`, `firmware.elf`, `+2` |", summary)
         self.assertIn("## esp", summary)
         self.assertIn("`build_firmware`", summary)
         self.assertIn("Build terminé pour esp", summary)
         self.assertIn("Evidence pack généré pour esp: docs/evidence/esp", summary)
-        self.assertIn("Evidence pack trouvé pour esp: 4 artefacts", summary)
+        self.assertIn("Evidence pack trouvé pour esp", summary)
         self.assertNotIn("/Users/electron/Kill_LIFE/docs/evidence/esp", summary)
         self.assertNotIn("firmware.elf', 'firmware.map'", summary)
 
@@ -118,9 +120,16 @@ class AutoCheckCiCdTests(unittest.TestCase):
             "['firmware/.pio/build/native']"
         )
         compacted = auto_check_ci_cd.markdown_signal(signal)
+        self.assertEqual(compacted, "Evidence pack trouvé pour linux")
+
+    def test_artifact_summary_rows_extract_counts_and_samples(self):
+        rows = auto_check_ci_cd.artifact_summary_rows(self.sample_report())
+        self.assertEqual(rows[0]["lane"], "esp")
+        self.assertEqual(rows[0]["status"], "ok")
+        self.assertEqual(len(rows[0]["artifacts"]), 4)
         self.assertEqual(
-            compacted,
-            "Evidence pack trouvé pour linux: 1 artefact (firmware/.pio/build/native)",
+            auto_check_ci_cd.artifact_summary_sample(rows[0]["artifacts"]),
+            "`firmware.bin`, `firmware.elf`, `+2`",
         )
 
 

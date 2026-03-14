@@ -38,7 +38,8 @@ Rendre `Kill_LIFE` plus lisible comme socle canonique runtime/spec-first:
 - `K-DA-011` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et le focus automatique sur les lanes en echec
 - `K-DA-012` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et la compaction des chemins absolus dans le rendu Markdown evidence
 - `K-DA-013` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et la reduction des signaux listeux en resumes courts
+- `K-DA-014` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et l'extraction d'un bloc `Artifact summary` dedie dans le rendu Markdown evidence
 
 ## Next tasks
 
-- `K-DA-014` extraire un resume artefacts dedie dans le rendu Markdown evidence
+- `K-DA-015` expliciter les fichiers requis/manquants dans `Artifact summary` quand une lane evidence degrade

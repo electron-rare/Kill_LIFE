@@ -74,12 +74,51 @@ def compact_artifact_list_signal(value: str) -> str:
         return value
     if not isinstance(parsed, list) or not all(isinstance(item, str) for item in parsed):
         return value
-    count = len(parsed)
-    if count == 0:
-        return f"{prefix}: 0 artefact"
-    if count == 1:
-        return f"{prefix}: 1 artefact ({parsed[0]})"
-    return f"{prefix}: {count} artefacts"
+    return prefix
+
+
+def artifact_items_from_signal(value: str) -> list[str]:
+    _, separator, suffix = value.partition(": ")
+    if not separator or not suffix.startswith("["):
+        return []
+    try:
+        parsed = ast.literal_eval(suffix)
+    except (SyntaxError, ValueError):
+        return []
+    if not isinstance(parsed, list) or not all(isinstance(item, str) for item in parsed):
+        return []
+    return parsed
+
+
+def artifact_summary_sample(items: list[str], max_items: int = 2) -> str:
+    if not items:
+        return "-"
+    names = [Path(item).name or item for item in items[:max_items]]
+    sample = ", ".join(f"`{name}`" for name in names)
+    remaining = len(items) - len(names)
+    if remaining > 0:
+        sample += f", `+{remaining}`"
+    return sample
+
+
+def artifact_summary_rows(report: dict) -> list[dict]:
+    rows: list[dict] = []
+    for target, steps in report["targets"].items():
+        verify_step = next(
+            (result for result in steps if command_label(result) == "verify_evidence"),
+            None,
+        )
+        signal = first_output_line(verify_step or {})
+        artifacts = artifact_items_from_signal(signal)
+        verify_rc = verify_step["returncode"] if verify_step else target_returncode(steps)
+        rows.append(
+            {
+                "lane": target,
+                "status": result_status_label(verify_rc),
+                "artifacts": artifacts,
+            }
+        )
+    return rows
 
 
 def compact_markdown_signal(value: str, max_length: int = 140) -> str:
@@ -176,6 +215,22 @@ def render_markdown_summary(report: dict) -> str:
             )
             lines.append(
                 f"| {lane['lane']} | `{lane['returncode']}` | {failed_step_labels} | {first_signal or '-'} |"
+            )
+
+    artifact_rows = artifact_summary_rows(report)
+    if artifact_rows:
+        lines.extend(
+            [
+                "",
+                "## Artifact summary",
+                "",
+                "| Lane | Evidence | Artifacts | Sample |",
+                "| --- | --- | --- | --- |",
+            ]
+        )
+        for row in artifact_rows:
+            lines.append(
+                f"| {row['lane']} | {row['status']} | `{len(row['artifacts'])}` | {artifact_summary_sample(row['artifacts'])} |"
             )
 
     for target, steps in report["targets"].items():
