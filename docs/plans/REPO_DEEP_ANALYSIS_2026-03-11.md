@@ -41,7 +41,8 @@ Rendre `Kill_LIFE` plus lisible comme socle canonique runtime/spec-first:
 - `K-DA-014` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et l'extraction d'un bloc `Artifact summary` dedie dans le rendu Markdown evidence
 - `K-DA-015` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et l'exposition `required_files` / `missing` dans `Artifact summary`
 - `K-DA-016` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et la detection de drift `summary ok` dans `Artifact summary`
+- `K-DA-017` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et le recalcul des artefacts encore presents en cas de drift `summary ok`
 
 ## Next tasks
 
-- `K-DA-017` montrer plus explicitement les artefacts encore presents quand `Drift` est detecte
+- `K-DA-018` rendre plus lisible la difference entre artefacts sources et artefacts evidence dans le resume Markdown

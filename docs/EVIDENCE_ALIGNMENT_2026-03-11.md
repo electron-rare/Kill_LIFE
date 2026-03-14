@@ -103,14 +103,19 @@ Detection de drift complementaire du 2026-03-14:
 - `Artifact summary` marque maintenant `Drift = summary ok` si `verify_evidence` casse alors que `summary.json` annonce encore `status=ok`
 - ce cas vise les artefacts supprimes ou invalides apres collecte: la colonne `Missing` montre ce qui manque, la colonne `Drift` rend visible que le resume canonique n'avait pas encore capte l'ecart
 
+Projection drift plus explicite du 2026-03-14:
+
+- quand `Drift = summary ok`, le rendu Markdown recalcule aussi `Artifacts` et `Sample` depuis `summary.json.artifacts` moins les elements `missing`
+- on voit donc a la fois ce qui manque et ce qui reste present, sans aller lire le JSON canonique a la main
+
 ## Consequence operateur
 
 - Un echec CI ne doit plus masquer l'evidence pack: les logs et resumes restent telechargeables via l'artifact `evidence-pack`.
 - La doc locale et la doc GitHub parlent maintenant des memes chemins.
-- Le prochain lot pertinent n'est plus la mise en evidence du drift, mais un rendu plus explicite des artefacts reellement presents quand un drift est detecte.
+- Le rendu drift montre maintenant aussi les artefacts encore presents, en plus des manquants.
 
 ## Next lot
 
 - `K-DA-015` est ferme par l'exposition `required_files` / `missing` dans `Artifact summary`.
 - `K-DA-016` est ferme par la colonne `Drift` du rendu Markdown evidence.
-- `K-DA-017`: montrer plus explicitement les artefacts encore presents quand `Drift` est detecte.
+- `K-DA-017` est ferme par le recalcul de `Artifacts` / `Sample` depuis `summary.json.artifacts` quand un drift est detecte.

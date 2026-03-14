@@ -41,6 +41,11 @@ class AutoCheckCiCdTests(unittest.TestCase):
                     "test.stdout.txt",
                     "test.stderr.txt",
                 ],
+                "artifacts": [
+                    "firmware/.pio/build/native/program",
+                    "docs/evidence/linux/test.result.json",
+                    "docs/evidence/linux/test.stdout.txt",
+                ],
                 "missing": [],
                 "status": "ok",
             },
@@ -164,7 +169,7 @@ class AutoCheckCiCdTests(unittest.TestCase):
         ):
             summary = auto_check_ci_cd.render_markdown_summary(self.sample_drift_report())
         self.assertIn(
-            "| linux | failed (1) | `0` | - | `test.result.json`, `test.stdout.txt`, `test.stderr.txt` | `program` | summary ok |",
+            "| linux | failed (1) | `2` | `test.result.json`, `test.stdout.txt` | `test.result.json`, `test.stdout.txt`, `test.stderr.txt` | `program` | summary ok |",
             summary,
         )
 
@@ -243,6 +248,13 @@ class AutoCheckCiCdTests(unittest.TestCase):
         ):
             rows = auto_check_ci_cd.artifact_summary_rows(self.sample_drift_report())
         self.assertEqual(rows[1]["status"], "failed (1)")
+        self.assertEqual(
+            rows[1]["artifacts"],
+            [
+                "docs/evidence/linux/test.result.json",
+                "docs/evidence/linux/test.stdout.txt",
+            ],
+        )
         self.assertEqual(rows[1]["missing"], ["firmware/.pio/build/native/program"])
         self.assertEqual(rows[1]["drift"], "summary ok")
 

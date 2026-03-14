@@ -152,6 +152,11 @@ def artifact_summary_rows(report: dict) -> list[dict]:
         verify_rc = verify_step["returncode"] if verify_step else target_returncode(steps)
         evidence_summary = load_evidence_summary(target) or {}
         summary_status = str(evidence_summary.get("status") or "").strip()
+        summary_artifacts = [
+            item
+            for item in evidence_summary.get("artifacts", [])
+            if isinstance(item, str)
+        ]
         required_files = [
             item
             for item in evidence_summary.get("required_files", [])
@@ -167,6 +172,13 @@ def artifact_summary_rows(report: dict) -> list[dict]:
             missing = artifact_items_from_signal(signal)
         if verify_rc != 0 and summary_status == "ok" and missing:
             drift = "summary ok"
+            if not artifacts and summary_artifacts:
+                missing_set = set(missing)
+                artifacts = [
+                    item
+                    for item in summary_artifacts
+                    if item not in missing_set
+                ]
         rows.append(
             {
                 "lane": target,

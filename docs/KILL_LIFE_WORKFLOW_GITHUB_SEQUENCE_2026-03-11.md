@@ -104,4 +104,4 @@ sequenceDiagram
 - `K-DA-014` est ferme par le bloc `Artifact summary` dedie dans le rendu Markdown evidence.
 - `K-DA-015` est ferme par l'exposition `required_files` / `missing` dans `Artifact summary`.
 - `K-DA-016` est ferme par la colonne `Drift` du rendu Markdown evidence.
-- `K-DA-017`: montrer plus explicitement les artefacts encore presents quand `Drift` est detecte.
+- `K-DA-017` est ferme par le recalcul de `Artifacts` / `Sample` depuis `summary.json.artifacts` quand `Drift` est detecte.
