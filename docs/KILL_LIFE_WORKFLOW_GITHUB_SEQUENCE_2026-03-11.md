@@ -85,6 +85,7 @@ sequenceDiagram
 - Les signaux d'artefacts trop verbeux y sont maintenant resumes en comptes courts pour garder les tableaux lisibles.
 - Le resume ajoute maintenant un bloc `Artifact summary` dedie pour separer la lecture des preuves et la lecture des signaux.
 - Quand une lane degrade, `Artifact summary` expose aussi les `required_files` et les `missing` lus dans `docs/evidence/<target>/summary.json`.
+- `K-DA-018` clarifie maintenant ce bloc en separant `Source artifacts` et `Evidence files`.
 - Si `verify_evidence` casse apres une collecte encore marquee `ok`, le resume ajoute `Drift = summary ok` pour rendre visible l'ecart.
 - `Kill_LIFE` garde la definition canonique des workflows et de leurs gates; le dispatch n'est qu'un mode d'execution distant.
 
@@ -105,3 +106,4 @@ sequenceDiagram
 - `K-DA-015` est ferme par l'exposition `required_files` / `missing` dans `Artifact summary`.
 - `K-DA-016` est ferme par la colonne `Drift` du rendu Markdown evidence.
 - `K-DA-017` est ferme par le recalcul de `Artifacts` / `Sample` depuis `summary.json.artifacts` quand `Drift` est detecte.
+- `K-DA-018` est ferme par la separation explicite `Source artifacts` / `Evidence files`.

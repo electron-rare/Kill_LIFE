@@ -131,11 +131,11 @@ class AutoCheckCiCdTests(unittest.TestCase):
         self.assertIn("| linux | `1` | `test_firmware` | native test failed |", summary)
         self.assertIn("## Artifact summary", summary)
         self.assertIn(
-            "| esp | ok | `4` | `firmware.bin`, `firmware.elf`, `+2` | `3` files | - | - |",
+            "| esp | ok | `4` | `firmware.bin`, `firmware.elf`, `+2` | `3` | `build.result.json`, `build.stdout.txt`, `build.stderr.txt` | - | - |",
             summary,
         )
         self.assertIn(
-            "| linux | failed (1) | `0` | - | `test.result.json`, `test.stdout.txt`, `test.stderr.txt` | `test.stderr.txt`, `artifacts` | - |",
+            "| linux | failed (1) | `0` | - | `3` | `test.result.json`, `test.stdout.txt`, `test.stderr.txt` | `test.stderr.txt`, `artifacts` | - |",
             summary,
         )
         self.assertIn("## esp", summary)
@@ -169,7 +169,7 @@ class AutoCheckCiCdTests(unittest.TestCase):
         ):
             summary = auto_check_ci_cd.render_markdown_summary(self.sample_drift_report())
         self.assertIn(
-            "| linux | failed (1) | `2` | `test.result.json`, `test.stdout.txt` | `test.result.json`, `test.stdout.txt`, `test.stderr.txt` | `program` | summary ok |",
+            "| linux | failed (1) | `2` | `test.result.json`, `test.stdout.txt` | `3` | `test.result.json`, `test.stdout.txt`, `test.stderr.txt` | `program` | summary ok |",
             summary,
         )
 
@@ -233,10 +233,11 @@ class AutoCheckCiCdTests(unittest.TestCase):
             rows = auto_check_ci_cd.artifact_summary_rows(self.sample_report())
         self.assertEqual(rows[0]["lane"], "esp")
         self.assertEqual(rows[0]["status"], "ok")
-        self.assertEqual(len(rows[0]["artifacts"]), 4)
+        self.assertEqual(len(rows[0]["source_artifacts"]), 4)
+        self.assertEqual(rows[0]["evidence_files"], ["build.result.json", "build.stdout.txt", "build.stderr.txt"])
         self.assertEqual(rows[1]["missing"], ["test.stderr.txt", "artifacts"])
         self.assertEqual(
-            auto_check_ci_cd.artifact_summary_sample(rows[0]["artifacts"]),
+            auto_check_ci_cd.artifact_summary_sample(rows[0]["source_artifacts"]),
             "`firmware.bin`, `firmware.elf`, `+2`",
         )
 
@@ -249,12 +250,13 @@ class AutoCheckCiCdTests(unittest.TestCase):
             rows = auto_check_ci_cd.artifact_summary_rows(self.sample_drift_report())
         self.assertEqual(rows[1]["status"], "failed (1)")
         self.assertEqual(
-            rows[1]["artifacts"],
+            rows[1]["source_artifacts"],
             [
                 "docs/evidence/linux/test.result.json",
                 "docs/evidence/linux/test.stdout.txt",
             ],
         )
+        self.assertEqual(rows[1]["evidence_files"], ["test.result.json", "test.stdout.txt", "test.stderr.txt"])
         self.assertEqual(rows[1]["missing"], ["firmware/.pio/build/native/program"])
         self.assertEqual(rows[1]["drift"], "summary ok")
 

@@ -11,10 +11,10 @@
 
 ## Artifact summary
 
-| Lane | Evidence | Artifacts | Sample | Required | Missing | Drift |
-| --- | --- | --- | --- | --- | --- | --- |
-| esp | ok | `4` | `firmware.bin`, `firmware.elf`, `+2` | `3` files | - | - |
-| linux | ok | `1` | `native` | `3` files | - | - |
+| Lane | Evidence | Source | Source sample | Evidence files | Evidence sample | Missing evidence | Drift |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| esp | ok | `4` | `firmware.bin`, `firmware.elf`, `+2` | `3` | `build.result.json`, `build.stdout.txt`, `build.stderr.txt` | - | - |
+| linux | ok | `1` | `native` | `3` | `test.result.json`, `test.stdout.txt`, `test.stderr.txt` | - | - |
 
 ## esp
 

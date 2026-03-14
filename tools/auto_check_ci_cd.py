@@ -115,15 +115,6 @@ def load_evidence_summary(target: str) -> dict | None:
         return None
 
 
-def required_summary_cell(items: list[str], status: str) -> str:
-    if not items:
-        return "-"
-    if status == "ok":
-        label = "file" if len(items) == 1 else "files"
-        return f"`{len(items)}` {label}"
-    return artifact_summary_sample(items, max_items=3)
-
-
 def missing_summary_cell(items: list[str]) -> str:
     if not items:
         return "-"
@@ -183,8 +174,8 @@ def artifact_summary_rows(report: dict) -> list[dict]:
             {
                 "lane": target,
                 "status": result_status_label(verify_rc),
-                "artifacts": artifacts,
-                "required_files": required_files,
+                "source_artifacts": artifacts,
+                "evidence_files": required_files,
                 "missing": missing,
                 "drift": drift,
             }
@@ -295,13 +286,13 @@ def render_markdown_summary(report: dict) -> str:
                 "",
                 "## Artifact summary",
                 "",
-                "| Lane | Evidence | Artifacts | Sample | Required | Missing | Drift |",
-                "| --- | --- | --- | --- | --- | --- | --- |",
+                "| Lane | Evidence | Source | Source sample | Evidence files | Evidence sample | Missing evidence | Drift |",
+                "| --- | --- | --- | --- | --- | --- | --- | --- |",
             ]
         )
         for row in artifact_rows:
             lines.append(
-                f"| {row['lane']} | {row['status']} | `{len(row['artifacts'])}` | {artifact_summary_sample(row['artifacts'])} | {required_summary_cell(row['required_files'], row['status'])} | {missing_summary_cell(row['missing'])} | {drift_summary_cell(row['drift'])} |"
+                f"| {row['lane']} | {row['status']} | `{len(row['source_artifacts'])}` | {artifact_summary_sample(row['source_artifacts'])} | `{len(row['evidence_files'])}` | {artifact_summary_sample(row['evidence_files'], max_items=3)} | {missing_summary_cell(row['missing'])} | {drift_summary_cell(row['drift'])} |"
             )
 
     for target, steps in report["targets"].items():

@@ -42,7 +42,9 @@ Rendre `Kill_LIFE` plus lisible comme socle canonique runtime/spec-first:
 - `K-DA-015` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et l'exposition `required_files` / `missing` dans `Artifact summary`
 - `K-DA-016` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et la detection de drift `summary ok` dans `Artifact summary`
 - `K-DA-017` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et le recalcul des artefacts encore presents en cas de drift `summary ok`
+- `K-DA-018` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et la separation explicite `Source artifacts` / `Evidence files`
+- `K-DA-019` ferme par la relecture complete `KILL_LIFE_PIO_MODE=native ./.venv/bin/python tools/auto_check_ci_cd.py`, la regeneration du sidecar `docs/evidence/ci_cd_audit_summary.md` et la confirmation que la doc evidence restait correcte sans correction additionnelle
 
 ## Next tasks
 
-- `K-DA-018` rendre plus lisible la difference entre artefacts sources et artefacts evidence dans le resume Markdown
+- `K-DA-020` isoler le blocage restant de `bash tools/test_python.sh --suite stable` autour des deltas MCP runtime hors lot

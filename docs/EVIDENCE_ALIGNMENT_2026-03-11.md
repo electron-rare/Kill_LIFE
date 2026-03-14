@@ -97,6 +97,7 @@ Precision lane degradee complementaire du 2026-03-14:
 
 - `Artifact summary` lit maintenant `docs/evidence/<target>/summary.json` pour remonter les `required_files` et la liste `missing` quand une lane evidence n'est pas `ok`
 - le rendu reste compact sur les lanes vertes (`3 files`, `-`) et ne s'etend qu'au moment ou une review operateur a besoin de voir ce qui manque vraiment
+- `K-DA-018` se ferme quand ce bloc distingue explicitement `Source artifacts` et `Evidence files`, pour ne plus lire `required_files` comme un inventaire d'artefacts build/test
 
 Detection de drift complementaire du 2026-03-14:
 
@@ -119,3 +120,4 @@ Projection drift plus explicite du 2026-03-14:
 - `K-DA-015` est ferme par l'exposition `required_files` / `missing` dans `Artifact summary`.
 - `K-DA-016` est ferme par la colonne `Drift` du rendu Markdown evidence.
 - `K-DA-017` est ferme par le recalcul de `Artifacts` / `Sample` depuis `summary.json.artifacts` quand un drift est detecte.
+- `K-DA-018` est ferme par la separation explicite `Source artifacts` / `Evidence files` dans `Artifact summary`.

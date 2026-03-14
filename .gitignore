@@ -93,6 +93,7 @@ docker-compose.override.yml
 .cad-home/
 .runtime-home/
 .mascarade/
+.crazy-life/
 
 # Autres outils CI/CD
 coverage/
