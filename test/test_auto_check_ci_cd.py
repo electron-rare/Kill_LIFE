@@ -32,6 +32,45 @@ class AutoCheckCiCdTests(unittest.TestCase):
         }
         return summaries.get(lane)
 
+    def sample_drift_evidence_summary(self, lane: str) -> dict | None:
+        summaries = {
+            "esp": self.sample_evidence_summary("esp"),
+            "linux": {
+                "required_files": [
+                    "test.result.json",
+                    "test.stdout.txt",
+                    "test.stderr.txt",
+                ],
+                "missing": [],
+                "status": "ok",
+            },
+        }
+        return summaries.get(lane)
+
+    def sample_drift_report(self) -> dict:
+        report = self.sample_report()
+        report["targets"]["linux"] = [
+            {
+                "command": ["python", "tools/test_firmware.py", "linux"],
+                "returncode": 0,
+                "stdout": "Tests terminés pour linux",
+                "stderr": "",
+            },
+            {
+                "command": ["python", "tools/collect_evidence.py", "linux"],
+                "returncode": 0,
+                "stdout": "Evidence pack généré pour linux: /Users/electron/Kill_LIFE/docs/evidence/linux",
+                "stderr": "",
+            },
+            {
+                "command": ["python", "tools/verify_evidence.py", "linux"],
+                "returncode": 1,
+                "stdout": "Artifacts manquants pour linux: ['firmware/.pio/build/native/program']",
+                "stderr": "",
+            },
+        ]
+        return report
+
     def sample_report(self) -> dict:
         return {
             "compliance": {
@@ -87,11 +126,11 @@ class AutoCheckCiCdTests(unittest.TestCase):
         self.assertIn("| linux | `1` | `test_firmware` | native test failed |", summary)
         self.assertIn("## Artifact summary", summary)
         self.assertIn(
-            "| esp | ok | `4` | `firmware.bin`, `firmware.elf`, `+2` | `3` files | - |",
+            "| esp | ok | `4` | `firmware.bin`, `firmware.elf`, `+2` | `3` files | - | - |",
             summary,
         )
         self.assertIn(
-            "| linux | failed (1) | `0` | - | `test.result.json`, `test.stdout.txt`, `test.stderr.txt` | `test.stderr.txt`, `artifacts` |",
+            "| linux | failed (1) | `0` | - | `test.result.json`, `test.stdout.txt`, `test.stderr.txt` | `test.stderr.txt`, `artifacts` | - |",
             summary,
         )
         self.assertIn("## esp", summary)
@@ -116,6 +155,18 @@ class AutoCheckCiCdTests(unittest.TestCase):
             summary = auto_check_ci_cd.render_markdown_summary(report)
         self.assertNotIn("## Focus failures", summary)
         self.assertIn("| linux | `0` | ok |", summary)
+
+    def test_render_markdown_summary_marks_verify_drift_when_summary_still_ok(self):
+        with patch.object(
+            auto_check_ci_cd,
+            "load_evidence_summary",
+            side_effect=self.sample_drift_evidence_summary,
+        ):
+            summary = auto_check_ci_cd.render_markdown_summary(self.sample_drift_report())
+        self.assertIn(
+            "| linux | failed (1) | `0` | - | `test.result.json`, `test.stdout.txt`, `test.stderr.txt` | `program` | summary ok |",
+            summary,
+        )
 
     def test_write_step_summary_writes_markdown_when_env_is_set(self):
         report = self.sample_report()
@@ -183,6 +234,17 @@ class AutoCheckCiCdTests(unittest.TestCase):
             auto_check_ci_cd.artifact_summary_sample(rows[0]["artifacts"]),
             "`firmware.bin`, `firmware.elf`, `+2`",
         )
+
+    def test_artifact_summary_rows_marks_drift_when_verify_fails_after_ok_summary(self):
+        with patch.object(
+            auto_check_ci_cd,
+            "load_evidence_summary",
+            side_effect=self.sample_drift_evidence_summary,
+        ):
+            rows = auto_check_ci_cd.artifact_summary_rows(self.sample_drift_report())
+        self.assertEqual(rows[1]["status"], "failed (1)")
+        self.assertEqual(rows[1]["missing"], ["firmware/.pio/build/native/program"])
+        self.assertEqual(rows[1]["drift"], "summary ok")
 
 
 if __name__ == "__main__":

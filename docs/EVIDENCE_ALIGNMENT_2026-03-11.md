@@ -98,13 +98,19 @@ Precision lane degradee complementaire du 2026-03-14:
 - `Artifact summary` lit maintenant `docs/evidence/<target>/summary.json` pour remonter les `required_files` et la liste `missing` quand une lane evidence n'est pas `ok`
 - le rendu reste compact sur les lanes vertes (`3 files`, `-`) et ne s'etend qu'au moment ou une review operateur a besoin de voir ce qui manque vraiment
 
+Detection de drift complementaire du 2026-03-14:
+
+- `Artifact summary` marque maintenant `Drift = summary ok` si `verify_evidence` casse alors que `summary.json` annonce encore `status=ok`
+- ce cas vise les artefacts supprimes ou invalides apres collecte: la colonne `Missing` montre ce qui manque, la colonne `Drift` rend visible que le resume canonique n'avait pas encore capte l'ecart
+
 ## Consequence operateur
 
 - Un echec CI ne doit plus masquer l'evidence pack: les logs et resumes restent telechargeables via l'artifact `evidence-pack`.
 - La doc locale et la doc GitHub parlent maintenant des memes chemins.
-- Le prochain lot pertinent n'est plus l'explicitation des fichiers requis/manquants, mais la mise en evidence de l'ecart entre artefacts presents et artefacts attendus quand `verify_evidence` casse apres un `summary.json` encore `ok`.
+- Le prochain lot pertinent n'est plus la mise en evidence du drift, mais un rendu plus explicite des artefacts reellement presents quand un drift est detecte.
 
 ## Next lot
 
 - `K-DA-015` est ferme par l'exposition `required_files` / `missing` dans `Artifact summary`.
-- `K-DA-016`: rendre visible l'ecart "summary ok / artefacts reels manquants" quand `verify_evidence` casse apres collecte.
+- `K-DA-016` est ferme par la colonne `Drift` du rendu Markdown evidence.
+- `K-DA-017`: montrer plus explicitement les artefacts encore presents quand `Drift` est detecte.

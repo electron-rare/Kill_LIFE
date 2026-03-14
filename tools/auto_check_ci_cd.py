@@ -130,6 +130,12 @@ def missing_summary_cell(items: list[str]) -> str:
     return artifact_summary_sample(items, max_items=3)
 
 
+def drift_summary_cell(value: str | None) -> str:
+    if not value:
+        return "-"
+    return value
+
+
 def artifact_summary_rows(report: dict) -> list[dict]:
     rows: list[dict] = []
     for target, steps in report["targets"].items():
@@ -138,9 +144,14 @@ def artifact_summary_rows(report: dict) -> list[dict]:
             None,
         )
         signal = first_output_line(verify_step or {})
-        artifacts = artifact_items_from_signal(signal)
+        artifacts = (
+            artifact_items_from_signal(signal)
+            if signal.startswith(f"Evidence pack trouvé pour {target}")
+            else []
+        )
         verify_rc = verify_step["returncode"] if verify_step else target_returncode(steps)
         evidence_summary = load_evidence_summary(target) or {}
+        summary_status = str(evidence_summary.get("status") or "").strip()
         required_files = [
             item
             for item in evidence_summary.get("required_files", [])
@@ -151,8 +162,11 @@ def artifact_summary_rows(report: dict) -> list[dict]:
             for item in evidence_summary.get("missing", [])
             if isinstance(item, str)
         ]
+        drift: str | None = None
         if verify_rc != 0 and not missing:
             missing = artifact_items_from_signal(signal)
+        if verify_rc != 0 and summary_status == "ok" and missing:
+            drift = "summary ok"
         rows.append(
             {
                 "lane": target,
@@ -160,6 +174,7 @@ def artifact_summary_rows(report: dict) -> list[dict]:
                 "artifacts": artifacts,
                 "required_files": required_files,
                 "missing": missing,
+                "drift": drift,
             }
         )
     return rows
@@ -268,13 +283,13 @@ def render_markdown_summary(report: dict) -> str:
                 "",
                 "## Artifact summary",
                 "",
-                "| Lane | Evidence | Artifacts | Sample | Required | Missing |",
-                "| --- | --- | --- | --- | --- | --- |",
+                "| Lane | Evidence | Artifacts | Sample | Required | Missing | Drift |",
+                "| --- | --- | --- | --- | --- | --- | --- |",
             ]
         )
         for row in artifact_rows:
             lines.append(
-                f"| {row['lane']} | {row['status']} | `{len(row['artifacts'])}` | {artifact_summary_sample(row['artifacts'])} | {required_summary_cell(row['required_files'], row['status'])} | {missing_summary_cell(row['missing'])} |"
+                f"| {row['lane']} | {row['status']} | `{len(row['artifacts'])}` | {artifact_summary_sample(row['artifacts'])} | {required_summary_cell(row['required_files'], row['status'])} | {missing_summary_cell(row['missing'])} | {drift_summary_cell(row['drift'])} |"
             )
 
     for target, steps in report["targets"].items():
