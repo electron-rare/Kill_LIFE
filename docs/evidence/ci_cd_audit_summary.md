@@ -11,10 +11,10 @@
 
 ## Artifact summary
 
-| Lane | Evidence | Artifacts | Sample |
-| --- | --- | --- | --- |
-| esp | ok | `4` | `firmware.bin`, `firmware.elf`, `+2` |
-| linux | ok | `1` | `native` |
+| Lane | Evidence | Artifacts | Sample | Required | Missing |
+| --- | --- | --- | --- | --- | --- |
+| esp | ok | `4` | `firmware.bin`, `firmware.elf`, `+2` | `3` files | - |
+| linux | ok | `1` | `native` | `3` files | - |
 
 ## esp
 

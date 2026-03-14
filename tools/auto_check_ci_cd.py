@@ -101,6 +101,35 @@ def artifact_summary_sample(items: list[str], max_items: int = 2) -> str:
     return sample
 
 
+def evidence_summary_path(target: str) -> Path:
+    return ROOT / "docs" / "evidence" / target / "summary.json"
+
+
+def load_evidence_summary(target: str) -> dict | None:
+    path = evidence_summary_path(target)
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+
+
+def required_summary_cell(items: list[str], status: str) -> str:
+    if not items:
+        return "-"
+    if status == "ok":
+        label = "file" if len(items) == 1 else "files"
+        return f"`{len(items)}` {label}"
+    return artifact_summary_sample(items, max_items=3)
+
+
+def missing_summary_cell(items: list[str]) -> str:
+    if not items:
+        return "-"
+    return artifact_summary_sample(items, max_items=3)
+
+
 def artifact_summary_rows(report: dict) -> list[dict]:
     rows: list[dict] = []
     for target, steps in report["targets"].items():
@@ -111,11 +140,26 @@ def artifact_summary_rows(report: dict) -> list[dict]:
         signal = first_output_line(verify_step or {})
         artifacts = artifact_items_from_signal(signal)
         verify_rc = verify_step["returncode"] if verify_step else target_returncode(steps)
+        evidence_summary = load_evidence_summary(target) or {}
+        required_files = [
+            item
+            for item in evidence_summary.get("required_files", [])
+            if isinstance(item, str)
+        ]
+        missing = [
+            item
+            for item in evidence_summary.get("missing", [])
+            if isinstance(item, str)
+        ]
+        if verify_rc != 0 and not missing:
+            missing = artifact_items_from_signal(signal)
         rows.append(
             {
                 "lane": target,
                 "status": result_status_label(verify_rc),
                 "artifacts": artifacts,
+                "required_files": required_files,
+                "missing": missing,
             }
         )
     return rows
@@ -224,13 +268,13 @@ def render_markdown_summary(report: dict) -> str:
                 "",
                 "## Artifact summary",
                 "",
-                "| Lane | Evidence | Artifacts | Sample |",
-                "| --- | --- | --- | --- |",
+                "| Lane | Evidence | Artifacts | Sample | Required | Missing |",
+                "| --- | --- | --- | --- | --- | --- |",
             ]
         )
         for row in artifact_rows:
             lines.append(
-                f"| {row['lane']} | {row['status']} | `{len(row['artifacts'])}` | {artifact_summary_sample(row['artifacts'])} |"
+                f"| {row['lane']} | {row['status']} | `{len(row['artifacts'])}` | {artifact_summary_sample(row['artifacts'])} | {required_summary_cell(row['required_files'], row['status'])} | {missing_summary_cell(row['missing'])} |"
             )
 
     for target, steps in report["targets"].items():

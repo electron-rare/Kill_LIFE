@@ -11,6 +11,27 @@ from tools import auto_check_ci_cd
 
 
 class AutoCheckCiCdTests(unittest.TestCase):
+    def sample_evidence_summary(self, lane: str) -> dict | None:
+        summaries = {
+            "esp": {
+                "required_files": [
+                    "build.result.json",
+                    "build.stdout.txt",
+                    "build.stderr.txt",
+                ],
+                "missing": [],
+            },
+            "linux": {
+                "required_files": [
+                    "test.result.json",
+                    "test.stdout.txt",
+                    "test.stderr.txt",
+                ],
+                "missing": ["test.stderr.txt", "artifacts"],
+            },
+        }
+        return summaries.get(lane)
+
     def sample_report(self) -> dict:
         return {
             "compliance": {
@@ -52,7 +73,12 @@ class AutoCheckCiCdTests(unittest.TestCase):
         }
 
     def test_render_markdown_summary_contains_lane_table_and_step_details(self):
-        summary = auto_check_ci_cd.render_markdown_summary(self.sample_report())
+        with patch.object(
+            auto_check_ci_cd,
+            "load_evidence_summary",
+            side_effect=self.sample_evidence_summary,
+        ):
+            summary = auto_check_ci_cd.render_markdown_summary(self.sample_report())
         self.assertIn("# Kill_LIFE Evidence Pack Summary", summary)
         self.assertIn("| compliance | `0` | ok |", summary)
         self.assertIn("| esp | `0` | ok |", summary)
@@ -60,7 +86,14 @@ class AutoCheckCiCdTests(unittest.TestCase):
         self.assertIn("## Focus failures", summary)
         self.assertIn("| linux | `1` | `test_firmware` | native test failed |", summary)
         self.assertIn("## Artifact summary", summary)
-        self.assertIn("| esp | ok | `4` | `firmware.bin`, `firmware.elf`, `+2` |", summary)
+        self.assertIn(
+            "| esp | ok | `4` | `firmware.bin`, `firmware.elf`, `+2` | `3` files | - |",
+            summary,
+        )
+        self.assertIn(
+            "| linux | failed (1) | `0` | - | `test.result.json`, `test.stdout.txt`, `test.stderr.txt` | `test.stderr.txt`, `artifacts` |",
+            summary,
+        )
         self.assertIn("## esp", summary)
         self.assertIn("`build_firmware`", summary)
         self.assertIn("Build terminé pour esp", summary)
@@ -75,7 +108,12 @@ class AutoCheckCiCdTests(unittest.TestCase):
         report["targets"]["linux"][0]["stderr"] = ""
         report["targets"]["linux"][0]["stdout"] = "Tests terminés pour linux"
 
-        summary = auto_check_ci_cd.render_markdown_summary(report)
+        with patch.object(
+            auto_check_ci_cd,
+            "load_evidence_summary",
+            side_effect=self.sample_evidence_summary,
+        ):
+            summary = auto_check_ci_cd.render_markdown_summary(report)
         self.assertNotIn("## Focus failures", summary)
         self.assertIn("| linux | `0` | ok |", summary)
 
@@ -86,6 +124,10 @@ class AutoCheckCiCdTests(unittest.TestCase):
             markdown_path = Path(tmp) / "ci_cd_audit_summary.md"
             with patch.object(auto_check_ci_cd, "MARKDOWN_REPORT_PATH", markdown_path), patch.dict(
                 os.environ, {auto_check_ci_cd.STEP_SUMMARY_ENV: str(summary_path)}, clear=False
+            ), patch.object(
+                auto_check_ci_cd,
+                "load_evidence_summary",
+                side_effect=self.sample_evidence_summary,
             ):
                 auto_check_ci_cd.write_markdown_report(report)
                 written = auto_check_ci_cd.write_step_summary(report)
@@ -100,7 +142,11 @@ class AutoCheckCiCdTests(unittest.TestCase):
         report = self.sample_report()
         with tempfile.TemporaryDirectory() as tmp:
             markdown_path = Path(tmp) / "ci_cd_audit_summary.md"
-            with patch.object(auto_check_ci_cd, "MARKDOWN_REPORT_PATH", markdown_path):
+            with patch.object(auto_check_ci_cd, "MARKDOWN_REPORT_PATH", markdown_path), patch.object(
+                auto_check_ci_cd,
+                "load_evidence_summary",
+                side_effect=self.sample_evidence_summary,
+            ):
                 written = auto_check_ci_cd.write_markdown_report(report)
 
             self.assertEqual(written, markdown_path)
@@ -123,10 +169,16 @@ class AutoCheckCiCdTests(unittest.TestCase):
         self.assertEqual(compacted, "Evidence pack trouvé pour linux")
 
     def test_artifact_summary_rows_extract_counts_and_samples(self):
-        rows = auto_check_ci_cd.artifact_summary_rows(self.sample_report())
+        with patch.object(
+            auto_check_ci_cd,
+            "load_evidence_summary",
+            side_effect=self.sample_evidence_summary,
+        ):
+            rows = auto_check_ci_cd.artifact_summary_rows(self.sample_report())
         self.assertEqual(rows[0]["lane"], "esp")
         self.assertEqual(rows[0]["status"], "ok")
         self.assertEqual(len(rows[0]["artifacts"]), 4)
+        self.assertEqual(rows[1]["missing"], ["test.stderr.txt", "artifacts"])
         self.assertEqual(
             auto_check_ci_cd.artifact_summary_sample(rows[0]["artifacts"]),
             "`firmware.bin`, `firmware.elf`, `+2`",

@@ -83,6 +83,7 @@ Quand une ou plusieurs lanes echouent, le rendu Markdown ajoute une section `Foc
 Les chemins du repo y sont affiches en relatif pour garder un resume portable entre machine locale, artifact et UI GitHub.
 Les listes d'artefacts trop verbeuses y sont reduites en comptes courts pour garder la lecture review-first.
 Le rendu ajoute aussi un bloc `Artifact summary` dedie qui separe, par lane, le statut evidence, le nombre d'artefacts et un echantillon court.
+Quand une lane degrade, ce meme bloc remonte maintenant aussi les `required_files` et les elements `missing` issus de `docs/evidence/<target>/summary.json`, pour eviter d'ouvrir le JSON canonique juste pour identifier le manque principal.
 
 Le job peut échouer tout en laissant un evidence pack partiel exploitable. C’est un comportement voulu : les fichiers `*.result.json`, `*.stdout.txt`, `*.stderr.txt` et `summary.json` restent la première preuve de diagnostic. En revanche, `summary.json` ne peut plus sortir `ok` si la commande build/test la plus récente a renvoyé un code non nul.
 

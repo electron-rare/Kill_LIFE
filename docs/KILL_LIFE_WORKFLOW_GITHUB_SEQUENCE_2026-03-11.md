@@ -84,6 +84,7 @@ sequenceDiagram
 - Les chemins du repo y sont maintenant affiches en relatif pour eviter le bruit machine-specifique.
 - Les signaux d'artefacts trop verbeux y sont maintenant resumes en comptes courts pour garder les tableaux lisibles.
 - Le resume ajoute maintenant un bloc `Artifact summary` dedie pour separer la lecture des preuves et la lecture des signaux.
+- Quand une lane degrade, `Artifact summary` expose aussi les `required_files` et les `missing` lus dans `docs/evidence/<target>/summary.json`.
 - `Kill_LIFE` garde la definition canonique des workflows et de leurs gates; le dispatch n'est qu'un mode d'execution distant.
 
 ## Next lots
@@ -100,4 +101,5 @@ sequenceDiagram
 - `K-DA-012` est ferme par la compaction des chemins absolus dans le rendu Markdown evidence.
 - `K-DA-013` est ferme par la reduction des signaux trop verbeux dans le rendu Markdown evidence.
 - `K-DA-014` est ferme par le bloc `Artifact summary` dedie dans le rendu Markdown evidence.
-- `K-DA-015`: expliciter les fichiers requis/manquants dans `Artifact summary` quand une lane evidence degrade.
+- `K-DA-015` est ferme par l'exposition `required_files` / `missing` dans `Artifact summary`.
+- `K-DA-016`: rendre visible l'ecart "summary ok / artefacts reels manquants" quand `verify_evidence` casse apres collecte.

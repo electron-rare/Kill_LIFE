@@ -93,12 +93,18 @@ Resume artefacts dedie complementaire du 2026-03-14:
 - ce bloc est derive du report courant et sort, par lane, le statut evidence, le nombre d'artefacts et un echantillon court
 - la colonne `Signal` redevient plus lisible: le detail artefact reste dans le bloc dedie plutot que dans chaque ligne `verify_evidence`
 
+Precision lane degradee complementaire du 2026-03-14:
+
+- `Artifact summary` lit maintenant `docs/evidence/<target>/summary.json` pour remonter les `required_files` et la liste `missing` quand une lane evidence n'est pas `ok`
+- le rendu reste compact sur les lanes vertes (`3 files`, `-`) et ne s'etend qu'au moment ou une review operateur a besoin de voir ce qui manque vraiment
+
 ## Consequence operateur
 
 - Un echec CI ne doit plus masquer l'evidence pack: les logs et resumes restent telechargeables via l'artifact `evidence-pack`.
 - La doc locale et la doc GitHub parlent maintenant des memes chemins.
-- Le prochain lot pertinent n'est plus l'alignement documentaire, mais l'explicitation des fichiers requis/manquants quand une lane evidence degrade.
+- Le prochain lot pertinent n'est plus l'explicitation des fichiers requis/manquants, mais la mise en evidence de l'ecart entre artefacts presents et artefacts attendus quand `verify_evidence` casse apres un `summary.json` encore `ok`.
 
 ## Next lot
 
-- `K-DA-015`: expliciter les fichiers requis/manquants dans `Artifact summary` quand une lane evidence degrade.
+- `K-DA-015` est ferme par l'exposition `required_files` / `missing` dans `Artifact summary`.
+- `K-DA-016`: rendre visible l'ecart "summary ok / artefacts reels manquants" quand `verify_evidence` casse apres collecte.
