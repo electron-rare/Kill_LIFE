@@ -1,6 +1,6 @@
 # MCP setup
 
-Last updated: 2026-03-08
+Last updated: 2026-03-14
 
 Source canonique pour l'usage MCP local de `Kill_LIFE`.
 
@@ -9,6 +9,8 @@ References canoniques:
 - spec de perimetre KiCad: `specs/kicad_mcp_scope_spec.md`
 - matrice de support: `docs/MCP_SUPPORT_MATRIX.md`
 - matrice ecosysteme: `docs/MCP_ECOSYSTEM_MATRIX.md`
+- benchmark KiCad adjacent: `docs/KICAD_BENCHMARK_MATRIX.md`
+- note de lot provenance: `docs/MCP_CAD_PROVENANCE_2026-03-14.md`
 - backlog MCP KiCad: `specs/mcp_tasks.md`
 - backlog cible MCP/agentics: `specs/mcp_agentics_target_backlog.md`
 
@@ -19,6 +21,13 @@ References canoniques:
 - `specs/` a la racine de `Kill_LIFE` est la source de verite canonique
 - `ai-agentic-embedded-base/specs/` n'est qu'un miroir exporte
 
+## Provenance operatoire
+
+- `officiel`: surface publiee par le projet ou l'organisation qui own l'outil, ou referencee via une source officielle
+- `community valide`: projet tiers etabli, retenu comme reference ou benchmark
+- `custom local`: launcher, wrapper, serveur ou audit maintenu dans `Kill_LIFE` ou `mascarade`
+- garde-fou actif: `bash tools/tui/cad_mcp_audit.sh audit` reste obligatoire pour le lot CAD/MCP; au `2026-03-14`, le rapport documente `0 actionable hit`
+
 ## Chemins supportes
 
 - `kicad`: `tools/hw/run_kicad_mcp.sh`
@@ -27,7 +36,8 @@ References canoniques:
 - `github-dispatch`: `tools/run_github_dispatch_mcp.sh`
 - `freecad`: `tools/run_freecad_mcp.sh`
 - `openscad`: `tools/run_openscad_mcp.sh`
-- transport supporte: `stdio` local uniquement, sauf surface distante explicitement declaree par le cockpit compagnon
+- `huggingface`: `https://huggingface.co/mcp`
+- transport supporte: `stdio` local par defaut; l'unique exception versionnee ici est `huggingface` en endpoint `url` distant officiel
 
 ## Ce qui est reellement supporte
 
@@ -37,6 +47,7 @@ References canoniques:
 - `github-dispatch`: MCP local pour workflows GitHub allowlistes
 - `freecad`: MCP local headless pour infos runtime, document minimal, export et script Python controle
 - `openscad`: MCP local headless pour infos runtime, validation, rendu et export
+- `huggingface`: surface MCP distante officielle, optionnelle et hors chaine CAD locale
 
 Les micro-serveurs `kicad_kic_ai` de `mascarade` restent suivis comme surfaces auxiliaires dans `docs/MCP_SUPPORT_MATRIX.md`.
 
@@ -78,7 +89,7 @@ python3 tools/mcp_runtime_status.py --json
 
 Sur la machine de reference:
 
-- `kicad`, `validate-specs`, `freecad` et `openscad` sont `ready`
+- `kicad`, `validate-specs`, `freecad`, `openscad` et `huggingface` sont `ready`
 - `knowledge-base` est `ready` sur le provider actif `memos` auto-heberge
 - `github-dispatch` est `ready`, avec validation live fermee via token GitHub persiste
 
@@ -124,6 +135,14 @@ Le fichier versionne [mcp.json](../mcp.json) pointe vers les serveurs MCP reelle
       "command": "bash",
       "args": ["tools/run_openscad_mcp.sh"],
       "tools": ["*"]
+    },
+    "huggingface": {
+      "type": "url",
+      "url": "https://huggingface.co/mcp",
+      "headers": {
+        "Authorization": "Bearer ${HUGGINGFACE_API_KEY}"
+      },
+      "note": "Use https://huggingface.co/mcp?login for OAuth browser login instead of token auth"
     }
   }
 }
@@ -220,14 +239,18 @@ Le chemin d'observabilite synthetique n'est pas fourni par `Kill_LIFE` seul. Si 
 
 ## Politique de support
 
-- `stdio` reste le seul transport supporte par defaut
+- `stdio` reste le seul transport supporte par defaut pour les surfaces locales
 - aucun serveur MCP reseau n'est expose par defaut pour ces surfaces locales
+- `huggingface` reste la seule surface distante officielle versionnee dans `mcp.json`
 - `knowledge-base` et `github-dispatch` sont valides en live sur la machine de reference
 - `freecad` et `openscad` sont supportes comme serveurs MCP headless locaux
 - `kicad` reste le runtime MCP CAD principal
+- les classifications `officiel` / `community valide` / `custom local` sont detaillees dans `docs/MCP_SUPPORT_MATRIX.md` et `deploy/cad/README.md`
+- `docs/KICAD_BENCHMARK_MATRIX.md` fixe la decision `K-025`: `KiAuto` reste un appoint opt-in, `kicad-automation-scripts` reste une reference doc-only
 
 ## Points encore ouverts
 
 - finir l'observabilite MCP homogene
 - requalifier l'ouverture future de `A2A` une fois l'observabilite MCP homogene fermee
 - garder `K-012` comme validation host-native optionnelle tant que le runtime KiCad canonique reste le conteneur; `K-014` est valide en live, avec une limite externe de quota Nexar sur le token de reference
+- si un futur lot active `KiAuto`, suivre `docs/KICAD_BENCHMARK_MATRIX.md`, rester opt-in et rejouer `bash tools/tui/cad_mcp_audit.sh audit`

@@ -245,6 +245,8 @@ bash tools/hw/cad_stack.sh doctor
 KILL_LIFE_PIO_MODE=container .venv/bin/python tools/auto_check_ci_cd.py
 ```
 
+`tools/validate_specs.py` inclut un preflight PyYAML avant d'appeler `tools/compliance/validate.py` et retourne un message d'installation explicite si la dependance manque.
+
 ---
 
 ## 🔧 Serveurs MCP

@@ -1,5 +1,7 @@
 # CAD Stack
 
+Last updated: 2026-03-14
+
 Stack Docker CAD/EDA integree directement dans `Kill_LIFE`.
 
 Backlogs canoniques associes:
@@ -7,6 +9,8 @@ Backlogs canoniques associes:
 - plan modelling local: `docs/plans/16_plan_cad_modeling_stack.md`
 - TODO modelling local: `specs/cad_modeling_tasks.md`
 - backlog cible MCP/agentics: `specs/mcp_agentics_target_backlog.md`
+- backlog MCP/provenance: `specs/mcp_tasks.md`
+- benchmark KiCad adjacent: `docs/KICAD_BENCHMARK_MATRIX.md`
 
 ## Direction retenue
 
@@ -15,6 +19,24 @@ Backlogs canoniques associes:
 - `FreeCAD headless`: `FreeCADCmd`
 - `OpenSCAD headless`: `openscad`
 - `PlatformIO`: `pio` dans un conteneur Python leger
+
+## Provenance outillage CAD
+
+- `officiel`: surface publiee par le projet ou l'organisation qui own l'outil
+- `community valide`: projet tiers etabli, retenu comme reference ou benchmark
+- `custom local`: wrapper, launcher ou garde-fou maintenu dans `Kill_LIFE`
+
+| Surface / outil | Provenance | Statut | Usage retenu |
+| --- | --- | --- | --- |
+| `KiCad.app` + `kicad-cli` + image KiCad 10 | officiel | supporte | source de verite headless pour ERC/DRC/export |
+| `FreeCADCmd` + releases FreeCAD | officiel | supporte | modelling headless et backend du serveur `freecad` |
+| `OpenSCAD` CLI + releases/snapshots | officiel | supporte | rendu/export headless et backend du serveur `openscad` |
+| `KiAuto` | community valide | benchmark outille | appoint opt-in si un lot concret demande plus de checks/export que `kicad-cli` + `kicad-mcp` |
+| `kicad-automation-scripts` | community valide | benchmark classe | reference historique pour patterns Docker/doc; pas de promotion runtime par defaut |
+| `InteractiveHtmlBom` | community valide | reference utile | BOM interactive offline si la couche doc/fabrication le justifie |
+| `tools/hw/cad_stack.sh`, `tools/hw/run_kicad_mcp.sh`, `tools/run_freecad_mcp.sh`, `tools/run_openscad_mcp.sh`, `tools/tui/cad_mcp_audit.sh`, `tools/tui/kicad_benchmark_review.sh` | custom local | supporte | wrappers, garde-fou et helper doc benchmark operateur `Kill_LIFE` |
+
+Le classement `custom local` ne change jamais la source de verite runtime: les wrappers `Kill_LIFE` restent bornes par les binaires officiels detectes ou par les fallbacks conteneurises supportes.
 
 ## Usage rapide
 
@@ -26,6 +48,8 @@ tools/hw/cad_stack.sh freecad-cmd -c "import FreeCAD; print('.'.join(FreeCAD.Ver
 tools/hw/cad_stack.sh openscad --version
 tools/hw/cad_stack.sh pio system info
 tools/hw/cad_stack.sh mcp
+bash tools/tui/kicad_benchmark_review.sh report
+bash tools/tui/kicad_benchmark_review.sh purge --yes
 python3 tools/hw/freecad_smoke.py --json
 python3 tools/hw/openscad_smoke.py --json
 ```
@@ -69,4 +93,5 @@ Statut:
 
 - la couche modelling locale `FreeCAD/OpenSCAD` reste gouvernee dans `specs/cad_modeling_tasks.md`
 - la trajectoire MCP/agentics reste gouvernee dans `specs/mcp_agentics_target_backlog.md`
-- `mcp_tasks.md` reste reserve au backlog KiCad MCP et auxiliaires associes
+- `mcp_tasks.md` porte le lot provenance MCP/CAD; `docs/KICAD_BENCHMARK_MATRIX.md` fixe la decision benchmark `KiAuto` / `kicad-automation-scripts`
+- `bash tools/tui/cad_mcp_audit.sh audit` reste le garde-fou minimal avant toute promotion documentaire ou operateur du lot MCP/CAD
