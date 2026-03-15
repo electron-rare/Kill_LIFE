@@ -1,6 +1,6 @@
 # Tasks MCP local
 
-Last updated: 2026-03-08
+Last updated: 2026-03-14
 
 Backlog MCP canonique pour `Kill_LIFE`.
 
@@ -24,6 +24,9 @@ Format:
   - aucun blocage MCP local actif ne reste sur la machine de reference
   - `nexar_api` est valide en live; le token de reference atteint Nexar mais reste limite par un quota externe (`part limit of 0`)
   - `K-012` est maintenant classe comme validation host-native optionnelle tant que le runtime canonique reste le conteneur MCP KiCad
+  - `bash tools/tui/cad_mcp_audit.sh audit` reste le garde-fou du lot CAD/MCP; derniere passe `2026-03-14` -> `0 actionable hit`
+  - provenance documentee: `huggingface` est `officiel`; les launchers MCP locaux restent `custom local`; `KiAuto` et `kicad-automation-scripts` restent `community valide`
+  - `K-025` est absorbe: `docs/KICAD_BENCHMARK_MATRIX.md` fixe `KiAuto` en appoint opt-in et `kicad-automation-scripts` en reference doc-only, avec helper `bash tools/tui/kicad_benchmark_review.sh report`
 
 - [x] K-001 — Rendre `validate-specs` réel
   - AC: `mcp.json` ne référence plus de chemin absent.
@@ -113,3 +116,13 @@ Format:
   - AC: un run avec `KILL_LIFE_GITHUB_TOKEN` ou un `GitHub App` valide confirme `list_allowlisted_workflows` et `dispatch_workflow` sur une cible autorisee.
   - Resultat: validation live fermee via token GitHub persiste dans `runtime-secrets`; le smoke versionne confirme `list_allowlisted_workflows`, `dispatch_workflow` et `get_dispatch_status`.
   - Evidence: `python3 tools/github_dispatch_mcp_smoke.py --json --live`
+
+- [x] K-024 — Classer la provenance des surfaces MCP/CAD locales
+  - AC: `docs/MCP_SUPPORT_MATRIX.md`, `docs/MCP_ECOSYSTEM_MATRIX.md`, `docs/MCP_SETUP.md` et `deploy/cad/README.md` classent explicitement `officiel`, `community valide` et `custom local` sans desserrer le garde-fou CAD/MCP.
+  - Resultat: `huggingface` est documente comme surface officielle distante; `kicad`, `validate-specs`, `knowledge-base`, `github-dispatch`, `freecad`, `openscad` et les micro-serveurs auxiliaires restent gouvernes comme surfaces `custom local`.
+
+- [x] K-025 — Benchmarker `KiAuto` et `kicad-automation-scripts`
+  - AC: comparer `KiAuto` et `kicad-automation-scripts` a la chaine canonique `kicad-cli` + `kicad-mcp` sur ERC/DRC/export/doc, puis produire une decision `keep / adopt / ignore`.
+  - Resultat: `docs/KICAD_BENCHMARK_MATRIX.md` devient la doc canonique; `kicad-cli` + `kicad-mcp` restent `keep`, `KiAuto` est `adopt` en appoint opt-in, `kicad-automation-scripts` est `ignore` comme dependance runtime.
+  - Outillage: `bash tools/tui/kicad_benchmark_review.sh report` genere `.ops/kicad-benchmark/report.md` et les logs bruts temporaires; `bash tools/tui/kicad_benchmark_review.sh purge --yes` supprime les `.log`.
+  - Garde-fou: `bash tools/tui/cad_mcp_audit.sh audit` reste obligatoire avant toute promotion runtime/documentaire du lot CAD/MCP.
