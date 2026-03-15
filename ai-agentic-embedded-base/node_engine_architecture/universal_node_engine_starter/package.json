@@ -1,0 +1,8 @@
+{
+  "name": "universal-node-engine",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start": "node engine/runtime.js"
+  }
+}
