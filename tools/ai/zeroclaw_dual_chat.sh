@@ -13,9 +13,11 @@ load_local_env() {
 
 load_local_env
 
-ZEROCLAW_BIN="${ZEROCLAW_BIN:-/Users/cils/Documents/Lelectron_rare/Kill_LIFE/zeroclaw/target/release/zeroclaw}"
-RTC_REPO="/Users/cils/Documents/Lelectron_rare/RTC_BL_PHONE"
-ZACUS_REPO="/Users/cils/Documents/Lelectron_rare/le-mystere-professeur-zacus"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="${ZEROCLAW_ROOT_DIR:-$(cd -- "$SCRIPT_DIR/../.." && pwd)}"
+ZEROCLAW_BIN="${ZEROCLAW_BIN:-$ROOT_DIR/zeroclaw/target/release/zeroclaw}"
+RTC_REPO="${ZEROCLAW_RTC_REPO:-$HOME/RTC_BL_PHONE}"
+ZACUS_REPO="${ZEROCLAW_ZACUS_REPO:-$HOME/le-mystere-professeur-zacus}"
 
 usage() {
   cat <<USAGE

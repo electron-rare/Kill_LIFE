@@ -55,7 +55,7 @@ Kill_LIFE, c’est un gros dossier pour faire des projets électroniques avec de
 
 Dans le terminal, tape :
 ```bash
-python tools/validate_specs.py
+python3 tools/validate_specs.py
 ```
 Ça vérifie que les règles du projet sont OK.
 

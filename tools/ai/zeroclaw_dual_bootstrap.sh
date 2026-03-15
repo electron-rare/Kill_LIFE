@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ZEROCLAW_BIN="${ZEROCLAW_BIN:-/Users/cils/Documents/Lelectron_rare/Kill_LIFE/zeroclaw/target/release/zeroclaw}"
-RTC_REPO="/Users/cils/Documents/Lelectron_rare/RTC_BL_PHONE"
-ZACUS_REPO="/Users/cils/Documents/Lelectron_rare/le-mystere-professeur-zacus"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="${ZEROCLAW_ROOT_DIR:-$(cd -- "$SCRIPT_DIR/../.." && pwd)}"
+ZEROCLAW_BIN="${ZEROCLAW_BIN:-$ROOT_DIR/zeroclaw/target/release/zeroclaw}"
+RTC_REPO="${ZEROCLAW_RTC_REPO:-$HOME/RTC_BL_PHONE}"
+ZACUS_REPO="${ZEROCLAW_ZACUS_REPO:-$HOME/le-mystere-professeur-zacus}"
 HARDWARE_ONLY=0
 
 usage() {
@@ -42,10 +44,24 @@ if [[ ! -x "$ZEROCLAW_BIN" ]]; then
   fi
 fi
 
+require_repo_dir() {
+  local label="$1"
+  local repo="$2"
+  if [[ -d "$repo" ]]; then
+    return 0
+  fi
+  echo "$label repo not found: $repo" >&2
+  echo "Pass --$(printf '%s' "$label" | tr '[:upper:]' '[:lower:]') <path> or export ZEROCLAW_${label}_REPO." >&2
+  exit 1
+}
+
 if [[ "$HARDWARE_ONLY" == "1" ]]; then
   "$ZEROCLAW_BIN" hardware discover
   exit 0
 fi
+
+require_repo_dir "RTC" "$RTC_REPO"
+require_repo_dir "ZACUS" "$ZACUS_REPO"
 
 write_repo_config() {
   local repo="$1"

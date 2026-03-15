@@ -1,5 +1,3 @@
-# Easter Egg musique expérimentale
-# _« Le scope guard veille comme Éliane Radigue : lent, précis, et toujours prêt à vibrer en silence. »_
 #!/usr/bin/env python3
 """
 Scope guard for AI‑driven pull requests.
@@ -28,30 +26,15 @@ import json
 import os
 import subprocess
 import sys
+from pathlib import Path
 from typing import List
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-# Mapping of ai:* labels to allowed directory prefixes. The keys should
-# correspond exactly to the labels used in your workflow. These prefixes are
-# relative to the repository root. If a file's path starts with any of
-# these prefixes or matches exactly, it is considered allowed.
-ALLOWLIST = {
-    "ai:spec": ["specs/", "docs/", "README.md"],
-    "ai:plan": ["specs/", "docs/", "README.md"],
-    "ai:tasks": ["specs/features/", "docs/", "README.md"],
-    "ai:impl": ["firmware/", "tools/hw/", "tools/ai/", "tools/compliance/", "docs/auto_generated/", "README.md"],
-    "ai:qa": ["firmware/test/", "docs/", "README.md"],
-    "ai:docs": ["docs/", "README.md"],
-}
+from tools.scope_policy import explain_scope, is_path_allowed
 
-# Files or directories that must never be modified by AI automations. If a
-# modified file starts with any of these patterns, the guard fails.
-DENYLIST = [
-    ".github/workflows/",  # workflows are controlled manually
-    "openclaw/",            # openclaw configuration is managed separately
-    "tools/ai/sanitize_issue.py",  # sanitation logic is security‑sensitive
-    "tools/scope_guard.py",        # this script itself
-]
 
 def get_labels_from_event() -> List[str]:
     """Return a list of label names from the GitHub event JSON, if present."""
@@ -111,18 +94,7 @@ def get_changed_files() -> List[str]:
 
 def is_allowed(file_path: str, label: str) -> bool:
     """Check if a file_path is allowed for the given label."""
-    # Denylist check first
-    for deny in DENYLIST:
-        if file_path.startswith(deny):
-            return False
-    allowed_prefixes = ALLOWLIST.get(label)
-    if not allowed_prefixes:
-        # Unknown label uses the default 'ai:impl'
-        allowed_prefixes = ALLOWLIST.get("ai:impl", [])
-    for prefix in allowed_prefixes:
-        if file_path == prefix or file_path.startswith(prefix):
-            return True
-    return False
+    return is_path_allowed(label, file_path)
 
 
 def main() -> int:
@@ -141,7 +113,7 @@ def main() -> int:
             print(f"  - {f}")
         print("See tools/scope_guard.py for the policy details.")
         return 1
-    print(f"Scope guard passed. Label '{label}' allows changes to: {', '.join(ALLOWLIST.get(label, []))}")
+    print(f"Scope guard passed. {explain_scope(label)}")
     return 0
 
 

@@ -18,7 +18,7 @@ jobs:
         run: |
           mkdir -p docs
           if [ -f tools/community/check_health.py ]; then
-            python tools/community/check_health.py > docs/community-health-report.json
+            python3 tools/community/check_health.py > docs/community-health-report.json
           else
             echo '{"status":"skipped","reason":"missing tools/community/check_health.py"}' > docs/community-health-report.json
           fi
@@ -26,7 +26,7 @@ jobs:
         run: |
           mkdir -p docs
           if [ -f tools/accessibility/a11y_linter.py ]; then
-            python tools/accessibility/a11y_linter.py docs/ > docs/accessibility-report.json
+            python3 tools/accessibility/a11y_linter.py docs/ > docs/accessibility-report.json
           else
             echo '{"status":"skipped","reason":"missing tools/accessibility/a11y_linter.py"}' > docs/accessibility-report.json
           fi

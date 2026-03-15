@@ -4,11 +4,11 @@ project:
   targets:
     - esp32s3
     - esp32
-    - native
+    - esp32dev
 
 ai:
   triggers:
-    issue_label_required: "ai:codex"
+    issue_label_required: "ai:*"
   safety:
     forbid_secrets: true
     no_network_assumption: true

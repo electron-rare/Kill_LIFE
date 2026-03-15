@@ -13,11 +13,13 @@ load_local_env() {
 
 load_local_env
 
-ROOT_DIR="/Users/cils/Documents/Lelectron_rare/Kill_LIFE"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="${ZEROCLAW_ROOT_DIR:-$(cd -- "$SCRIPT_DIR/../.." && pwd)}"
 ART_DIR="${ZEROCLAW_ART_DIR:-$ROOT_DIR/artifacts/zeroclaw}"
 ZEROCLAW_BIN="${ZEROCLAW_BIN:-$ROOT_DIR/zeroclaw/target/release/zeroclaw}"
 GATEWAY_HOST="${ZEROCLAW_GATEWAY_HOST:-127.0.0.1}"
 GATEWAY_PORT="${ZEROCLAW_GATEWAY_PORT:-3000}"
+FOLLOW_HOST="${ZEROCLAW_FOLLOW_HOST:-$GATEWAY_HOST}"
 FOLLOW_PORT="${ZEROCLAW_FOLLOW_PORT:-8788}"
 PROM_MODE="${ZEROCLAW_PROM_MODE:-auto}"
 PROM_HOST="${ZEROCLAW_PROM_HOST:-127.0.0.1}"
@@ -30,13 +32,52 @@ PROM_READY_WAIT_SECS="${ZEROCLAW_PROM_READY_WAIT_SECS:-15}"
 AUTO_REPAIR_ON_INVALID_TOKEN="${ZEROCLAW_AUTO_REPAIR_ON_INVALID_TOKEN:-1}"
 OPENAI_CODEX_MODEL="${ZEROCLAW_OPENAI_CODEX_MODEL:-gpt-5.3-codex}"
 OPENROUTER_MODEL="${ZEROCLAW_OPENROUTER_MODEL:-openrouter/auto}"
-PREFER_LOCAL_AI="${ZEROCLAW_PREFER_LOCAL_AI:-0}"
+PREFER_LOCAL_AI="${ZEROCLAW_PREFER_LOCAL_AI:-1}"
 OLLAMA_MODEL="${ZEROCLAW_OLLAMA_MODEL:-llama3.2:1b}"
 OLLAMA_AUTO_PULL="${ZEROCLAW_OLLAMA_AUTO_PULL:-0}"
 OLLAMA_WARMUP="${ZEROCLAW_OLLAMA_WARMUP:-1}"
 LMSTUDIO_BASE_URL="${ZEROCLAW_LMSTUDIO_BASE_URL:-http://127.0.0.1:1234/v1}"
 LMSTUDIO_MODEL="${ZEROCLAW_LMSTUDIO_MODEL:-}"
 LOCAL_PROVIDER_ORDER="${ZEROCLAW_LOCAL_PROVIDER_ORDER:-ollama,lmstudio}"
+
+usage() {
+  cat <<USAGE
+Usage: $(basename "$0")
+
+Start the local ZeroClaw operator stack on demand:
+  - gateway
+  - follow UI
+  - optional Prometheus backend
+  - synced integration runbooks from tools/ai/integrations/
+
+Companion commands:
+  bash tools/ai/zeroclaw_stack_up.sh
+  bash tools/ai/zeroclaw_stack_down.sh    Stop the local stack
+
+Environment overrides:
+  ZEROCLAW_ROOT_DIR
+  ZEROCLAW_ART_DIR
+  ZEROCLAW_BIN
+  ZEROCLAW_GATEWAY_HOST / ZEROCLAW_GATEWAY_PORT
+  ZEROCLAW_FOLLOW_HOST / ZEROCLAW_FOLLOW_PORT
+  ZEROCLAW_FOLLOW_PORT
+  ZEROCLAW_PROM_MODE
+USAGE
+}
+
+if [[ $# -gt 0 ]]; then
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "[fail] unknown option: $1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+fi
 
 GW_PID_FILE="$ART_DIR/gateway.pid"
 FW_PID_FILE="$ART_DIR/follow.pid"
@@ -109,7 +150,7 @@ ensure_preferred_provider_config() {
         sleep 1
       fi
       if ! ollama list >/dev/null 2>&1; then
-        nohup ollama serve >"$ART_DIR/ollama.log" 2>&1 &
+        start_detached "$ART_DIR/ollama.log" ollama serve >/dev/null
         sleep 1
       fi
     fi
@@ -338,6 +379,19 @@ is_running() {
 listener_pid_on_port() {
   local port="$1"
   lsof -nP -iTCP:"$port" -sTCP:LISTEN -t 2>/dev/null | head -n 1
+}
+
+start_detached() {
+  local log_file="$1"
+  shift
+  if command -v setsid >/dev/null 2>&1; then
+    nohup setsid "$@" >>"$log_file" 2>&1 < /dev/null &
+  else
+    nohup "$@" >>"$log_file" 2>&1 < /dev/null &
+  fi
+  local pid="$!"
+  disown "$pid" >/dev/null 2>&1 || true
+  printf '%s\n' "$pid"
 }
 
 ensure_docker_daemon() {
@@ -623,8 +677,7 @@ ensure_gateway_pairing() {
           fi
         fi
 
-        nohup "$ZEROCLAW_BIN" gateway --port "$GATEWAY_PORT" --host "$GATEWAY_HOST" >"$GW_LOG" 2>&1 &
-        echo "$!" >"$GW_PID_FILE"
+        start_detached "$GW_LOG" "$ZEROCLAW_BIN" gateway --port "$GATEWAY_PORT" --host "$GATEWAY_HOST" >"$GW_PID_FILE"
         wait_for_gateway_health || true
 
         for _ in $(seq 1 40); do
@@ -651,8 +704,7 @@ elif [[ -n "$(listener_pid_on_port "$GATEWAY_PORT")" ]]; then
   printf '%s\n' "$existing_gateway_pid" >"$GW_PID_FILE"
   rm -f "$GW_MANAGED_FILE"
 else
-  nohup "$ZEROCLAW_BIN" gateway --port "$GATEWAY_PORT" --host "$GATEWAY_HOST" >"$GW_LOG" 2>&1 &
-  echo "$!" >"$GW_PID_FILE"
+  start_detached "$GW_LOG" "$ZEROCLAW_BIN" gateway --port "$GATEWAY_PORT" --host "$GATEWAY_HOST" >"$GW_PID_FILE"
   printf '%s\n' "1" >"$GW_MANAGED_FILE"
 fi
 
@@ -665,18 +717,16 @@ elif [[ -n "$(listener_pid_on_port "$FOLLOW_PORT")" ]]; then
   rm -f "$FW_MANAGED_FILE"
 else
   if [[ -f "$ORCHESTRATOR_SERVER" ]]; then
-    nohup python3 "$ORCHESTRATOR_SERVER" \
-      --host 127.0.0.1 \
+    start_detached "$FW_LOG" python3 "$ORCHESTRATOR_SERVER" \
+      --host "$FOLLOW_HOST" \
       --port "$FOLLOW_PORT" \
       --directory "$ART_DIR" \
       --root-dir "$ROOT_DIR" \
       --gateway-url "http://$GATEWAY_HOST:$GATEWAY_PORT" \
-      --prom-url "http://$PROM_HOST:$PROM_PORT" \
-      >"$FW_LOG" 2>&1 &
+      --prom-url "http://$PROM_HOST:$PROM_PORT" >"$FW_PID_FILE"
   else
-    nohup python3 -m http.server "$FOLLOW_PORT" --bind 127.0.0.1 --directory "$ART_DIR" >"$FW_LOG" 2>&1 &
+    start_detached "$FW_LOG" python3 -m http.server "$FOLLOW_PORT" --bind "$FOLLOW_HOST" --directory "$ART_DIR" >"$FW_PID_FILE"
   fi
-  echo "$!" >"$FW_PID_FILE"
   printf '%s\n' "1" >"$FW_MANAGED_FILE"
 fi
 
@@ -1036,10 +1086,8 @@ cat >"$INDEX_FILE" <<EOF
       <a href="/orchestrator.log">/orchestrator.log</a>
       <a href="/prometheus.yml">/prometheus.yml</a>
       <a href="/integrations/README.md">/integrations/README.md</a>
-      <a href="/integrations/openwebui/zeroclaw_orchestrator_pipe.py">openwebui pipe</a>
-      <a href="/integrations/n8n/zeroclaw_orchestrator_workflow.json">n8n workflow</a>
-      <a href="/integrations/n8n/zeroclaw_pr_autotriage_workflow.json">n8n pr-autotriage workflow</a>
-      <a href="/integrations/docker/docker-compose.openwebui-n8n.yml">compose openwebui+n8n</a>
+      <a href="/integrations/zeroclaw/">zeroclaw runbook</a>
+      <a href="/integrations/n8n/README.md">n8n runbook</a>
       <a href="/integrations/langgraph/README.md">langgraph runbook</a>
       <a href="/integrations/autogen/README.md">autogen runbook</a>
       <a href="http://$GATEWAY_HOST:$GATEWAY_PORT/health">/health</a>
@@ -1162,7 +1210,6 @@ cat >"$INDEX_FILE" <<EOF
         <div class="body">
           <pre id="integrationsStatus">(integrations status)</pre>
           <div class="btn-row">
-            <button onclick="window.open('http://127.0.0.1:3001','_blank')">Open WebUI</button>
             <button onclick="window.open('http://127.0.0.1:5678','_blank')">Open n8n</button>
           </div>
         </div>
@@ -1194,10 +1241,9 @@ cat >"$INDEX_FILE" <<EOF
         <div class="body">
           <p class="hint">Point d'entrée recommandé.</p>
           <pre id="hubQuickStart">1) tools/ai/zeroclaw_stack_up.sh
-2) tools/ai/zeroclaw_integrations_up.sh
+2) Integrations served from /integrations/ (synced automatically from tools/ai/integrations/)
 3) Ouvrir http://127.0.0.1:8788/ (monitoring)
-4) Ouvrir http://127.0.0.1:3001/ (Open WebUI)
-5) Ouvrir http://127.0.0.1:5678/ (n8n)</pre>
+4) Ouvrir http://127.0.0.1:5678/ (n8n)</pre>
         </div>
       </section>
     </div>
@@ -2060,7 +2106,6 @@ cat >"$INDEX_FILE" <<EOF
           " paired=" + boolText(health.paired) +
           " prom_ok=" + boolText(health.prometheus_ok) +
           " prom_status=" + safeText(health.prometheus_status) +
-          " openwebui_ok=" + boolText(health.openwebui_ok) +
           " n8n_ok=" + boolText(health.n8n_ok) +
           "\nactive_alerts: " + safeText(alerts.active_count || 0) +
           "\nlast_convo: " + safeText(last.conversation || "(none)") +
@@ -2068,10 +2113,7 @@ cat >"$INDEX_FILE" <<EOF
         document.getElementById("opsStatus").textContent = ops;
 
         const integrationsText =
-          "openwebui_url=" + safeText(integrations.openwebui_url || "http://127.0.0.1:3001") +
-          " status=" + safeText(health.openwebui_status) +
-          " ok=" + boolText(health.openwebui_ok) +
-          "\nn8n_url=" + safeText(integrations.n8n_url || "http://127.0.0.1:5678") +
+          "n8n_url=" + safeText(integrations.n8n_url || "http://127.0.0.1:5678") +
           " status=" + safeText(health.n8n_status) +
           " ok=" + boolText(health.n8n_ok);
         document.getElementById("integrationsStatus").textContent = integrationsText;
@@ -2256,9 +2298,9 @@ if [[ -x "$WATCHER_SCRIPT" ]]; then
 fi
 
 echo "Gateway: http://$GATEWAY_HOST:$GATEWAY_PORT/health"
-echo "Follow : http://127.0.0.1:$FOLLOW_PORT/"
+echo "Follow : http://$FOLLOW_HOST:$FOLLOW_PORT/"
 echo "Prom   : http://$PROM_HOST:$PROM_PORT/targets ($PROM_STATUS)"
-echo "RT 1m  : http://127.0.0.1:$FOLLOW_PORT/realtime_1min.log"
+echo "RT 1m  : http://$FOLLOW_HOST:$FOLLOW_PORT/realtime_1min.log"
 echo "Logs   : $GW_LOG"
 echo "Token  : $TOKEN_FILE"
 if [[ ! -s "$TOKEN_FILE" ]]; then

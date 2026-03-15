@@ -1,12 +1,12 @@
 # Easter Egg musique concrète
 
 _« Le hardware s’écoute, se manipule, se transforme : comme Bernard Parmegiani, chaque export est une métamorphose électronique. »_
-# Hardware quickstart (KiCad)
+# Hardware quickstart (KiCad 10)
 
 > "Chaque bloc hardware est une évolution, chaque bulk edit une adaptation, et chaque export une trace laissée pour les générations futures. (Adrian Tchaikovsky, Children of Time)"
 
 ## Prérequis
-- KiCad 9 installé (inclut `kicad-cli`)
+- KiCad 10 installé ou une image Docker KiCad 10 compatible (inclut `kicad-cli`)
 - Python 3.11+
 - (optionnel) venv
 

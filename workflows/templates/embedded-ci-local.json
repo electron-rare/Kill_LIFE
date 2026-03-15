@@ -1,0 +1,170 @@
+{
+  "id": "embedded-ci-local",
+  "title": "Embedded CI Local",
+  "category": "embedded",
+  "version": 1,
+  "status": "ready",
+  "description": "Build ESP32, test the native target, and collect evidence packs from the local Kill_LIFE stack.",
+  "tags": [
+    "firmware",
+    "evidence",
+    "local"
+  ],
+  "execution_modes": [
+    "local"
+  ],
+  "viewport": {
+    "width": 1500,
+    "height": 860
+  },
+  "nodes": [
+    {
+      "id": "start",
+      "type": "note",
+      "label": "Start",
+      "description": "Entry point for the embedded validation lane.",
+      "x": 80,
+      "y": 250,
+      "runner": {
+        "kind": "none"
+      },
+      "config": {}
+    },
+    {
+      "id": "compliance",
+      "type": "local-action",
+      "label": "Compliance Validate",
+      "description": "Run the strict compliance profile before firmware work.",
+      "x": 300,
+      "y": 250,
+      "runner": {
+        "kind": "local-action",
+        "action": "compliance.validate"
+      },
+      "config": {}
+    },
+    {
+      "id": "build-esp",
+      "type": "local-action",
+      "label": "Build ESP32",
+      "description": "Compile the ESP32S3 firmware target.",
+      "x": 560,
+      "y": 150,
+      "runner": {
+        "kind": "local-action",
+        "action": "firmware.build.esp"
+      },
+      "config": {}
+    },
+    {
+      "id": "test-linux",
+      "type": "local-action",
+      "label": "Test Native",
+      "description": "Run the native PlatformIO test suite.",
+      "x": 560,
+      "y": 360,
+      "runner": {
+        "kind": "local-action",
+        "action": "firmware.test.linux"
+      },
+      "config": {}
+    },
+    {
+      "id": "collect-esp",
+      "type": "local-action",
+      "label": "Collect ESP Evidence",
+      "description": "Assemble the evidence pack for the build target.",
+      "x": 860,
+      "y": 150,
+      "runner": {
+        "kind": "local-action",
+        "action": "evidence.collect"
+      },
+      "config": {
+        "target": "esp"
+      }
+    },
+    {
+      "id": "verify-esp",
+      "type": "local-action",
+      "label": "Verify ESP Evidence",
+      "description": "Confirm that the ESP evidence pack exists and is valid.",
+      "x": 1160,
+      "y": 150,
+      "runner": {
+        "kind": "local-action",
+        "action": "evidence.verify"
+      },
+      "config": {
+        "target": "esp"
+      }
+    },
+    {
+      "id": "collect-linux",
+      "type": "local-action",
+      "label": "Collect Native Evidence",
+      "description": "Assemble the evidence pack for the native test lane.",
+      "x": 860,
+      "y": 360,
+      "runner": {
+        "kind": "local-action",
+        "action": "evidence.collect"
+      },
+      "config": {
+        "target": "linux"
+      }
+    },
+    {
+      "id": "verify-linux",
+      "type": "local-action",
+      "label": "Verify Native Evidence",
+      "description": "Confirm that the native evidence pack exists and is valid.",
+      "x": 1160,
+      "y": 360,
+      "runner": {
+        "kind": "local-action",
+        "action": "evidence.verify"
+      },
+      "config": {
+        "target": "linux"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "start-compliance",
+      "source": "start",
+      "target": "compliance"
+    },
+    {
+      "id": "compliance-build-esp",
+      "source": "compliance",
+      "target": "build-esp"
+    },
+    {
+      "id": "compliance-test-linux",
+      "source": "compliance",
+      "target": "test-linux"
+    },
+    {
+      "id": "build-esp-collect-esp",
+      "source": "build-esp",
+      "target": "collect-esp"
+    },
+    {
+      "id": "collect-esp-verify-esp",
+      "source": "collect-esp",
+      "target": "verify-esp"
+    },
+    {
+      "id": "test-linux-collect-linux",
+      "source": "test-linux",
+      "target": "collect-linux"
+    },
+    {
+      "id": "collect-linux-verify-linux",
+      "source": "collect-linux",
+      "target": "verify-linux"
+    }
+  ]
+}

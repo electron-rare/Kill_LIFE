@@ -41,8 +41,9 @@ if [ -f tools/hw/schops/requirements.txt ]; then
   pip install -r tools/hw/schops/requirements.txt
 fi
 pip install kicad-sch-api
-# NOTE : kicad-sch-mcp n'existe pas sur PyPI. Utilisez kicad-sch-api pour manipuler les schémas KiCad.
-# Pour des fonctionnalités avancées, voir https://github.com/circuit-synth/mcp-kicad-sch-api
+# MCP optionnel pour KiCad 10 :
+#   pip install kicad-sch-api
+# Le binaire MCP fourni est `kicad-sch-mcp`.
 
 # 7. Audit sécurité
 pip-audit || echo "Avertissement : pip-audit a détecté des vulnérabilités."

@@ -1,22 +1,66 @@
 # Rapport de couverture des tests Python
 coverage:
-	coverage run -m pytest
-	coverage html -d docs/coverage_report
-.PHONY: fw hw s0 docs
+	python3 -m coverage run -m pytest
+	python3 -m coverage html -d docs/coverage_report
+
+CAD_STACK ?= ./tools/hw/cad_stack.sh
+CAD_ARGS ?=
+
+.PHONY: coverage fw hw s0 lots-status lots-run docs compliance cad-up cad-down cad-ps cad-build cad-doctor cad-mcp cad-kicad cad-freecad cad-openscad cad-pio
 
 s0:
-	python tools/cockpit/cockpit.py gate_s0
+	python3 tools/cockpit/cockpit.py gate_s0
 
 fw:
-	python tools/cockpit/cockpit.py fw
+	python3 tools/cockpit/cockpit.py fw
+
+lots-status:
+	python3 tools/cockpit/cockpit.py lots-status
+
+lots-run:
+	python3 tools/cockpit/cockpit.py lots-run
 
 hw:
 	@echo "usage: make hw SCHEM=hardware/kicad/<p>/<p>.kicad_sch"
 	bash tools/hw/hw_check.sh $(SCHEM)
 
 docs:
-	python -m pip install -U mkdocs
+	python3 -m pip install -U mkdocs
 	mkdocs build --strict
 
 compliance:
-	python tools/compliance/validate.py --strict
+	python3 tools/compliance/validate.py --strict
+
+cad-up:
+	$(CAD_STACK) up $(CAD_ARGS)
+
+cad-down:
+	$(CAD_STACK) down
+
+cad-ps:
+	$(CAD_STACK) ps
+
+cad-build:
+	$(CAD_STACK) build $(CAD_ARGS)
+
+cad-doctor:
+	$(CAD_STACK) doctor
+
+cad-mcp:
+	$(CAD_STACK) mcp $(CAD_ARGS)
+
+cad-kicad:
+	@if [ -z "$(CAD_ARGS)" ]; then echo "usage: make cad-kicad CAD_ARGS='version'"; exit 1; fi
+	$(CAD_STACK) kicad-cli $(CAD_ARGS)
+
+cad-freecad:
+	@if [ -z "$(CAD_ARGS)" ]; then echo "usage: make cad-freecad CAD_ARGS='-c \"import FreeCAD; print(FreeCAD.Version())\"'"; exit 1; fi
+	$(CAD_STACK) freecad-cmd $(CAD_ARGS)
+
+cad-openscad:
+	@if [ -z "$(CAD_ARGS)" ]; then echo "usage: make cad-openscad CAD_ARGS='--version'"; exit 1; fi
+	$(CAD_STACK) openscad $(CAD_ARGS)
+
+cad-pio:
+	@if [ -z "$(CAD_ARGS)" ]; then echo "usage: make cad-pio CAD_ARGS='system info'"; exit 1; fi
+	$(CAD_STACK) pio $(CAD_ARGS)

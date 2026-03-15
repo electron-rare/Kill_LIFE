@@ -40,7 +40,7 @@ Ce workflow doit compiler, tester et valider le firmware sur toutes les cibles (
 
 ## Plan de vérification
 - Exécution du workflow sur PR/push
-- Validation via python tools/validate_specs.py
+- Validation via `python3 tools/validate_specs.py --json`
 - Contrôle manuel et badge de couverture
 
 ## Glossaire

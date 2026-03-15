@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ZeroClaw Integrations</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d1117;
+      --panel: #161b22;
+      --text: #e6edf3;
+      --muted: #9da7b3;
+      --line: #2d333b;
+      --accent: #f0b44c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "SF Pro Text", "Segoe UI", Arial, sans-serif;
+      background: radial-gradient(circle at top, #1b2230 0%, var(--bg) 56%);
+      color: var(--text);
+    }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 32px 18px 48px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 32px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    p {
+      line-height: 1.6;
+      color: var(--muted);
+    }
+    .grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      margin-top: 24px;
+    }
+    a.card {
+      display: block;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(22, 27, 34, 0.92);
+      color: inherit;
+      text-decoration: none;
+    }
+    a.card:hover {
+      border-color: rgba(240, 180, 76, 0.55);
+    }
+    .label {
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    .title {
+      margin-top: 8px;
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .small {
+      margin-top: 10px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>ZeroClaw Integrations</h1>
+    <p>
+      Runbooks served by the ZeroClaw follow UI and reused by the Mascarade
+      operator proxy. ZeroClaw stays the local operator stack; the integrations
+      below stay in scope without becoming part of the stable critical path.
+    </p>
+    <div class="grid">
+      <a class="card" href="/integrations/zeroclaw/">
+        <div class="label">Operator runtime</div>
+        <div class="title">ZeroClaw</div>
+        <div class="small">Runbook surface for the live runtime on `zeroclaw.saillant.cc`.</div>
+      </a>
+      <a class="card" href="/integrations/langgraph/">
+        <div class="label">Orchestration overlay</div>
+        <div class="title">LangGraph</div>
+        <div class="small">Optional graph-shaped orchestration around ZeroClaw.</div>
+      </a>
+      <a class="card" href="/integrations/n8n/">
+        <div class="label">Workflow bridge</div>
+        <div class="title">n8n</div>
+        <div class="small">Low-code handoff and automation around ZeroClaw webhooks.</div>
+      </a>
+      <a class="card" href="/integrations/autogen/">
+        <div class="label">Multi-agent lab</div>
+        <div class="title">AutoGen</div>
+        <div class="small">Optional experimentation outside the stable runtime path.</div>
+      </a>
+    </div>
+  </main>
+</body>
+</html>

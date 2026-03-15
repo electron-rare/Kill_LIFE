@@ -7,7 +7,7 @@ set -euo pipefail
 #
 # Env:
 #   KICAD_CLI_BIN: override local path
-#   KICAD_DOCKER_IMAGE: override docker image (default: kicad/kicad:9.0.7-full)
+#   KICAD_DOCKER_IMAGE: override docker image (default: kicad/kicad:nightly)
 
 BIN="${KICAD_CLI_BIN:-}"
 if [[ -z "$BIN" ]]; then
@@ -28,7 +28,7 @@ if ! command -v docker >/dev/null 2>&1; then
   exit 127
 fi
 
-IMG="${KICAD_DOCKER_IMAGE:-kicad/kicad:9.0.7-full}"
+IMG="${KICAD_DOCKER_IMAGE:-kicad/kicad:nightly}"
 
 # run as current user to avoid root-owned artifacts
 UIDGID="$(id -u):$(id -g)"

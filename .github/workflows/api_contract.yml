@@ -18,7 +18,7 @@ jobs:
         run: |
           mkdir -p docs
           if [ -f tools/api/run_contract_tests.py ]; then
-            python tools/api/run_contract_tests.py > docs/api-contract-report.json
+            python3 tools/api/run_contract_tests.py > docs/api-contract-report.json
           else
             echo '{"status":"skipped","reason":"missing tools/api/run_contract_tests.py"}' > docs/api-contract-report.json
           fi

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Runbook operateur
+    url: https://github.com/electron-rare/Kill_LIFE/blob/main/RUNBOOK.md
+    about: Relire le flux de triage, les labels ai:* et les gates avant d'ouvrir une issue.
+  - name: Workflows metier
+    url: https://github.com/electron-rare/Kill_LIFE/blob/main/docs/workflows/README.md
+    about: Choisir le template le plus proche du lot a lancer.

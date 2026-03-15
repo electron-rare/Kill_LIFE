@@ -32,7 +32,7 @@ jobs:
 
       - name: Lint header contract
         run: |
-          python tools/repo_state/lint_header_contract.py
+          python3 tools/repo_state/lint_header_contract.py
 
       - name: Upload global repo-state artifacts
         uses: actions/upload-artifact@v4

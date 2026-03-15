@@ -1,10 +1,48 @@
 {
   "mcpServers": {
+    "kicad": {
+      "type": "local",
+      "command": "bash",
+      "args": ["tools/hw/run_kicad_mcp.sh"],
+      "tools": ["*"]
+    },
     "validate-specs": {
       "type": "local",
-      "command": "python3",
-      "args": ["tools/validate_specs.py"],
+      "command": "bash",
+      "args": ["tools/run_validate_specs_mcp.sh"],
       "tools": ["*"]
+    },
+    "knowledge-base": {
+      "type": "local",
+      "command": "bash",
+      "args": ["tools/run_knowledge_base_mcp.sh"],
+      "tools": ["*"]
+    },
+    "github-dispatch": {
+      "type": "local",
+      "command": "bash",
+      "args": ["tools/run_github_dispatch_mcp.sh"],
+      "tools": ["*"]
+    },
+    "freecad": {
+      "type": "local",
+      "command": "bash",
+      "args": ["tools/run_freecad_mcp.sh"],
+      "tools": ["*"]
+    },
+    "openscad": {
+      "type": "local",
+      "command": "bash",
+      "args": ["tools/run_openscad_mcp.sh"],
+      "tools": ["*"]
+    },
+    "huggingface": {
+      "type": "url",
+      "url": "https://huggingface.co/mcp",
+      "headers": {
+        "Authorization": "Bearer ${HUGGINGFACE_API_KEY}"
+      },
+      "note": "Use https://huggingface.co/mcp?login for OAuth browser login instead of token auth"
     }
   }
 }

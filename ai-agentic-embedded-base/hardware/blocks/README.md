@@ -1,4 +1,4 @@
-# Design Blocks (KiCad 9)
+# Design Blocks (KiCad 10)
 
 Créer une brique :
 - isoler un sous-schéma stable (ex: régulateur 3V3)

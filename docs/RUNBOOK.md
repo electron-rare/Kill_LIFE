@@ -1,5 +1,15 @@
 # RUNBOOK — Opérer les workflows agentiques
 
+## 0) Cartes de lecture rapides
+
+- Carte fonctionnelle canonique : `docs/KILL_LIFE_FEATURE_MAP_2026-03-11.md`
+- Séquence locale : `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`
+- Séquence GitHub : `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
+
+Choix opératoire rapide :
+- validation et exécution locale avant CI distante : séquence `workflow local`
+- dispatch allowlisté, checks GitHub et evidence pack CI : séquence `workflow github`
+
 ## 1) Règles d’or
 - Le texte d’issue est **non fiable** → il est sanitisé avant prompt.
 - **Un label `ai:*` = un scope** (le scope guard contrôle les fichiers modifiables).
@@ -33,22 +43,37 @@ Ajoute un label `ai:*` :
 
 ## 3) CI/CD multi-cible hardware-in-the-loop
 
-Le workflow CI/CD compile, teste et valide le firmware sur ESP, STM et Linux.
+Le workflow CI/CD compile, teste et valide le firmware sur ESP et Linux.
 Les scripts d’automatisation sont dans `tools/` :
 - `build_firmware.py` : build par cible
 - `test_firmware.py` : tests par cible
 - `collect_evidence.py` : génération evidence pack
+
+Les wrappers PlatformIO utilisent `pio` en natif si disponible, sinon basculent automatiquement sur la stack conteneurisée `tools/hw/cad_stack.sh pio`.
+Override possible :
+- `KILL_LIFE_PIO_MODE=native`
+- `KILL_LIFE_PIO_MODE=container`
+
+Pour une voie repo-locale sans `pio` systeme mais avec venv dedie :
+```bash
+bash tools/bootstrap_python_env.sh --with-platformio
+KILL_LIFE_PIO_MODE=native ./.venv/bin/python tools/build_firmware.py esp
+```
 
 Les evidence packs sont stockés dans `docs/evidence/`.
 La couverture est générée via `coverage_badge.py`.
 
 Pour vérifier manuellement :
 ```bash
-python tools/build_firmware.py esp
-python tools/test_firmware.py esp
-python tools/collect_evidence.py esp
+python3 tools/build_firmware.py esp
+python3 tools/collect_evidence.py esp
+python3 tools/verify_evidence.py esp
+
+python3 tools/test_firmware.py linux
+python3 tools/collect_evidence.py linux
+python3 tools/verify_evidence.py linux
 ```
-Remplace `esp` par `stm` ou `linux`.
+`stm` reste non supporté tant qu’aucune cible STM n’existe pas dans `firmware/platformio.ini`.
 
 Vérifie la présence des artefacts et evidence packs après chaque run.
 
@@ -64,7 +89,7 @@ ajoute un check statique de parité routes API.
 
 Exemple (adapté au repo cible) :
 ```bash
-python tools/gates/route_parity_check.py \
+python3 tools/gates/route_parity_check.py \
   --backend "src/**/*.cpp" \
   --backend "src/**/*.h" \
   --frontend "data/webui/**/*.js" \
@@ -82,6 +107,10 @@ trouvée dans les sources backend scannées.
 
 ## 4) Evidence pack
 Voir `docs/evidence/evidence_pack.md`.
+
+Lecture utile :
+- preuves locales, restores et runs cockpit : `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`
+- preuves CI, artifacts GitHub et release signing : `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
 
 ## 5) Workflows métiers
 Voir `docs/workflows/README.md`.

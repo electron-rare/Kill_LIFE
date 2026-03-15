@@ -4,7 +4,7 @@
 Orchestrer des modifications massives (KiCad, exports, snapshots, artefacts) de manière sûre, reproductible et reviewable.
 
 ## Labels recommandés
-- Issue : `type:hardware` + `risk:med` + `ai:plan`
+- Issue : `type:systems` + `scope:hardware` + `risk:med` + `ai:plan`
 - PR : `ai:impl` (ou `ai:plan` si c’est uniquement scripts/process)
 
 ## Étapes

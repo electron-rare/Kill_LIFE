@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+
+# shellcheck shell=bash
+
+kill_life_runtime_home_is_writable() {
+  local target_dir="$1"
+  local probe_dir="$target_dir"
+
+  while [ ! -e "$probe_dir" ]; do
+    probe_dir="$(dirname "$probe_dir")"
+    if [ "$probe_dir" = "/" ]; then
+      break
+    fi
+  done
+
+  [ -w "$probe_dir" ]
+}
+
+kill_life_runtime_home_init() {
+  local root_dir="$1"
+  local runtime_name="$2"
+  local base_dir="${3:-$root_dir/.runtime-home}"
+  local fallback_base_dir="${KILL_LIFE_RUNTIME_BASE_DIR:-$root_dir/.cad-home/runtime-home}"
+  local selected_base_dir="$base_dir"
+
+  if [ -z "${KILL_LIFE_RUNTIME_HOME:-}" ] && ! kill_life_runtime_home_is_writable "$base_dir"; then
+    selected_base_dir="$fallback_base_dir"
+    if ! kill_life_runtime_home_is_writable "$selected_base_dir"; then
+      selected_base_dir="${XDG_RUNTIME_DIR:-/tmp}/kill-life-runtime-home"
+    fi
+  fi
+
+  RUNTIME_HOME="${KILL_LIFE_RUNTIME_HOME:-$selected_base_dir/$runtime_name}"
+  XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$RUNTIME_HOME/.config}"
+  XDG_CACHE_HOME="${XDG_CACHE_HOME:-$RUNTIME_HOME/.cache}"
+  HOME="$RUNTIME_HOME"
+
+  export RUNTIME_HOME HOME XDG_CONFIG_HOME XDG_CACHE_HOME
+}
+
+kill_life_runtime_home_ensure() {
+  mkdir -p "$RUNTIME_HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
+}
+
+kill_life_abs_path() {
+  local input="$1"
+  (cd "$input" >/dev/null 2>&1 && pwd)
+}
+
+kill_life_resolve_mascarade_dir() {
+  local root_dir="$1"
+  shift || true
+  local -a required_paths=("$@")
+  local -a candidates=()
+  local candidate=""
+  local abs_candidate=""
+  local required=""
+  local ok=1
+
+  if [ -n "${MASCARADE_DIR:-}" ]; then
+    candidates+=("$MASCARADE_DIR")
+  fi
+
+  candidates+=(
+    "$root_dir/../mascarade"
+    "$root_dir/../mascarade-main"
+  )
+
+  for candidate in "${candidates[@]}"; do
+    [ -n "$candidate" ] || continue
+    abs_candidate="$(kill_life_abs_path "$candidate" || true)"
+    [ -n "$abs_candidate" ] || continue
+
+    ok=0
+    for required in "${required_paths[@]}"; do
+      if [ -n "$required" ] && [ ! -e "$abs_candidate/$required" ]; then
+        ok=1
+        break
+      fi
+    done
+
+    if [ "$ok" -eq 0 ]; then
+      printf '%s' "$abs_candidate"
+      return 0
+    fi
+  done
+
+  return 1
+}

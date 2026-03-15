@@ -2,9 +2,10 @@ name: Evidence Pack Validation
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -12,18 +13,42 @@ permissions:
 jobs:
   evidence_pack:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      KILL_LIFE_PIO_MODE: native
+      PLATFORMIO_CORE_DIR: ~/.platformio
     steps:
-      - uses: actions/checkout@v3
-      - name: Validate evidence pack
-        run: |
-          mkdir -p docs
-          if [ -f tools/evidence/validate_evidence_pack.py ]; then
-            python tools/evidence/validate_evidence_pack.py > docs/evidence-pack-report.json
-          else
-            echo '{"status":"skipped","reason":"missing tools/evidence/validate_evidence_pack.py"}' > docs/evidence-pack-report.json
-          fi
-      - name: Upload evidence pack report
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            tools/compliance/requirements.txt
+            tools/compliance/requirements-platformio.txt
+
+      - name: Cache PlatformIO core
+        uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: ${{ runner.os }}-platformio-${{ hashFiles('firmware/platformio.ini', 'tools/compliance/requirements-platformio.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-platformio-
+
+      - name: Bootstrap repo-local venv
+        run: bash tools/bootstrap_python_env.sh --with-platformio
+
+      - name: Generate evidence pack summary
+        run: ./.venv/bin/python tools/auto_check_ci_cd.py
+
+      - name: Upload evidence pack artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: evidence-pack
-          path: docs/evidence-pack-report.json
+          if-no-files-found: warn
+          path: |
+            docs/evidence/

@@ -1,4 +1,5 @@
 import importlib.util
+import sys
 from pathlib import Path
 import unittest
 
@@ -8,6 +9,7 @@ def load_schops_module():
     spec = importlib.util.spec_from_file_location("schops", schops_path)
     assert spec and spec.loader
     mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
     spec.loader.exec_module(mod)  # type: ignore
     return mod
 

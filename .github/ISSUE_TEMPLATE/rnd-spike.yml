@@ -1,0 +1,83 @@
+name: R&D - Spike time-boxe
+description: Protocole de mesure, prototype minimal, rapport et decision.
+title: "[spike] "
+labels:
+  - needs:triage
+  - type:spike
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Utilise ce template pour un spike time-boxe.
+
+        Triage attendu apres creation :
+        - ajouter `prio:*`, `risk:*` et `scope:*`
+        - choisir ensuite `ai:plan`, `ai:impl`, puis `ai:docs` pour la decision
+  - type: textarea
+    id: question
+    attributes:
+      label: Question a trancher
+      description: Quel apprentissage doit sortir de ce spike ?
+      placeholder: "Hypothese a tester, metrique cible, decision attendue."
+    validations:
+      required: true
+  - type: textarea
+    id: protocol
+    attributes:
+      label: Protocole et timebox
+      description: Methode de mesure, instrumentation, criteres d'arret et timebox.
+      placeholder: "Mesures, jeux de donnees, instrumentation, duree max..."
+    validations:
+      required: true
+  - type: textarea
+    id: exit_criteria
+    attributes:
+      label: Sortie attendue
+      placeholder: "Rapport, logs, recommandation industrialiser / re-spike / abandon..."
+    validations:
+      required: true
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Priorite souhaitee
+      options:
+        - p0
+        - p1
+        - p2
+        - p3
+    validations:
+      required: true
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risque estime
+      options:
+        - low
+        - med
+        - high
+    validations:
+      required: true
+  - type: checkboxes
+    id: scopes
+    attributes:
+      label: Scopes concernes
+      description: Coche les labels `scope:*` a ajouter au triage.
+      options:
+        - label: docs
+        - label: firmware
+        - label: hardware
+        - label: ci
+        - label: ux
+        - label: content
+  - type: dropdown
+    id: next_ai
+    attributes:
+      label: Etape d'automation la plus probable
+      options:
+        - ai:plan
+        - ai:impl
+        - ai:docs
+        - ai:qa
+        - ai:hold
+    validations:
+      required: true

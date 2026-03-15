@@ -3,7 +3,9 @@
 Tests automatisés pour les actions OpenClaw : labels et commentaires sanitisés.
 """
 import sys
-sys.path.insert(0, "../../tools/ai")
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools" / "ai"))
 from sanitize_issue import sanitize_text
 
 def test_label_addition():

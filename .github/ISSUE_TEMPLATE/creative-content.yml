@@ -1,0 +1,80 @@
+name: Creatif - Narration / Contenu
+description: Narration, scripts, assets et integration versionnee.
+title: "[creative] "
+labels:
+  - needs:triage
+  - type:creative
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Utilise ce template pour un lot narration, contenu ou assets.
+
+        Triage attendu apres creation :
+        - ajouter `prio:*`, `risk:*` et `scope:*`
+        - choisir ensuite `ai:spec`, `ai:plan`, `ai:impl`, `ai:docs` ou `ai:qa`
+  - type: textarea
+    id: narrative
+    attributes:
+      label: Intention creative
+      description: Quelle experience narrative ou contenu faut-il produire ?
+      placeholder: "Univers, ton, scenes, triggers, contenu audio/texte, contraintes de production..."
+    validations:
+      required: true
+  - type: textarea
+    id: assets
+    attributes:
+      label: Assets et formats
+      description: Quels assets doivent etre crees ou mis a jour, et sous quel format ?
+      placeholder: "Scripts, manifests, mp3, langues, checksums, placeholders..."
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: Livrables attendus
+      placeholder: "Bible, graph de scenes, assets, guide d'integration, checks..."
+    validations:
+      required: true
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Priorite souhaitee
+      options:
+        - p0
+        - p1
+        - p2
+        - p3
+    validations:
+      required: true
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risque estime
+      options:
+        - low
+        - med
+        - high
+    validations:
+      required: true
+  - type: checkboxes
+    id: scopes
+    attributes:
+      label: Scopes concernes
+      description: Coche les labels `scope:*` a ajouter au triage.
+      options:
+        - label: content
+        - label: docs
+        - label: ux
+        - label: firmware
+  - type: dropdown
+    id: next_ai
+    attributes:
+      label: Etape d'automation la plus probable
+      options:
+        - ai:spec
+        - ai:plan
+        - ai:impl
+        - ai:docs
+        - ai:qa
+        - ai:hold
+    validations:
+      required: true

@@ -13,7 +13,9 @@ load_local_env() {
 
 load_local_env
 
-ART_DIR="${ZEROCLAW_ART_DIR:-/Users/cils/Documents/Lelectron_rare/Kill_LIFE/artifacts/zeroclaw}"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="${ZEROCLAW_ROOT_DIR:-$(cd -- "$SCRIPT_DIR/../.." && pwd)}"
+ART_DIR="${ZEROCLAW_ART_DIR:-$ROOT_DIR/artifacts/zeroclaw}"
 HOST="${ZEROCLAW_GATEWAY_HOST:-127.0.0.1}"
 PORT="${ZEROCLAW_GATEWAY_PORT:-3000}"
 TOKEN_FILE="$ART_DIR/pair_token.txt"

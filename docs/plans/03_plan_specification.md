@@ -44,7 +44,7 @@ Checklist :
 
 Exemple :
 ```bash
-python tools/validate_specs.py || true
+python3 tools/validate_specs.py || true
 ```
 
 ## Gates

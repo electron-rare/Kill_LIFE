@@ -4,7 +4,7 @@
 Goals:
   - deterministic exports via kicad-cli (ERC / netlist / BOM)
   - safe bulk edits via kicad-sch-api (fields / footprints / net labels)
-  - Design Blocks (KiCad 9) helpers
+  - Design Blocks (KiCad 10) helpers
 
 This tool is intentionally conservative:
   - it always writes an artifacts report
@@ -515,7 +515,7 @@ def cmd_snapshot(args) -> int:
 
 
 # ---------------------------
-# Design Blocks (KiCad 9)
+# Design Blocks (KiCad 10)
 # ---------------------------
 
 
@@ -646,7 +646,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--name", help="output filename (default snapshot.json)")
     p.set_defaults(fn=cmd_snapshot)
 
-    p = sub.add_parser("block-make", help="Create a KiCad 9 design block folder")
+    p = sub.add_parser("block-make", help="Create a KiCad 10 design block folder")
     p.add_argument("--name", required=True)
     p.add_argument("--from-sheet", required=True, help=".kicad_sch file to package as a block")
     p.add_argument("--lib", required=True, help="Design blocks library folder (usually *.kicad_blocks)")

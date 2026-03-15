@@ -9,7 +9,11 @@
 from pathlib import Path
 import argparse
 import glob
-import os
+import sys
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from tools.compliance.common import (
     repo_path, load_active_profile_name, load_profile, load_catalog, load_yaml

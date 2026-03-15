@@ -1,0 +1,221 @@
+# Local Change Bundles — 2026-03-08
+
+But: figer l'etat reel de `Kill_LIFE` apres fermeture locale et publication de
+la vague `MCP/agentics`, puis suivre le lot local `zeroclaw-operator-runtime`
+sans rouvrir le backlog MCP canonique.
+
+## Etat courant
+
+Etat reel:
+
+- le runtime MCP canonique reste `ready`
+- les validations live `knowledge-base`, `github-dispatch` et `nexar_api`
+  ont deja ete rejouees sur la machine de reference
+- le lot `zeroclaw-operator-runtime` est implemente, verifie et publie
+- un petit lot `mac-local-mcp` peut toujours vivre seul sans rouvrir le runtime
+  MCP canonique
+- `.mascarade/` reste genere localement mais est maintenant ignore explicitement
+  par le repo
+
+Le helper de revue associe reste:
+
+```bash
+bash tools/review_local_change_bundle.sh <bundle> [status|diff|paths]
+```
+
+Checks canoniques rejoues avec succes:
+
+```bash
+cd /home/clems/Kill_LIFE && bash tools/test_python.sh --suite stable
+cd /home/clems/Kill_LIFE && python3 tools/mcp_runtime_status.py --json
+cd /home/clems/Kill_LIFE && python3 tools/knowledge_base_mcp_smoke.py --json
+cd /home/clems/Kill_LIFE && python3 tools/github_dispatch_mcp_smoke.py --json --live
+cd /home/clems/Kill_LIFE && python3 tools/nexar_mcp_smoke.py --json --live
+```
+
+Resultat courant:
+
+- `mcp_runtime_status.py --json` => `status=ready`, `blockers=[]`
+- `knowledge-base` => `ready`, `live_validation=passed`
+- `github-dispatch` => `ready`, `live_validation=passed`
+- `nexar_api` => chemin live valide, `demo_mode=false`, limite externe de quota
+
+## Lot logique publie
+
+### `zeroclaw-operator-runtime`
+
+Objet:
+
+- rendre les launchers `ZeroClaw` portables hors chemins Mac hardcodes
+- documenter `ZeroClaw` comme runtime operateur on-demand
+- versionner les assets `tools/ai/integrations/` servis par le proxy operateur
+- garder `LangGraph`, `AutoGen` et `n8n` comme overlays/runbooks, pas comme
+  services coeur
+
+Fichiers:
+
+- `README.md`
+- `docs/AGENTIC_LANDSCAPE.md`
+- `docs/LOCAL_CHANGE_BUNDLES_2026-03-08.md`
+- `tools/ai/integrations/README.md`
+- `tools/ai/integrations/index.html`
+- `tools/ai/integrations/autogen/README.md`
+- `tools/ai/integrations/autogen/index.html`
+- `tools/ai/integrations/langgraph/README.md`
+- `tools/ai/integrations/langgraph/index.html`
+- `tools/ai/integrations/n8n/README.md`
+- `tools/ai/integrations/n8n/index.html`
+- `tools/ai/integrations/zeroclaw/README.md`
+- `tools/ai/integrations/zeroclaw/index.html`
+- `tools/ai/zeroclaw_dual_bootstrap.sh`
+- `tools/ai/zeroclaw_dual_chat.sh`
+- `tools/ai/zeroclaw_hw_firmware_loop.sh`
+- `tools/ai/zeroclaw_stack_down.sh`
+- `tools/ai/zeroclaw_stack_up.sh`
+- `tools/ai/zeroclaw_watch_1min.sh`
+- `tools/ai/zeroclaw_webhook_send.sh`
+
+Checks canoniques de fermeture:
+
+```bash
+cd /home/clems/Kill_LIFE && zeroclaw --version
+cd /home/clems/Kill_LIFE && bash -n tools/ai/zeroclaw_dual_bootstrap.sh tools/ai/zeroclaw_dual_chat.sh tools/ai/zeroclaw_hw_firmware_loop.sh tools/ai/zeroclaw_stack_down.sh tools/ai/zeroclaw_stack_up.sh tools/ai/zeroclaw_watch_1min.sh tools/ai/zeroclaw_webhook_send.sh
+cd /home/clems/Kill_LIFE && bash tools/ai/zeroclaw_stack_up.sh
+cd /home/clems/Kill_LIFE && bash tools/ai/zeroclaw_stack_down.sh
+```
+
+Resultat local:
+
+- `zeroclaw --version` -> `0.1.7`
+- `zeroclaw_stack_up.sh --help` et `zeroclaw_stack_down.sh --help` n'ont plus
+  d'effet de bord sur le runtime
+- le demarrage on-demand remonte bien `gateway`, `follow UI` et `Prometheus`
+- le runtime s'arrete proprement sans effacer les artefacts
+- `tools/ai/integrations/` devient la source de verite des runbooks servis par
+  le proxy operateur
+
+## Lots logiques deja figes
+
+Les lots ci-dessous restent utiles comme cartographie historique si une
+publication doit etre reconstruite ailleurs, mais ils ne correspondent plus a
+un delta ouvert dans ce worktree.
+
+### Lot 1 — `mcp-runtime`
+
+Objet:
+
+- remplacer les anciennes surfaces `notion` par `knowledge-base`
+- figer le `runtime home` local et le statut MCP courant
+- aligner GitHub dispatch et la doc MCP sur le contrat reel
+
+Fichiers:
+
+- `README.md`
+- `ai-agentic-embedded-base/specs/README.md`
+- `ai-agentic-embedded-base/specs/knowledge_base_mcp_spec.md`
+- `ai-agentic-embedded-base/specs/mcp_tasks.md`
+- `ai-agentic-embedded-base/specs/zeroclaw_dual_hw_todo.md`
+- `docs/LOCAL_CHANGE_BUNDLES_2026-03-08.md`
+- `docs/MCP_ECOSYSTEM_MATRIX.md`
+- `docs/MCP_SETUP.md`
+- `docs/MCP_SUPPORT_MATRIX.md`
+- `docs/RUNTIME_HOME.md`
+- `docs/plans/15_plan_mcp_runtime_alignment.md`
+- `docs/plans/README.md`
+- `mcp.json`
+- `specs/README.md`
+- `specs/knowledge_base_mcp_spec.md`
+- `specs/mcp_tasks.md`
+- `test/test_knowledge_base_mcp.py`
+- `tools/github_dispatch_mcp_smoke.py`
+- `tools/knowledge_base_mcp.py`
+- `tools/knowledge_base_mcp_smoke.py`
+- `tools/lib/runtime_home.sh`
+- `tools/mcp_runtime_status.py`
+- `tools/mcp_smoke_common.py`
+- `tools/review_local_change_bundle.sh`
+- `tools/run_github_dispatch_mcp.sh`
+- `tools/run_knowledge_base_mcp.sh`
+
+### Lot 2 — `cad-mcp`
+
+Objet:
+
+- pile CAD/MCP locale (`FreeCAD`, `OpenSCAD`, compose CAD, runtime status)
+- specs, plans et docs operateur associes
+- smokes et launchers dedies a cette pile
+
+Fichiers:
+
+- `Makefile`
+- `ai-agentic-embedded-base/specs/cad_modeling_tasks.md`
+- `ai-agentic-embedded-base/specs/mcp_agentics_target_backlog.md`
+- `deploy/cad/README.md`
+- `deploy/cad/Dockerfile.openscad-headless`
+- `deploy/cad/docker-compose.yml`
+- `docs/plans/16_plan_cad_modeling_stack.md`
+- `docs/plans/17_plan_target_architecture_mcp_agentics_2028.md`
+- `specs/cad_modeling_tasks.md`
+- `specs/mcp_agentics_target_backlog.md`
+- `test/test_freecad_mcp.py`
+- `test/test_openscad_mcp.py`
+- `tools/cad_runtime.py`
+- `tools/freecad_mcp.py`
+- `tools/freecad_mcp_smoke.py`
+- `tools/hw/cad_stack.sh`
+- `tools/hw/freecad_smoke.py`
+- `tools/hw/openscad_smoke.py`
+- `tools/mcp_telemetry.py`
+- `tools/openscad_mcp.py`
+- `tools/openscad_mcp_smoke.py`
+- `tools/run_freecad_mcp.sh`
+- `tools/run_openscad_mcp.sh`
+
+### Lot 3 — `python-local`
+
+Objet:
+
+- garder un chemin de test repo-local stable et publiable
+- maintenir la commande Python minimale supportee dans le delta courant
+
+Fichiers:
+
+- `tools/test_python.sh`
+
+### Lot 4 — `mac-local-mcp`
+
+Objet:
+
+- donner un chemin reproductible de bootstrap MCP sur un Mac operateur
+- ajouter `Playwright MCP` au bootstrap local sans changer le runtime MCP canonique
+
+Fichiers:
+
+- `docs/MCP_SETUP.md`
+- `tools/bootstrap_mac_mcp.sh`
+
+## Exclusion explicite
+
+Ne pas versionner le runtime local genere:
+
+- `.mascarade/`
+- `.mascarade/mcp/github-dispatch/*.json`
+
+Ces fichiers servent d'evidence locale runtime, pas de source de verite repo.
+
+## Ordre recommande si reconstruction de publication
+
+1. publier `mcp-runtime`
+2. publier `cad-mcp`
+3. publier `python-local`
+
+Ce decoupage evite de melanger:
+
+- la migration `knowledge-base` et la hygiene runtime MCP
+- la pile CAD/MCP et ses smokes associes
+- le contrat Python repo-local minimal
+
+## Regle
+
+Ne pas rouvrir un chantier `Kill_LIFE` repo-suivi tant qu'un besoin reel ne
+requalifie pas un sujet externe ou optionnel.

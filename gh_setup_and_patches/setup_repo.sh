@@ -28,6 +28,7 @@ BRANCH="${BRANCH:-main}"
 ENABLE_DISCUSSIONS="${ENABLE_DISCUSSIONS:-0}"
 REQUIRE_BUILD_CHECKS="${REQUIRE_BUILD_CHECKS:-1}"
 DRY_RUN="${DRY_RUN:-0}"
+REQUIRED_CONTEXTS_JSON="${REQUIRED_CONTEXTS_JSON:-}"
 
 if [[ -z "${REPO_FULL}" ]]; then
   echo "Usage: $0 <owner/repo>" >&2
@@ -37,11 +38,32 @@ fi
 OWNER="${REPO_FULL%/*}"
 REPO="${REPO_FULL#*/}"
 
-run() {
+shell_join() {
+  local quoted=()
+  local arg
+  for arg in "$@"; do
+    quoted+=("$(printf '%q' "$arg")")
+  done
+  printf '%s' "${quoted[*]}"
+}
+
+run_cmd() {
   if [[ "${DRY_RUN}" == "1" ]]; then
-    echo "[dry-run] $*"
+    printf '[dry-run] '
+    shell_join "$@"
+    printf '\n'
   else
-    eval "$@"
+    "$@"
+  fi
+}
+
+run_cmd_quiet() {
+  if [[ "${DRY_RUN}" == "1" ]]; then
+    printf '[dry-run] '
+    shell_join "$@"
+    printf '\n'
+  else
+    "$@" >/dev/null
   fi
 }
 
@@ -52,7 +74,7 @@ need_gh() {
 
 create_label() {
   local name="$1"; local color="$2"; local desc="$3"
-  run "gh label create \"${name}\" -R \"${REPO_FULL}\" --color \"${color}\" --description \"${desc}\" --force >/dev/null"
+  run_cmd_quiet gh label create "${name}" -R "${REPO_FULL}" --color "${color}" --description "${desc}" --force
 }
 
 setup_labels() {
@@ -120,14 +142,41 @@ enable_discussions() {
       repository(owner:$owner, name:$name) { id hasDiscussionsEnabled }
     }' --jq '.data.repository.id')"
 
-  run "gh api graphql -f repositoryId=\"${repo_id}\" -F enabled=true -f query='\
-    mutation($repositoryId:ID!, $enabled:Boolean!) {\
-      updateRepository(input:{repositoryId:$repositoryId, hasDiscussionsEnabled:$enabled}) {\
-        repository { name hasDiscussionsEnabled }\
-      }\
-    }' >/dev/null"
+  local mutation='mutation($repositoryId:ID!, $enabled:Boolean!) {
+      updateRepository(input:{repositoryId:$repositoryId, hasDiscussionsEnabled:$enabled}) {
+        repository { name hasDiscussionsEnabled }
+      }
+    }'
+  run_cmd_quiet gh api graphql -f repositoryId="${repo_id}" -F enabled=true -f query="${mutation}"
 
   echo "==> Discussions enabled."
+}
+
+load_required_contexts() {
+  if [[ -n "${REQUIRED_CONTEXTS_JSON}" ]]; then
+    python3 - "${REQUIRED_CONTEXTS_JSON}" <<'PY'
+import json
+import sys
+
+payload = json.loads(sys.argv[1])
+if not isinstance(payload, list) or not all(isinstance(item, str) and item.strip() for item in payload):
+    raise SystemExit("REQUIRED_CONTEXTS_JSON must be a JSON array of non-empty strings")
+for item in payload:
+    print(item)
+PY
+    return 0
+  fi
+
+  printf '%s\n' \
+    "Badges & Coverage / badges" \
+    "Secret Scanning / secret_scan" \
+    "Repo State / repo-state"
+
+  if [[ "${REQUIRE_BUILD_CHECKS}" == "1" ]]; then
+    printf '%s\n' \
+      "API Contract & Integration Testing / api_contract" \
+      "Evidence Pack Validation / evidence_pack"
+  fi
 }
 
 setup_branch_protection() {
@@ -136,23 +185,14 @@ setup_branch_protection() {
   # Required check contexts (GitHub Actions job names):
   # These MUST match the check names you see in PR -> Checks.
   # If you change workflow/job names, update this list.
-  local -a contexts
-  contexts+=("PR Label Enforcement / label-enforcement")
-  contexts+=("Scope Guard / guard")
-
-  if [[ "${REQUIRE_BUILD_CHECKS}" == "1" ]]; then
-    contexts+=("Firmware CI / pio")
-    contexts+=("Hardware CI (KiCad) / hw")
-    contexts+=("Compliance Gate / validate")
-  fi
+  local -a contexts=()
+  while IFS= read -r line; do
+    contexts+=("${line}")
+  done < <(load_required_contexts)
 
   # JSON array for contexts
   local contexts_json
-  contexts_json="$(printf '%s\n' "${contexts[@]}" | python3 - <<'PY'
-import sys, json
-print(json.dumps([l.rstrip('\n') for l in sys.stdin if l.strip()]))
-PY
-  )"
+  contexts_json="$(printf '%s\n' "${contexts[@]}" | python3 -c 'import json, sys; print(json.dumps([line.rstrip("\n") for line in sys.stdin if line.strip()]))')"
 
   local body
   body="$(cat <<JSON
@@ -194,7 +234,9 @@ JSON
 }
 
 main() {
-  need_gh
+  if [[ "${DRY_RUN}" != "1" ]]; then
+    need_gh
+  fi
   setup_labels
   enable_discussions
   setup_branch_protection

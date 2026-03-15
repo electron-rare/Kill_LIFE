@@ -1,24 +1,36 @@
 # Specs (Spec-driven)
 
-Flux conseillé (itératif) :
-1) `00_intake.md` : idée brute + contexte
+Flux conseille (iteratif) :
+1) `00_intake.md` : idee brute + contexte
 2) `01_spec.md` : spec claire + AC
 3) `02_arch.md` : architecture + ADR
-4) `03_plan.md` : plan découpé, risques, validations
-5) `04_tasks.md` : backlog exécutable (issues / PRs)
-6) Implémentation (firmware/hardware) + tests + doc
+4) `03_plan.md` : plan decoupe, risques, validations
+5) `04_tasks.md` : backlog executable (issues / PRs)
+6) Implementation (firmware/hardware) + tests + doc
 
-Le fichier `constraints.yaml` est la **source de vérité** des contraintes non-fonctionnelles et règles repo.
+Le fichier `constraints.yaml` est la **source de verite** des contraintes non-fonctionnelles et regles repo.
 
-Specs complémentaires:
+Specs complementaires:
 
-- `zeroclaw_dual_hw_orchestration_spec.md`: architecture d'orchestration ZeroClaw multi-repo + double matériel.
-- `zeroclaw_dual_hw_todo.md`: backlog opérationnel court terme pour autonomie contrôlée.
+- `github_mcp_conversion_spec.md`: prep de conversion de `workflow_dispatch` vers une surface MCP future.
+- `cad_modeling_tasks.md`: backlog canonique `FreeCAD/OpenSCAD` pour la stack CAD locale hors MCP.
+- `kicad_mcp_scope_spec.md`: perimetre fonctionnel, hors scope et criteres d'acceptation du MCP KiCad supporte.
+- `mcp_agentics_target_backlog.md`: backlog cible 2026 -> 2028 pour `MCP`, `agentics`, `A2A`, avec ownership par repo.
+- `mcp_tasks.md`: backlog canonique des actions MCP locales, partage entre runtime, doc et gouvernance.
+- `knowledge_base_mcp_spec.md`: spec canonique du bridge et du MCP knowledge base (`memos` / `docmost`).
+- `zeroclaw_dual_hw_orchestration_spec.md`: architecture d'orchestration ZeroClaw multi-repo + double materiel.
+- `zeroclaw_dual_hw_todo.md`: backlog operationnel court terme pour autonomie controlee.
 
 Synchronisation `spec_kit`:
 
-- `specs/` (racine repo) et `ai-agentic-embedded-base/specs/` doivent rester alignés.
-- Après toute mise à jour, synchroniser avec:
-  - `rsync -a --delete specs/ ai-agentic-embedded-base/specs/`
-- Vérifier l'absence d'écart avec:
-  - `diff -ru ai-agentic-embedded-base/specs specs`
+- `specs/` (racine repo) est la source de verite canonique.
+- `ai-agentic-embedded-base/specs/` est un miroir exporte.
+- Apres toute mise a jour canonique, synchroniser le miroir avec:
+  - `bash tools/specs/sync_spec_mirror.sh all --yes`
+- Verifier l'absence d'ecart avec:
+  - `bash tools/specs/sync_spec_mirror.sh check`
+- Pour enchaîner automatiquement les lots locaux utiles:
+  - `bash tools/cockpit/lot_chain.sh all --yes`
+- Pour resynchroniser la lane runtime/MCP/CAD versionnée dans `docs/plans/18_*`:
+  - `bash tools/run_autonomous_next_lots.sh status`
+  - `bash tools/run_autonomous_next_lots.sh run`

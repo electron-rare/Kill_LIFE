@@ -4,7 +4,7 @@
 - Standards injection: Agent OS (standards versionnés + profils) citeturn0search3
 - Role workflows + gates: BMAD-METHOD
 - Tool-first runtime (local): Agent Zero
-- Interop tools: MCP (ex: kicad-sch-mcp) citeturn0search9
+- Interop tools: MCP local en `stdio` via le runtime `kicad-mcp`
 
 Le repo fournit :
 - `specs/` pour la source de vérité
