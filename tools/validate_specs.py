@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import importlib.util
 import json
 import re
@@ -38,10 +39,18 @@ def run_repo_command(args: list[str]) -> Dict[str, Any]:
 
 def check_runtime_dependencies() -> Dict[str, Any]:
     has_yaml = importlib.util.find_spec("yaml") is not None
+    import_error = ""
+    if has_yaml:
+        try:
+            importlib.import_module("yaml")
+        except Exception as exc:  # pragma: no cover - runtime environment specific
+            has_yaml = False
+            import_error = str(exc)
     return {
         "pyyaml": {
             "ok": has_yaml,
             "hint": "Install with: python3 -m pip install PyYAML",
+            "import_error": import_error,
         }
     }
 
@@ -128,11 +137,14 @@ def validate_specs(
             compliance_cmd.append("--strict")
         compliance = run_repo_command(compliance_cmd)
     else:
+        dep_hint = dependencies["pyyaml"]["hint"]
+        dep_err = dependencies["pyyaml"].get("import_error", "")
+        details = f" ({dep_err})" if dep_err else ""
         compliance = {
             "ok": False,
             "returncode": 127,
             "stdout": "",
-            "stderr": "PyYAML dependency missing; cannot run compliance validator",
+            "stderr": f"PyYAML dependency missing; cannot run compliance validator. {dep_hint}{details}",
         }
 
     rfc2119 = scan_rfc2119()

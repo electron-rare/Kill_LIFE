@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import re
 import time
@@ -16,6 +17,7 @@ from cad_runtime import (  # type: ignore
     create_runtime_temp_dir,
     parse_json_tail,
     require_process_success,
+    run_freecad_script,
     run_cad_stack,
 )
 from mcp_stdio import (  # type: ignore
@@ -32,18 +34,55 @@ from mcp_telemetry import emit_mcp_span  # type: ignore
 ROOT = Path(__file__).resolve().parents[1]
 WORKSPACE_ROOT = Path("/workspace")
 SAFE_NAME_RE = re.compile(r"^[A-Za-z0-9_.-]{1,80}$")
-BLOCKED_SCRIPT_PATTERNS = [
-    "import os",
-    "from os",
-    "import subprocess",
-    "from subprocess",
-    "import socket",
-    "from socket",
+ALLOWED_SCRIPT_IMPORT_ROOTS = {
+    "FreeCAD",
+    "App",
+    "Part",
+    "math",
+    "json",
+}
+BLOCKED_SCRIPT_CALLS = {
     "__import__",
-    "eval(",
-    "exec(",
-    "open(",
-]
+    "eval",
+    "exec",
+    "compile",
+    "getattr",
+    "setattr",
+    "delattr",
+    "open",
+    "input",
+    "help",
+    "globals",
+    "locals",
+    "vars",
+}
+BLOCKED_SCRIPT_ATTR_CALLS = {
+    "__subclasses__",
+    "__globals__",
+    "__getattribute__",
+    "__setattr__",
+    "__delattr__",
+    "__reduce__",
+    "__reduce_ex__",
+    "__mro__",
+    "mro",
+}
+BLOCKED_SCRIPT_MODULE_NAMES = {
+    "os",
+    "subprocess",
+    "socket",
+    "pathlib",
+    "sys",
+    "shutil",
+}
+BLOCKED_SCRIPT_DUNDER_NAMES = {
+    "__builtins__",
+    "__loader__",
+    "__spec__",
+    "__package__",
+    "__name__",
+    "__file__",
+}
 
 TOOLS = [
     {
@@ -219,8 +258,7 @@ def tool_create_document(arguments: dict[str, Any]) -> dict[str, Any]:
             encoding="utf-8",
         )
         proc = require_process_success(
-            run_cad_stack(
-                "freecad-cmd",
+            run_freecad_script(
                 str(script_path.relative_to(ROOT)),
                 timeout=90.0,
             ),
@@ -281,8 +319,7 @@ def tool_export_document(arguments: dict[str, Any]) -> dict[str, Any]:
             encoding="utf-8",
         )
         proc = require_process_success(
-            run_cad_stack(
-                "freecad-cmd",
+            run_freecad_script(
                 str(script_path.relative_to(ROOT)),
                 timeout=90.0,
             ),
@@ -306,15 +343,52 @@ def tool_export_document(arguments: dict[str, Any]) -> dict[str, Any]:
         cleanup_runtime_path(temp_dir)
 
 
+def _validate_freecad_user_script(raw_script: str) -> None:
+    if len(raw_script) > 20_000:
+        raise CadRuntimeError("script too large (max 20,000 chars)")
+
+    try:
+        tree = ast.parse(raw_script, mode="exec")
+    except SyntaxError as exc:
+        raise CadRuntimeError(f"script syntax error: {exc.msg}") from exc
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                root = alias.name.split(".", 1)[0]
+                if root not in ALLOWED_SCRIPT_IMPORT_ROOTS:
+                    raise CadRuntimeError(f"blocked import: {alias.name}")
+        elif isinstance(node, ast.ImportFrom):
+            module = (node.module or "").strip()
+            root = module.split(".", 1)[0] if module else ""
+            if node.level != 0 or root not in ALLOWED_SCRIPT_IMPORT_ROOTS:
+                raise CadRuntimeError(f"blocked import-from: {module or '<relative>'}")
+        elif isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Name) and node.func.id in BLOCKED_SCRIPT_CALLS:
+                raise CadRuntimeError(f"blocked function call: {node.func.id}")
+            if isinstance(node.func, ast.Attribute) and node.func.attr in BLOCKED_SCRIPT_ATTR_CALLS:
+                raise CadRuntimeError(f"blocked attribute call: {node.func.attr}")
+        elif isinstance(node, ast.Attribute):
+            if node.attr.startswith("__"):
+                raise CadRuntimeError(f"blocked dunder attribute: {node.attr}")
+            if node.attr in BLOCKED_SCRIPT_ATTR_CALLS:
+                raise CadRuntimeError(f"blocked attribute access: {node.attr}")
+            if isinstance(node.value, ast.Name) and node.value.id in BLOCKED_SCRIPT_MODULE_NAMES:
+                raise CadRuntimeError(f"blocked module access: {node.value.id}.{node.attr}")
+        elif isinstance(node, ast.Name):
+            if isinstance(node.ctx, ast.Load) and (
+                node.id in BLOCKED_SCRIPT_MODULE_NAMES
+                or node.id in BLOCKED_SCRIPT_DUNDER_NAMES
+                or node.id.startswith("__")
+            ):
+                raise CadRuntimeError(f"blocked module usage: {node.id}")
+
+
 def tool_run_python_script(arguments: dict[str, Any]) -> dict[str, Any]:
     raw_script = str(arguments.get("script") or "")
     if not raw_script.strip():
         raise CadRuntimeError("script is required")
-
-    lowered = raw_script.lower()
-    for pattern in BLOCKED_SCRIPT_PATTERNS:
-        if pattern in lowered:
-            raise CadRuntimeError(f"blocked script pattern: {pattern}")
+    _validate_freecad_user_script(raw_script)
 
     output_path_value = arguments.get("output_path")
     output_path = (
@@ -330,14 +404,40 @@ def tool_run_python_script(arguments: dict[str, Any]) -> dict[str, Any]:
     script_path.write_text(
         "\n".join(
                 [
+                    "import builtins",
                     "import json",
                     "from pathlib import Path",
                     "import FreeCAD",
+                    "try:",
+                    "    import Part",
+                    "except Exception:",
+                    "    Part = None",
                     "",
                     f"USER_CODE = {quoted_script}",
                     f'OUTPUT_PATH = Path(r"{output_runtime_path.as_posix()}") if {bool(output_runtime_path)!r} else None',
-                    'globals_dict = {"FreeCAD": FreeCAD, "App": FreeCAD, "OUTPUT_PATH": OUTPUT_PATH, "RESULT": {}}',
-                'exec(compile(USER_CODE, "<freecad-mcp>", "exec"), globals_dict, globals_dict)',
+                    "ALLOWED_IMPORTS = {'FreeCAD', 'App', 'Part', 'math', 'json'}",
+                    "def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):",
+                    "    root = str(name).split('.', 1)[0]",
+                    "    if root not in ALLOWED_IMPORTS:",
+                    "        raise ImportError(f'blocked import: {name}')",
+                    "    return builtins.__import__(name, globals, locals, fromlist, level)",
+                    "SAFE_BUILTINS = {",
+                    "    'abs': abs, 'all': all, 'any': any, 'bool': bool, 'dict': dict,",
+                    "    'enumerate': enumerate, 'float': float, 'int': int, 'len': len,",
+                    "    'list': list, 'max': max, 'min': min, 'range': range, 'round': round,",
+                    "    'set': set, 'str': str, 'sum': sum, 'tuple': tuple, 'zip': zip,",
+                    "    'print': print, 'Exception': Exception, 'ValueError': ValueError,",
+                    "    'RuntimeError': RuntimeError, '__import__': _safe_import,",
+                    "}",
+                    "globals_dict = {",
+                    "    '__builtins__': SAFE_BUILTINS,",
+                    "    'FreeCAD': FreeCAD,",
+                    "    'App': FreeCAD,",
+                    "    'Part': Part,",
+                    "    'OUTPUT_PATH': OUTPUT_PATH,",
+                    "    'RESULT': {},",
+                    "}",
+                    'exec(compile(USER_CODE, "<freecad-mcp>", "exec"), globals_dict, globals_dict)',
                 "active = FreeCAD.ActiveDocument",
                 "if OUTPUT_PATH is not None and active is not None:",
                 "    active.saveAs(str(OUTPUT_PATH))",
@@ -353,10 +453,11 @@ def tool_run_python_script(arguments: dict[str, Any]) -> dict[str, Any]:
     )
     try:
         proc = require_process_success(
-            run_cad_stack(
-                "freecad-cmd",
+            run_freecad_script(
                 str(script_path.relative_to(ROOT)),
                 timeout=120.0,
+                prefer_pool=False,
+                clean_env=True,
             ),
             context="freecad run python script",
         )

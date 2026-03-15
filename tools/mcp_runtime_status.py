@@ -3,9 +3,9 @@
 
 from __future__ import annotations
 
+import asyncio
 import argparse
 import json
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -16,17 +16,21 @@ except ImportError:  # pragma: no cover - script entrypoint fallback
     from mcp_smoke_common import load_runtime_env
 
 ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_CHECK_TIMEOUT_S = 120.0
+DEFAULT_MAX_PARALLEL = 4
 
 CHECKS: tuple[dict[str, Any], ...] = (
     {
         "name": "validate-specs",
         "cmd": ["python3", "tools/validate_specs_mcp_smoke.py", "--json", "--quick"],
         "accept_degraded": False,
+        "timeout_s": 45.0,
     },
     {
         "name": "kicad",
         "cmd": ["python3", "tools/hw/mcp_smoke.py", "--json", "--quick", "--timeout", "30"],
         "accept_degraded": False,
+        "timeout_s": 90.0,
     },
     {
         "name": "kicad-host",
@@ -35,28 +39,33 @@ CHECKS: tuple[dict[str, Any], ...] = (
         "optional_degraded": True,
         "task": "K-012",
         "blocked_when": "host_pcbnew_import != ok (optional host-native path)",
+        "timeout_s": 60.0,
     },
     {
         "name": "knowledge-base",
         "cmd": ["python3", "tools/knowledge_base_mcp_smoke.py", "--json", "--quick"],
         "accept_degraded": True,
+        "timeout_s": 60.0,
     },
     {
         "name": "github-dispatch",
         "cmd": ["python3", "tools/github_dispatch_mcp_smoke.py", "--json", "--quick"],
         "accept_degraded": True,
+        "timeout_s": 60.0,
     },
     {
         "name": "freecad",
         "cmd": ["python3", "tools/freecad_mcp_smoke.py", "--json", "--quick"],
         "accept_degraded": False,
         "task": "F-101",
+        "timeout_s": 120.0,
     },
     {
         "name": "openscad",
         "cmd": ["python3", "tools/openscad_mcp_smoke.py", "--json", "--quick"],
         "accept_degraded": False,
         "task": "O-101",
+        "timeout_s": 120.0,
     },
     {
         "name": "nexar-api",
@@ -65,6 +74,7 @@ CHECKS: tuple[dict[str, Any], ...] = (
         "task": "K-014",
         "blocked_when": "live Nexar unavailable (token missing, demo mode, or external account/quota limit)",
         "optional_degraded_when_live_validation": ("quota_exceeded",),
+        "timeout_s": 120.0,
     },
 )
 
@@ -73,6 +83,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--strict", action="store_true", help="Treat degraded checks as failures.")
+    parser.add_argument(
+        "--max-parallel",
+        type=int,
+        default=DEFAULT_MAX_PARALLEL,
+        help=f"Maximum concurrent checks (default: {DEFAULT_MAX_PARALLEL}).",
+    )
     return parser.parse_args()
 
 
@@ -118,24 +134,48 @@ def derive_blockers(results: list[dict[str, Any]]) -> list[dict[str, str]]:
     return blockers
 
 
-def run_check(spec: dict[str, Any]) -> dict[str, Any]:
-    proc = subprocess.run(
-        spec["cmd"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    stdout = proc.stdout.strip()
-    stderr = proc.stderr.strip()
+async def run_check(spec: dict[str, Any]) -> dict[str, Any]:
+    timeout_s = float(spec.get("timeout_s") or DEFAULT_CHECK_TIMEOUT_S)
     try:
-        payload = json.loads(stdout) if stdout else {}
-    except json.JSONDecodeError as exc:
+        proc = await asyncio.create_subprocess_exec(
+            *spec["cmd"],
+            cwd=str(ROOT),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+    except Exception as exc:
+        return {
+            "name": spec["name"],
+            "status": "failed",
+            "error": f"spawn failed: {exc}",
+            "accept_degraded": spec.get("accept_degraded", False),
+            "optional_degraded": spec.get("optional_degraded", False),
+            "exit_code": -1,
+        }
+
+    try:
+        raw_stdout, raw_stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout_s)
+    except TimeoutError:
+        proc.kill()
+        await proc.communicate()
         payload = {
             "status": "failed",
-            "error": f"invalid JSON: {exc}",
-            "stdout": stdout,
+            "error": f"timeout after {timeout_s:.1f}s",
+            "stdout": "",
         }
+        stderr = ""
+    else:
+        stdout = raw_stdout.decode("utf-8", errors="replace").strip()
+        stderr = raw_stderr.decode("utf-8", errors="replace").strip()
+        try:
+            payload = json.loads(stdout) if stdout else {}
+        except json.JSONDecodeError as exc:
+            payload = {
+                "status": "failed",
+                "error": f"invalid JSON: {exc}",
+                "stdout": stdout,
+            }
+
     payload.setdefault("status", "failed")
     payload.setdefault("error", None)
     payload["name"] = spec["name"]
@@ -157,6 +197,17 @@ def run_check(spec: dict[str, Any]) -> dict[str, Any]:
     return payload
 
 
+async def run_all_checks(*, max_parallel: int) -> list[dict[str, Any]]:
+    limit = max(1, int(max_parallel))
+    semaphore = asyncio.Semaphore(limit)
+
+    async def _guarded(spec: dict[str, Any]) -> dict[str, Any]:
+        async with semaphore:
+            return await run_check(spec)
+
+    return list(await asyncio.gather(*(_guarded(spec) for spec in CHECKS)))
+
+
 def emit(payload: dict[str, Any], *, json_output: bool) -> int:
     if json_output:
         print(json.dumps(payload, ensure_ascii=True))
@@ -173,10 +224,11 @@ def emit(payload: dict[str, Any], *, json_output: bool) -> int:
 def main() -> int:
     args = parse_args()
     load_runtime_env()
-    results = [run_check(spec) for spec in CHECKS]
+    results = asyncio.run(run_all_checks(max_parallel=args.max_parallel))
     payload = {
         "status": classify_overall(results, strict=args.strict),
         "strict": args.strict,
+        "max_parallel": max(1, int(args.max_parallel)),
         "checks": results,
         "counts": {
             "ready": sum(1 for result in results if result.get("status") == "ready"),
