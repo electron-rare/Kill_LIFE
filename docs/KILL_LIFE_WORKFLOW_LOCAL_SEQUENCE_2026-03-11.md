@@ -1,73 +1,72 @@
-# Kill_LIFE Workflow Local Sequence - 2026-03-11
+# Kill_LIFE Workflow Local Sequence - 2026-03-20
 
 ## Scope
 
-Ce diagramme fixe la sequence locale canonique quand un workflow `Kill_LIFE` est edite, valide et execute sans passage par le dispatch GitHub.
+Canonical sequence de validation locale quand un workflow `Kill_LIFE` est édité, validé puis exécuté en local.
 
 ## Sequence
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant OP as Operateur / crazy_life
+    participant OP as Opérateur / crazy_life
+    participant TUI as tools/cockpit/refonte_tui.sh
     participant WF as workflows/*.json
     participant SCHEMA as workflow.schema.json
     participant VS as tools/validate_specs.py
     participant COMP as tools/compliance/validate.py
-    participant RUNTIME as tools/mcp_runtime_status.py
-    participant CAD as tools/cad_runtime.py / tools/hw/*
-    participant RUNS as .crazy-life/runs
+    participant MCP as tools/mcp_runtime_status.py
+    participant RUNTIME as tools/cad_runtime.py / tools/hw/*
+    participant LOG as artifacts/refonte_tui/*.log
     participant EVID as docs/evidence / compliance/evidence
 
-    OP->>WF: creer ou modifier un workflow canonique
-    OP->>SCHEMA: valider la structure JSON du workflow
-    SCHEMA-->>OP: workflow structurellement valide / invalide
+    OP->>WF: edit / créer workflow canonique
+    OP->>SCHEMA: valider schéma
+    SCHEMA-->>OP: valide / invalide
+    OP->>VS: lancer validation spec-first
+    VS-->>OP: synthèse OK / FAIL
+    OP->>COMP: lancer validation conformité
+    COMP-->>OP: profile actif + blockers
+    OP->>MCP: vérifier prérequis MCP/CAD locaux
+    MCP-->>OP: statut runtime local
 
-    OP->>VS: lancer la validation spec-first
-    VS->>VS: verifier 03_plan / 04_tasks / constraints / RFC2119
-    VS-->>OP: synthese OK / FAIL + ecarts
-
-    OP->>COMP: lancer la validation compliance
-    COMP->>COMP: charger active_profile + standards + evidence attendues
-    COMP-->>OP: statut compliance et blockers
-
-    OP->>RUNTIME: verifier les prerequis MCP/runtime locaux
-    RUNTIME-->>OP: statut global, blockers, optional degraded
-
-    alt workflow implique du CAD ou du hardware
-        OP->>CAD: lancer doctor / export / smoke / schops
-        CAD-->>OP: artefacts locaux et statut outillage
+    alt workflow implique hardware/CAD
+        OP->>RUNTIME: lancer doctor / export / smoke / schops
+        RUNTIME-->>OP: artefacts locaux
     end
 
-    OP->>RUNS: ecrire le run local et son etat
-    RUNS-->>OP: historique local / restore possible
+    alt opérateur lance via TUI
+        OP->>TUI: lancer readme_audit / lot-chain / status
+        TUI->>LOG: écrire log
+        TUI-->>OP: sortie + état
+    end
 
-    OP->>EVID: deposer les preuves locales utiles
-    EVID-->>OP: evidence pack exploitable pour revue ou bascule GitHub
+    OP->>EVID: déposer preuves locales
+    EVID-->>OP: dossiers exploitables pour revue
 ```
 
 ## Anchors
 
-| Surface | Role dans la sequence locale |
+| Surface | Role |
 | --- | --- |
-| `workflows/*.json` | definition executable et versionnee de la lane |
-| `workflows/workflow.schema.json` | validation structurelle avant execution |
-| `tools/validate_specs.py` | garde spec-first locale |
-| `tools/compliance/validate.py` | validation du profil actif et des preuves attendues |
-| `tools/mcp_runtime_status.py` | lecture de sante des runtimes MCP/CAD locaux |
-| `tools/cad_runtime.py` et `tools/hw/*` | actions locales hardware/CAD quand le workflow en depend |
-| `.crazy-life/runs/` | etat local des runs depuis l'editeur `crazy_life` |
-| `.crazy-life/backups/workflows/` | revisions et restores locaux non versionnes |
-| `docs/evidence/` et `compliance/evidence/` | sortie documentaire exploitable pour revue et transition release |
+| `workflows/*.json` | définition executable et versionnée |
+| `workflow.schema.json` | vérification structurelle |
+| `tools/validate_specs.py` | garde-fou spec-first |
+| `tools/compliance/validate.py` | validation profile + compliance |
+| `tools/mcp_runtime_status.py` | état des runtimes MCP/CAD |
+| `tools/hw/*` | actions hardware/CAD si workflow dépendant |
+| `tools/cockpit/refonte_tui.sh` | exécute lot-chain et garde les logs |
+| `artifacts/refonte_tui/*.log` | lecture/analyse/suppression contrôlée |
+| `docs/evidence/*` | preuves pour revue |
 
 ## Reading
 
-- La validation locale ne remplace pas le dispatch GitHub; elle sert de sas avant CI distante.
-- `Kill_LIFE` conserve la source de verite des workflows et des regles de validation.
-- `crazy_life` joue le role d'editeur et d'operateur local, mais les artefacts canoniques restent dans `Kill_LIFE`.
+- La validation locale est un prérequis, pas un remplacement de la validation GitHub.
+- `KILL_LIFE` garde la source de vérité des workflows et règles de validation.
+- Le TUI agit comme couche opératoire uniforme pour status, logs et lots.
 
 ## Next lots
 
-- `K-DA-002` est ferme par ce diagramme versionne.
-- `K-DA-003`: sequence `workflow github` avec allowlist dispatch et evidence pack CI.
-- `K-DA-004`: synchroniser README et doc operateur autour des deux diagrammes `local` et `github`.
+- `K-DA-002` est fermé par ce diagramme versionné.
+- `K-RE-002` fermera la dette cartes/séquences restantes.
+- Enchaîner ensuite avec `K-DA-003` côté GitHub.

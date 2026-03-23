@@ -1,6 +1,6 @@
 # MCP setup
 
-Last updated: 2026-03-14
+Last updated: 2026-03-20
 
 Source canonique pour l'usage MCP local de `Kill_LIFE`.
 
@@ -13,6 +13,8 @@ References canoniques:
 - note de lot provenance: `docs/MCP_CAD_PROVENANCE_2026-03-14.md`
 - backlog MCP KiCad: `specs/mcp_tasks.md`
 - backlog cible MCP/agentics: `specs/mcp_agentics_target_backlog.md`
+- surfaces GUI natives YiACAD: `docs/CAD_AI_NATIVE_GUI_RUNBOOK_2026-03-20.md`
+- hooks natifs YiACAD: `docs/CAD_AI_NATIVE_HOOKS_2026-03-20.md`
 
 ## Source de verite et ownership
 
@@ -50,6 +52,42 @@ References canoniques:
 - `huggingface`: surface MCP distante officielle, optionnelle et hors chaine CAD locale
 
 Les micro-serveurs `kicad_kic_ai` de `mascarade` restent suivis comme surfaces auxiliaires dans `docs/MCP_SUPPORT_MATRIX.md`.
+
+## Topologie d'exploitation (SSH / hôtes)
+
+| Machine | Utilisateur | Priorité | Rôle | Port SSH | Port(s) service cible |
+|---|---|---:|---|---:|---:|
+| `clems@192.168.0.120` | `clems` | `1` | Machine opérateur, hôte de référence de travail | `22` | `22` |
+| `kxkm@kxkm-ai` | `kxkm` | `2` | Mac opérateur | `22` | `22` |
+| `cils@100.126.225.111` | `cils` | `3` | Mac opérateur secondaire (`photon`, locké: pas de service essentiel) | `22` | `22` |
+| `root@192.168.0.119` | `root` | `4` | Serveur système / exécution système (réserve) | `22` | `22` |
+
+Politique d’équilibrage P2P:
+
+- Ordre par défaut: `Tower -> KXKM -> CILS -> local -> root` (réserve).
+- `cils` est en verrouillage opérationnel: seul `Kill_LIFE` peut y être vérifié par défaut.
+- Les préchecks non critiques sont délestés en présence de charge via `tools/cockpit/mesh_sync_preflight.sh --load-profile tower-first`.
+
+### Health-check SSH (script unique)
+
+Depuis `Kill_LIFE`, exécuter:
+
+```bash
+bash tools/cockpit/ssh_healthcheck.sh
+```
+Prérequis: clés SSH pré-configurées pour un login sans prompt.
+
+Options utiles:
+
+- `--json` : format machine à machine.
+- `--no-log` : exécute sans écrire dans `artifacts/cockpit`.
+
+## Repos GitHub associés
+
+- Core: `https://github.com/electron-rare/Kill_LIFE.git`
+- Compagnon: `https://github.com/electron-rare/mascarade`
+- Orchestration: `https://github.com/electron-rare/crazy-life` (repo privé)
+- Références techniques: `https://github.com/electron-rare/Kill_LIFE` (source de vérité)
 
 ## Prerequis
 
@@ -182,6 +220,12 @@ Ce bootstrap enregistre:
 - `validate-specs`
 - `knowledge-base`
 - `github-dispatch`
+- Les surfaces GUI YiACAD restent hors protocole MCP et s'installent via:
+
+```bash
+bash tools/cad/install_yiacad_native_gui.sh install
+bash tools/cad/switch_yiacad_surfaces_to_native_forks.sh
+```
 - `freecad`
 - `openscad`
 - `huggingface`
@@ -254,3 +298,13 @@ Le chemin d'observabilite synthetique n'est pas fourni par `Kill_LIFE` seul. Si 
 - requalifier l'ouverture future de `A2A` une fois l'observabilite MCP homogene fermee
 - garder `K-012` comme validation host-native optionnelle tant que le runtime KiCad canonique reste le conteneur; `K-014` est valide en live, avec une limite externe de quota Nexar sur le token de reference
 - si un futur lot active `KiAuto`, suivre `docs/KICAD_BENCHMARK_MATRIX.md`, rester opt-in et rejouer `bash tools/tui/cad_mcp_audit.sh audit`
+
+## Delta mesh 2026-03-20
+
+Interpretation normative des statuts MCP dans cette refonte:
+
+- `ready`: outil demarre et ses dependances/secrets critiques sont presents.
+- `degraded`: outil demarre sans crash d'import, expose son envelope/outils, mais une dependance non critique manque.
+- `blocked`: execution impossible ou securite/gate non satisfaite.
+
+Pour `knowledge-base` et `github-dispatch`, l'absence de secrets ou de providers externes en developpement doit retomber en `degraded`, pas en echec silencieux. Cette section supersede toute mention plus ancienne qui presenterait ces surfaces comme forcement `ready` sur une machine non configuree.

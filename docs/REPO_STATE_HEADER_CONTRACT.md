@@ -4,7 +4,7 @@ Version: `v1`
 
 ## Source of truth
 
-The global response header MUST be derived only from each repository file:
+The global response header MUST be derived only from each configured repository file:
 
 - `docs/REPO_STATE.md`
 
@@ -17,14 +17,13 @@ No free-form manual edits are allowed in generated outputs.
 - `tools/repo_state/lint_header_contract.py`
 - `docs/REPO_STATE.md`
 - `docs/repo_state.json`
+- `tools/repo_state/repo_refresh.sh` (targets default: Kill_LIFE)
 
 ## Header format (mandatory)
 
 ```md
 [REPO-STATE UTC: <timestamp>]
 Kill_LIFE                    | HEAD <sha> | pivots: <...> | gates: <...>
-RTC_BL_PHONE                 | HEAD <sha> | pivots: <...> | gates: <...>
-le-mystere-professeur-zacus  | HEAD <sha> | pivots: <...> | gates: <...>
 [/REPO-STATE]
 ```
 
@@ -35,7 +34,7 @@ le-mystere-professeur-zacus  | HEAD <sha> | pivots: <...> | gates: <...>
 - missing `<!-- REPO_STATE:v1 -->` marker in `docs/REPO_STATE.md`
 - missing required keys in `docs/REPO_STATE.md` or `docs/repo_state.json`
 - malformed header markers in `artifacts/repo_state/header.latest.md`
-- missing one of the 3 repository lines in the generated header
+- missing the repository line in the generated header
 
 ## Commands
 
@@ -45,7 +44,7 @@ Generate local state:
 python tools/repo_state/collect.py --repo-name Kill_LIFE
 ```
 
-Generate global artifacts from sibling repos:
+Generate global artifacts:
 
 ```bash
 tools/repo_state/repo_refresh.sh

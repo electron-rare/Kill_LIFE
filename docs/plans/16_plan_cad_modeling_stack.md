@@ -20,6 +20,11 @@ Faire de `Kill_LIFE` la source de verite operateur pour une stack modelling loca
 
 Le lot couvre la couche locale non-MCP. Les serveurs MCP dedies sont suivis dans le backlog cible `MCP` / `agentics`.
 
+Important:
+
+- ce plan couvre la stack modelling locale `FreeCAD/OpenSCAD` hors shell GUI YiACAD;
+- les surfaces GUI natives KiCad/FreeCAD et la refonte UI/UX Apple-native sont suivies dans `docs/plans/20_plan_refonte_ui_ux_yiacad_apple_native.md`.
+
 ## Etat actuel
 
 - `FreeCAD` est supporte en headless via `freecadcmd`
@@ -34,6 +39,7 @@ Le lot couvre la couche locale non-MCP. Les serveurs MCP dedies sont suivis dans
 - `FreeCAD` et `OpenSCAD` sont supportes en headless local
 - ce lot reste distinct de `mcp_tasks.md`
 - la suite MCP se traite dans `specs/mcp_agentics_target_backlog.md`
+- la couche GUI YiACAD est geree separement et ne remet pas en cause ce contrat headless
 
 ## Resultat v1 livre
 

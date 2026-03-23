@@ -81,6 +81,23 @@ tools/hw/cad_stack.sh pio system info
 
 Le workspace monté est `Kill_LIFE` par défaut.
 
+### 6bis. Surfaces YiACAD natives
+
+Pour installer puis utiliser les surfaces natives KiCad et FreeCAD:
+
+```bash
+bash tools/cad/install_yiacad_native_gui.sh install
+bash tools/cad/switch_yiacad_surfaces_to_native_forks.sh
+bash tools/cockpit/yiacad_uiux_tui.sh --action status
+```
+
+Documentation utile:
+
+- `docs/CAD_AI_NATIVE_GUI_RUNBOOK_2026-03-20.md`
+- `docs/CAD_AI_NATIVE_HOOKS_2026-03-20.md`
+- `docs/YIACAD_APPLE_UI_UX_AUDIT_2026-03-20.md`
+- `docs/YIACAD_NATIVE_UI_INSERTION_POINTS_2026-03-20.md`
+
 Les wrappers locaux qui lancent des runtimes Python/Node ou des conteneurs remappés utilisent un `HOME` explicite local au repo. La règle est documentée dans [RUNTIME_HOME.md](RUNTIME_HOME.md).
 
 ---
@@ -96,3 +113,9 @@ Les wrappers locaux qui lancent des runtimes Python/Node ou des conteneurs remap
 Pour toute question, consulte la FAQ ou ouvre une issue !
 
 Pour toute question, consulte la FAQ ou ouvre une issue !
+
+## 2026-03-21 - Canonical operator entry
+- Entree publique recommandee: `bash tools/cockpit/yiacad_operator_index.sh --action status`.
+- Surface de preuves: `bash tools/cockpit/yiacad_proofs_tui.sh --action status`.
+- Surface de logs: `bash tools/cockpit/yiacad_logs_tui.sh --action status`.
+- Les routes directes historiques restent compatibles, mais ne sont plus l'entree publique recommandee.

@@ -26,6 +26,11 @@ Ces plans sont des **runbooks** : tu peux les suivre tels quels, ou les transfor
 16. [Plan de stack CAD modelling locale](16_plan_cad_modeling_stack.md)
 17. [Plan cible MCP + agentics + A2A](17_plan_target_architecture_mcp_agentics_2028.md)
 18. [Plan d'enchainement autonome des lots utiles](18_plan_enchainement_autonome_des_lots_utiles.md)
+19. [TODO mesh tri-repo](19_todo_mesh_tri_repo.md)
+20. [Plan refonte UI/UX YiACAD Apple-native](20_plan_refonte_ui_ux_yiacad_apple_native.md)
+21. [Plan refonte globale YiACAD](21_plan_refonte_globale_yiacad.md)
+22. [Plan integration intelligence agentique](22_plan_integration_intelligence_agentique.md)
+23. [TODO integration intelligence agentique](22_todo_integration_intelligence_agentique.md)
 
 ---
 

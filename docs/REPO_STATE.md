@@ -1,11 +1,11 @@
 <!-- REPO_STATE:v1 -->
 Repo: Kill_LIFE
 Branch: main
-HEAD: 225f2f856eb11da28ea1aad4cea1d35244388fca
-HeadDate: 2026-03-15T00:00:00+01:00
-HeadSubject: Baseline capture before multi-repo implementation lots
+HEAD: bd3f7b99154f86057ba18b9948d940df55722b12
+HeadDate: 2026-03-15T21:56:51+01:00
+HeadSubject: feat(tools): align mcp runtime status and cad tooling
 RepoURL: https://github.com/electron-rare/Kill_LIFE.git
 ProjectKind: agentic_orchestrator
-PivotChanges: [{"path": "(none)", "tags": ["general_change"]}]
+PivotChanges: [{"path": "tools/cad_runtime.py", "tags": ["general_change"]}, {"path": "tools/freecad_mcp.py", "tags": ["general_change"]}, {"path": "tools/mcp_runtime_status.py", "tags": ["general_change"]}, {"path": "tools/tui/cad_mcp_audit.sh", "tags": ["general_change"]}, {"path": "tools/tui/kicad_benchmark_review.sh", "tags": ["general_change"]}]
 ImpactGates: general_change
-GeneratedAtUTC: 2026-03-15T00:00:00Z
+GeneratedAtUTC: 2026-03-21T19:45:12Z

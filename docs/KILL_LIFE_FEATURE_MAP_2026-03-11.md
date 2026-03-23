@@ -1,9 +1,8 @@
-# Kill_LIFE Feature Map - 2026-03-11
+# Kill_LIFE Feature Map - 2026-03-20
 
 ## Scope
 
-Cette carte fixe les surfaces canoniques de `Kill_LIFE` comme repo source de verite spec-first, runtime outille et evidence-first.
-Cette feature map sert aussi d'ancre stable pour les prochains diagrammes de sequence et pour le README operateur.
+Carte de référence de toutes les surfaces stables du projet, alignée avec le manifeste de refonte.
 
 ## Feature map
 
@@ -11,91 +10,93 @@ Cette feature map sert aussi d'ancre stable pour les prochains diagrammes de seq
 flowchart TD
     KL[Kill_LIFE]
 
-    KL --> SPECS[specs/ canon spec-first]
-    KL --> WF[workflows/ registry JSON]
+    KL --> SPECS[specs/ (00_intake -> 04_tasks)]
+    KL --> PLANS[docs/plans/*]
+    KL --> WORKFLOWS[workflow lanes + workflow.schema]
+    KL --> TOOLS[tools/ runtime, validation, CAD/MCP]
     KL --> AGENTS[agents/ + .github/agents + prompts]
     KL --> BMAD[bmad/ gates + rituels + templates]
-    KL --> TOOLS[tools/ runtime, validation, CAD, CI]
-    KL --> HW[hardware/ blocs + regles]
+    KL --> HW[hardware/ + rules]
     KL --> FW[firmware/ PlatformIO]
-    KL --> COMP[compliance/ profils + evidence]
-    KL --> OC[openclaw/ sandbox + onboarding]
-    KL --> DOCS[docs/ operator, plans, evidence]
+    KL --> COMP[compliance/ + evidence + CI gates]
+    KL --> DOCS[docs/ operator, evidence, on-boarding]
     KL --> GH[.github/workflows + issue templates]
-    KL --> TEST[test/ verification Python + MCP]
+    KL --> MCPR[MCP setup + serveur runtime]
+    KL --> TUI[tools/cockpit]
 
     SPECS --> SPECCHAIN[00_intake -> 01_spec -> 02_arch -> 03_plan -> 04_tasks]
     SPECS --> CONSTRAINTS[specs/constraints.yaml]
 
-    WF --> WFREG[spec-first / embedded-ci-local / compliance-release]
-    WF --> WFTPL[templates/*.json]
-    WF --> WFSCHEMA[workflow.schema.json]
+    WORKFLOWS --> WF_REG[spec-first.json + embedded-ci-local.json + compliance-release.json]
+    WORKFLOWS --> WF_SCHEMA[workflow.schema.json]
+    WORKFLOWS --> WF_CATALOG[.github/workflows/*.yml]
 
-    AGENTS --> AG1[PM / Architect / Firmware / QA / Doc / HW]
-    AGENTS --> AG2[prompts plan_wizard / start / Eureka]
+    TOOLS --> VS[tools/validate_specs.py]
+    TOOLS --> CPR[tools/compliance/]
+    TOOLS --> CAD_RUNTIME[tools/hw/cad_stack.sh + cad_runtime]
+    TOOLS --> MCP_TOOLS[run_*_mcp.sh + mcp_runtime_status]
+    TOOLS --> REPO_STATE[tools/repo_state/*]
+    TOOLS --> CAD_FUSION[tools/cad/ai_native_forks.sh + yiacad_fusion_lot.sh]
 
-    TOOLS --> T1[validate_specs + specs]
-    TOOLS --> T2[cad_runtime + hw/cad_stack + MCP launchers]
-    TOOLS --> T3[freecad_mcp / openscad / kicad]
-    TOOLS --> T4[mcp_runtime_status + repo_state + CI audits]
-    TOOLS --> T5[github dispatch + community + security + quality]
+    AGENTS --> AG_MERGE[PM / Architect / FW / HW / QA / Doc]
+    AGENTS --> GITHUB_PROMPTS[.github/prompts/*]
 
-    HW --> HW1[hardware/blocks]
-    HW --> HW2[hardware/rules]
+    HW --> HW_BLOCKS[blocks + rules + previews]
+    FW --> FW_SRC[firmware/src]
+    FW --> FW_TEST[firmware/test]
 
-    FW --> FW1[firmware/src]
-    FW --> FW2[firmware/test]
+    COMP --> PROFILE[active_profile.yaml + standards]
+    COMP --> GATES[evidence + checks]
 
-    COMP --> C1[active_profile + plan]
-    COMP --> C2[evidence/*]
-    COMP --> C3[profiles/* + standards_catalog]
+    MCPR --> KICAD_MCP[kicad MCP]
+    MCPR --> VALIDATE_MCP[validate-specs MCP]
+    MCPR --> GH_DISPATCH[github-dispatch MCP]
+    MCPR --> DOC_MCP[knowledge-base + freecad + openscad + HF]
+    MCPR --> MESH[docs/MCP_SETUP.md + docs/MCP_SUPPORT_MATRIX.md]
 
-    DOCS --> D1[plans + handoffs + workflows]
-    DOCS --> D2[evidence + security + rituals]
+    TUI --> REFONTE_TUI[refonte_tui.sh]
+    TUI --> LOT_CHAIN[lot_chain.sh + run_next_lots_autonomously.sh]
+    TUI --> LOGS[artifacts/refonte_tui/*.log]
 
-    GH --> G1[18+ GitHub workflows]
-    GH --> G2[issue templates]
+    DOCS --> HANDOFFS[handoffs + rituals + workflows docs]
+    DOCS --> EVIDENCE_DOCS[docs/evidence/*]
 
-    WF --> CL[crazy_life editor]
-    TOOLS --> M[mascarade bridge / ops consumers]
+    GH --> G_TEMPLATE[templates + issue labels]
+    GH --> GH_RELEASE[release_signing + repo_state]
+
+    TUI --> EXEC[actions auto + log analysis + log purge]
 ```
 
-## Canonical surfaces
+## Surfaces canoniques
 
-| Surface | Role canonique | Anchors |
+| Surface | Rôle canonical | Anchors |
 | --- | --- | --- |
-| `specs/` | chaine spec-first et backlog de reference | `specs/00_intake.md`, `specs/01_spec.md`, `specs/02_arch.md`, `specs/03_plan.md`, `specs/04_tasks.md`, `specs/constraints.yaml` |
-| `workflows/` | workflows executables et templates consommes par `crazy_life` | `workflows/spec-first.json`, `workflows/embedded-ci-local.json`, `workflows/compliance-release.json`, `workflows/workflow.schema.json` |
-| `agents/` + `.github/agents/` | roles operationnels et contrats agentiques | `agents/*.md`, `.github/agents/*.md`, `.github/prompts/*.md` |
-| `bmad/` | discipline de passage entre spec, plan, handoff et gate | `bmad/gates/*`, `bmad/rituals/kickoff.md`, `bmad/templates/*` |
-| `tools/` | coeur operatoire du repo: validation, CAD, runtime MCP, CI, hygiene | `tools/validate_specs.py`, `tools/cad_runtime.py`, `tools/mcp_runtime_status.py`, `tools/freecad_mcp.py`, `tools/hw/cad_stack.sh`, `tools/run_github_dispatch_mcp.sh` |
-| `hardware/` | blocs reutilisables et regles de bulk edit CAD | `hardware/blocks/`, `hardware/rules/` |
-| `firmware/` | implementation embarquee PlatformIO et tests associes | `firmware/src/`, `firmware/test/` |
-| `compliance/` | profil actif, plan de conformite et evidence packs | `compliance/active_profile.yaml`, `compliance/plan.yaml`, `compliance/profiles/*`, `compliance/evidence/*` |
-| `openclaw/` | couche d'exploitation sandboxee, onboarding et garde-fous d'usage | `openclaw/README.md`, `openclaw/onboarding/*`, `openclaw/local_setup/*` |
-| `docs/` | documentation operateur, plans actifs, rituels et preuves | `docs/plans/*`, `docs/workflows/*`, `docs/evidence/*`, `docs/security/*` |
-| `.github/workflows/` | automation GitHub allowlistee et gates de depot | `.github/workflows/*.yml` |
-| `test/` | verification Python/MCP du repo outille | `test/test_validate_specs.py`, `test/test_github_dispatch_mcp.py`, `test/test_freecad_mcp.py`, `test/test_mcp_runtime_status.py` |
+| `specs/` | point d’entrée spec-first | `specs/00_intake.md`, `specs/01_spec.md`, `specs/02_arch.md`, `specs/03_plan.md`, `specs/04_tasks.md`, `specs/constraints.yaml` |
+| `docs/plans/*` | contrats opératoires lot-chain | `docs/plans/REPO_DEEP_ANALYSIS_2026-03-11.md`, `docs/plans/12_plan_gestion_des_agents.md`, `docs/plans/18_plan_enchainement_autonome_des_lots_utiles.md`, `specs/03_plan.md`, `specs/04_tasks.md` |
+| `workflows/` | exécutable JSON + schéma | `workflows/spec-first.json`, `workflows/embedded-ci-local.json`, `workflows/compliance-release.json`, `workflow.schema.json` |
+| `tools/cockpit/*` | pilotage TUI + lot-chain | `tools/cockpit/refonte_tui.sh`, `tools/autonomous_next_lots.py`, `tools/cockpit/lot_chain.sh`, `tools/run_autonomous_next_lots.sh`, `tools/cockpit/run_next_lots_autonomously.sh` |
+| `tools/repo_state/*` | état global + contrat header | `tools/repo_state/collect.py`, `tools/repo_state/repo_refresh.sh`, `tools/repo_state/lint_header_contract.py`, `docs/REPO_STATE_HEADER_CONTRACT.md` |
+| `tools/` | outillage runtime | `tools/validate_specs.py`, `tools/compliance/*`, `tools/hw/*`, `tools/mcp_runtime_status.py`, `tools/quality/*` |
+| `tools/cad/*` | lot-fusion CAD IA-native | `tools/cad/ai_native_forks.sh`, `tools/cad/yiacad_fusion_lot.sh`, `docs/CAD_AI_NATIVE_FORK_STRATEGY.md` |
+| `hardware/` | blocs réutilisables + règles | `hardware/blocks/`, `hardware/rules/` |
+| `firmware/` | implémentation embarquée | `firmware/src/`, `firmware/test/` |
+| `docs/` | documentation opérateur + evidence | `docs/evidence/*`, `docs/MCP_SETUP.md`, `docs/AI_WORKFLOWS.md`, `docs/index.md` |
+| `.github/` | automatisation et prompts | `.github/prompts/`, `.github/agents/`, `.github/workflows/` |
+| `test/` | assurance qualité | `test/test_validate_specs.py`, `test/test_github_dispatch_mcp.py`, `test/test_freecad_mcp.py`, `test/test_mcp_runtime_status.py` |
 
-## Execution lanes
+## Lignes d’exécution
 
-- spec lane: `specs/00_intake.md` -> `01_spec.md` -> `02_arch.md` -> `03_plan.md` -> `04_tasks.md`
-- workflow lane: `workflows/*.json` + `workflow.schema.json` -> edition/validation locale -> execution locale ou dispatch GitHub
-- tooling lane: `tools/validate_specs.py` + `tools/compliance/*` + `tools/hw/*` + MCP runtime helpers
-- hardware lane: `hardware/blocks` + `hardware/rules` -> `tools/hw/*` -> exports/smokes/evidence
-- firmware lane: `firmware/` + tests -> evidence + CI gates
-- compliance lane: `compliance/active_profile.yaml` -> standards/evidence -> release readiness
-- operator lane: `openclaw/` + `.github/workflows/` + `docs/` -> contribution guidee, sandbox, gate, trace
+- spec lane: `specs/00_intake.md` -> ... -> `specs/04_tasks.md`
+- workflow lane: workflows JSON -> validation locale -> execution locale/GitHub
+- tooling lane: `tools/cockpit/refonte_tui.sh`, `tools/specs/sync_spec_mirror.sh`
+- cad fusion lane: `tools/cad/yiacad_fusion_lot.sh` -> `artifacts/cad-fusion`
+- hardware lane: `hardware/*` -> `tools/hw/*`
+- firmware lane: `firmware/*` -> evidence + CI
+- compliance lane: `compliance/*` -> evidence + headers
+- operator lane: `.github/workflows/` + docs -> contribution contrôlée
 
-## Source-of-truth contract
+## Contrat source-of-truth
 
-- `Kill_LIFE` reste la source de verite pour les specs, workflows, templates, policies de compliance, outillage CAD/MCP et evidence packs.
-- `crazy_life` consomme et edite les workflows de `Kill_LIFE`, mais n'en devient pas la source canonique.
-- `mascarade` consomme une partie des surfaces runtime/outillage comme repo compagnon d'ops et d'integration, sans remplacer le contrat spec-first de `Kill_LIFE`.
-
-## Current gaps and next lots
-
-- `K-DA-001` est ferme par cette carte versionnee.
-- `K-DA-002`: diagramme de sequence `spec -> workflow local -> validation -> evidence`.
-- `K-DA-003`: diagramme de sequence `workflow -> github dispatch -> workflow CI -> evidence pack`.
-- `K-DA-004`: resynchroniser `README`, `docs/plans` et la doc operateur autour de cette carte.
+- `Kill_LIFE` reste la source de vérité des specs, du catalogue workflow, de la gouvernance compliance, de l’outillage et de la carte fonctionnelle.
+- `docs/WEB_RESEARCH_OPEN_SOURCE_2026-03-20.md` documente les références OSS intégrables.
+- Les dépôts compagnon (`mascarade`, `crazy_life`) restent des surfaces d’exploitation, pas de remplacement du contrat local.

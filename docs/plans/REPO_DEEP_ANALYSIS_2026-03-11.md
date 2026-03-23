@@ -1,50 +1,58 @@
-# Repo Deep Analysis Plan — Kill_LIFE — 2026-03-11
+# Repo Deep Analysis Plan — Kill_LIFE — 2026-03-20
 
 ## Mission
 
-Rendre `Kill_LIFE` plus lisible comme socle canonique runtime/spec-first:
+Rendre le projet totalement pilotable via:
+- spec-first,
+- carte fonctionnelle explicitée (Mermaid),
+- séquences opérationnelles complètes,
+- gestion TUI des actions + logs,
+- gouvernance agentique cohérente.
 
-- diagrammes de sequence d'execution
-- carte fonctionnelle des surfaces produit
-- README et docs/plans relies au contrat multi-repo courant
-
-## Agents actifs
+## Agents actifs (actifs à date)
 
 | Role | Mission |
 | --- | --- |
-| `embedded-systems-auditor` | cadrage global et priorisation |
-| `workflow-map-curator` | carte fonctionnelle `specs/workflows/tools/hardware/firmware` |
-| `mcp-runtime-analyst` | sequences `workflow -> local action/github dispatch -> evidence` |
-| `firmware-doctor` | audit firmware/PlatformIO si blocages ou regressions runtime |
-| `readme-curator` | alignement README/docs/plans |
+| `PM` | arbitrage, priorisation, suivi des lots, clôture des jalons |
+| `Architect` | cartes fonctionnelles + séquences d’exécution + ADR |
+| `Firmware` | revue chaîne firmware/CI locale |
+| `Hardware` | revue CAD/hardware + loops matériels |
+| `QA` | sécurité, compliance, tests, preuves |
+| `Doc` | alignement docs/README/runbooks |
 
-## Deliverables
+## Livrables de la refonte
 
-- diagrammes de sequence `local` et `github`
-- carte fonctionnelle canonique
-- README enrichi de pointeurs vers le plan actif
+- `docs/REFACTOR_MANIFEST_2026-03-20.md` (manifest opérationnel)
+- `docs/KILL_LIFE_FEATURE_MAP_2026-03-11.md` (carte fonctionnelle)
+- `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md` (sequence locale)
+- `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md` (sequence GitHub)
+- `docs/AGENTIC_LANDSCAPE.md` (topologie agentic)
+- `docs/plans/12_plan_gestion_des_agents.md` (gestion agents)
+- `docs/plans/18_plan_enchainement_autonome_des_lots_utiles.md` (lot-chain)
+- `docs/WEB_RESEARCH_OPEN_SOURCE_2026-03-20.md` (veille OSS intégrée)
 
-## Status
+## Analyse IA intégrée
 
-- `K-DA-001` ferme par `docs/KILL_LIFE_FEATURE_MAP_2026-03-11.md`
-- `K-DA-002` ferme par `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`
-- `K-DA-003` ferme par `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
-- `K-DA-004` ferme par la synchronisation `docs/RUNBOOK.md`, `docs/index.md`, `docs/workflows/README.md`, `docs/AI_WORKFLOWS.md`, `docs/evidence/evidence_pack.md`
-- `K-DA-006` ferme par `.github/workflows/evidence_pack.yml`, `docs/evidence/evidence_pack.md` et `docs/EVIDENCE_ALIGNMENT_2026-03-11.md`
-- `K-DA-007` ferme par `tools/bootstrap_python_env.sh`, `tools/ci_runtime.py`, `tools/collect_evidence.py`, `.github/workflows/evidence_pack.yml` et `test/test_firmware_evidence.py`
-- `K-DA-008` ferme par `.github/workflows/evidence_pack.yml`, `tools/compliance/requirements-platformio.txt` et la mise en cache `pip` / `PlatformIO`
-- `K-DA-009` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et la doc evidence/GitHub workflow
-- `K-DA-010` ferme par `tools/auto_check_ci_cd.py`, `docs/evidence/ci_cd_audit_summary.md` et la doc evidence/GitHub workflow
-- `K-DA-011` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et le focus automatique sur les lanes en echec
-- `K-DA-012` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et la compaction des chemins absolus dans le rendu Markdown evidence
-- `K-DA-013` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et la reduction des signaux listeux en resumes courts
-- `K-DA-014` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et l'extraction d'un bloc `Artifact summary` dedie dans le rendu Markdown evidence
-- `K-DA-015` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et l'exposition `required_files` / `missing` dans `Artifact summary`
-- `K-DA-016` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et la detection de drift `summary ok` dans `Artifact summary`
-- `K-DA-017` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et le recalcul des artefacts encore presents en cas de drift `summary ok`
-- `K-DA-018` ferme par `tools/auto_check_ci_cd.py`, `test/test_auto_check_ci_cd.py` et la separation explicite `Source artifacts` / `Evidence files`
-- `K-DA-019` ferme par la relecture complete `KILL_LIFE_PIO_MODE=native ./.venv/bin/python tools/auto_check_ci_cd.py`, la regeneration du sidecar `docs/evidence/ci_cd_audit_summary.md` et la confirmation que la doc evidence restait correcte sans correction additionnelle
+- Evaluer les overlays IA utilisés (`ZeroClaw`, `LangGraph`, `AutoGen`, MCP) en mode pilote,
+- valider les points d’orchestration hors dépendance bloquante,
+- encadrer les appels externes par label/scope/gates,
+- documenter chaque expérimentation dans une note de lot avec seuil de rollback.
 
-## Next tasks
+## Plan d’exécution
 
-- `K-DA-020` isoler le blocage restant de `bash tools/test_python.sh --suite stable` autour des deltas MCP runtime hors lot
+- Prioriser P0 : cohérence docs/plans/README + cartes/séquences.
+- P1 : durcir la gestion des logs (lecture, analyse, purge) et la preuve des actions.
+- P2 : améliorer la matrice de sous-agents + rapports hebdo.
+
+## Développements de plan suivants
+
+- `K-DA-001` à `K-DA-004` clos via les artefacts de carte/séquence/couverture.
+- `K-DA-020` à traiter via `tools/repo_state` simplifié puis re-vérification CI.
+- Toutes les itérations doivent pointer vers un lot en cours dans `specs/04_tasks.md`.
+
+## Etat courant (à réactualiser via lot-chain)
+
+1. Alignement manifeste/specs/plans: `en cours`
+2. Cartographie + séquences: `en cours`
+3. Révisions repo-state et logs TUI: `en cours`
+4. Matrices agents/sous-agents: `en cours`

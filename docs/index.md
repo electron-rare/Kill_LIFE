@@ -1,66 +1,131 @@
-# AI Agentic Embedded Base
+# Kill_LIFE — Documentation opérateur canonique
 
-Ce repo est un **socle** :
-- **specs d’abord** (spec-driven)
-- **standards injectés** (qualité & conformité)
-- **agents + gates** (automation contrôlée)
-- **exécution transparente** via outils (cockpit)
+Cette page est l'entrée opérateur recommandée pour `Kill_LIFE`. Elle sert de table de routage entre le cockpit shell/TUI, les preuves, les runbooks et les documents de décision.
 
-## Démarrer
+## Entrées canoniques
 
-- Installation : `docs/INSTALL.md`
-- Runbook opérateur : `docs/RUNBOOK.md`
-- FAQ : `docs/FAQ.md`
-- Runtime home : `docs/RUNTIME_HOME.md`
-- Pont vers le repo compagnon d’exécution : `docs/MASCARADE_BRIDGE.md`
-- Carte fonctionnelle canonique : `docs/KILL_LIFE_FEATURE_MAP_2026-03-11.md`
-- Séquences opératoires : `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`, `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
+| Surface | Rôle | Entrée |
+| --- | --- | --- |
+| Produit / programme | vision, périmètre, arbitrages | `README.md` |
+| Audit consolidé | forces, faiblesses, opportunités, risques, IA | `docs/KILL_LIFE_CONSOLIDATION_AUDIT_2026-03-22.md` |
+| Cockpit opérateur | shell/TUI, contrats JSON, statut runtime | `bash tools/cockpit/yiacad_operator_index.sh --action status` |
+| Gouvernance intelligence | owners, mémoire, prochaines actions | `bash tools/cockpit/intelligence_tui.sh --action status --json` |
+| Gateway runtime/MCP/IA | synthèse consolidée des signaux runtime | `bash tools/cockpit/runtime_ai_gateway.sh --action status --refresh --json` |
+| Refonte cockpit | raccourcis historiques et lots | `bash tools/cockpit/refonte_tui.sh --action status` |
+| Lane opérateur | exécution consolidée, logs, preuves | `bash tools/cockpit/full_operator_lane.sh status --json` |
+| Routine quotidienne | health-check, logs, mesh, synthèse | `bash tools/cockpit/run_alignment_daily.sh --json` |
+| Chaîne spec-first | source de vérité documentaire | `specs/README.md` |
 
-## Workflows professionnels (opérationnels)
+## Navigation rapide
 
-- `docs/workflows/README.md` (menu)
-- Templates d’issues : `.github/ISSUE_TEMPLATE/`
-- Dispatch distant et checks GitHub : `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
-- Validation locale et evidence locale : `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`
+### Démarrage
 
-## Plans (runbooks)
+- Installation: `docs/INSTALL.md`
+- Quickstart: `docs/QUICKSTART.md`
+- Runbook opérateur: `docs/RUNBOOK.md`
+- FAQ: `docs/FAQ.md`
+- Runtime home: `docs/RUNTIME_HOME.md`
 
-- Série complète : `docs/plans/README.md`
+### Gouvernance et consolidation
 
-## Labels
+- Audit consolidé: `docs/KILL_LIFE_CONSOLIDATION_AUDIT_2026-03-21.md`
+- Audit consolidé 2026-03-22: `docs/KILL_LIFE_CONSOLIDATION_AUDIT_2026-03-22.md`
+- Manifeste refonte: `docs/REFACTOR_MANIFEST_2026-03-20.md`
+- Contrat tri-repo: `docs/TRI_REPO_MESH_CONTRACT_2026-03-20.md`
+- Gestion des agents: `docs/plans/12_plan_gestion_des_agents.md`
+- Plan integration intelligence: `docs/plans/22_plan_integration_intelligence_agentique.md`
+- TODO integration intelligence: `docs/plans/22_todo_integration_intelligence_agentique.md`
+- Plan YiACAD Git EDA: `docs/plans/23_plan_yiacad_git_eda_platform.md`
+- TODO YiACAD Git EDA: `docs/plans/23_todo_yiacad_git_eda_platform.md`
+- Backlog canonique: `specs/04_tasks.md`
+- Plan d'enchaînement autonome: `docs/plans/18_plan_enchainement_autonome_des_lots_utiles.md`
 
-- Taxonomie : `docs/LABELS.md`
+### Cockpit, preuves et santé runtime
 
-## Evidence packs, templates et rituels
+- Cockpit README: `tools/cockpit/README.md`
+- Intelligence program TUI: `bash tools/cockpit/intelligence_tui.sh --action status`
+- Memoire intelligence: `bash tools/cockpit/intelligence_tui.sh --action memory --json`
+- Scorecard intelligence: `bash tools/cockpit/intelligence_tui.sh --action scorecard --json`
+- Comparaison inter-repos: `bash tools/cockpit/intelligence_tui.sh --action comparison --json`
+- File recommandations IA: `bash tools/cockpit/intelligence_tui.sh --action recommendations --json`
+- Gateway runtime/MCP/IA: `bash tools/cockpit/runtime_ai_gateway.sh --action status --refresh --json`
+- Index opérateur YiACAD: `bash tools/cockpit/yiacad_operator_index.sh --action status`
+- Santé mesh: `bash tools/cockpit/mesh_health_check.sh --json`
+- Santé SSH: `bash tools/cockpit/ssh_healthcheck.sh --json`
+- Santé Mascarade/Ollama: `bash tools/cockpit/mascarade_runtime_health.sh --json`
+- Surface de preuves: `bash tools/cockpit/yiacad_proofs_tui.sh --action status`
+- Surface de logs: `bash tools/cockpit/yiacad_logs_tui.sh --action status`
 
-- Evidence pack : `docs/evidence/evidence_pack.md`
-- Templates : `docs/templates/`
-- Handoffs : `docs/handoffs/`
-- Rituels : `docs/rituals/`
+### Specs, plans et tâches
 
-# Index documentation agentique
+- Chaîne canonique: `specs/README.md`
+- Intake: `specs/00_intake.md`
+- Spec: `specs/01_spec.md`
+- Architecture: `specs/02_arch.md`
+- Plan: `specs/03_plan.md`
+- Tâches: `specs/04_tasks.md`
 
-Ce fichier centralise les liens vers les synthèses, rapports, diagrammes et evidence packs.
+### Veille et benchmark
 
-- [Synthèse globale](../SYNTHESE_AGENTIQUE.md)
-- [Rapport détaillé](assets/rapport/rapport_agentique.md)
-- [Diagramme agentique](assets/rapport/diagramme_agentique.md)
-- [Synthèse correspondance agents/systèmes](assets/rapport/synthese_correspondance_agents_systemes.md)
+- Veille OSS principale: `docs/WEB_RESEARCH_OPEN_SOURCE_2026-03-20.md`
+- Veille OSS / agentic / MCP 2026-03-22: `docs/WEB_RESEARCH_OPEN_SOURCE_2026-03-22.md`
+- Veille CAD IA-native: `docs/OSS_AI_NATIVE_CAD_RESEARCH_2026-03-20.md`
+- Workflows IA: `docs/AI_WORKFLOWS.md`
+- Paysage agentique: `docs/AGENTIC_LANDSCAPE.md`
+- Plateforme web Git EDA: `docs/YIACAD_GIT_EDA_PLATFORM_2026-03-22.md`
+- Phase active 2026-03-22: alignement lot 22 + plan 23, durcissement cockpit/logs, veille officielle MCP/agentique/IA, priorisation Git/CI/artifacts/collab pour `web/`.
 
-## Evidence packs
-- [Evidence packs hardware](../hardware/blocks/README.md)
-- [Evidence packs compliance](../compliance/evidence/)
-- [Evidence packs firmware](../firmware/test/)
+## Routines recommandées
 
-## Tests et validation
-- [Tests firmware](../firmware/test/)
-- [Tests hardware](../hardware/blocks/)
-- [Validation compliance](../compliance/evidence/)
+### Routine quotidienne
 
-## Conventions et synchronisation
-- [Conventions multi-agent](../standards/global/coding.md)
-- [Synchronisation et traçabilité](../docs/AI_WORKFLOWS.md)
+```bash
+bash tools/cockpit/run_alignment_daily.sh --json
+bash tools/cockpit/log_ops.sh --action summary --json
+bash tools/cockpit/mesh_health_check.sh --json --load-profile tower-first
+```
 
----
+### Revue de lots
 
-> Index généré automatiquement (GPT-4.1)
+```bash
+bash tools/run_autonomous_next_lots.sh status
+bash tools/cockpit/refonte_tui.sh --action lots-status
+bash tools/cockpit/refonte_tui.sh --action weekly-summary
+```
+
+### Gouvernance intelligence
+
+```bash
+bash tools/cockpit/lot_chain.sh status
+bash tools/cockpit/intelligence_tui.sh --action next-actions
+bash tools/cockpit/intelligence_tui.sh --action memory --json
+bash tools/cockpit/intelligence_tui.sh --action scorecard --json
+bash tools/cockpit/intelligence_tui.sh --action comparison --json
+bash tools/cockpit/intelligence_tui.sh --action recommendations --json
+bash tools/cockpit/runtime_ai_gateway.sh --action status --refresh --json
+```
+
+### Validation locale stable
+
+```bash
+bash tools/test_python.sh --suite stable
+python3 tools/validate_specs.py --strict --require-mirror-sync
+```
+
+## Pilotage des extensions VS Code
+
+Les extensions ne vivent pas dans ce repo, mais `Kill_LIFE` reste leur source de vérité documentaire et opératoire:
+
+- `kill-life-studio`: produit, specs, décisions, critères d'acceptation
+- `kill-life-mesh`: orchestration multi-repo, contrats, dépendances, ownership
+- `kill-life-operator`: runbooks, checks, preuves, exécution
+
+Le socle commun validé côté extensions est documenté dans `docs/KILL_LIFE_CONSOLIDATION_AUDIT_2026-03-21.md`.
+
+## Références mémoire et preuves
+
+- Synthèse globale: `SYNTHESE_AGENTIQUE.md`
+- Evidence pack: `docs/evidence/evidence_pack.md`
+- Handoffs: `docs/handoffs/`
+- Templates: `docs/templates/`
+- Tests: `test/`

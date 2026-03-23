@@ -5,6 +5,8 @@
 - Carte fonctionnelle canonique : `docs/KILL_LIFE_FEATURE_MAP_2026-03-11.md`
 - Séquence locale : `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`
 - Séquence GitHub : `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
+- Audit UI/UX YiACAD : `docs/YIACAD_APPLE_UI_UX_AUDIT_2026-03-20.md`
+- Points d’insertion natifs YiACAD : `docs/YIACAD_NATIVE_UI_INSERTION_POINTS_2026-03-20.md`
 
 Choix opératoire rapide :
 - validation et exécution locale avant CI distante : séquence `workflow local`
@@ -114,3 +116,27 @@ Lecture utile :
 
 ## 5) Workflows métiers
 Voir `docs/workflows/README.md`.
+
+## 6) YiACAD UI/UX lane
+
+Surfaces opératoires recommandées:
+
+```bash
+bash tools/cockpit/yiacad_uiux_tui.sh --action status
+bash tools/cockpit/yiacad_uiux_tui.sh --action agent-matrix
+bash tools/cockpit/yiacad_uiux_tui.sh --action insertion-points
+bash tools/cockpit/yiacad_uiux_tui.sh --action logs-summary
+```
+
+Points d’appui:
+
+- `docs/CAD_AI_NATIVE_GUI_RUNBOOK_2026-03-20.md`
+- `docs/CAD_AI_NATIVE_HOOKS_2026-03-20.md`
+- `docs/YIACAD_APPLE_UI_UX_FEATURE_MAP_2026-03-20.md`
+- `docs/plans/20_plan_refonte_ui_ux_yiacad_apple_native.md`
+
+## 2026-03-21 - Canonical operator entry
+- Entree publique recommandee: `bash tools/cockpit/yiacad_operator_index.sh --action status`.
+- Surface de preuves: `bash tools/cockpit/yiacad_proofs_tui.sh --action status`.
+- Surface de logs: `bash tools/cockpit/yiacad_logs_tui.sh --action status`.
+- Les routes directes historiques restent compatibles, mais ne sont plus l'entree publique recommandee.
