@@ -20,11 +20,9 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Clone sibling repos
+      - name: Prepare environment integrations
         run: |
-          cd ..
-          git clone --depth=1 https://github.com/electron-rare/RTC_BL_PHONE.git RTC_BL_PHONE
-          git clone --depth=1 https://github.com/electron-rare/le-mystere-professeur-zacus.git le-mystere-professeur-zacus
+          echo "No sibling repo clones configured for this environment"
 
       - name: Build global header
         run: |

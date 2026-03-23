@@ -64,3 +64,47 @@ cad-openscad:
 cad-pio:
 	@if [ -z "$(CAD_ARGS)" ]; then echo "usage: make cad-pio CAD_ARGS='system info'"; exit 1; fi
 	$(CAD_STACK) pio $(CAD_ARGS)
+
+# ── Aperant (autonomous multi-agent framework) ──────────────────
+APERANT_BRIDGE := bash tools/cockpit/aperant_bridge.sh
+
+.PHONY: aperant-status aperant-install aperant-dev aperant-start aperant-build aperant-test aperant-update
+
+aperant-status:
+	$(APERANT_BRIDGE) status
+
+aperant-install:
+	$(APERANT_BRIDGE) install
+
+aperant-dev:
+	$(APERANT_BRIDGE) dev
+
+aperant-start:
+	$(APERANT_BRIDGE) start
+
+aperant-build:
+	$(APERANT_BRIDGE) build
+
+aperant-test:
+	$(APERANT_BRIDGE) test
+
+aperant-update:
+	$(APERANT_BRIDGE) update
+
+aperant-web-install:
+	$(APERANT_BRIDGE) web-install
+
+aperant-web-dev:
+	$(APERANT_BRIDGE) web-dev
+
+aperant-web-build:
+	$(APERANT_BRIDGE) web-build
+
+aperant-deploy:
+	$(APERANT_BRIDGE) deploy
+
+aperant-tower-status:
+	$(APERANT_BRIDGE) tower-status
+
+aperant-tower-logs:
+	$(APERANT_BRIDGE) tower-logs

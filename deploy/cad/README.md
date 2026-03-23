@@ -4,6 +4,12 @@ Last updated: 2026-03-14
 
 Stack Docker CAD/EDA integree directement dans `Kill_LIFE`.
 
+Important:
+
+- cette stack reste la base headless et containerisee;
+- YiACAD ajoute des surfaces GUI natives utilisateur dans KiCad et FreeCAD;
+- la strategie GUI/native est documentee dans `docs/CAD_AI_NATIVE_GUI_RUNBOOK_2026-03-20.md`, `docs/CAD_AI_NATIVE_HOOKS_2026-03-20.md` et `docs/YIACAD_APPLE_UI_UX_AUDIT_2026-03-20.md`.
+
 Backlogs canoniques associes:
 
 - plan modelling local: `docs/plans/16_plan_cad_modeling_stack.md`
@@ -63,9 +69,9 @@ Le workspace monte dans les conteneurs est la racine de `Kill_LIFE` par defaut.
 
 Limites explicites:
 
-- headless seulement
-- pas d'UI graphique supportee dans cette stack locale
-- les serveurs MCP `FreeCAD` et `OpenSCAD` restent des surfaces MCP separees; ils ne remplacent pas les wrappers CLI locaux
+- la stack Docker documentee ici reste headless par nature
+- l'UI graphique YiACAD ne passe pas par ces conteneurs, mais par les surfaces natives utilisateur KiCad/FreeCAD
+- les serveurs MCP `FreeCAD` et `OpenSCAD` restent des surfaces MCP separees; ils ne remplacent ni les wrappers CLI locaux ni les surfaces GUI YiACAD
 
 ## MCP CAD locaux
 

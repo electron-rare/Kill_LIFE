@@ -1,0 +1,52 @@
+name: Mesh Contract Handshake
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "specs/contracts/**"
+      - "tools/specs/mesh_contract_check.py"
+      - ".github/workflows/mesh_contracts.yml"
+      - "tools/autonomous_next_lots.py"
+  pull_request:
+    branches: [main]
+    paths:
+      - "specs/contracts/**"
+      - "tools/specs/mesh_contract_check.py"
+      - ".github/workflows/mesh_contracts.yml"
+      - "tools/autonomous_next_lots.py"
+
+permissions:
+  contents: read
+
+jobs:
+  mesh_contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate mesh contract examples
+        run: |
+          mkdir -p artifacts/ci
+          python3 tools/specs/mesh_contract_check.py \
+            --schema specs/contracts/agent_handoff.schema.json \
+            --instance specs/contracts/examples/agent_handoff.mesh.json \
+            | tee artifacts/ci/agent_handoff_contract.json
+          python3 tools/specs/mesh_contract_check.py \
+            --schema specs/contracts/repo_snapshot.schema.json \
+            --instance specs/contracts/examples/repo_snapshot.mesh.json \
+            | tee artifacts/ci/repo_snapshot_contract.json
+          python3 tools/specs/mesh_contract_check.py \
+            --schema specs/contracts/workflow_handshake.schema.json \
+            --instance specs/contracts/examples/workflow_handshake.mesh.json \
+            | tee artifacts/ci/workflow_handshake_contract.json
+
+      - name: Upload mesh contract reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: mesh-contract-handshake
+          path: artifacts/ci/*.json
