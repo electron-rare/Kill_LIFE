@@ -115,3 +115,8 @@ coverage/
 # Fichiers de test
 firmware/test/.pioenvs/
 firmware/test/.pio/
+
+# Web build artifacts
+web/.next/
+web/node_modules/
+.platformio-local/
