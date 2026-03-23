@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-03-20T13:55:00Z",
+  "status": "ready",
+  "execution_path": "live-provider",
+  "chat_url": "http://localhost:3000/api/v1/chat/completions",
+  "providers_url": "http://localhost:3000/api/agents/providers",
+  "prompt": "Summarise the current Kill_LIFE operator lane in one concise sentence and mention the runtime provider.",
+  "provider": "apple-coreml",
+  "model": "apple-coreml:qwen3.5-4b-onnx-q4f16",
+  "available_providers": [
+    "apple-coreml",
+    "ollama"
+  ],
+  "completion": "Operator lane ready via apple-coreml; evidence capture is live and the cockpit can inspect the latest run.",
+  "summary": "Operator lane ready via apple-coreml; evidence capture is live and the cockpit can inspect the latest run.",
+  "error": null,
+  "http_status": 200,
+  "usage": {
+    "prompt_tokens": 18,
+    "completion_tokens": 16,
+    "total_tokens": 34
+  }
+}

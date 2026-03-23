@@ -1,0 +1,123 @@
+{
+  "version": "2026-03-21",
+  "component": "ops-mascarade-kill-life-contract",
+  "purpose": "Unifier l'etat operateur, la recommandation IA et la memoire d'execution.",
+  "contract_fields": [
+    {
+      "name": "status",
+      "type": "string",
+      "required": true,
+      "description": "Etat observe de l'operation ou du composant.",
+      "allowed_values": [
+        "ok",
+        "degraded",
+        "error",
+        "blocked"
+      ]
+    },
+    {
+      "name": "decision",
+      "type": "object",
+      "required": true,
+      "description": "Decision conseillee ou prise, avec justification."
+    },
+    {
+      "name": "owner",
+      "type": "string",
+      "required": true,
+      "description": "Agent ou lane responsable du prochain pas."
+    },
+    {
+      "name": "artifacts",
+      "type": "array",
+      "required": true,
+      "description": "Preuves, logs, briefs, JSON et markdown relies a l'execution."
+    },
+    {
+      "name": "next_step",
+      "type": "string",
+      "required": true,
+      "description": "Action suivante la plus petite et executable."
+    },
+    {
+      "name": "resume_ref",
+      "type": "string",
+      "required": true,
+      "description": "Reference de reprise stable pour permettre un handoff humain et machine."
+    },
+    {
+      "name": "trust_level",
+      "type": "string",
+      "required": true,
+      "description": "Niveau de confiance sur la recommandation et ses donnees.",
+      "allowed_values": [
+        "verified",
+        "bounded",
+        "inferred"
+      ]
+    },
+    {
+      "name": "routing",
+      "type": "object",
+      "required": true,
+      "description": "Machine cible, ordre de fallback et raison du dispatch."
+    },
+    {
+      "name": "memory_entry",
+      "type": "object",
+      "required": true,
+      "description": "Projection minimale ecrite dans kill_life pour la continuite."
+    }
+  ],
+  "roles": {
+    "ops": [
+      "Afficher le status reel",
+      "Montrer les artefacts de preuve",
+      "Declencher l'action",
+      "Afficher le prochain pas"
+    ],
+    "mascarade": [
+      "Recommander une decision",
+      "Expliquer la rationale",
+      "Exprimer le trust_level",
+      "Proposer le routing"
+    ],
+    "kill_life": [
+      "Persister la decision",
+      "Conserver resume_ref",
+      "Garder l'historique de reprise",
+      "Materialiser la continuite"
+    ]
+  },
+  "example_record": {
+    "status": "degraded",
+    "decision": {
+      "action": "route-heavy-analysis-to-tower",
+      "reason": "Tower dispose de la pile Mascarade/Ollama active et reste la cible lourde prioritaire."
+    },
+    "owner": "SyncOps",
+    "artifacts": [
+      "artifacts/cockpit/mascarade_incident_watch_latest.md",
+      "artifacts/ops/mascarade_runtime_health/latest.json"
+    ],
+    "next_step": "Sync tower-* agents and persist decision in kill_life memory",
+    "resume_ref": "kill-life:mascarade/runtime/tower/2026-03-21",
+    "trust_level": "verified",
+    "routing": {
+      "selected_target": "tower",
+      "fallback_order": [
+        "tower",
+        "kxkm",
+        "local",
+        "cils",
+        "root-reserve"
+      ],
+      "family": "heavy-analysis"
+    },
+    "memory_entry": {
+      "intent": "Normalize Tower as heavy runtime",
+      "decision_state": "applied",
+      "handoff": "tower-first heavy routing active"
+    }
+  }
+}

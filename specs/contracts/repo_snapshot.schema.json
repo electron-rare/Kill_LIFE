@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://electron-rare.local/specs/contracts/repo_snapshot.schema.json",
+  "title": "Mesh Repo Snapshot",
+  "type": "object",
+  "required": [
+    "machine",
+    "repo",
+    "branch",
+    "sha",
+    "remote",
+    "dirty_set",
+    "required_script",
+    "ssh_health"
+  ],
+  "properties": {
+    "machine": {"type": "string", "minLength": 1},
+    "repo": {
+      "type": "string",
+      "enum": ["Kill_LIFE", "mascarade", "crazy_life"]
+    },
+    "branch": {"type": "string", "minLength": 1},
+    "sha": {"type": "string", "minLength": 7},
+    "remote": {"type": "string", "minLength": 1},
+    "dirty_set": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "required_script": {"type": "string", "minLength": 1},
+    "ssh_health": {
+      "type": "string",
+      "enum": ["ok", "ko", "unknown"]
+    }
+  },
+  "additionalProperties": true
+}

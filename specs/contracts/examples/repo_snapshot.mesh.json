@@ -1,0 +1,10 @@
+{
+  "machine": "clems@192.168.0.120",
+  "repo": "Kill_LIFE",
+  "branch": "main",
+  "sha": "bd3f7b99154f86057ba18b9948d940df55722b12",
+  "remote": "https://github.com/electron-rare/Kill_LIFE.git",
+  "dirty_set": ["README.md", "specs/04_tasks.md"],
+  "required_script": "tools/repo_state/repo_refresh.sh",
+  "ssh_health": "ok"
+}

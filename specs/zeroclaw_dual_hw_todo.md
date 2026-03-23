@@ -65,9 +65,20 @@ Last updated: 2026-02-21
 - [x] I-204 - Add runtime scripts (`integrations_up/down/status`, `import_n8n`).
 - [x] I-205 - Validate end-to-end import + activation on local Docker runtime.
   - status: `2026-03-09` done (`mascarade-n8n` healthy, `kill-life-n8n-smoke` active via local CLI import/publish path).
+  - statut local courant: `2026-03-20` restauré sur cette machine.
+  - détail: Docker Desktop relancé, conteneur `mascarade-n8n` auto-provisionné depuis `docker.n8n.io/n8nio/n8n`, HTTP local `5678` OK.
+  - correction appliquée: le workflow smoke utilise désormais un `Schedule Trigger` annuel activable; le chemin CLI officiel `publish:workflow` reste prioritaire, avec fallback legacy `update:workflow --active=true`.
+  - récupération locale `2026-03-21`: les scripts sondent maintenant `healthz`, échouent vite sur les timeouts Docker, et peuvent court-circuiter l'import si la DB n8n contient déjà le workflow conforme et actif.
+  - incident local `2026-03-21`: un workflow historique `manualTrigger` restait stocké dans la base SQLite n8n et le runtime local a nécessité une réinitialisation contrôlée du conteneur/volume avec sauvegarde avant de repartir sur une DB saine.
+  - résultat courant:
+    - `python3 -m unittest discover -s test -p 'test_zeroclaw_n8n_workflow_contract.py'` -> `OK`
+    - `bash tools/ai/zeroclaw_integrations_status.sh --json` -> `status=ready`
+    - `bash tools/ai/zeroclaw_integrations_import_n8n.sh --json` -> `imported|skipped / published|skipped / active=true`
+    - `bash tools/ai/zeroclaw_integrations_lot.sh verify --json` -> `overall_status=ready`
   - command: `bash tools/ai/zeroclaw_integrations_up.sh --json`
   - command: `bash tools/ai/zeroclaw_integrations_status.sh --json`
   - command: `bash tools/ai/zeroclaw_integrations_import_n8n.sh --json`
   - evidence:
-    - `{"container":"mascarade-n8n","container_running":true,"internal_http_ok":true,"host_http_ok":true}`
-    - `{"workflow_id":"kill-life-n8n-smoke","import_action":"skipped","publish_action":"published","active":true}`
+    - `{"status":"ready","reason":"","container":"mascarade-n8n","host_http_ok":true,"internal_http_ok":true,"n8n_health_url":"http://127.0.0.1:5678/healthz"}`
+    - `{"workflow_id":"kill-life-n8n-smoke","import_action":"imported|skipped","publish_action":"published|skipped","active":true}`
+    - `artifacts/cockpit/zeroclaw_n8n_recovery_2026-03-21/live_volume_backup/`

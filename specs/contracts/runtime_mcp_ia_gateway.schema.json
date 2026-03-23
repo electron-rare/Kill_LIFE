@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://electron-rare.local/specs/contracts/runtime_mcp_ia_gateway.schema.json",
+  "title": "Runtime MCP IA Gateway",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "generated_at",
+    "component",
+    "owner_repo",
+    "owner_agent",
+    "owner_subagent",
+    "write_set",
+    "status",
+    "summary_short",
+    "evidence",
+    "surfaces"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "const": "runtime-mcp-ia-gateway/v1"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "component": {
+      "type": "string",
+      "const": "runtime-mcp-ia-gateway"
+    },
+    "owner_repo": {
+      "type": "string",
+      "enum": [
+        "Kill_LIFE",
+        "mascarade",
+        "crazy_life"
+      ]
+    },
+    "owner_agent": {
+      "type": "string",
+      "minLength": 1
+    },
+    "owner_subagent": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "write_set": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ready",
+        "degraded",
+        "blocked"
+      ]
+    },
+    "summary_short": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 320
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "degraded_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "next_steps": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "surfaces": {
+      "type": "object",
+      "required": [
+        "runtime",
+        "mcp",
+        "ia"
+      ],
+      "properties": {
+        "runtime": {
+          "$ref": "#/$defs/surfaceStatus"
+        },
+        "mcp": {
+          "$ref": "#/$defs/surfaceStatus"
+        },
+        "ia": {
+          "$ref": "#/$defs/surfaceStatus"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "surfaceStatus": {
+      "type": "object",
+      "required": [
+        "status",
+        "summary_short",
+        "evidence"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "ready",
+            "degraded",
+            "blocked"
+          ]
+        },
+        "summary_short": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 320
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "degraded_reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "upstreams": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

@@ -6,7 +6,7 @@ Last updated: 2026-02-21
 
 Run one orchestration layer that can:
 
-- converse against `RTC_BL_PHONE` and `le-mystere-professeur-zacus` independently,
+- converse against the dedicated RTC hardware repo and the Zacus hardware repo independently,
 - keep workspace boundaries strict per repo,
 - run low-cost autonomous loops with guarded command allowlists,
 - enforce upload/flash/serial-monitor loops by default on connected hardware.

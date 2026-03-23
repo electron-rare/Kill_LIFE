@@ -1,0 +1,28 @@
+{
+  "lot_id": "mesh-governance",
+  "owner_repo": "Kill_LIFE",
+  "owner_agent": "PM-Mesh",
+  "write_set": [
+    "docs/TRI_REPO_MESH_CONTRACT_2026-03-20.md",
+    "tools/cockpit/mesh_sync_preflight.sh"
+  ],
+  "preflight": [
+    "bash tools/cockpit/ssh_healthcheck.sh --json",
+    "bash tools/cockpit/mesh_sync_preflight.sh --json"
+  ],
+  "validations": [
+    "bash tools/run_autonomous_next_lots.sh status",
+    "bash tools/specs/sync_spec_mirror.sh all --yes"
+  ],
+  "evidence": [
+    "artifacts/cockpit/useful_lots_status.md",
+    "docs/MACHINE_SYNC_STATUS_2026-03-20.md"
+  ],
+  "sync_targets": [
+    "local",
+    "clems@192.168.0.120",
+    "root@192.168.0.119",
+    "kxkm@kxkm-ai",
+    "cils@100.126.225.111"
+  ]
+}

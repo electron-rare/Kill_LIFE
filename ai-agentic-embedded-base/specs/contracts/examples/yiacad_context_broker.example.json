@@ -1,0 +1,18 @@
+{
+  "component": "yiacad-context",
+  "generated_at": "2026-03-20T23:30:00Z",
+  "surface": "kicad-pcb",
+  "context_ref": "project:demo-board/main",
+  "paths": {
+    "source_path": "/abs/path/to/demo-board",
+    "board": "/abs/path/to/demo-board/main.kicad_pcb",
+    "schematic": "/abs/path/to/demo-board/main.kicad_sch",
+    "freecad_document": null,
+    "artifacts_dir": "/abs/path/to/artifacts/cad-ai-native/20260320T233000-kicad-erc-drc"
+  },
+  "runtime": {
+    "root": "/abs/path/to/Kill_LIFE",
+    "artifacts_root": "/abs/path/to/Kill_LIFE/artifacts/cad-ai-native",
+    "fusion_status_path": "/abs/path/to/Kill_LIFE/artifacts/cad-fusion/yiacad-fusion-last-status.md"
+  }
+}

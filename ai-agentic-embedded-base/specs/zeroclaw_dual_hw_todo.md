@@ -65,9 +65,18 @@ Last updated: 2026-02-21
 - [x] I-204 - Add runtime scripts (`integrations_up/down/status`, `import_n8n`).
 - [x] I-205 - Validate end-to-end import + activation on local Docker runtime.
   - status: `2026-03-09` done (`mascarade-n8n` healthy, `kill-life-n8n-smoke` active via local CLI import/publish path).
+  - statut local courant: `2026-03-20` restauré sur cette machine.
+  - détail: Docker Desktop relancé, conteneur `mascarade-n8n` auto-provisionné depuis `docker.n8n.io/n8nio/n8n`, HTTP local `5678` OK.
+  - correction appliquée: le workflow smoke utilise désormais un `Schedule Trigger` annuel activable; le chemin CLI officiel `publish:workflow` reste prioritaire, avec fallback legacy `update:workflow --active=true`.
+  - validation locale `2026-03-21`: l'activation reste vérifiée explicitement, mais les scripts ont aussi été durcis pour échouer vite si la CLI Docker locale se fige.
+  - état machine `2026-03-21`: la réactivation live est bloquée par des timeouts `docker ps|inspect|logs|restart` sur cette machine; la régression du workflow `manualTrigger` est néanmoins corrigée côté artefact versionné.
+  - résultat courant:
+    - `python3 -m unittest discover -s test -p 'test_zeroclaw_n8n_workflow_contract.py'` -> `OK`
+    - `bash tools/ai/zeroclaw_integrations_import_n8n.sh --json` -> `blocked` avec `docker_timeout`
+    - `bash tools/ai/zeroclaw_integrations_lot.sh verify --json` -> `blocked` tant que le daemon Docker local ne répond pas de nouveau
   - command: `bash tools/ai/zeroclaw_integrations_up.sh --json`
   - command: `bash tools/ai/zeroclaw_integrations_status.sh --json`
   - command: `bash tools/ai/zeroclaw_integrations_import_n8n.sh --json`
   - evidence:
-    - `{"container":"mascarade-n8n","container_running":true,"internal_http_ok":true,"host_http_ok":true}`
-    - `{"workflow_id":"kill-life-n8n-smoke","import_action":"skipped","publish_action":"published","active":true}`
+    - `{"status":"blocked","reason":"docker_cli_timeout","container":"mascarade-n8n","container_status":"docker cli timeout"}`
+    - `{"workflow_id":"kill-life-n8n-smoke","reason":"docker_timeout|docker ps -a timed out while checking mascarade-n8n"}`

@@ -1,0 +1,85 @@
+{
+  "generated_at": "2026-03-20 15:45:37 CET",
+  "default_profile": "tower-first",
+  "profiles": [
+    "tower-first",
+    "photon-safe"
+  ],
+  "targets": [
+    {
+      "id": "tower",
+      "target": "clems@192.168.0.120",
+      "host": "192.168.0.120",
+      "port": 22,
+      "role": "Machine de pilotage / orchestration locale",
+      "priority": 1,
+      "placement": "primary",
+      "enabled_profiles": ["tower-first", "photon-safe"],
+      "critical_repos": ["Kill_LIFE", "mascarade", "crazy_life"],
+      "non_essential_policy": "allowed",
+      "reserve_only": false,
+      "load_order_bias": 1000,
+      "notes": "Cible prioritaire de calcul et de pilotage."
+    },
+    {
+      "id": "kxkm",
+      "target": "kxkm@kxkm-ai",
+      "host": "kxkm-ai",
+      "port": 22,
+      "role": "Mac opérateur",
+      "priority": 2,
+      "placement": "secondary",
+      "enabled_profiles": ["tower-first", "photon-safe"],
+      "critical_repos": ["Kill_LIFE", "mascarade", "crazy_life"],
+      "non_essential_policy": "allowed",
+      "reserve_only": false,
+      "load_order_bias": 2000,
+      "notes": "Relais principal derrière Tower."
+    },
+    {
+      "id": "cils",
+      "target": "cils@100.126.225.111",
+      "host": "100.126.225.111",
+      "port": 22,
+      "role": "Mac opérateur secondaire (photon)",
+      "priority": 3,
+      "placement": "quota",
+      "enabled_profiles": ["tower-first", "photon-safe"],
+      "critical_repos": ["Kill_LIFE"],
+      "non_essential_policy": "locked",
+      "reserve_only": false,
+      "load_order_bias": 3000,
+      "notes": "Pas de service essentiel durable; `photon-safe` force la charge applicative a zero."
+    },
+    {
+      "id": "local",
+      "target": "local",
+      "host": "local",
+      "port": 0,
+      "role": "Workspace local",
+      "priority": 4,
+      "placement": "local",
+      "enabled_profiles": ["tower-first", "photon-safe"],
+      "critical_repos": ["Kill_LIFE", "mascarade", "crazy_life"],
+      "non_essential_policy": "allowed",
+      "reserve_only": false,
+      "load_order_bias": 4000,
+      "notes": "Utilisation en quatrieme position pour eviter la surcharge locale."
+    },
+    {
+      "id": "root-reserve",
+      "target": "root@192.168.0.119",
+      "host": "192.168.0.119",
+      "port": 22,
+      "role": "Serveur système / exécution matérielle",
+      "priority": 5,
+      "placement": "reserve",
+      "enabled_profiles": ["tower-first", "photon-safe"],
+      "critical_repos": ["Kill_LIFE", "mascarade", "crazy_life"],
+      "non_essential_policy": "reserve-only",
+      "reserve_only": true,
+      "load_order_bias": 9000,
+      "notes": "Réserve stricte: ne doit pas remonter devant `local` en fonctionnement nominal."
+    }
+  ]
+}

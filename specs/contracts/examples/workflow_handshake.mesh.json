@@ -1,0 +1,44 @@
+{
+  "contract_version": "mesh-workflow-handshake/v1",
+  "schema_version": "workflow/v1",
+  "producer_repo": "Kill_LIFE",
+  "consumer_repo": "crazy_life",
+  "compatibility": "backward-compatible",
+  "workflow_fields": [
+    "workflow_id",
+    "title",
+    "steps",
+    "evidence_refs",
+    "updated_at"
+  ],
+  "evidence": [
+    "docs/TRI_REPO_MESH_CONTRACT_2026-03-20.md",
+    "docs/MACHINE_SYNC_STATUS_2026-03-20.md"
+  ],
+  "validations": [
+    "bash tools/cockpit/mesh_sync_preflight.sh --json",
+    "python3 tools/specs/mesh_contract_check.py --schema specs/contracts/workflow_handshake.schema.json --instance specs/contracts/examples/workflow_handshake.mesh.json"
+  ],
+  "sync_targets": [
+    "local",
+    "clems@192.168.0.120",
+    "root@192.168.0.119",
+    "kxkm@kxkm-ai",
+    "cils@100.126.225.111"
+  ],
+  "ui_mappings": [
+    {
+      "field": "workflow_id",
+      "ui_surface": "workflow-list"
+    },
+    {
+      "field": "steps",
+      "ui_surface": "workflow-editor",
+      "notes": "Rendered step-by-step without hidden fields."
+    },
+    {
+      "field": "evidence_refs",
+      "ui_surface": "evidence-panel"
+    }
+  ]
+}

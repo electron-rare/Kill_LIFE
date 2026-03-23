@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://electron-rare.local/specs/contracts/yiacad_context_broker.schema.json",
+  "title": "YiACAD Context Broker",
+  "type": "object",
+  "required": [
+    "component",
+    "generated_at",
+    "surface",
+    "context_ref",
+    "paths",
+    "runtime"
+  ],
+  "properties": {
+    "component": {
+      "type": "string",
+      "const": "yiacad-context"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "surface": {
+      "type": "string"
+    },
+    "context_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "paths": {
+      "type": "object",
+      "required": [
+        "source_path",
+        "board",
+        "schematic",
+        "freecad_document",
+        "artifacts_dir"
+      ],
+      "properties": {
+        "source_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "board": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "schematic": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "freecad_document": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "artifacts_dir": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "runtime": {
+      "type": "object",
+      "required": [
+        "root",
+        "artifacts_root",
+        "fusion_status_path"
+      ],
+      "properties": {
+        "root": {
+          "type": "string"
+        },
+        "artifacts_root": {
+          "type": "string"
+        },
+        "fusion_status_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

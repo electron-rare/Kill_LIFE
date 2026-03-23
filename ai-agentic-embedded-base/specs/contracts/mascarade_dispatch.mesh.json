@@ -1,0 +1,160 @@
+{
+  "version": "2026-03-21",
+  "component": "mascarade-dispatch-mesh",
+  "default_host_order": [
+    "tower",
+    "kxkm",
+    "local",
+    "cils",
+    "root-reserve"
+  ],
+  "family_defaults": {
+    "heavy-code": {
+      "host_order": [
+        "tower",
+        "kxkm",
+        "local",
+        "cils",
+        "root-reserve"
+      ],
+      "notes": "Code lourd, refactor, reasoning compile, firmware, CAD et taches longues."
+    },
+    "heavy-analysis": {
+      "host_order": [
+        "tower",
+        "kxkm",
+        "local",
+        "cils",
+        "root-reserve"
+      ],
+      "notes": "Analyse profonde, decomposition de probleme et arbitrage lourd."
+    },
+    "heavy-research": {
+      "host_order": [
+        "tower",
+        "kxkm",
+        "local",
+        "cils",
+        "root-reserve"
+      ],
+      "notes": "Recherche longue, synthese multi-sources et veille structuree."
+    },
+    "text-production": {
+      "host_order": [
+        "kxkm",
+        "tower",
+        "local",
+        "cils",
+        "root-reserve"
+      ],
+      "notes": "Texte, docs, chat interactif et production editoriale."
+    },
+    "interactive-safe": {
+      "host_order": [
+        "kxkm",
+        "tower",
+        "local",
+        "cils",
+        "root-reserve"
+      ],
+      "notes": "Fallback interactif et lanes de secours."
+    }
+  },
+  "profile_overrides": {
+    "tower-code": {
+      "family": "heavy-code",
+      "host_order": [
+        "tower",
+        "kxkm",
+        "local",
+        "cils",
+        "root-reserve"
+      ]
+    },
+    "tower-analysis": {
+      "family": "heavy-analysis",
+      "host_order": [
+        "tower",
+        "kxkm",
+        "local",
+        "cils",
+        "root-reserve"
+      ]
+    },
+    "tower-research": {
+      "family": "heavy-research",
+      "host_order": [
+        "tower",
+        "kxkm",
+        "local",
+        "cils",
+        "root-reserve"
+      ]
+    },
+    "tower-text": {
+      "family": "text-production",
+      "host_order": [
+        "tower",
+        "kxkm",
+        "local",
+        "cils",
+        "root-reserve"
+      ]
+    },
+    "kxkm-code": {
+      "family": "heavy-code"
+    },
+    "kxkm-analysis": {
+      "family": "heavy-analysis"
+    },
+    "kxkm-web-research": {
+      "family": "heavy-research"
+    },
+    "kxkm-firmware": {
+      "family": "heavy-code"
+    },
+    "kxkm-cad": {
+      "family": "heavy-code"
+    },
+    "kxkm-ops": {
+      "family": "heavy-analysis"
+    },
+    "kxkm-docs": {
+      "family": "text-production"
+    },
+    "kxkm-planning": {
+      "family": "text-production"
+    },
+    "kxkm-fallback-safe": {
+      "family": "interactive-safe"
+    }
+  },
+  "keyword_families": {
+    "heavy-code": [
+      "code",
+      "firmware",
+      "cad",
+      "security",
+      "fine-tune",
+      "coder"
+    ],
+    "heavy-analysis": [
+      "analysis",
+      "reflect",
+      "reflection",
+      "ops",
+      "reason"
+    ],
+    "heavy-research": [
+      "research",
+      "web",
+      "veille"
+    ],
+    "text-production": [
+      "docs",
+      "text",
+      "site",
+      "planning"
+    ]
+  }
+}

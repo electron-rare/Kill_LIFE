@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://electron-rare.local/specs/contracts/workflow_handshake.schema.json",
+  "title": "Mesh Workflow Handshake",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "schema_version",
+    "producer_repo",
+    "consumer_repo",
+    "compatibility",
+    "evidence",
+    "validations",
+    "sync_targets"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "const": "mesh-workflow-handshake/v1"
+    },
+    "schema_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "producer_repo": {
+      "type": "string",
+      "const": "Kill_LIFE"
+    },
+    "consumer_repo": {
+      "type": "string",
+      "const": "crazy_life"
+    },
+    "compatibility": {
+      "type": "string",
+      "enum": ["backward-compatible", "breaking"]
+    },
+    "workflow_fields": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "validations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "sync_targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "ui_mappings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["field", "ui_surface"],
+        "properties": {
+          "field": {"type": "string", "minLength": 1},
+          "ui_surface": {"type": "string", "minLength": 1},
+          "notes": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,32 @@
+{
+  "component": "yiacad",
+  "surface": "kicad-pcb",
+  "action": "review.erc_drc",
+  "execution_mode": "interactive",
+  "status": "degraded",
+  "severity": "warning",
+  "summary": "ERC/DRC completed with 3 warnings and no blocking errors.",
+  "details": "Three footprint clearance warnings were found. The review card can open the generated report and the artifact folder directly.",
+  "generated_at": "2026-03-20T22:49:00Z",
+  "context_ref": "project:kill-life-main/demo-board",
+  "provider": null,
+  "model": null,
+  "latency_ms": 842,
+  "artifacts": [
+    {
+      "kind": "report",
+      "path": "/abs/path/to/erc-drc-report.md",
+      "label": "ERC/DRC report"
+    },
+    {
+      "kind": "log",
+      "path": "/abs/path/to/yiacad-run.log",
+      "label": "YiACAD run log"
+    }
+  ],
+  "next_steps": [
+    "open review center",
+    "inspect warning details",
+    "rerun after footprint fixes"
+  ]
+}

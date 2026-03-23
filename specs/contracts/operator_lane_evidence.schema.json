@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://electron-rare.local/specs/contracts/operator_lane_evidence.schema.json",
+  "title": "Full Operator Lane Evidence",
+  "type": "object",
+  "required": [
+    "generated_at",
+    "status",
+    "execution_path",
+    "chat_url",
+    "providers_url",
+    "prompt",
+    "provider",
+    "model",
+    "available_providers",
+    "completion",
+    "summary"
+  ],
+  "properties": {
+    "generated_at": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ready",
+        "degraded",
+        "blocked"
+      ]
+    },
+    "execution_path": {
+      "type": "string",
+      "const": "live-provider"
+    },
+    "chat_url": {
+      "type": "string"
+    },
+    "providers_url": {
+      "type": "string"
+    },
+    "prompt": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "available_providers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "completion": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "error": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "http_status": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "usage": {
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": true
+}

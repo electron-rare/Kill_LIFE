@@ -1,0 +1,88 @@
+{
+  "version": "2026-03-21",
+  "target_id": "tower",
+  "target_host": "clems@192.168.0.120",
+  "remote_dir": "/home/clems/mascarade-main",
+  "profiles": [
+    {
+      "name": "tower-code",
+      "description": "Lane Tower pour code lourd, generation et refactor mesh-first.",
+      "system_prompt": "Tu es l'agent Tower code de Mascarade. Tu privilegies les taches lourdes de code, refactor, integration et debug profond. Tu fournis des sorties concretes, structurées et compatibles avec l'orchestration mesh Kill_LIFE.",
+      "preferred_provider": "ollama",
+      "preferred_model": "hf.co/mradermacher/CodeV-R1-Qwen-7B-i1-GGUF:IQ4_XS",
+      "strategy": "balanced",
+      "temperature": 0.1,
+      "max_tokens": 4096,
+      "dispatch_family": "heavy-code",
+      "dispatch_class": "heavy",
+      "preferred_host_order": [
+        "tower",
+        "kxkm",
+        "local",
+        "cils",
+        "root-reserve"
+      ],
+      "fallback_model": "qwen2.5-coder:3b"
+    },
+    {
+      "name": "tower-text",
+      "description": "Lane Tower pour texte long, synthese, README et production documentaire.",
+      "system_prompt": "Tu es l'agent Tower texte de Mascarade. Tu transformes des contextes techniques en livrables lisibles, README, specifications et syntheses longues sans perdre la precision operative.",
+      "preferred_provider": "ollama",
+      "preferred_model": "mistral:7b",
+      "strategy": "balanced",
+      "temperature": 0.3,
+      "max_tokens": 4096,
+      "dispatch_family": "text-production",
+      "dispatch_class": "medium",
+      "preferred_host_order": [
+        "tower",
+        "kxkm",
+        "local",
+        "cils",
+        "root-reserve"
+      ],
+      "fallback_model": "phi3:mini"
+    },
+    {
+      "name": "tower-research",
+      "description": "Lane Tower pour veille, recoupement, classement de sources et notes de recherche.",
+      "system_prompt": "Tu es l'agent Tower recherche de Mascarade. Tu fais du recoupement, de la veille, de l'analyse de sources et tu restitues des conclusions operables avec hypotheses et limites explicites.",
+      "preferred_provider": "ollama",
+      "preferred_model": "hf.co/QuantFactory/llm-compiler-7b-GGUF:latest",
+      "strategy": "balanced",
+      "temperature": 0.2,
+      "max_tokens": 4096,
+      "dispatch_family": "heavy-research",
+      "dispatch_class": "heavy",
+      "preferred_host_order": [
+        "tower",
+        "kxkm",
+        "local",
+        "cils",
+        "root-reserve"
+      ],
+      "fallback_model": "mistral:7b"
+    },
+    {
+      "name": "tower-analysis",
+      "description": "Lane Tower pour raisonnement structure, analyse de code et arbitrage technique.",
+      "system_prompt": "Tu es l'agent Tower analyse de Mascarade. Tu decomposes les problemes complexes, produis des hypotheses hierarchisees et aides a piloter les choix d'architecture et d'execution.",
+      "preferred_provider": "ollama",
+      "preferred_model": "hf.co/QuantFactory/llm-compiler-7b-GGUF:latest",
+      "strategy": "balanced",
+      "temperature": 0.15,
+      "max_tokens": 4096,
+      "dispatch_family": "heavy-analysis",
+      "dispatch_class": "heavy",
+      "preferred_host_order": [
+        "tower",
+        "kxkm",
+        "local",
+        "cils",
+        "root-reserve"
+      ],
+      "fallback_model": "mistral:7b"
+    }
+  ]
+}

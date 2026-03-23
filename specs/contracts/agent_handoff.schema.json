@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://electron-rare.local/specs/contracts/agent_handoff.schema.json",
+  "title": "Mesh Agent Handoff",
+  "type": "object",
+  "required": [
+    "lot_id",
+    "owner_repo",
+    "owner_agent",
+    "write_set",
+    "preflight",
+    "validations",
+    "evidence",
+    "sync_targets"
+  ],
+  "properties": {
+    "lot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "owner_repo": {
+      "type": "string",
+      "enum": ["Kill_LIFE", "mascarade", "crazy_life"]
+    },
+    "owner_agent": {
+      "type": "string",
+      "minLength": 1
+    },
+    "write_set": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "preflight": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "validations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "sync_targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    }
+  },
+  "additionalProperties": true
+}

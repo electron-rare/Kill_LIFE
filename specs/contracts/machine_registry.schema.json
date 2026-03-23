@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://electron-rare.local/specs/contracts/machine_registry.schema.json",
+  "title": "Kill LIFE Machine Registry",
+  "type": "object",
+  "required": [
+    "generated_at",
+    "default_profile",
+    "profiles",
+    "targets"
+  ],
+  "properties": {
+    "generated_at": {"type": "string", "minLength": 1},
+    "default_profile": {"type": "string", "enum": ["tower-first", "photon-safe"]},
+    "profiles": {
+      "type": "array",
+      "items": {"type": "string", "enum": ["tower-first", "photon-safe"]},
+      "minItems": 1
+    },
+    "targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "target",
+          "host",
+          "port",
+          "role",
+          "priority",
+          "placement",
+          "enabled_profiles",
+          "critical_repos",
+          "reserve_only"
+        ],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "target": {"type": "string", "minLength": 1},
+          "host": {"type": "string", "minLength": 1},
+          "port": {"type": "integer", "minimum": 1},
+          "role": {"type": "string", "minLength": 1},
+          "priority": {"type": "integer", "minimum": 1},
+          "placement": {"type": "string", "enum": ["primary", "secondary", "quota", "local", "reserve"]},
+          "enabled_profiles": {
+            "type": "array",
+            "items": {"type": "string", "enum": ["tower-first", "photon-safe"]},
+            "minItems": 1
+          },
+          "critical_repos": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "non_essential_policy": {"type": "string"},
+          "reserve_only": {"type": "boolean"},
+          "load_order_bias": {"type": "integer"},
+          "notes": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

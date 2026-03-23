@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://electron-rare.local/specs/contracts/yiacad_uiux_output.schema.json",
+  "title": "YiACAD UI UX Output Contract",
+  "type": "object",
+  "required": [
+    "component",
+    "surface",
+    "action",
+    "execution_mode",
+    "status",
+    "severity",
+    "summary",
+    "artifacts",
+    "next_steps"
+  ],
+  "properties": {
+    "component": {
+      "type": "string",
+      "const": "yiacad"
+    },
+    "surface": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string"
+    },
+    "execution_mode": {
+      "type": "string",
+      "enum": [
+        "interactive",
+        "batch",
+        "background"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "done",
+        "degraded",
+        "blocked"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "error"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "details": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "generated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "context_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "provider": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "model": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "latency_ms": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "kind",
+          "path"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "report",
+              "log",
+              "export",
+              "evidence"
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "next_steps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}
