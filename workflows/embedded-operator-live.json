@@ -1,0 +1,60 @@
+{
+  "id": "embedded-operator-live",
+  "title": "Embedded Operator Live",
+  "category": "operator",
+  "version": 1,
+  "status": "ready",
+  "description": "Run the operator E2E lane through crazy_life, call the mascarade live provider bridge, and persist operator-readable evidence.",
+  "tags": [
+    "operator",
+    "e2e",
+    "live",
+    "llm"
+  ],
+  "execution_modes": [
+    "local"
+  ],
+  "viewport": {
+    "width": 1320,
+    "height": 760
+  },
+  "nodes": [
+    {
+      "id": "start",
+      "type": "note",
+      "label": "Start",
+      "description": "Entry point for the full operator lane.",
+      "x": 120,
+      "y": 250,
+      "runner": {
+        "kind": "none"
+      },
+      "config": {}
+    },
+    {
+      "id": "live-provider",
+      "type": "local-action",
+      "label": "Live Provider Smoke",
+      "description": "Call the mascarade OpenAI-compatible chat endpoint and persist the operator evidence record.",
+      "x": 470,
+      "y": 250,
+      "runner": {
+        "kind": "local-action",
+        "action": "operator.live-provider"
+      },
+      "config": {
+        "prompt": "Summarise the current Kill_LIFE operator lane in one concise sentence and mention the runtime provider.",
+        "chat_url": "http://core:8100/v1/chat/completions",
+        "providers_url": "http://127.0.0.1:3000/api/agents/providers",
+        "output_path": "artifacts/operator_lane/live_provider_result.json"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "start-live-provider",
+      "source": "start",
+      "target": "live-provider"
+    }
+  ]
+}
