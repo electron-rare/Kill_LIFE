@@ -1,16 +1,40 @@
 {
   "schema_version": "repo_state.v1",
-  "generated_at_utc": "2026-02-21T02:22:47Z",
+  "generated_at_utc": "2026-03-21T19:45:12Z",
   "repo": "Kill_LIFE",
   "repo_url": "https://github.com/electron-rare/Kill_LIFE.git",
-  "branch": "codex/repo-state-global-index",
-  "head": "432c76a57e5cd9c1603d68f56cc6d012168be1b3",
-  "head_date": "2026-02-21T03:03:06+01:00",
-  "head_subject": "Merge pull request #9 from electron-rare/codex/autonomy-plan-todo-hw-local",
+  "branch": "main",
+  "head": "bd3f7b99154f86057ba18b9948d940df55722b12",
+  "head_date": "2026-03-15T21:56:51+01:00",
+  "head_subject": "feat(tools): align mcp runtime status and cad tooling",
   "project_kind": "agentic_orchestrator",
   "pivot_changes": [
     {
-      "path": "(none)",
+      "path": "tools/cad_runtime.py",
+      "tags": [
+        "general_change"
+      ]
+    },
+    {
+      "path": "tools/freecad_mcp.py",
+      "tags": [
+        "general_change"
+      ]
+    },
+    {
+      "path": "tools/mcp_runtime_status.py",
+      "tags": [
+        "general_change"
+      ]
+    },
+    {
+      "path": "tools/tui/cad_mcp_audit.sh",
+      "tags": [
+        "general_change"
+      ]
+    },
+    {
+      "path": "tools/tui/kicad_benchmark_review.sh",
       "tags": [
         "general_change"
       ]

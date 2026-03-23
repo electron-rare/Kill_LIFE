@@ -16,7 +16,9 @@ def menu():
   print("3) hardware check (ERC/netlist/BOM)")
   print("4) useful lots status")
   print("5) useful lots run")
-  print("6) exit")
+  print("6) yiacad fusion lot")
+  print("7) weekly refonte summary")
+  print("8) exit")
   choice = input("> ").strip()
   if choice == "1":
     return gate_s0()
@@ -29,6 +31,14 @@ def menu():
     return lot_chain_status()
   if choice == "5":
     return lot_chain_run()
+  if choice == "6":
+    action = input("YiACAD action [prepare/smoke/status/logs/clean-logs] (default: prepare): ").strip() or "prepare"
+    if action not in {"prepare", "smoke", "status", "logs", "clean-logs"}:
+      print("Invalid YiACAD action:", action)
+      return 2
+    return yiacad_fusion(action)
+  if choice == "7":
+    return weekly_summary()
   return 0
 
 def gate_s0():
@@ -64,6 +74,14 @@ def lot_chain_status():
 def lot_chain_run():
   return sh(["bash", "tools/cockpit/lot_chain.sh", "all", "--yes"], cwd=str(ROOT))
 
+
+def yiacad_fusion(action="prepare"):
+  args = ["bash", "tools/cad/yiacad_fusion_lot.sh", "--action", action]
+  return sh(args, cwd=str(ROOT))
+
+def weekly_summary():
+  return sh(["bash", "tools/cockpit/render_weekly_refonte_summary.sh"], cwd=str(ROOT))
+
 def main():
   ap = argparse.ArgumentParser()
   sub = ap.add_subparsers(dest="cmd", required=True)
@@ -74,6 +92,9 @@ def main():
   sub.add_parser("lots-run")
   p = sub.add_parser("hw")
   p.add_argument("--schematic", required=True)
+  p_fusion = sub.add_parser("yiacad-fusion")
+  p_fusion.add_argument("--action", default="prepare", choices=["prepare", "smoke", "status", "logs", "clean-logs"])
+  sub.add_parser("weekly-summary")
   args = ap.parse_args()
 
   if args.cmd == "menu":
@@ -86,6 +107,10 @@ def main():
     return lot_chain_status()
   if args.cmd == "lots-run":
     return lot_chain_run()
+  if args.cmd == "yiacad-fusion":
+    return yiacad_fusion(args.action)
+  if args.cmd == "weekly-summary":
+    return weekly_summary()
   if args.cmd == "hw":
     return hardware(args.schematic)
   return 0
