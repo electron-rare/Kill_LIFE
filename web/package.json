@@ -1,0 +1,32 @@
+{
+  "name": "yiacad-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "dev:realtime": "node ./realtime/server.mjs",
+    "worker:eda": "node ./workers/eda-worker.mjs",
+    "vendor:kicanvas": "node ./scripts/vendor-kicanvas.mjs"
+  },
+  "dependencies": {
+    "@excalidraw/excalidraw": "0.18.0",
+    "bullmq": "5.71.0",
+    "graphql": "16.13.1",
+    "graphql-yoga": "5.18.1",
+    "next": "14.2.35",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "ws": "8.20.0",
+    "y-websocket": "3.0.0",
+    "yjs": "13.6.30"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "typescript": "5.9.3"
+  }
+}

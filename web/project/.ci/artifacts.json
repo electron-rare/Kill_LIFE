@@ -1,0 +1,30 @@
+[
+  {
+    "id": "gerber-latest",
+    "label": "Gerber bundle",
+    "kind": "gerber",
+    "status": "planned",
+    "url": null
+  },
+  {
+    "id": "bom-latest",
+    "label": "BOM export",
+    "kind": "bom",
+    "status": "planned",
+    "url": null
+  },
+  {
+    "id": "step-latest",
+    "label": "STEP export",
+    "kind": "step",
+    "status": "planned",
+    "url": null
+  },
+  {
+    "id": "pdf-latest",
+    "label": "Fabrication PDF",
+    "kind": "pdf",
+    "status": "planned",
+    "url": null
+  }
+]

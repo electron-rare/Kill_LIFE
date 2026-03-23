@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "baseUrl": "../../tools/aperant/apps/desktop",
+    "paths": {
+      "@/*": ["src/renderer/*"],
+      "@shared/*": ["src/shared/*"],
+      "@features/*": ["src/renderer/features/*"],
+      "@components/*": ["src/renderer/shared/components/*"],
+      "@hooks/*": ["src/renderer/shared/hooks/*"],
+      "@lib/*": ["src/renderer/shared/lib/*"]
+    }
+  },
+  "include": [
+    "../../tools/aperant/apps/desktop/src/renderer/**/*",
+    "../../tools/aperant/apps/desktop/src/shared/**/*",
+    "shims/**/*",
+    "server/**/*"
+  ],
+  "exclude": ["node_modules", "dist"]
+}

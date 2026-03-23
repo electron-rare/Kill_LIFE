@@ -1,0 +1,11 @@
+[
+  {
+    "id": "42",
+    "title": "Power tree cleanup",
+    "status": "open",
+    "author": "eda-bot",
+    "hasPcbDiff": true,
+    "hasDiagramDiff": true,
+    "hasArtifactPreview": false
+  }
+]
