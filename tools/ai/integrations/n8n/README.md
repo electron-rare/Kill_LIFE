@@ -26,9 +26,21 @@ bash tools/ai/zeroclaw_integrations_status.sh --json
 bash tools/ai/zeroclaw_integrations_import_n8n.sh --json
 ```
 
+Current runtime bootstrap:
+
+- `bash tools/ai/zeroclaw_integrations_up.sh` auto-provisions the local `mascarade-n8n` container if Docker is running but the container is still missing.
+- Official runtime basis: `docker.n8n.io/n8nio/n8n` on port `5678`, with a persistent volume per container name.
+- Readiness is validated through `http://127.0.0.1:5678/healthz` in addition to the editor root URL, because first boot and editor startup can lag behind the health endpoint.
+- Workflow activation path: reuse the tracked workflow when it is already active, otherwise prefer `n8n publish:workflow --id=<ID>` after import, with legacy fallback `n8n update:workflow --id=<ID> --active=true`.
+- Activation proof now checks `n8n list:workflow --active=true --onlyId`, so `active=true` is no longer assumed.
+- Runtime scripts fail fast on local Docker CLI timeouts and report a blocker instead of hanging indefinitely.
+- If the local DB already contains the tracked workflow with the exact stored nodes/connections and `active=true`, the import script now skips the CLI path and returns success immediately.
+- Recovery note: if local SQLite state is corrupted or still contains an obsolete workflow revision, preserve the volume backup and reset only the n8n DB files before reprovisioning the container.
+
 Tracked smoke artifact:
 
 - `tools/ai/integrations/n8n/kill_life_smoke_workflow.json`
+  - current trigger: yearly `Schedule Trigger`, so the workflow stays activable without creating noisy frequent runs
 
 Historical workflow names:
 

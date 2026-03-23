@@ -1163,8 +1163,8 @@ cat >"$INDEX_FILE" <<EOF
           <div class="inline-row">
             <select id="prRepoSelect" class="select">
               <option value="electron-rare/Kill_LIFE">Kill_LIFE</option>
-              <option value="electron-rare/RTC_BL_PHONE">RTC_BL_PHONE</option>
-              <option value="electron-rare/le-mystere-professeur-zacus">Zacus</option>
+              <option value="electron-rare/RTC_HW">RTC_HW</option>
+              <option value="electron-rare/ZACUS_HW">Zacus</option>
             </select>
             <input id="prNumberInput" class="input" type="number" min="1" placeholder="PR #" />
           </div>
@@ -1631,8 +1631,8 @@ cat >"$INDEX_FILE" <<EOF
       const payload = {
         repos: [
           "electron-rare/Kill_LIFE",
-          "electron-rare/RTC_BL_PHONE",
-          "electron-rare/le-mystere-professeur-zacus"
+          "electron-rare/RTC_HW",
+          "electron-rare/ZACUS_HW"
         ],
         strict: {
           allow_draft: false,
@@ -2153,11 +2153,11 @@ cat >"$INDEX_FILE" <<EOF
       }
       const rtcPrompt =
         general +
-        "\\nContexte cible: RTC_BL_PHONE sur ESP32 Audio Kit." +
+        "\\nContexte cible: RTC_HW sur ESP32 Audio Kit." +
         "\\nAttendu: diagnostic audio/Bluetooth/WiFi/WebServer + erreurs recentes + prochaine action concise.";
       const zacusPrompt =
         general +
-        "\\nContexte cible: le-mystere-professeur-zacus sur Freenove ESP32-S3 (usbmodem)." +
+        "\\nContexte cible: ZACUS_HW sur Freenove ESP32-S3 (usbmodem)." +
         "\\nAttendu: diagnostic UI/story/audio/network + erreurs recentes + prochaine action concise.";
       document.getElementById("rtcPromptInput").value = rtcPrompt;
       document.getElementById("zacusPromptInput").value = zacusPrompt;

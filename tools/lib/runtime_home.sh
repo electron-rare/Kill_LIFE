@@ -62,8 +62,14 @@ kill_life_resolve_mascarade_dir() {
   fi
 
   candidates+=(
-    "$root_dir/../mascarade"
     "$root_dir/../mascarade-main"
+    "$root_dir/../mascarade"
+    "$root_dir/../mascarade-github"
+    "$root_dir/../Github_Repos/Perso/mascarade-main"
+    "$root_dir/../Github_Repos/Perso/mascarade"
+    "$root_dir/../Github_Repos/Perso/mascarade-github"
+    "$root_dir/../Github_Repos/mascarade-main"
+    "$root_dir/../Github_Repos/mascarade"
   )
 
   for candidate in "${candidates[@]}"; do

@@ -47,6 +47,13 @@ stable:
   test/test_mcp_runtime_status.py
   test/test_openclaw_sanitizer.py
   test/test_apply_safe_patch.py
+  test/test_machine_registry_contract.py
+  test/test_log_ops_contract.py
+  test/test_intelligence_tui_contract.py
+  test/test_runtime_ai_gateway_contract.py
+  test/test_yiacad_uiux_tui_contract.py
+  test/test_yiacad_native_surface_contract.py
+  test/test_zeroclaw_n8n_workflow_contract.py
   test/test_auto_check_ci_cd.py
   test/test_firmware_evidence.py
   test/test_validate_specs.py
@@ -137,6 +144,13 @@ if [[ "${SUITE}" == "stable" || "${SUITE}" == "all" ]]; then
   run_discover test 'test_mcp_runtime_status.py'
   run_discover test 'test_openclaw_sanitizer.py'
   run_discover test 'test_apply_safe_patch.py'
+  run_discover test 'test_machine_registry_contract.py'
+  run_discover test 'test_log_ops_contract.py'
+  run_discover test 'test_intelligence_tui_contract.py'
+  run_discover test 'test_runtime_ai_gateway_contract.py'
+  run_discover test 'test_yiacad_uiux_tui_contract.py'
+  run_discover test 'test_yiacad_native_surface_contract.py'
+  run_discover test 'test_zeroclaw_n8n_workflow_contract.py'
   run_discover test 'test_auto_check_ci_cd.py'
   run_discover test 'test_firmware_evidence.py'
   run_discover test 'test_validate_specs.py'

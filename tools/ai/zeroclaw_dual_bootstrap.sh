@@ -4,8 +4,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="${ZEROCLAW_ROOT_DIR:-$(cd -- "$SCRIPT_DIR/../.." && pwd)}"
 ZEROCLAW_BIN="${ZEROCLAW_BIN:-$ROOT_DIR/zeroclaw/target/release/zeroclaw}"
-RTC_REPO="${ZEROCLAW_RTC_REPO:-$HOME/RTC_BL_PHONE}"
-ZACUS_REPO="${ZEROCLAW_ZACUS_REPO:-$HOME/le-mystere-professeur-zacus}"
+RTC_REPO="${ZEROCLAW_RTC_REPO:-$HOME/RTC_HW}"
+ZACUS_REPO="${ZEROCLAW_ZACUS_REPO:-$HOME/ZACUS_HW}"
 HARDWARE_ONLY=0
 
 usage() {

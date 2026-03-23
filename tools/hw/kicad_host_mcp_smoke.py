@@ -64,17 +64,26 @@ def main() -> int:
     args = parse_args()
     doctor = parse_doctor_output()
     host_status = doctor.get('HOST_PCBNEW_IMPORT', 'missing')
+    entrypoint_state = doctor.get('ENTRYPOINT_STATE', 'missing')
+    entrypoint = doctor.get('ENTRYPOINT')
     payload: dict[str, Any] = {
         'status': 'degraded',
         'requested_runtime': 'host',
         'runtime_mode': 'host',
         'quick': args.quick,
         'host_pcbnew_import': host_status,
+        'entrypoint_state': entrypoint_state,
         'error': None,
     }
 
     if host_status != 'ok':
+        payload['status'] = 'blocked'
         payload['error'] = 'pcbnew not importable on host runtime'
+        return emit(payload, json_output=args.json)
+
+    if entrypoint_state != 'present':
+        payload['status'] = 'blocked'
+        payload['error'] = f'host entrypoint missing: {entrypoint or "unknown"}'
         return emit(payload, json_output=args.json)
 
     cmd = ['python3', str(BASE_SMOKE), '--runtime', 'host', '--json', '--timeout', str(args.timeout)]

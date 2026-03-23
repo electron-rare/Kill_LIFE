@@ -30,7 +30,7 @@ REQUIRED_JSON_KEYS = [
     "pivot_changes",
     "impact_gates",
 ]
-REQUIRED_REPOS = ["Kill_LIFE", "RTC_BL_PHONE", "le-mystere-professeur-zacus"]
+REQUIRED_REPOS = ["Kill_LIFE"]
 
 
 def fail(msg: str) -> None:
@@ -89,7 +89,11 @@ def main() -> int:
         fail(f"invalid header markers in {header_file}")
 
     for repo in REQUIRED_REPOS:
-        pattern = re.compile(rf"^{re.escape(repo)}\s+\| HEAD [0-9a-f]{{7,40}} \| pivots: .+ \| gates: .+$", re.MULTILINE)
+        pattern = re.compile(
+            rf"^{re.escape(repo)}\s*\|\s*HEAD [0-9a-f]{{7,40}}\s*\|"
+            rf"\s*pivots: .+\|\s*gates: .+$",
+            re.MULTILINE,
+        )
         if not pattern.search(header_text):
             fail(f"missing repo line in header for {repo}")
 

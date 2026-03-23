@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "$ROOT_DIR/tools/lib/runtime_home.sh"
 COMPOSE_FILE="$ROOT_DIR/deploy/cad/docker-compose.yml"
+DOCKER_CLIENT_HOME="${HOME:-}"
 VERBOSE=0
 DOCTOR=0
 RUNTIME="${KICAD_MCP_RUNTIME:-auto}"
@@ -56,7 +57,17 @@ die() {
 }
 
 compose() {
-  docker compose -f "$COMPOSE_FILE" "$@"
+  if HOME="$DOCKER_CLIENT_HOME" docker compose version >/dev/null 2>&1; then
+    HOME="$DOCKER_CLIENT_HOME" docker compose -f "$COMPOSE_FILE" "$@"
+    return
+  fi
+
+  if command -v docker-compose >/dev/null 2>&1; then
+    HOME="$DOCKER_CLIENT_HOME" docker-compose -f "$COMPOSE_FILE" "$@"
+    return
+  fi
+
+  die "docker compose support not available"
 }
 
 build_pythonpath() {
@@ -193,7 +204,7 @@ export KICAD_PYTHON_FILE_LOG_LEVEL="${KICAD_PYTHON_FILE_LOG_LEVEL:-INFO}"
 MASCARADE_DIR="$(
   kill_life_resolve_mascarade_dir \
     "$ROOT_DIR" \
-    "finetune/kicad_mcp_server"
+    "finetune"
 )"
 SERVER_DIR="$MASCARADE_DIR/finetune/kicad_mcp_server"
 ENTRYPOINT="${KICAD_MCP_ENTRYPOINT:-$SERVER_DIR/dist/index.js}"
@@ -209,10 +220,15 @@ DATA_DIR="${KICAD_MCP_DATA_DIR:-$MCP_HOME/data}"
 PYTHONPATH_VALUE="$(build_pythonpath)"
 PROBE_PYTHON="$(resolve_probe_python)"
 HOST_PCBNEW_STATUS="missing"
+HOST_ENTRYPOINT_STATE="missing"
 CONTAINER_STATUS="unknown"
 
 if probe_pcbnew "$PROBE_PYTHON" "$PYTHONPATH_VALUE"; then
   HOST_PCBNEW_STATUS="ok"
+fi
+
+if [ -f "$ENTRYPOINT" ]; then
+  HOST_ENTRYPOINT_STATE="present"
 fi
 
 if command -v docker >/dev/null 2>&1 && [ -f "$COMPOSE_FILE" ]; then
@@ -223,7 +239,7 @@ fi
 
 case "$RUNTIME" in
   auto)
-    if [ "$HOST_PCBNEW_STATUS" = "ok" ]; then
+    if [ "$HOST_PCBNEW_STATUS" = "ok" ] && [ "$HOST_ENTRYPOINT_STATE" = "present" ]; then
       RUNTIME="host"
     else
       RUNTIME="container"
@@ -250,6 +266,7 @@ KICAD_MCP_DATA_DIR=$DATA_DIR
 PROBE_PYTHON=$PROBE_PYTHON
 KICAD_PYTHONPATH=$PYTHONPATH_VALUE
 HOST_PCBNEW_IMPORT=$HOST_PCBNEW_STATUS
+ENTRYPOINT_STATE=$HOST_ENTRYPOINT_STATE
 CONTAINER_STATUS=$CONTAINER_STATUS
 KICAD_MCP_IMAGE=$KICAD_MCP_IMAGE
 KICAD_MCP_LOG_LEVEL=$KICAD_MCP_LOG_LEVEL

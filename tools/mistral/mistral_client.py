@@ -9,14 +9,37 @@ from __future__ import annotations
 
 import os
 from typing import Any, Dict
+from pathlib import Path
 
 from mistralai import Mistral
 
 
+def _load_governance_key_from_file() -> str | None:
+    secret_file = Path(
+        os.environ.get(
+            "KILL_LIFE_MISTRAL_ENV_FILE",
+            str(Path.home() / ".kill-life" / "mistral.env"),
+        )
+    ).expanduser()
+    if not secret_file.exists():
+        return None
+
+    for line in secret_file.read_text(encoding="utf-8").splitlines():
+        if line.startswith("MISTRAL_GOVERNANCE_API_KEY="):
+            value = line.split("=", 1)[1].strip()
+            if value:
+                return value
+    return None
+
+
 def get_client() -> Mistral:
-    api_key = os.environ.get("MISTRAL_API_KEY")
+    api_key = (
+        os.environ.get("MISTRAL_GOVERNANCE_API_KEY")
+        or os.environ.get("MISTRAL_API_KEY")
+        or _load_governance_key_from_file()
+    )
     if not api_key:
-        raise RuntimeError("MISTRAL_API_KEY is not set.")
+        raise RuntimeError("MISTRAL_GOVERNANCE_API_KEY or MISTRAL_API_KEY is not set.")
 
     api_base = os.environ.get("MISTRAL_API_BASE")  # e.g. https://codestral.mistral.ai/v1
     # SDK supports server_url in recent versions; we pass it if available.

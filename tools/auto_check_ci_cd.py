@@ -4,6 +4,7 @@ from __future__ import annotations
 import ast
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -61,7 +62,9 @@ def compact_repo_paths(value: str) -> str:
         return text.replace(root_with_sep, "")
     if text == str(ROOT):
         return "."
-    return text
+    repo_name = re.escape(ROOT.name)
+    pattern = re.compile(rf"(^|[\s:(\"'`])(?:[A-Za-z]:)?[^ \t\n|\"'`)]*[\\/]{repo_name}[\\/]")
+    return pattern.sub(lambda match: match.group(1), text)
 
 
 def compact_artifact_list_signal(value: str) -> str:

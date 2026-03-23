@@ -26,13 +26,45 @@ MASCARADE_CORE_DIR = MASCARADE_DIR / "core"
 if str(MASCARADE_CORE_DIR) not in sys.path:
     sys.path.insert(0, str(MASCARADE_CORE_DIR))
 
-from mascarade.integrations.github_dispatch import (  # noqa: E402
-    DEFAULT_GITHUB_REPO,
-    GitHubDispatchAuthError,
-    GitHubDispatchClient,
-    GitHubDispatchError,
-    list_allowlisted_workflows,
-)
+GITHUB_DISPATCH_IMPORT_ERROR: str | None = None
+
+try:
+    from mascarade.integrations.github_dispatch import (  # noqa: E402
+        DEFAULT_GITHUB_REPO,
+        GitHubDispatchAuthError,
+        GitHubDispatchClient,
+        GitHubDispatchError,
+        list_allowlisted_workflows,
+    )
+except ModuleNotFoundError as exc:  # pragma: no cover - exercised through smoke flow
+    GITHUB_DISPATCH_IMPORT_ERROR = str(exc)
+    DEFAULT_GITHUB_REPO = os.getenv("GITHUB_DISPATCH_REPO", "electron-rare/Kill_LIFE")
+
+    class GitHubDispatchError(RuntimeError):
+        pass
+
+    class GitHubDispatchAuthError(GitHubDispatchError):
+        pass
+
+    class GitHubDispatchClient:
+        async def dispatch_workflow(self, workflow_file: str, ref: str | None = None, inputs: dict[str, Any] | None = None) -> dict[str, Any]:
+            raise GitHubDispatchError(
+                f"Mascarade github_dispatch integration unavailable: {GITHUB_DISPATCH_IMPORT_ERROR}"
+            )
+
+        async def get_dispatch_status(self, dispatch_id: str) -> dict[str, Any]:
+            raise GitHubDispatchError(
+                f"Mascarade github_dispatch integration unavailable: {GITHUB_DISPATCH_IMPORT_ERROR}"
+            )
+
+        async def close(self) -> None:
+            return None
+
+    def list_allowlisted_workflows() -> list[str]:
+        workflows_dir = ROOT / ".github" / "workflows"
+        if not workflows_dir.is_dir():
+            return ["repo_state.yml"]
+        return sorted(path.name for path in workflows_dir.glob("*.yml"))
 
 
 TOOLS = [

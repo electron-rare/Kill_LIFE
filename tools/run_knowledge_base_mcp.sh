@@ -8,7 +8,7 @@ kill_life_runtime_home_init "$ROOT_DIR" "knowledge-base-mcp"
 MASCARADE_DIR="$(
   kill_life_resolve_mascarade_dir \
     "$ROOT_DIR" \
-    "core/mascarade/integrations/knowledge_base.py"
+    "core/mascarade"
 )"
 MASCARADE_ENV_FILE="${MASCARADE_ENV_FILE:-$MASCARADE_DIR/.env}"
 

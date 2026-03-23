@@ -9,6 +9,10 @@ TASKS_FILE="${ROOT_DIR}/specs/04_tasks.md"
 STATUS_FILE="${ROOT_DIR}/artifacts/cockpit/useful_lots_status.md"
 QUESTION_FILE="${ROOT_DIR}/artifacts/cockpit/next_question.md"
 STATE_FILE="${ROOT_DIR}/artifacts/cockpit/last_validation.env"
+INTELLIGENCE_MEMORY_FILE="${ROOT_DIR}/artifacts/cockpit/intelligence_program/latest.json"
+INTELLIGENCE_MEMORY_MD="${ROOT_DIR}/artifacts/cockpit/intelligence_program/latest.md"
+KILL_LIFE_MEMORY_FILE="${ROOT_DIR}/artifacts/cockpit/kill_life_memory/latest.json"
+KILL_LIFE_MEMORY_MD="${ROOT_DIR}/artifacts/cockpit/kill_life_memory/latest.md"
 
 COMMAND=""
 VERBOSE=0
@@ -22,8 +26,12 @@ UPSTREAM_STATUS="unknown"
 UPSTREAM_MODE="status"
 NEXT_LOT="pending"
 QUESTION_COUNT=0
+INTELLIGENCE_STATUS="unknown"
+INTELLIGENCE_CONTRACT_STATUS="unknown"
+INTELLIGENCE_OPEN_TASK_COUNT=0
 
 QUESTION_ITEMS=()
+INTELLIGENCE_NEXT_STEPS=()
 
 usage() {
   cat <<'EOF'
@@ -155,6 +163,46 @@ refresh_upstream_autonomous_lane() {
   fi
 }
 
+refresh_intelligence_lane() {
+  local tmp_json
+  local parsed=()
+
+  tmp_json="$(mktemp)"
+  if bash "${ROOT_DIR}/tools/cockpit/intelligence_tui.sh" --action memory --json >"${tmp_json}" 2>/dev/null; then
+    mapfile -t parsed < <(
+      python3 - "${tmp_json}" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    payload = json.load(handle)
+
+print(payload.get("status", "unknown"))
+print(payload.get("contract_status", "unknown"))
+print(payload.get("open_task_count", 0))
+for step in payload.get("next_steps", [])[:3]:
+    print(step)
+PY
+    )
+    INTELLIGENCE_STATUS="${parsed[0]:-unknown}"
+    INTELLIGENCE_CONTRACT_STATUS="${parsed[1]:-unknown}"
+    INTELLIGENCE_OPEN_TASK_COUNT="${parsed[2]:-0}"
+    INTELLIGENCE_NEXT_STEPS=()
+    if [[ "${#parsed[@]}" -gt 3 ]]; then
+      INTELLIGENCE_NEXT_STEPS=("${parsed[@]:3}")
+    fi
+  else
+    INTELLIGENCE_STATUS="failed"
+    INTELLIGENCE_CONTRACT_STATUS="error"
+    INTELLIGENCE_OPEN_TASK_COUNT=0
+    INTELLIGENCE_NEXT_STEPS=("Refresh intelligence memory with \`bash tools/cockpit/intelligence_tui.sh --action memory --json\`.")
+  fi
+  rm -f "${tmp_json}"
+  if [[ ! -f "${KILL_LIFE_MEMORY_FILE}" || ! -f "${KILL_LIFE_MEMORY_MD}" ]]; then
+    INTELLIGENCE_NEXT_STEPS+=("Refresh kill_life continuity with \`bash tools/cockpit/write_kill_life_memory_entry.sh --component lot_chain --json\`.")
+  fi
+}
+
 collect_manual_questions() {
   local file match line_no line_text clean_text item_id recommended recommended_text
 
@@ -162,12 +210,12 @@ collect_manual_questions() {
 
   while IFS= read -r file; do
     [[ -n "${file}" ]] || continue
-    match="$(rg -n '^- \[ \]' "${ROOT_DIR}/${file}" | head -n 1 || true)"
+    match="$(rg -n '^[[:space:]]*-[[:space:]]*\[ \]' "${ROOT_DIR}/${file}" | head -n 1 || true)"
     if [[ -n "${match}" ]]; then
       line_no="${match%%:*}"
       line_text="${match#*:}"
-      clean_text="$(printf '%s\n' "${line_text}" | sed -E 's/^- \[ \] //')"
-      item_id="$(printf '%s\n' "${line_text}" | sed -E 's/^- \[ \] ([A-Z]-[0-9]+).*/\1/' )"
+      clean_text="$(printf '%s\n' "${line_text}" | sed -E 's/^[[:space:]]*-[[:space:]]*\[ \][[:space:]]*//')"
+      item_id="$(printf '%s\n' "${line_text}" | sed -E 's/^[[:space:]]*-[[:space:]]*\[ \][[:space:]]*([A-Z][A-Z-]*-[0-9]+).*/\1/' )"
       if [[ "${item_id}" == "${line_text}" ]]; then
         item_id="$(printf '%s\n' "${file}" | sed 's#specs/##; s#\.md##')"
       fi
@@ -177,6 +225,7 @@ collect_manual_questions() {
       QUESTION_ITEMS+=("${item_id}|${file}|${line_no}|${clean_text}")
     fi
   done <<'EOF'
+specs/04_tasks.md
 specs/mcp_tasks.md
 specs/zeroclaw_dual_hw_todo.md
 EOF
@@ -193,11 +242,28 @@ EOF
     return 0
   fi
 
+  if [[ "${QUESTION_COUNT}" -eq 1 ]]; then
+    NEXT_LOT="selected"
+    IFS='|' read -r item_id file line_no line_text <<< "${QUESTION_ITEMS[0]}"
+    {
+      printf '# Next manual lot\n\n'
+      printf 'Only one curated manual backlog item remains open, so it becomes the selected next active plan.\n\n'
+      printf '## Selected lot\n\n'
+      printf -- '- `%s` in `%s:%s` — %s\n' "${item_id}" "${file}" "${line_no}" "${line_text}"
+    } > "${QUESTION_FILE}"
+    return 0
+  fi
+
   NEXT_LOT="question"
   recommended=""
   recommended_text=""
   for item in "${QUESTION_ITEMS[@]}"; do
     IFS='|' read -r item_id file line_no line_text <<< "${item}"
+    if [[ "${file}" == "specs/04_tasks.md" && "${item_id}" == "T-RE-204" ]]; then
+      recommended="${item_id}"
+      recommended_text="${line_text}"
+      break
+    fi
     if [[ "${file}" == "specs/zeroclaw_dual_hw_todo.md" ]]; then
       recommended="${item_id}"
       recommended_text="${line_text}"
@@ -225,11 +291,11 @@ item_is_optional() {
   local item_id="$2"
 
   awk -v item="${item_id}" '
-    $0 ~ "^- \\[ \\] " item {
+    $0 ~ "^[[:space:]]*- \\[ \\][[:space:]]*" item {
       in_item = 1
       next
     }
-    in_item && $0 ~ "^- \\[[ x]\\] [A-Z]-[0-9]+" {
+    in_item && $0 ~ "^[[:space:]]*- \\[[ x]\\][[:space:]]*[A-Z][A-Z-]*-[0-9]+" {
       exit
     }
     in_item {
@@ -280,6 +346,23 @@ write_status_report() {
     printf '\n'
     printf -- '  - Command: `bash tools/test_python.sh --suite stable`\n\n'
 
+    printf '## Intelligence governance\n\n'
+    printf -- '- Intelligence memory: `%s`\n' "${INTELLIGENCE_STATUS}"
+    printf -- '  - Command: `bash tools/cockpit/intelligence_tui.sh --action memory --json`\n'
+    printf -- '  - Evidence: `%s`\n' "${INTELLIGENCE_MEMORY_FILE#${ROOT_DIR}/}"
+    printf -- '  - Markdown: `%s`\n' "${INTELLIGENCE_MEMORY_MD#${ROOT_DIR}/}"
+    printf -- '  - kill_life continuity JSON: `%s`\n' "${KILL_LIFE_MEMORY_FILE#${ROOT_DIR}/}"
+    printf -- '  - kill_life continuity Markdown: `%s`\n' "${KILL_LIFE_MEMORY_MD#${ROOT_DIR}/}"
+    printf -- '  - Open tasks: `%s`\n' "${INTELLIGENCE_OPEN_TASK_COUNT}"
+    if [[ "${#INTELLIGENCE_NEXT_STEPS[@]}" -gt 0 ]]; then
+      printf -- '  - Next actions:\n'
+      local step
+      for step in "${INTELLIGENCE_NEXT_STEPS[@]}"; do
+        printf '    - %s\n' "${step}"
+      done
+    fi
+    printf '\n'
+
     printf '## Next step\n\n'
     if [[ "${NEXT_LOT}" == "question" ]]; then
       printf -- '- Manual choice required. See `%s`.\n' "${QUESTION_FILE#${ROOT_DIR}/}"
@@ -311,6 +394,8 @@ update_plan_files() {
     printf -- '- MCP/CAD runtime lane sync: `%s`\n' "${UPSTREAM_STATUS}"
     printf -- '- Strict spec contract: `%s`\n' "${STRICT_STATUS}"
     printf -- '- Stable Python suite: `%s`\n' "${PYTHON_STATUS}"
+    printf -- '- Intelligence governance memory: `%s` (`%s` open tasks)\n' "${INTELLIGENCE_STATUS}" "${INTELLIGENCE_OPEN_TASK_COUNT}"
+    printf -- '- kill_life continuity memory: `%s`\n' "${KILL_LIFE_MEMORY_FILE#${ROOT_DIR}/}"
     if [[ "${NEXT_LOT}" == "question" ]]; then
       printf -- '- Next real need: ask the operator to choose the next manual lot from `%s`.\n' "${QUESTION_FILE#${ROOT_DIR}/}"
     elif [[ "${NEXT_LOT}" == "none" ]]; then
@@ -355,6 +440,20 @@ update_plan_files() {
       printf -- '- [ ] T-LC-005 - Re-run the stable Python suite after the chained lots.\n'
     fi
     printf -- '  - Evidence: `bash tools/test_python.sh --suite stable`\n'
+
+    if [[ "${INTELLIGENCE_CONTRACT_STATUS}" == "error" ]]; then
+      printf -- '- [ ] T-LC-007 - Keep the intelligence governance memory refreshed for automation surfaces.\n'
+    else
+      printf -- '- [x] T-LC-007 - Keep the intelligence governance memory refreshed for automation surfaces.\n'
+    fi
+    printf -- '  - Evidence: `artifacts/cockpit/intelligence_program/latest.json`\n'
+
+    if [[ -f "${KILL_LIFE_MEMORY_FILE}" ]]; then
+      printf -- '- [x] T-LC-008 - Keep the kill_life continuity memory visible from the chained cockpit entrypoints.\n'
+    else
+      printf -- '- [ ] T-LC-008 - Keep the kill_life continuity memory visible from the chained cockpit entrypoints.\n'
+    fi
+    printf -- '  - Evidence: `artifacts/cockpit/kill_life_memory/latest.json`\n'
 
     if [[ "${NEXT_LOT}" == "question" ]]; then
       printf -- '- [ ] T-LC-006 - Choose the next manual lot once automation reaches a real fork.\n'
@@ -433,6 +532,7 @@ refresh_state() {
   load_validation_state
   refresh_auto_lot_status
   refresh_upstream_autonomous_lane "${UPSTREAM_MODE}"
+  refresh_intelligence_lane
   collect_manual_questions
   write_status_report
 }

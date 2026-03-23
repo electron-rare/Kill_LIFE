@@ -209,9 +209,8 @@ if [[ -z "${MASCARADE_DIR:-}" ]]; then
   MASCARADE_DIR="$(
     kill_life_resolve_mascarade_dir \
       "$REPO_DIR" \
-      "core/mascarade/integrations/knowledge_base.py" \
-      "core/mascarade/integrations/github_dispatch.py" \
-      "finetune/kicad_mcp_server"
+      "core/mascarade" \
+      "finetune"
   )"
 fi
 [[ -n "$MASCARADE_DIR" ]] || { echo "Unable to resolve mascarade companion path" >&2; exit 1; }

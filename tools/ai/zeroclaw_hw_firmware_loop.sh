@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-RTC_REPO="${ZEROCLAW_RTC_REPO:-$HOME/RTC_BL_PHONE}"
-ZACUS_REPO="${ZEROCLAW_ZACUS_REPO:-$HOME/le-mystere-professeur-zacus}"
+RTC_REPO="${ZEROCLAW_RTC_REPO:-$HOME/RTC_HW}"
+ZACUS_REPO="${ZEROCLAW_ZACUS_REPO:-$HOME/ZACUS_HW}"
 
 RTC_FW_DIR="$RTC_REPO"
 ZACUS_FW_DIR="$ZACUS_REPO/hardware/firmware"

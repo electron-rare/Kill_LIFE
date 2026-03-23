@@ -45,6 +45,7 @@ tools/ai/zeroclaw_integrations_status.sh
 tools/ai/zeroclaw_integrations_up.sh
 tools/cockpit/README.md
 tools/cockpit/lot_chain.sh
+tools/cockpit/run_next_lots_autonomously.sh
 ai-agentic-embedded-base/specs/03_plan.md
 ai-agentic-embedded-base/specs/04_tasks.md
 ai-agentic-embedded-base/specs/README.md
@@ -62,6 +63,7 @@ status_text() {
   printf 'dirty_status:\n'
   git -C "$ROOT_DIR" status --short -- "${paths[@]}" || true
   printf '\ncanonical_commands:\n'
+  printf -- '- bash tools/ai/zeroclaw_integrations_status.sh --json\n'
   printf -- '- bash tools/ai/zeroclaw_integrations_lot.sh verify\n'
   printf -- '- bash tools/run_autonomous_next_lots.sh run\n'
   printf -- '- bash tools/cockpit/lot_chain.sh all --yes\n'
@@ -87,6 +89,7 @@ print(json.dumps({
     "paths": json.loads(os.environ["PATHS_JSON"]),
     "dirty_status": json.loads(os.environ["DIRTY_JSON"]),
     "canonical_commands": [
+        "bash tools/ai/zeroclaw_integrations_status.sh --json",
         "bash tools/ai/zeroclaw_integrations_lot.sh verify",
         "bash tools/run_autonomous_next_lots.sh run",
         "bash tools/cockpit/lot_chain.sh all --yes",
@@ -100,6 +103,10 @@ run_verify() {
   local syntax_ok=0
   local status_json_output=""
   local import_json_output=""
+  local verify_output=""
+  local verify_rc=0
+  local status_rc=0
+  local import_rc=0
 
   syntax_cmd=(
     bash -n
@@ -122,30 +129,124 @@ run_verify() {
 
   "${syntax_cmd[@]}"
   syntax_ok=1
-  status_json_output="$("${status_cmd[@]}")"
-  import_json_output="$("${import_cmd[@]}")"
+  if ! status_json_output="$("${status_cmd[@]}" 2>&1)"; then
+    status_rc=$?
+  fi
+  status_json_output="$(
+    RAW_OUTPUT="${status_json_output}" STAGE_NAME="status" python3 - <<'PY'
+import json
+import os
 
-  if [[ "$OUTPUT_JSON" == "1" ]]; then
-    SYNTAX_OK="$syntax_ok" \
+raw = os.environ["RAW_OUTPUT"]
+stage = os.environ["STAGE_NAME"]
+try:
+    payload = json.loads(raw)
+except json.JSONDecodeError:
+    payload = {
+        "status": "blocked",
+        "reason": raw.strip() or f"{stage} command failed",
+        "stage": stage,
+    }
+print(json.dumps(payload, ensure_ascii=True))
+PY
+  )"
+
+  if [[ "${status_rc}" -eq 0 ]]; then
+    if ! import_json_output="$("${import_cmd[@]}" 2>&1)"; then
+      import_rc=$?
+    fi
+  else
+    import_rc=1
+    import_json_output='{"workflow_id":"kill-life-n8n-smoke","import_action":"skipped","publish_action":"skipped","active":false,"reason":"status_failed"}'
+  fi
+  import_json_output="$(
+    RAW_OUTPUT="${import_json_output}" STAGE_NAME="import" python3 - <<'PY'
+import json
+import os
+
+raw = os.environ["RAW_OUTPUT"]
+stage = os.environ["STAGE_NAME"]
+try:
+    payload = json.loads(raw)
+except json.JSONDecodeError:
+    payload = {
+        "workflow_id": "kill-life-n8n-smoke",
+        "import_action": "failed",
+        "publish_action": "failed",
+        "active": False,
+        "reason": raw.strip() or f"{stage} command failed",
+        "stage": stage,
+    }
+print(json.dumps(payload, ensure_ascii=True))
+PY
+  )"
+  verify_output="$(
     STATUS_JSON="${status_json_output}" \
     IMPORT_JSON="${import_json_output}" \
     python3 - <<'PY'
 import json
 import os
 
-print(json.dumps({
+status = json.loads(os.environ["STATUS_JSON"])
+workflow = json.loads(os.environ["IMPORT_JSON"])
+blockers = []
+overall = "ready"
+
+status_state = str(status.get("status", "")).strip().lower()
+if status_state in {"blocked", "degraded"}:
+    overall = "blocked"
+    blockers.append(str(status.get("reason", status_state)))
+else:
+    if not status.get("container_running", False):
+        overall = "blocked"
+        blockers.append("n8n container not running")
+    if not status.get("internal_http_ok", False):
+        overall = "blocked"
+        blockers.append("n8n internal health probe failed")
+    if not status.get("host_http_ok", False):
+        overall = "blocked"
+        blockers.append("n8n host HTTP probe failed")
+
+if not workflow.get("active", False):
+    overall = "blocked"
+    blockers.append("tracked smoke workflow is not active")
+
+if workflow.get("reason"):
+    overall = "blocked"
+    blockers.append(str(workflow["reason"]))
+
+payload = {
     "lot_id": "zeroclaw-integrations-n8n",
-    "syntax_ok": os.environ["SYNTAX_OK"] == "1",
-    "status": json.loads(os.environ["STATUS_JSON"]),
-    "import": json.loads(os.environ["IMPORT_JSON"]),
-}, ensure_ascii=True))
+    "syntax_ok": True,
+    "overall_status": overall,
+    "blockers": list(dict.fromkeys(blockers)),
+    "status": status,
+    "import": workflow,
+}
+print(json.dumps(payload, ensure_ascii=True))
 PY
-    return 0
+  )"
+
+  if [[ "${status_rc}" -ne 0 || "${import_rc}" -ne 0 ]]; then
+    verify_rc=1
+  elif ! python3 - <<'PY' "${verify_output}"
+import json
+import sys
+payload = json.loads(sys.argv[1])
+raise SystemExit(0 if payload.get("overall_status") == "ready" else 1)
+PY
+  then
+    verify_rc=1
+  fi
+
+  if [[ "$OUTPUT_JSON" == "1" ]]; then
+    printf '%s\n' "${verify_output}"
+    return "${verify_rc}"
   fi
 
   printf 'syntax_ok=true\n'
-  printf 'status=%s\n' "${status_json_output}"
-  printf 'import=%s\n' "${import_json_output}"
+  printf 'verify=%s\n' "${verify_output}"
+  return "${verify_rc}"
 }
 
 if [[ $# -gt 0 ]]; then

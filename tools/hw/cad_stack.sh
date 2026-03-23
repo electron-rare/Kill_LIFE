@@ -47,7 +47,22 @@ die() {
   exit 1
 }
 
+docker_available() {
+  command -v docker >/dev/null 2>&1 || return 1
+  if [[ -n "${DOCKER_HOST:-}" ]]; then
+    if [[ "$DOCKER_HOST" == unix://* ]]; then
+      local socket_path
+      socket_path="${DOCKER_HOST#unix://}"
+      [ -S "$socket_path" ] || return 1
+    fi
+    return 0
+  fi
+
+  [ -S "/Users/electron/.docker/run/docker.sock" ] || [ -S "/var/run/docker.sock" ] || [ -S "${HOME}/.docker/run/docker.sock" ] || return 1
+}
+
 compose() {
+  docker_available || die "Docker is required for this operation (compose unavailable)"
   debug "docker compose -f $COMPOSE_FILE $*"
   docker compose -f "$COMPOSE_FILE" "$@"
 }
@@ -102,6 +117,10 @@ resolve_host_openscad() {
 
 ensure_service_up() {
   local service="$1"
+  if ! docker_available; then
+    return 1
+  fi
+
   if ! compose ps --status running --services | grep -qx "$service"; then
     log "Starting $service"
     compose up -d "$service"
@@ -191,25 +210,42 @@ doctor_cmd() {
   local host_kicad=""
   local host_freecad=""
   local host_openscad=""
+  local host_platformio=""
+  local degraded=0
 
   host_kicad="$(resolve_host_kicad_cli)"
   host_freecad="$(resolve_host_freecad_cmd)"
   host_openscad="$(resolve_host_openscad)"
+  host_platformio="$(command -v platformio 2>/dev/null || true)"
 
   if [ -z "$host_kicad" ]; then
-    ensure_service_up kicad-headless
+    if docker_available; then
+      ensure_service_up kicad-headless
+    else
+      log "WARN: kicad-cli non trouvé et docker indisponible, check kicad ignoré"
+      degraded=1
+    fi
   fi
   if [ -z "$host_freecad" ]; then
-    ensure_service_up freecad-headless
+    if docker_available; then
+      ensure_service_up freecad-headless
+    else
+      log "WARN: freecadcmd non trouvé et docker indisponible, check freecad ignoré"
+      degraded=1
+    fi
   fi
   if [ -z "$host_openscad" ]; then
-    ensure_service_up openscad-headless
+    if docker_available; then
+      ensure_service_up openscad-headless
+    else
+      log "WARN: openscad non trouvé et docker indisponible, check openscad ignoré"
+      degraded=1
+    fi
   fi
-  ensure_service_up platformio
 
   if [ -n "$host_kicad" ]; then
     "$host_kicad" version
-  else
+  elif docker_available; then
     run_shell_as_host_user \
       kicad-headless \
       /workspace/.cad-home/kicad-headless \
@@ -218,7 +254,7 @@ doctor_cmd() {
 
   if [ -n "$host_freecad" ]; then
     "$host_freecad" -c 'import FreeCAD; print(".".join(FreeCAD.Version()[:3]))'
-  else
+  elif docker_available; then
     run_shell_in_service_user \
       freecad-headless \
       /workspace/.cad-home/freecad-headless \
@@ -227,17 +263,31 @@ doctor_cmd() {
 
   if [ -n "$host_openscad" ]; then
     "$host_openscad" --version
-  else
+  elif docker_available; then
     run_shell_as_host_user \
       openscad-headless \
       /workspace/.cad-home/openscad-headless \
       'mkdir -p "$HOME" && openscad --version'
   fi
 
-  run_shell_as_host_user \
-    platformio \
-    /workspace/.cad-home/platformio \
-    'mkdir -p "$HOME" "$HOME/.platformio" && export PLATFORMIO_CORE_DIR="$HOME/.platformio" && pio --version'
+  if [ -n "$host_platformio" ]; then
+    "$host_platformio" --version
+  elif docker_available; then
+    ensure_service_up platformio
+    run_shell_as_host_user \
+      platformio \
+      /workspace/.cad-home/platformio \
+      'mkdir -p "$HOME" "$HOME/.platformio" && export PLATFORMIO_CORE_DIR="$HOME/.platformio" && pio --version'
+  else
+    log "WARN: platformio non trouvé et docker indisponible, check platformio ignoré"
+    degraded=1
+  fi
+
+  if [ "$degraded" -eq 0 ]; then
+    log "OK: CAD doctor checks executed successfully."
+  else
+    log "DEGRADED: CAD doctor fallback host-only for unavailable container runtime."
+  fi
 }
 
 doctor_mcp_cmd() {

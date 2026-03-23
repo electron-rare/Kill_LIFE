@@ -4,10 +4,19 @@
   "active": false,
   "nodes": [
     {
-      "parameters": {},
-      "id": "manual-trigger",
-      "name": "Manual Trigger",
-      "type": "n8n-nodes-base.manualTrigger",
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 0 1 1 *"
+            }
+          ]
+        }
+      },
+      "id": "yearly-trigger",
+      "name": "Yearly Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1,
       "position": [
         260,
@@ -27,7 +36,7 @@
     }
   ],
   "connections": {
-    "Manual Trigger": {
+    "Yearly Trigger": {
       "main": [
         [
           {

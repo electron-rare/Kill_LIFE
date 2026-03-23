@@ -1,0 +1,41 @@
+# T-MA-017 — Fine-tune Codestral sur dataset SPICE+embedded
+# Objectif: Spécialiser Codestral pour génération/review netlist SPICE et code embedded
+# Dataset: ~20k examples (JSONL instruct format)
+# Ref: github.com/mistralai/mistral-finetune
+
+# data
+data:
+  instruct_data: "/data/mascarade-datasets/spice/spice_embedded_train.jsonl"
+  data: ""
+  eval_instruct_data: "/data/mascarade-datasets/spice/spice_embedded_eval.jsonl"
+
+# model — Codestral (code-specialized)
+model_id_or_path: "/models/codestral-latest"
+lora:
+  rank: 64
+
+# optim — adapté code/SPICE
+seq_len: 16384       # netlists SPICE peuvent être longs
+batch_size: 1
+max_steps: 600       # ~20k samples, ~5 epochs
+optim:
+  lr: 3.e-5          # plus conservateur pour Codestral (déjà spécialisé code)
+  weight_decay: 0.1
+  pct_start: 0.05
+
+# other
+seed: 42
+log_freq: 1
+eval_freq: 50
+no_eval: False
+ckpt_freq: 100
+
+save_adapters: True
+
+run_dir: "/runs/spice_codestral_finetune"
+
+wandb:
+  project: "kill-life-finetune"
+  run_name: "spice-codestral-v1"
+  key: ""
+  offline: False

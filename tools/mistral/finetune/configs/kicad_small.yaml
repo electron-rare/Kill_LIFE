@@ -1,0 +1,41 @@
+# T-MA-016 — Fine-tune Mistral Small sur dataset KiCad
+# Objectif: Spécialiser Mistral Small pour génération/review schémas KiCad
+# Dataset: ~15k examples (JSONL instruct format)
+# Ref: github.com/mistralai/mistral-finetune
+
+# data
+data:
+  instruct_data: "/data/mascarade-datasets/kicad/kicad_train.jsonl"
+  data: ""
+  eval_instruct_data: "/data/mascarade-datasets/kicad/kicad_eval.jsonl"
+
+# model — Mistral Small (utiliser le checkpoint téléchargé)
+model_id_or_path: "/models/mistral-small-latest"
+lora:
+  rank: 64
+
+# optim — conservateur pour domaine technique
+seq_len: 16384       # KiCad prompts sont longs mais rarement > 16k tokens
+batch_size: 1
+max_steps: 500       # ~15k samples, ~5 epochs avec packing
+optim:
+  lr: 4.e-5          # légèrement plus bas que default pour données techniques
+  weight_decay: 0.1
+  pct_start: 0.05
+
+# other
+seed: 42
+log_freq: 1
+eval_freq: 50
+no_eval: False
+ckpt_freq: 100
+
+save_adapters: True  # LoRA adapters only — merge au déploiement
+
+run_dir: "/runs/kicad_small_finetune"
+
+wandb:
+  project: "kill-life-finetune"
+  run_name: "kicad-small-v1"
+  key: ""            # à remplir
+  offline: False

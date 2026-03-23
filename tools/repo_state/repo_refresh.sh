@@ -3,18 +3,33 @@ set -euo pipefail
 
 usage() {
   cat <<USAGE
-Usage: $(basename "$0") [--header-only] [--json-only] [--no-refresh]
+Usage: $(basename "$0") [options]
 
 Options:
-  --header-only  print only artifacts/repo_state/header.latest.md
-  --json-only    print only artifacts/repo_state/global_index.json
-  --no-refresh   skip running collect.py in the 3 repos
+  --header-only              print only artifacts/repo_state/header.latest.md
+  --json-only                print only artifacts/repo_state/global_index.json
+  --no-refresh               skip refreshing source docs/REPO_STATE.md
+  --target <Name:Path>       add an explicit target repo (can be repeated)
+  -h, --help                print this help
+
+Target format:
+  - Name:Path pairs separated by ":".
+  - Example: --target "Kill_LIFE:/path/to/Kill_LIFE"
+  - Default target is the sibling Kill_LIFE path.
 USAGE
 }
 
 HEADER_ONLY=0
 JSON_ONLY=0
 NO_REFRESH=0
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+KILL_LIFE_REPO="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PARENT_DIR="$(cd "$KILL_LIFE_REPO/.." && pwd)"
+
+REPO_ROOT_KILL_LIFE="${REPO_ROOT_KILL_LIFE:-$PARENT_DIR/Kill_LIFE}"
+DEFAULT_TARGETS=("Kill_LIFE:${REPO_ROOT_KILL_LIFE}")
+
+TARGETS=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -29,6 +44,14 @@ while [[ $# -gt 0 ]]; do
     --no-refresh)
       NO_REFRESH=1
       shift
+      ;;
+    --target)
+      if [[ $# -lt 2 ]]; then
+        echo "[fail] --target requires Name:Path" >&2
+        exit 1
+      fi
+      TARGETS+=("$2")
+      shift 2
       ;;
     -h|--help)
       usage
@@ -47,13 +70,16 @@ if [[ "$HEADER_ONLY" == "1" && "$JSON_ONLY" == "1" ]]; then
   exit 1
 fi
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-KILL_LIFE_REPO="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PARENT_DIR="$(cd "$KILL_LIFE_REPO/.." && pwd)"
+if [[ -n "${REPO_STATE_TARGETS:-}" ]]; then
+  IFS=',' read -r -a env_targets <<< "${REPO_STATE_TARGETS}"
+  for target in "${env_targets[@]}"; do
+    [[ -n "${target// }" ]] && TARGETS+=("${target}")
+  done
+fi
 
-REPO_ROOT_KILL_LIFE="${REPO_ROOT_KILL_LIFE:-$PARENT_DIR/Kill_LIFE}"
-REPO_ROOT_RTC_BL_PHONE="${REPO_ROOT_RTC_BL_PHONE:-$PARENT_DIR/RTC_BL_PHONE}"
-REPO_ROOT_ZACUS="${REPO_ROOT_ZACUS:-$PARENT_DIR/le-mystere-professeur-zacus}"
+if [[ ${#TARGETS[@]} -eq 0 ]]; then
+  TARGETS=("${DEFAULT_TARGETS[@]}")
+fi
 
 ART_DIR="${REPO_STATE_ART_DIR:-$KILL_LIFE_REPO/artifacts/repo_state}"
 SUMMARY_FILE="$ART_DIR/global_summary.md"
@@ -63,9 +89,18 @@ HEADER_FILE="$ART_DIR/header.latest.md"
 mkdir -p "$ART_DIR"
 
 refresh_one_repo() {
-  local repo_name="$1"
-  local repo_root="$2"
+  local target="$1"
+  local repo_name="${target%%:*}"
+  local repo_root="${target#*:}"
 
+  if [[ "$target" == "$repo_name" ]]; then
+    echo "[fail] invalid target format, expected Name:Path: $target" >&2
+    return 1
+  fi
+  if [[ -z "$repo_name" || -z "$repo_root" ]]; then
+    echo "[fail] target malformed: $target" >&2
+    return 1
+  fi
   if [[ ! -d "$repo_root/.git" ]]; then
     echo "[fail] missing repo for $repo_name at $repo_root" >&2
     return 1
@@ -80,18 +115,25 @@ refresh_one_repo() {
 }
 
 if [[ "$NO_REFRESH" != "1" ]]; then
-  refresh_one_repo "Kill_LIFE" "$REPO_ROOT_KILL_LIFE"
-  refresh_one_repo "RTC_BL_PHONE" "$REPO_ROOT_RTC_BL_PHONE"
-  refresh_one_repo "le-mystere-professeur-zacus" "$REPO_ROOT_ZACUS"
+  for target in "${TARGETS[@]}"; do
+    refresh_one_repo "$target"
+  done
 fi
 
-KILL_MD="$REPO_ROOT_KILL_LIFE/docs/REPO_STATE.md"
-RTC_MD="$REPO_ROOT_RTC_BL_PHONE/docs/REPO_STATE.md"
-ZACUS_MD="$REPO_ROOT_ZACUS/docs/REPO_STATE.md"
+MD_FILES=()
+for target in "${TARGETS[@]}"; do
+  repo_name="${target%%:*}"
+  repo_root="${target#*:}"
+  md_path="$repo_root/docs/REPO_STATE.md"
+  if [[ ! -f "$md_path" ]]; then
+    echo "[fail] missing docs/REPO_STATE.md for ${repo_name} at $repo_root" >&2
+    exit 1
+  fi
+  MD_FILES+=("$md_path")
+done
 
-python3 - "$SUMMARY_FILE" "$INDEX_JSON_FILE" "$HEADER_FILE" "$KILL_MD" "$RTC_MD" "$ZACUS_MD" <<'PY'
+python3 - "$SUMMARY_FILE" "$INDEX_JSON_FILE" "$HEADER_FILE" "${MD_FILES[@]}" <<'PY'
 import json
-import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -115,7 +157,6 @@ required_keys = [
 def parse_md(path: Path) -> dict:
     if not path.exists():
         raise SystemExit(f"[fail] missing file: {path}")
-
     lines = path.read_text(encoding="utf-8").splitlines()
     if not lines or lines[0].strip() != "<!-- REPO_STATE:v1 -->":
         raise SystemExit(f"[fail] invalid header marker in {path}")
@@ -124,8 +165,8 @@ def parse_md(path: Path) -> dict:
     for line in lines:
         if ":" not in line:
             continue
-        k, v = line.split(":", 1)
-        data[k.strip()] = v.strip()
+        key, value = line.split(":", 1)
+        data[key.strip()] = value.strip()
 
     missing = [k for k in required_keys if k not in data]
     if missing:
@@ -137,7 +178,6 @@ def parse_md(path: Path) -> dict:
         raise SystemExit(f"[fail] invalid PivotChanges JSON in {path}: {exc}")
 
     gates = [g.strip() for g in data["ImpactGates"].split(",") if g.strip()]
-
     return {
         "repo": data["Repo"],
         "branch": data["Branch"],
@@ -153,6 +193,7 @@ def parse_md(path: Path) -> dict:
 entries = [parse_md(p) for p in md_files]
 now_utc = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
+
 def pivot_text(entry: dict) -> str:
     pivots = entry["pivot_changes"]
     if not pivots:
@@ -165,6 +206,7 @@ def pivot_text(entry: dict) -> str:
         paths.append("...")
     return "; ".join(paths)
 
+
 header_lines = [f"[REPO-STATE UTC: {now_utc}]"]
 for entry in entries:
     head_short = entry["head"][:8]
@@ -172,8 +214,7 @@ for entry in entries:
     gates = ", ".join(entry["impact_gates"]) if entry["impact_gates"] else "general_change"
     header_lines.append(f"{entry['repo']:<28} | HEAD {head_short} | pivots: {pivots} | gates: {gates}")
 header_lines.append("[/REPO-STATE]")
-header_text = "\n".join(header_lines) + "\n"
-header_file.write_text(header_text, encoding="utf-8")
+header_file.write_text("\n".join(header_lines) + "\n", encoding="utf-8")
 
 summary_lines = ["# Global Repo State", "", f"GeneratedAtUTC: `{now_utc}`", ""]
 for entry in entries:

@@ -26,13 +26,40 @@ MASCARADE_CORE_DIR = MASCARADE_DIR / "core"
 if str(MASCARADE_CORE_DIR) not in sys.path:
     sys.path.insert(0, str(MASCARADE_CORE_DIR))
 
-from mascarade.integrations.knowledge_base import (  # noqa: E402
-    KnowledgeBaseClient,
-    knowledge_base_auth_configured,
-    knowledge_base_provider_label,
-    knowledge_base_status_detail,
-    normalized_knowledge_base_provider,
-)
+KNOWLEDGE_BASE_IMPORT_ERROR: str | None = None
+
+try:
+    from mascarade.integrations.knowledge_base import (  # noqa: E402
+        KnowledgeBaseClient,
+        knowledge_base_auth_configured,
+        knowledge_base_provider_label,
+        knowledge_base_status_detail,
+        normalized_knowledge_base_provider,
+    )
+except ModuleNotFoundError as exc:  # pragma: no cover - exercised through smoke flow
+    KNOWLEDGE_BASE_IMPORT_ERROR = str(exc)
+
+    def normalized_knowledge_base_provider() -> str:
+        return os.getenv("KNOWLEDGE_BASE_PROVIDER", "memos").strip().lower() or "memos"
+
+    def knowledge_base_provider_label() -> str:
+        return normalized_knowledge_base_provider()
+
+    def knowledge_base_auth_configured() -> bool:
+        return False
+
+    def knowledge_base_status_detail() -> str:
+        return (
+            "Mascarade knowledge-base integration unavailable: "
+            f"{KNOWLEDGE_BASE_IMPORT_ERROR}"
+        )
+
+    class KnowledgeBaseClient:  # pragma: no cover - tool calls return before instantiation
+        provider = normalized_knowledge_base_provider()
+        label = knowledge_base_provider_label()
+
+        async def close(self) -> None:
+            return None
 
 
 TOOLS = [
@@ -108,7 +135,27 @@ def _missing_secret_payload() -> dict[str, Any]:
     }
 
 
+def _integration_unavailable_payload() -> dict[str, Any]:
+    label = knowledge_base_provider_label()
+    detail = knowledge_base_status_detail()
+    return {
+        "ok": False,
+        "provider": normalized_knowledge_base_provider(),
+        "error": {
+            "code": "integration_unavailable",
+            "message": detail,
+        },
+        "provider_label": label,
+    }
+
+
 async def _with_client(callback):
+    if KNOWLEDGE_BASE_IMPORT_ERROR is not None:
+        detail = knowledge_base_status_detail()
+        return error_tool_result(
+            detail,
+            _integration_unavailable_payload(),
+        )
     if not knowledge_base_auth_configured():
         return error_tool_result(
             knowledge_base_status_detail(),
