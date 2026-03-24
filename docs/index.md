@@ -30,6 +30,7 @@ Cette page est l'entrée opérateur recommandée pour `Kill_LIFE`. Elle sert de 
 
 - Audit consolidé: `docs/KILL_LIFE_CONSOLIDATION_AUDIT_2026-03-21.md`
 - Audit consolidé 2026-03-22: `docs/KILL_LIFE_CONSOLIDATION_AUDIT_2026-03-22.md`
+- Audit workspace 2026-03-24: `docs/workspace_audit_2026-03-24/README.md`
 - Manifeste refonte: `docs/REFACTOR_MANIFEST_2026-03-20.md`
 - Contrat tri-repo: `docs/TRI_REPO_MESH_CONTRACT_2026-03-20.md`
 - Gestion des agents: `docs/plans/12_plan_gestion_des_agents.md`
