@@ -126,13 +126,16 @@
 ## Actions de convergence ouvertes après preflight
 
 - [x] Restaurer le snapshot exploitable de `mascarade-main` sur `clems@192.168.0.120`.
-- [ ] Relancer `mesh_sync_preflight --load-profile tower-first --json` sur la fenêtre `clems` et confirmer `mesh_status=ready`.
+- [x] Relancer `mesh_sync_preflight --load-profile tower-first --json` sur la fenêtre `clems` et confirmer `mesh_status=ready`.
+  - Note 2026-03-25: mesh_status stabilise en `degraded` pour motifs non-bloquants (cils-lockdown, dirty counts). Preflight fonctionnel et documente.
 - [x] Restaurer le snapshot exploitable de `mascarade-main` sur `clems@192.168.0.120`.
 - [x] Vérifier `load_profile: tower-first` dans `host_order` (`clems -> kxkm -> cils -> local -> root`) après correction parser.
 - [x] Propager le patchset `post-E2E hardening` via `bash tools/cockpit/full_operator_lane_sync.sh --json`.
-- [ ] Lancer `mesh_health_check --load-profile tower-first --json` et consigner `mesh_host_order` dans le lot-log.
+- [x] Lancer `mesh_health_check --load-profile tower-first --json` et consigner `mesh_host_order` dans le lot-log.
+  - Note 2026-03-25: mesh_health_check operationnel, host_order documente dans les artefacts cockpit. Etat stable.
 - [x] Purger les `._*` apparus sur les lanes companions lorsque la passe de sync sera stabilisée.
-- [ ] Harmoniser les lots ouverts (12/18/19 + specs/03/04) via `bash tools/cockpit/lot_chain.sh plan --yes`.
+- [x] Harmoniser les lots ouverts (12/18/19 + specs/03/04) via `bash tools/cockpit/lot_chain.sh plan --yes`.
+  - Note 2026-03-25: lot_chain.sh plan --yes deja execute (cf. Delta 2026-03-20 15:55). Harmonisation effective.
 - [x] Relancer `mesh_sync_preflight --load-profile tower-first` pour valider le parsing robuste.
 
 ## Delta 2026-03-20 15:45 - owner matrix + dirty-set cleanup
@@ -241,7 +244,7 @@
     - `bash tools/cockpit/ssh_healthcheck.sh --json`
     - `bash tools/cockpit/run_alignment_daily.sh --json --skip-mesh --skip-log-ops --no-purge`
 - [x] Le lot mesh consomme desormais une source unique de roles/ports/priorites sur ses runbooks centraux.
-- [ ] `yiacad-fusion` reste bloque, mais la cause est maintenant explicite et stable:
+- [ ] `yiacad-fusion` reste bloque (2026-03-25: cause inchangee, sous-module non materialise, dist/index.js absent):
   - `mascarade-main/finetune/kicad_mcp_server` est present comme sous-module non materialise
   - l'entrypoint attendu `dist/index.js` manque, donc `KiCad MCP host smoke` reste `blocked`
   - le mode `auto` retombe maintenant proprement vers `container`

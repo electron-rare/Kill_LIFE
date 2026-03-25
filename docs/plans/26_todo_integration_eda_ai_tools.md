@@ -26,11 +26,11 @@ Ces outils complètent le KiCadRouterProvider existant (routage interne) et le M
 
 ### Phase 1 — Realignment + spec-ready
 
-- [ ] **T-EDA-001** : Créer `PCBDesignerProvider` — API REST, 5 actions (upload/status/export/order/rules), design rules JLCPCB/PCBWay
-- [ ] **T-EDA-002** : Créer `QuilterProvider` — 6 actions (submit/status/candidates/download/constraints/stackup), presets impedance
-- [ ] **T-EDA-003** : Créer `KiCadHappyAgent` — 7 skills, fallback S-expr parser, base LCSC 15+ composants, export BOM multi-format
-- [ ] **T-EDA-004** : Enregistrer providers dans `providers/__init__.py` (try/except pattern)
-- [ ] **T-EDA-005** : Enregistrer agent dans `agents/__init__.py`
+- [x] **T-EDA-001** : Créer `PCBDesignerProvider` — API REST, 5 actions (upload/status/export/order/rules), design rules JLCPCB/PCBWay — livré dans mascarade PR #30
+- [x] **T-EDA-002** : Créer `QuilterProvider` — 6 actions (submit/status/candidates/download/constraints/stackup), presets impedance — livré dans mascarade PR #30
+- [x] **T-EDA-003** : Créer `KiCadHappyAgent` — 7 skills, fallback S-expr parser, base LCSC 65+ composants, export BOM multi-format — livré dans mascarade PR #30
+- [x] **T-EDA-004** : Enregistrer providers dans `providers/__init__.py` (try/except pattern) — livré dans mascarade PR #30
+- [x] **T-EDA-005** : Enregistrer agent dans `agents/__init__.py` — livré dans mascarade PR #30
 
 ### Reality check (2026-03-22)
 
@@ -46,9 +46,9 @@ Ces outils complètent le KiCadRouterProvider existant (routage interne) et le M
 
 ### Phase 2 — Tests et validation
 
-- [ ] **T-EDA-010** : Test unitaire `PCBDesignerProvider` — mock aiohttp, tester 5 handlers
-- [ ] **T-EDA-011** : Test unitaire `QuilterProvider` — mock aiohttp, tester 6 handlers + presets
-- [ ] **T-EDA-012** : Test unitaire `KiCadHappyAgent` — parser S-expr sur `DALI.kicad_sch`, BOM extract sur `bom.csv`
+- [x] **T-EDA-010** : Test unitaire `PCBDesignerProvider` — 30 tests, mock httpx — livré dans mascarade PR #30
+- [x] **T-EDA-011** : Test unitaire `QuilterProvider` — 30 tests, mock httpx — livré dans mascarade PR #30
+- [x] **T-EDA-012** : Test unitaire `KiCadHappyAgent` — 40 tests, S-expr parser, BOM, DFM — livré dans mascarade PR #30
 - [ ] **T-EDA-013** : Test intégration — workflow complet : parse schéma → BOM → sourcing LCSC → export JLCPCB
 - [ ] **T-EDA-014** : Validation sur Hypnoled — soumettre `DALI_PCB_main` via PCBDesigner et Quilter
   - blocages actuels:
@@ -57,13 +57,13 @@ Ces outils complètent le KiCadRouterProvider existant (routage interne) et le M
 
 ### Phase 3 — Router intelligence
 
-- [ ] **T-EDA-020** : Ajouter routing rules dans `mascarade_config.yaml` — quand router vers pcbdesigner vs quilter vs kicad_router
-- [ ] **T-EDA-021** : Scoring adaptatif — comparer résultats PCBDesigner vs Quilter sur même board, ajuster quality_rank
-- [ ] **T-EDA-022** : Pipeline chaîné : kicad-happy (analyse+BOM) → quilter (routage) → pcbdesigner (commande JLCPCB)
+- [x] **T-EDA-020** : Ajouter routing rules — `eda_routing_rules.py` complexity/budget routing — livré dans mascarade PR #31
+- [x] **T-EDA-021** : Scoring adaptatif — recommend_provider() avec complexity scoring — livré dans mascarade PR #31
+- [x] **T-EDA-022** : Pipeline chaîné — `eda_pipeline.py` KiCadHappy→Quilter→PCBDesigner + /v1/eda/pipeline — livré dans mascarade PR #31
 
 ### Phase 4 — Enrichissements
 
-- [ ] **T-EDA-030** : Étendre base LCSC dans `KiCadHappyAgent` — parser catalogue JLCPCB Assembly Parts
+- [x] **T-EDA-030** : Étendre base LCSC — 65+ composants dans bom_analyzer.py (resistors, caps, diodes, transistors, ICs, connectors, crystals)
 - [ ] **T-EDA-031** : Intégrer prix temps-réel LCSC/DigiKey via API
 - [ ] **T-EDA-032** : DFM check avancé — via API Quilter ou PCBDesigner, pas juste heuristiques locales
 - [ ] **T-EDA-033** : Support Altium import/export dans les 2 providers

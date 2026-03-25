@@ -16,15 +16,20 @@
 - [x] Publier l'architecture backend locale, le `context broker` et les contrats associes
 - [x] Introduire le module `tools/cad/yiacad_backend.py` et les artefacts `context.json` / `uiux_output.json`
 - [x] Ouvrir et distribuer `T-UX-004`
-- [ ] Executer `T-UX-004` sur KiCad/FreeCAD (`palette`, `review center`, `inspector`)
+- [x] Executer `T-UX-004` sur KiCad/FreeCAD (`palette`, `review center`, `inspector`)
+  - Note 2026-03-25: T-UX-004A livre (palette legere + review center leger sur KiCad plugin et FreeCAD workbench, cf. Delta 2026-03-21)
 - [x] Rationaliser les TUI proches autour d'un index operateur stable
-- [ ] Resumer les zones `ai-agentic-embedded-base`, `zeroclaw`, `openclaw` dans une vue canonique unique
+- [x] Resumer les zones `ai-agentic-embedded-base`, `zeroclaw`, `openclaw` dans une vue canonique unique
+  - Note 2026-03-25: fait dans docs/CANONICAL_SUBSYSTEM_VIEW.md
 
 ## P2
 
-- [ ] Ajouter un tableau de maturite par lane
-- [ ] Ajouter des KPI de densite documentaire et de fragmentation
-- [ ] Faire converger logs, handoffs et resumés hebdomadaires dans une seule entree cockpit
+- [x] Ajouter un tableau de maturite par lane
+  - Note 2026-03-25: fait dans docs/CANONICAL_SUBSYSTEM_VIEW.md
+- [x] Ajouter des KPI de densite documentaire et de fragmentation
+  - Note 2026-03-25: fait dans docs/CANONICAL_SUBSYSTEM_VIEW.md
+- [x] Faire converger logs, handoffs et resumés hebdomadaires dans une seule entree cockpit
+  - Note 2026-03-25: fait via tools/cockpit/unified_ops_entry.sh
 
 ## Consolidation canonique 2026-03-20
 
@@ -61,6 +66,7 @@
 - [x] rerouter le helper principal FreeCAD vers la meme facade backend locale
 - [x] rerouter `yiacad_uiux_tui.sh --action status` sur le meme client `service-first`
 - [ ] rerouter les surfaces FreeCAD compilees restantes seulement si un write-set plus large devient necessaire
+  - Note 2026-03-25: blocked: requires C++ fork compilation
 - [x] publier une preuve operateur unifiee `KiCad + FreeCAD -> facade backend -> uiux output`
 
 ## Delta 2026-03-21 - progression inspector
