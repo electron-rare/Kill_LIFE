@@ -33,7 +33,7 @@
 ## P1 — Pipeline données
 
 - [ ] Pipeline InfluxDB → PatchTST/TimesNet pour maintenance prédictive
-- [ ] Connecteur Node-RED → Mascarade (HTTP nodes)
+- [x] Connecteur Node-RED → Mascarade (HTTP nodes) — `tools/industrial/nodered_connector.py` + `deploy/factory/nodered-flows.json`
 - [ ] Connecteur OpenMES/Odoo → MCP server
 - [ ] Dashboard Grafana template industriel (vibrations, température, courant)
 

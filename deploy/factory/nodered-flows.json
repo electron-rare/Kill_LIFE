@@ -1,0 +1,287 @@
+[
+    {
+        "id": "mascarade-factory-tab",
+        "type": "tab",
+        "label": "Mascarade Factory 4.0",
+        "disabled": false,
+        "info": "Sample flows: MQTT sensor → maintenance-predictor, operator query → factory-copilot, periodic log analysis → log-analyst"
+    },
+
+    {"id": "comment-flow1", "type": "comment", "z": "mascarade-factory-tab", "name": "── Flow 1: MQTT Sensor → Maintenance Predictor → Alert ──", "x": 350, "y": 40, "wires": []},
+
+    {
+        "id": "mqtt-broker-cfg",
+        "type": "mqtt-broker",
+        "name": "Factory MQTT Broker",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "nodered-mascarade",
+        "autoConnect": true,
+        "keepalive": "60",
+        "cleansession": true
+    },
+
+    {
+        "id": "mqtt-sensor-in",
+        "type": "mqtt in",
+        "z": "mascarade-factory-tab",
+        "name": "Sensor Data (vibration/temp)",
+        "topic": "factory/sensors/+/telemetry",
+        "qos": "1",
+        "datatype": "json",
+        "broker": "mqtt-broker-cfg",
+        "x": 180,
+        "y": 100,
+        "wires": [["format-sensor-msg"]]
+    },
+
+    {
+        "id": "format-sensor-msg",
+        "type": "function",
+        "z": "mascarade-factory-tab",
+        "name": "Format for Maintenance Predictor",
+        "func": "// Extract sensor readings and build a prompt for the maintenance-predictor agent\nvar sensor = msg.topic.split('/')[2];\nvar data = msg.payload;\n\nmsg.topic = 'maintenance-predictor';\nmsg.payload = {\n    text: `Analyze sensor ${sensor} readings: vibration=${data.vibration || 'N/A'} mm/s, temperature=${data.temperature || 'N/A'}°C, current=${data.current || 'N/A'}A, rpm=${data.rpm || 'N/A'}. Assess failure risk 0-100 and recommend action.`\n};\nmsg.context = {\n    sensor_id: sensor,\n    raw_data: data,\n    timestamp: new Date().toISOString()\n};\nreturn msg;",
+        "outputs": 1,
+        "x": 470,
+        "y": 100,
+        "wires": [["mascarade-send-maintenance"]]
+    },
+
+    {
+        "id": "mascarade-send-maintenance",
+        "type": "http request",
+        "z": "mascarade-factory-tab",
+        "name": "→ Mascarade (maintenance-predictor)",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://localhost:7880/nodered/send",
+        "x": 760,
+        "y": 100,
+        "wires": [["check-risk-level"]]
+    },
+
+    {
+        "id": "check-risk-level",
+        "type": "function",
+        "z": "mascarade-factory-tab",
+        "name": "Extract risk score",
+        "func": "// Parse agent response for risk score\nvar response = msg.payload.payload || msg.payload;\nvar riskMatch = String(response).match(/(\\d+)\\s*\\/\\s*100|risk[:\\s]*(\\d+)/i);\nvar risk = riskMatch ? parseInt(riskMatch[1] || riskMatch[2]) : 0;\n\nmsg.risk = risk;\nmsg.payload = {\n    risk: risk,\n    agent_response: response,\n    sensor_id: (msg.payload.mascarade || {}).context ? msg.payload.mascarade.context.sensor_id : 'unknown',\n    timestamp: new Date().toISOString()\n};\n\n// Route: output 0 = risk > 70 (alert), output 1 = risk <= 70 (log only)\nif (risk > 70) {\n    return [msg, null];\n} else {\n    return [null, msg];\n}",
+        "outputs": 2,
+        "x": 1040,
+        "y": 100,
+        "wires": [["alert-high-risk", "mqtt-alert-out"], ["debug-low-risk"]]
+    },
+
+    {
+        "id": "alert-high-risk",
+        "type": "function",
+        "z": "mascarade-factory-tab",
+        "name": "Build alert notification",
+        "func": "msg.payload = {\n    level: 'CRITICAL',\n    title: `Maintenance Alert — Sensor ${msg.payload.sensor_id}`,\n    risk: msg.payload.risk,\n    message: msg.payload.agent_response,\n    timestamp: msg.payload.timestamp\n};\nmsg.topic = 'factory/alerts/maintenance';\nreturn msg;",
+        "outputs": 1,
+        "x": 1300,
+        "y": 80,
+        "wires": [["debug-alert"]]
+    },
+
+    {
+        "id": "mqtt-alert-out",
+        "type": "mqtt out",
+        "z": "mascarade-factory-tab",
+        "name": "Publish alert to MQTT",
+        "topic": "factory/alerts/maintenance",
+        "qos": "1",
+        "retain": false,
+        "broker": "mqtt-broker-cfg",
+        "x": 1300,
+        "y": 120,
+        "wires": []
+    },
+
+    {
+        "id": "debug-alert",
+        "type": "debug",
+        "z": "mascarade-factory-tab",
+        "name": "⚠ HIGH RISK ALERT",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "x": 1540,
+        "y": 80,
+        "wires": []
+    },
+
+    {
+        "id": "debug-low-risk",
+        "type": "debug",
+        "z": "mascarade-factory-tab",
+        "name": "Low risk (log)",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "x": 1300,
+        "y": 160,
+        "wires": []
+    },
+
+    {"id": "comment-flow2", "type": "comment", "z": "mascarade-factory-tab", "name": "── Flow 2: Operator Query → Factory Copilot → Response ──", "x": 350, "y": 240, "wires": []},
+
+    {
+        "id": "http-operator-in",
+        "type": "http in",
+        "z": "mascarade-factory-tab",
+        "name": "Operator query endpoint",
+        "url": "/api/operator/ask",
+        "method": "post",
+        "x": 180,
+        "y": 300,
+        "wires": [["format-copilot-msg"]]
+    },
+
+    {
+        "id": "format-copilot-msg",
+        "type": "function",
+        "z": "mascarade-factory-tab",
+        "name": "Format for Factory Copilot",
+        "func": "var query = msg.payload.question || msg.payload.text || msg.payload;\nmsg.topic = 'factory-copilot';\nmsg.payload = {\n    text: String(query)\n};\nmsg.context = {\n    operator: msg.payload.operator || 'anonymous',\n    station: msg.payload.station || 'unknown'\n};\nreturn msg;",
+        "outputs": 1,
+        "x": 460,
+        "y": 300,
+        "wires": [["mascarade-send-copilot"]]
+    },
+
+    {
+        "id": "mascarade-send-copilot",
+        "type": "http request",
+        "z": "mascarade-factory-tab",
+        "name": "→ Mascarade (factory-copilot)",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://localhost:7880/nodered/send",
+        "x": 740,
+        "y": 300,
+        "wires": [["format-copilot-response"]]
+    },
+
+    {
+        "id": "format-copilot-response",
+        "type": "function",
+        "z": "mascarade-factory-tab",
+        "name": "Format HTTP response",
+        "func": "msg.payload = {\n    answer: msg.payload.payload || msg.payload,\n    agent: 'factory-copilot',\n    timestamp: new Date().toISOString()\n};\nreturn msg;",
+        "outputs": 1,
+        "x": 1020,
+        "y": 300,
+        "wires": [["http-operator-out"]]
+    },
+
+    {
+        "id": "http-operator-out",
+        "type": "http response",
+        "z": "mascarade-factory-tab",
+        "name": "Send response",
+        "statusCode": "200",
+        "x": 1260,
+        "y": 300,
+        "wires": []
+    },
+
+    {"id": "comment-flow3", "type": "comment", "z": "mascarade-factory-tab", "name": "── Flow 3: Periodic Log Analysis → Log Analyst → Shift Report ──", "x": 370, "y": 400, "wires": []},
+
+    {
+        "id": "cron-shift-end",
+        "type": "inject",
+        "z": "mascarade-factory-tab",
+        "name": "Every 8h (shift end)",
+        "props": [{"p": "payload"}, {"p": "topic", "vt": "str"}],
+        "repeat": "",
+        "crontab": "00 06,14,22 * * *",
+        "once": false,
+        "onceDelay": "0.1",
+        "topic": "log-analyst",
+        "payload": "",
+        "payloadType": "date",
+        "x": 180,
+        "y": 460,
+        "wires": [["fetch-shift-logs"]]
+    },
+
+    {
+        "id": "fetch-shift-logs",
+        "type": "function",
+        "z": "mascarade-factory-tab",
+        "name": "Collect logs for shift period",
+        "func": "// Calculate shift window (last 8 hours)\nvar now = new Date();\nvar shiftStart = new Date(now.getTime() - 8 * 60 * 60 * 1000);\n\nmsg.topic = 'log-analyst';\nmsg.payload = {\n    text: `Generate a shift report for the period ${shiftStart.toISOString()} to ${now.toISOString()}. Summarize: production counts, downtime events, quality alerts, safety incidents. Format as a structured shift handover report.`\n};\nmsg.context = {\n    shift_start: shiftStart.toISOString(),\n    shift_end: now.toISOString(),\n    report_type: 'shift_handover'\n};\nreturn msg;",
+        "outputs": 1,
+        "x": 470,
+        "y": 460,
+        "wires": [["mascarade-send-loganalyst"]]
+    },
+
+    {
+        "id": "mascarade-send-loganalyst",
+        "type": "http request",
+        "z": "mascarade-factory-tab",
+        "name": "→ Mascarade (log-analyst)",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://localhost:7880/nodered/send",
+        "x": 740,
+        "y": 460,
+        "wires": [["format-shift-report"]]
+    },
+
+    {
+        "id": "format-shift-report",
+        "type": "function",
+        "z": "mascarade-factory-tab",
+        "name": "Format shift report",
+        "func": "var report = msg.payload.payload || msg.payload;\nmsg.payload = {\n    report: report,\n    generated_at: new Date().toISOString(),\n    shift_end: (msg.payload.mascarade || {}).context ? msg.payload.mascarade.context.shift_end : new Date().toISOString()\n};\nmsg.topic = 'factory/reports/shift';\nreturn msg;",
+        "outputs": 1,
+        "x": 1020,
+        "y": 460,
+        "wires": [["mqtt-report-out", "debug-report", "email-report"]]
+    },
+
+    {
+        "id": "mqtt-report-out",
+        "type": "mqtt out",
+        "z": "mascarade-factory-tab",
+        "name": "Publish report to MQTT",
+        "topic": "factory/reports/shift",
+        "qos": "1",
+        "retain": true,
+        "broker": "mqtt-broker-cfg",
+        "x": 1300,
+        "y": 440,
+        "wires": []
+    },
+
+    {
+        "id": "debug-report",
+        "type": "debug",
+        "z": "mascarade-factory-tab",
+        "name": "Shift report",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "x": 1280,
+        "y": 480,
+        "wires": []
+    },
+
+    {
+        "id": "email-report",
+        "type": "function",
+        "z": "mascarade-factory-tab",
+        "name": "Prepare email (configure e-mail node)",
+        "func": "// Placeholder: connect an e-mail node downstream to send the shift report\nmsg.topic = 'Shift Report — ' + new Date().toLocaleDateString();\nmsg.payload = msg.payload.report;\nreturn msg;",
+        "outputs": 1,
+        "x": 1340,
+        "y": 520,
+        "wires": [[]]
+    }
+]
