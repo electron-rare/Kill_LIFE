@@ -16,15 +16,15 @@ Maintenir une documentation simple, à jour, orientée exécution (pas marketing
 
 ### 2. Exemples
 - [x] “Minimal project” (spec + firmware stub + test native) — Delivered: `specs/00_intake.md` through `specs/04_tasks.md` + `firmware/src/main.cpp` + `firmware/test/test_basic.cpp`
-- [ ] “Issue → PR” walkthrough
+- [x] “Issue → PR” walkthrough — Delivered: `docs/guides/issue_to_pr_walkthrough.md`
 
 ### 3. Docs auto-générées
 - [x] Référencer ce qui est généré et ce qui est manuel — Delivered: `docs/index.md` + `.github/workflows/jekyll-gh-pages.yml`
 - [x] Garder la nav cohérente — Delivered: `docs/index.md`
 
 ### 4. Qualité docs
-- [ ] Liens internes OK
-- [ ] Commandes testées
+- [x] Liens internes OK — Delivered: `tools/check_doc_links.sh` (scans docs/ for broken relative links)
+- [x] Commandes testées — Delivered: `tools/check_doc_commands.sh` (extracts bash blocks from docs and smoke-tests them)
 - [x] Aucune info sensible — Delivered: `.github/workflows/secret_scan.yml`
 
 ## Gates

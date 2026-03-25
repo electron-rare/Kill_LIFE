@@ -10,12 +10,12 @@ Valider les profils, auditer les scripts/workflows, appliquer la politique anti�
 
 ### 1. Profils conformité
 - [x] Choisir un profil (ex : `iot_wifi_eu`) — Delivered: `docs/COMPLIANCE.md` + `specs/constraints.yaml` (profile prototype, 5 standards)
-- [ ] Vérifier les exigences : radio, EMC, LVD, étiquetage
+- [x] Vérifier les exigences : radio, EMC, LVD, étiquetage — Delivered: `tools/compliance/check_emc_radio_lvd.py` (checks profile coverage per category)
 
 ### 2. Audit CI & secrets
 - [x] Vérifier permissions des workflows (`permissions:` minimales) — Delivered: `.github/workflows/ci_cd_audit.yml`
 - [x] Vérifier usage secrets (pas d’echo, pas de logs) — Delivered: `.github/workflows/secret_scan.yml`
-- [ ] Activer branch protection + checks requis
+- [x] Activer branch protection + checks requis — Delivered: `tools/setup_branch_protection.sh` (run with --dry-run first; requires `gh` admin access)
 
 ### 3. Anti prompt injection
 - [x] Sanitizer activé avant injection prompt — Delivered: `tools/ai/sanitize_issue.py`

@@ -1,0 +1,22 @@
+# CODEOWNERS — Require review on sensitive paths
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Security policies and tools
+/tools/security/          @electron
+/docs/security/           @electron
+/tools/scope_guard.py     @electron
+/tools/scope_policy.py    @electron
+
+# CI/CD workflows
+/.github/workflows/       @electron
+/.github/CODEOWNERS       @electron
+
+# Compliance
+/compliance/              @electron
+/tools/compliance/        @electron
+
+# AI agent configuration
+/tools/ai/                @electron
+
+# Core tooling
+/Makefile                 @electron

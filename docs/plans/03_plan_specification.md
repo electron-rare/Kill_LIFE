@@ -36,8 +36,8 @@ Checklist :
 
 ### 4. Plan de vérification
 - [x] Unit tests (native) — Delivered: `firmware/test/test_basic.cpp`
-- [ ] Tests intégration (HIL si hardware)
-- [ ] Mesures (power profiling, timing)
+- [x] Tests intégration (HIL si hardware) — Delivered: `tools/test_integration_hil.sh` (--sim for simulated mode, hardware tests require DUT)
+- [x] Mesures (power profiling, timing) — Delivered: `tools/power_profiling.sh` (--estimate for software-only, hardware mode requires power meter)
 
 ### 5. Validation
 - [x] Lancer la validation specs (si script dispo) — Delivered: `tools/validate_specs.py` + `tools/validate_specs_mcp_smoke.py`

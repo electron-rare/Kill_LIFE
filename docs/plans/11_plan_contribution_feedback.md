@@ -18,12 +18,12 @@ Canaliser issues/PR, proposer des profils, enrichir les standards, et intégrer 
 - [x] Labels `ai:*` obligatoires — Delivered: `.github/workflows/ci.yml`
 - [x] Scope guard doit passer — Delivered: `tools/scope_guard.py`
 - [x] Evidence pack minimal — Delivered: `.github/workflows/evidence_pack.yml`
-- [ ] Review obligatoire sur paths sensibles
+- [x] Review obligatoire sur paths sensibles — Delivered: `.github/CODEOWNERS` (requires @electron review on .github/, tools/security/, compliance/, tools/ai/)
 
 ### 3. Proposer un profil compliance
 - [x] Ouvrir issue `type:compliance` — Delivered: `.github/ISSUE_TEMPLATE/compliance-release.yml`
 - [x] Fournir exigences et sources — Delivered: `docs/COMPLIANCE.md`
-- [ ] Ajouter tests/gates
+- [x] Ajouter tests/gates — Delivered: `tools/compliance/compliance_gate_tests.py` (CI-ready gate: profile, standards, plan, evidence, EMC/radio checks)
 
 ### 4. Boucle feedback
 - [x] Triage hebdo — Delivered: `tools/cockpit/render_daily_operator_summary.sh` + `render_weekly_refonte_summary.sh`

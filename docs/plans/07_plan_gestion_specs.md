@@ -30,7 +30,7 @@ Mettre en place un process stable pour rédiger, valider et injecter les specs d
 
 ### 4. Traçabilité
 - [x] Table “Requirement → Tests → Modules” (dans `verification.md`) — Delivered: `docs/AGENT_SPEC_MODULE_MATRIX_2026-03-20.md`
-- [ ] Dans la PR d’impl : lien vers la spec + AC cochés
+- [x] Dans la PR d’impl : lien vers la spec + AC cochés — Delivered: `.github/pull_request_template.md` (PR template with spec link + AC checklist)
 
 ## Gates
 - Gate spec lint (bloque `ai:impl` si spec invalide)
