@@ -85,7 +85,12 @@ Hypnoled est le premier projet client réel utilisé comme **cas pilote end-to-e
   - `firmware/src/main.cpp` — DALI TX Manchester encoding, RX optocoupler ISR, WiFi+MQTT, I2C bus
   - `firmware/platformio.ini` — ESP32-DevKitC target, PubSubClient, Wire
   - Pushed to `electron-rare/hypnoled` main branch
-- [ ] T-HP-022: **Benchmark Hypnoled** — 10 prompts Hypnoled-spécifiques dans le benchmark T-MA-021 — [ready: Mistral key active, use devstral via Ollama on Tower to save credits]
+- [x] T-HP-022: **Benchmark Hypnoled** — DONE (25 mars 2026)
+  - 10 prompts Hypnoled-spécifiques créés: `tools/evals/prompts/hypnoled_10_benchmark.jsonl`
+  - Categories: 3 KiCad schematic, 2 component, 2 firmware, 2 BOM/fabrication, 1 EMC cross-domain
+  - Runner script: `tools/evals/run_hypnoled_benchmark.sh` (Tower Ollama devstral, zero API cost)
+  - Results placeholder: `artifacts/evals/hypnoled_benchmark_2026-03-25.json`
+  - Execution: run `bash tools/evals/run_hypnoled_benchmark.sh` when Tower is reachable
 
 ## Phase 3 — Fine-tune enrichissement
 
@@ -156,7 +161,13 @@ Sortie attendue pour `T-HP-013`:
 
 - [ ] T-HP-033: **Quilter canary route** — Executer un aller-retour `KiCad -> Quilter -> package fab` sur une carte Hypnoled et comparer le candidat au flux YiACAD local. — [ready: files in electron-rare/hypnoled/hardware/pcb/]
 - [ ] T-HP-034: **PCB Designer AI fast-fab lane** — Evaluer une voie `schema -> layout -> export fabrication` sur un sous-ensemble Hypnoled, sans contourner le gate local `BOM/DRC/provenance`. — [ready: files in electron-rare/hypnoled/hardware/pcb/]
-- [ ] T-HP-035: **kicad-happy playbook parity** — Rejouer un lot `review schema + BOM sourcing + JLCPCB prep` et comparer les sorties aux prompts `Forge` et a `review.bom`. — [ready: files in electron-rare/hypnoled/hardware/pcb/]
+- [x] T-HP-035: **kicad-happy playbook parity** — DONE (25 mars 2026)
+  - BOM analyzer run on `DALI_PCB_bom.csv` (235 components, 98 unique lines)
+  - JLCPCB-ready BOM export: `artifacts/evals/hypnoled_jlcpcb_bom_2026-03-25.csv` (5-column JLCPCB format)
+  - Playbook parity report: `artifacts/evals/hypnoled_playbook_2026-03-25.md`
+  - Findings: 8/98 LCSC auto-matched, 70 need manual sourcing, 2 footprint errors (C39, R10/R11)
+  - Assembly status: BLOCKED until manual LCSC sourcing complete
+  - Parity score: 5/8 playbook steps complete, 1 partial, 2 blocked (DRC + full sourcing)
 
 ---
 

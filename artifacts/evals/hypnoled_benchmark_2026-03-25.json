@@ -1,0 +1,28 @@
+{
+  "benchmark": "hypnoled_10",
+  "date": "2026-03-25T00:00:00Z",
+  "provider": "ollama",
+  "model": "devstral",
+  "tower_host": "192.168.0.120",
+  "api_cost": 0.0,
+  "status": "PENDING_EXECUTION",
+  "note": "Prompts ready in tools/evals/prompts/hypnoled_10_benchmark.jsonl. Run: bash tools/evals/run_hypnoled_benchmark.sh",
+  "summary": {
+    "total_prompts": 10,
+    "successes": 0,
+    "failures": 0,
+    "total_tokens": 0
+  },
+  "prompts": [
+    {"idx": 1, "domain": "hypnoled", "category": "kicad-schematic", "prompt": "Review the DALI PCB schematic for safety issues", "expected_keywords": ["Zener", "isolation", "creepage", "high-voltage", "DALI", "safety"]},
+    {"idx": 2, "domain": "hypnoled", "category": "kicad-schematic", "prompt": "Analyze the MCP_power sub-schematic thermal concerns", "expected_keywords": ["thermal", "efficiency", "linear", "dropout", "dissipation", "heat"]},
+    {"idx": 3, "domain": "hypnoled", "category": "kicad-schematic", "prompt": "ESP32 dual-MCU design issue analysis", "expected_keywords": ["redundant", "duplicate", "ESP32", "cost", "consolidate", "GPIO"]},
+    {"idx": 4, "domain": "hypnoled", "category": "component", "prompt": "1SMA4746 Zener diode role and IEC 62386 compliance", "expected_keywords": ["1SMA4746", "clamp", "15V", "IEC 62386", "22.5V", "Zener"]},
+    {"idx": 5, "domain": "hypnoled", "category": "component", "prompt": "EL817S1 optocoupler galvanic isolation path", "expected_keywords": ["optocoupler", "EL817", "galvanic", "isolation", "CTR"]},
+    {"idx": 6, "domain": "hypnoled", "category": "firmware", "prompt": "DALI Manchester encoding protocol and ESP32 TX implementation", "expected_keywords": ["Manchester", "1200", "416", "forward frame", "BSS123"]},
+    {"idx": 7, "domain": "hypnoled", "category": "firmware", "prompt": "MQTT topic hierarchy for DALI luminaire control", "expected_keywords": ["MQTT", "topic", "brightness", "group", "scene"]},
+    {"idx": 8, "domain": "hypnoled", "category": "bom-fabrication", "prompt": "JLCPCB assembly strategy for 235-component BOM", "expected_keywords": ["JLCPCB", "turnkey", "kit", "manual", "sourcing", "LCSC"]},
+    {"idx": 9, "domain": "hypnoled", "category": "bom-fabrication", "prompt": "LCSC alternatives for IRF3415, MCP4651, PCM5122", "expected_keywords": ["alternative", "LCSC", "MOSFET", "potentiometer", "DAC"]},
+    {"idx": 10, "domain": "hypnoled", "category": "cross-domain", "prompt": "EMC considerations for DALI bus near ESP32 WiFi antenna", "expected_keywords": ["EMC", "DALI", "shielding", "ground plane", "antenna"]}
+  ]
+}

@@ -1,0 +1,99 @@
+Comment,Designator,Footprint,LCSC Part Number,Quantity
+"MB10S bridge rectifier",BR1,DALI:SOP245P670X290-4N,C80907,1
+"10uF 0603","C1,C3",Capacitor_SMD:C_0201_0603Metric,,2
+"0.1uF 0603","C10,C18,C4,C48,C5,C53,C54,C55,C56,C6",Capacitor_SMD:C_0201_0603Metric,,10
+"2.2nF/C0G 0603","C11,C12,C51,C52",Capacitor_SMD:C_0201_0603Metric,,4
+"22uF electrolytic","C13,C14,C36,C37",Capacitor_SMD:CP_Elec_3x5.3,,4
+"0.1uF 0603","C15,C21",Capacitor_SMD:C_0603_1608Metric,,2
+"10nF 0603","C16,C24",Capacitor_SMD:C_0603_1608Metric,,2
+"100nF 0603","C17,C20,C28,C32,C33,C34,C35,C38,C42,C43,C46",Capacitor_SMD:C_0201_0603Metric,,11
+"1uF 0603","C19,C2",Capacitor_SMD:C_0201_0603Metric,,2
+"10uF/50V 1206","C22,C23",Capacitor_SMD:C_1206_3216Metric,,2
+"20pF 0603",C25,Capacitor_SMD:C_0603_1608Metric,,1
+"10uF 0805","C26,C27",Capacitor_SMD:C_0805_2012Metric,C15850,2
+"220uF electrolytic","C29,C30,C31,C44,C45,C47",Capacitor_SMD:CP_Elec_3x5.3,,6
+"0.1uF (wrong footprint)",C39,Resistor_SMD:R_0201_0603Metric,,1
+"1nF 0603",C40,Capacitor_SMD:C_0201_0603Metric,,1
+"2.2uF 0603",C41,Capacitor_SMD:C_0201_0603Metric,,1
+"2.2uF 0603","C49,C50",Capacitor_SMD:C_0201_0603Metric,,2
+"10uF 0402","C57,C72,C73",Capacitor_SMD:C_0402_1005Metric,,3
+"0.1uF 0402","C58,C74",Capacitor_SMD:C_0402_1005Metric,,2
+"1uF 0603",C59,Capacitor_SMD:C_0603_1608Metric,,1
+"100nF 0603","C60,C63,C64,C67,C68,C71",Capacitor_SMD:C_0603_1608Metric,,6
+"10uF 0603","C61,C65,C69",Capacitor_SMD:C_0603_1608Metric,,3
+"22uF 0603","C62,C66,C70",Capacitor_SMD:C_0603_1608Metric,,3
+"2.2uF/25V 0603",C7,Capacitor_SMD:C_0201_0603Metric,,1
+"10uF/50V 0603",C8,Capacitor_SMD:C_0201_0603Metric,,1
+"2.2uF/25V 0603",C9,Capacitor_SMD:C_0603_1608Metric,,1
+"1N4148WT signal diode",D1,Diode_SMD:D_SOD-523,,1
+"1SMA4746 Zener 15V",D10,DALI:DIOM4325X250N,C191363,1
+"LED Red",D11,LED_SMD:LED_0603_1608Metric,,1
+"LED Green",D12,LED_SMD:LED_0603_1608Metric,,1
+"LED Blue",D13,LED_SMD:LED_0603_1608Metric,,1
+"1A/100V rectifier",D2,Diode_SMD:D_SMA,,1
+"LED indicator","D3,D4,D5,D6,D7",LED_SMD:LED_0603_1608Metric,,5
+"Zener (generic)",D8,Diode_SMD:D_SOD-123,,1
+"UDZSTE-175.6B TVS",D9,DALI:SODFL2512X90N,,1
+"Screw terminal 2-pin","J1,J3",-,,2
+"USB-C 14P",J10,Connector_USB:USB_C_Receptacle_HCTL_HC-TYPE-C-16P-01A,,1
+"3.5mm audio jack",J2,Connector_Audio:Jack_3.5mm_CUI_SJ-3523-SMT_Horizontal,,1
+"Screw terminal 5-pin","J4,J5",-,,2
+"Audio jack mono",J6,tom_kicad_lib:Jack_3.5mm_stereo_PJ-313D,,1
+"SD card socket",J7,112JTDARR01,,1
+"Pin header 1x6",J8,Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical,,1
+"Test point pad",J9,TestPoint:TestPoint_Pad_D1.5mm,,1
+"Solder jumper A0","JP1,JP10,JP4,JP7",asukiaaa-kicad-footprints:SolderJumper-3_P1.3mm_Bridged12_Pad1.0x1.5mm_without_1pad_marker,,4
+"Solder jumper A1","JP11,JP2,JP5,JP8",asukiaaa-kicad-footprints:SolderJumper-3_P1.3mm_Bridged12_Pad1.0x1.5mm_without_1pad_marker,,4
+"Solder jumper A2","JP12,JP3,JP6,JP9",asukiaaa-kicad-footprints:SolderJumper-3_P1.3mm_Bridged12_Pad1.0x1.5mm_without_1pad_marker,,4
+"Solder jumper open","JP13,JP14,JP15,JP16",Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm,,4
+"Solder jumper open (no fp)","JP17,JP18,JP19",-,,3
+"12V relay","K1,K2,K3,K4",JLCPCB_Relays:RELAY-TH_CMA51H-S-DCXX-C,,4
+"15uH 1.5A inductor",L1,Inductor_SMD:L_Taiyo-Yuden_NR-50xx,,1
+"P-MOSFET SUM110P04",Q1,easyeda2kicad:TO-263-2_L10.1-W9.1-P5.08-LS15.2-TL-1,,1
+"N-MOSFET BSS123",Q10,Package_TO_SOT_SMD:SOT-23,C82439,1
+"NPN 2N3904S",Q2,easyeda2kicad:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-TR,,1
+"NPN BC847W","Q3,Q4",Package_TO_SOT_SMD:SOT-323_SC-70,,2
+"IRF3415 P-MOSFET","Q5,Q6,Q7,Q8",KiCad:IRF3415STRLPBF,,4
+"PNP BC857",Q9,Package_TO_SOT_SMD:SOT-23,C8586,1
+"4.7k 0603","R1,R2",Resistor_SMD:R_0603_1608Metric,C25890,2
+"10k 0603 (wrong fp)","R10,R11",Capacitor_SMD:C_0201_0603Metric,,2
+"10k 0201","R12,R13,R15,R21,R25,R29,R33,R38,R57,R58,R59,R60",Resistor_SMD:R_0201_0603Metric,,12
+"1k 0201","R14,R19,R23,R27,R31,R48",Resistor_SMD:R_0201_0603Metric,,6
+"10k/1% 0603","R16,R18",Resistor_SMD:R_0603_1608Metric,,2
+"31.6k/1% 0603",R17,Resistor_SMD:R_0603_1608Metric,,1
+"5.6k 0201","R20,R22,R24,R26,R28,R30,R32,R34",Resistor_SMD:R_0201_0603Metric,,8
+"1K 0603",R3,Resistor_SMD:R_0603_1608Metric,C21190,1
+"2.2k 0201","R35,R37,R8,R9",Resistor_SMD:R_0201_0603Metric,,4
+"26K 0201",R36,Resistor_SMD:R_0201_0603Metric,,1
+"75k/1% 0201",R39,Resistor_SMD:R_0201_0603Metric,,1
+"10K 0603","R4,R5",Resistor_SMD:R_0603_1608Metric,C25804,2
+"220R 0201","R40,R41,R42,R43",Resistor_SMD:R_0201_0603Metric,,4
+"4.7k 0201","R44,R45,R53",Resistor_SMD:R_0201_0603Metric,,3
+"100k 0201","R46,R47,R51,R52",Resistor_SMD:R_0201_0603Metric,,4
+"300R 0201",R49,Resistor_SMD:R_0201_0603Metric,,1
+"390R 0201",R50,Resistor_SMD:R_0201_0603Metric,,1
+"16k 0201",R54,Resistor_SMD:R_0201_0603Metric,,1
+"470R/1% 0201","R55,R56,R6,R7",Resistor_SMD:R_0201_0603Metric,,4
+"5.1K 0402","R61,R62",Resistor_SMD:R_0402_1005Metric,,2
+"33R 0402","R63,R64",Resistor_SMD:R_0402_1005Metric,,2
+"5.1K 0603","R65,R66,R67,R68",Resistor_SMD:R_0603_1608Metric,,4
+"Tact switch","SW1,SW2",easyeda2kicad:SW-SMD_L3.9-W3.0-P4.45,,2
+"Test point flag","TP1,TP2,TP3,TP4,TP5,TP6,TP7,TP8",TestPoint:TestPoint_Pad_4.0x4.0mm,,8
+"PCM5121 audio DAC",U1,Package_SO:TSSOP-28_4.4x9.7mm_P0.65mm,,1
+"MCP4651 digital pot","U10,U12,U7,U9",JLCPCB_ADC_DAC_Data_Conversion:TSSOP-14_L5.0-W4.4-P0.65-LS6.4-BL,,4
+"LM358 op-amp DFN","U11,U8",Package_DFN_QFN:DFN-8-1EP_2x2mm_P0.5mm_EP1.05x1.75mm,,2
+"OLED 0.96in I2C",U13,JLCPCB_Functional_Modules:OLED-TH_L27.8-W27.2-P2.54_C9900033791,,1
+"MPR121 touch sensor",U14,Package_DFN_QFN:UQFN-20_3x3mm_P0.4mm,,1
+"EL817 optocoupler","U15,U17",DALI:SOIC254P1030X390-4N,,2
+"STN93003 PNP",U16,DALI:SOT230P700X180-4N,,1
+"STN1HNK60 HV MOSFET",U18,DALI:SOT-223,,1
+"L7812 12V regulator",U19,Package_TO_SOT_SMD:TO-263-2,,1
+"ESP32-S3-WROOM-1 N16R8",U20,JLCPCB_Solders_Accessories_Batteries:WIRELM-SMD_ESP32-S3-WROOM-1,,1
+"PCM5122PW audio DAC",U21,JLCPCB_Interface_ICs:TSSOP-28_L9.8-W6.6-P0.65-BL,,1
+"LD1117S33 3.3V LDO","U22,U23,U24",Package_TO_SOT_SMD:SOT-223-3_TabPin2,,3
+"AMS1117-3.3 LDO",U25,Package_TO_SOT_SMD:SOT-223-3_TabPin2,,1
+"TPS79133 LDO (DNP)",U3,Package_TO_SOT_SMD:SOT-23-5,,1
+"ESP32-WROOM (legacy)",U4,RF_Module:ESP32-WROOM-32U,,1
+"MCP16331 buck converter",U5,Package_TO_SOT_SMD:SOT-23-6,,1
+"L7805 5V regulator",U6,Package_TO_SOT_SMD:SOT-89-3,,1
+"Audio amp OEP30Wx2",U2,tom_kicad_lib:Audio_amp_OEP30Wx2,,1
