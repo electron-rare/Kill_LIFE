@@ -5,7 +5,7 @@
 - [x] Créer `tools/industrial/opcua_mcp.py` — MCP server OPC-UA (browse, read, write, subscribe, discover) — asyncua + stub
 - [x] Créer `tools/industrial/mqtt_mcp.py` — MCP server MQTT (subscribe, publish, topics, history) — paho-mqtt + stub
 - [x] Créer `tools/industrial/run_opcua_mcp.sh` + `run_mqtt_mcp.sh` — scripts de lancement (pattern apify_mcp)
-- [ ] Enregistrer les 2 MCP dans Cline + Claude Code settings
+- [x] Enregistrer les 2 MCP dans Cline + Claude Code settings — DONE (opcua + mqtt registered in Cline MCP settings)
 - [x] Tester OPC-UA avec un simulateur (Prosys, open62541) — `tools/industrial/test_opcua_simulator.py`
 - [x] Tester MQTT avec Mosquitto local — `tools/industrial/test_mqtt_local.py`
 
@@ -18,10 +18,10 @@
 
 ## P0 — Documentation commerciale
 
-- [ ] Rédiger fiche offre Starter (Copilote Opérateur)
-- [ ] Rédiger fiche offre Pro (Factory Intelligence)
-- [ ] Rédiger fiche offre Enterprise (Full Factory 4.0)
-- [ ] Créer démo slide deck avec architecture Mermaid
+- [x] Rédiger fiche offre Starter (Copilote Opérateur) — DONE in `docs/commercial/factory_4_0_starter.md`
+- [x] Rédiger fiche offre Pro (Factory Intelligence) — DONE in `docs/commercial/factory_4_0_pro.md`
+- [x] Rédiger fiche offre Enterprise (Full Factory 4.0) — DONE in `docs/commercial/factory_4_0_enterprise.md`
+- [x] Créer démo slide deck avec architecture Mermaid — DONE in `docs/commercial/factory_4_0_slide_deck.md`
 
 ## P1 — Vision industrielle
 
@@ -39,7 +39,7 @@
 
 ## P1 — Packaging déploiement
 
-- [ ] Docker Compose `factory-stack.yml` (Mascarade + Ollama + Qdrant + Grafana + InfluxDB + Mosquitto)
+- [x] Docker Compose `factory-stack.yml` (Mascarade + Ollama + Qdrant + Grafana + InfluxDB + Mosquitto) — DONE in `deploy/factory/docker-compose.yml`
 - [x] Script `deploy_factory.sh` one-liner — health check retry, Grafana auto-import, env var customization
 - [x] Documentation déploiement on-premise — `docs/FACTORY_4_0_DEPLOY_GUIDE.md`
 - [x] Test end-to-end avec données simulées — `deploy/factory/simulate_data.py` (MQTT fake sensors + anomalies)

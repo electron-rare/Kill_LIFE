@@ -36,12 +36,12 @@
 
 - [x] T-MS-001: Créer `mistral_studio_tui.sh` cockpit (Agents, Files, Fine-tune, Batches, OCR, Audio, Codestral)
 - [ ] T-MS-002: Préparer dataset KiCad JSONL (format ChatML, >5k exemples) — [ready: Mistral key active]
-  - [ ] Merger build_kicad_dataset.py outputs
-  - [ ] Valider format avec `training/scripts/validate_dataset.py`
+  - [x] Merger build_kicad_dataset.py outputs — DONE via `tools/mistral/merge_datasets.sh` (produces `datasets/kicad_merged.jsonl`)
+  - [x] Valider format avec `validate_dataset.py` — DONE (merge script calls validate_dataset.py automatically)
   - [ ] Upload via `mistral_studio_tui.sh --files-upload`
 - [ ] T-MS-003: Préparer dataset SPICE+Embedded JSONL — [ready: Mistral key active]
-  - [ ] Merger build_spice_dataset.py + build_embedded_dataset.py + build_stm32_dataset.py
-  - [ ] Valider et upload
+  - [x] Merger build_spice_dataset.py + build_embedded_dataset.py + build_stm32_dataset.py — DONE via `tools/mistral/merge_datasets.sh` (produces `datasets/spice_embedded_merged.jsonl`)
+  - [x] Valider et upload — validation DONE (merge script calls validate_dataset.py); upload pending
 - [ ] T-MS-004: Upload docs commerciales pour Tower Document Library — [ready: Mistral key active]
   - [x] Exporter docs Outline (formations, produits) — done: 4 docs in `docs/commercial/` (factory_4_0_enterprise, pro, slide_deck, starter)
   - [ ] Upload via Files API [ready: needs API call]
@@ -61,7 +61,7 @@
   - [ ] Configurer et lancer job
   - [ ] Valider modèle `ft:spice-embedded-v1`
 - [ ] T-MS-012: Batch benchmark 100 prompts métier — [ready: Mistral key active] + depends T-MS-010/011
-  - [ ] Créer fichier JSONL 100 prompts (20 KiCad, 20 SPICE, 20 embedded, 20 IoT, 20 mixed)
+  - [x] Créer fichier JSONL 100 prompts (20 KiCad, 20 SPICE, 20 embedded, 20 IoT, 20 mixed) — DONE in `tools/evals/prompts/metier_100_benchmark.jsonl`
   - [ ] Exécuter batch sur modèle base
   - [ ] Exécuter batch sur modèle fine-tuned
   - [ ] Comparer résultats (scoring automatique + review)
