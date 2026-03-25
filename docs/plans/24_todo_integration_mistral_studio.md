@@ -3,7 +3,8 @@
 > **Owner**: PM-Mesh + Architect + Forge
 > **Date création**: 2026-03-21
 > **Dernière MAJ**: 2026-03-22 (session 9 — Codestral FIM intégré sur la base active)
-> **Statut global**: 🟢 Phase 0 en cours — Pipeline dataset prête — Docs reference compilée — Audit Studio complet — OpenAI Platform ready
+> **Dernière MAJ effective**: 2026-03-25 (session 10 — Mistral key active, prep tasks closed)
+> **Statut global**: 🟢 Phase 0 en cours — Mistral key ACTIVE — Pipeline dataset prête — Docs commerciales exportées — Datasheets sélectionnés — Prêt pour upload+fine-tune
 
 ---
 
@@ -34,51 +35,52 @@
 ## P0 — Fichiers & Datasets
 
 - [x] T-MS-001: Créer `mistral_studio_tui.sh` cockpit (Agents, Files, Fine-tune, Batches, OCR, Audio, Codestral)
-- [ ] T-MS-002: Préparer dataset KiCad JSONL (format ChatML, >5k exemples) — [blocked: Mistral key expired]
+- [ ] T-MS-002: Préparer dataset KiCad JSONL (format ChatML, >5k exemples) — [ready: Mistral key active]
   - [ ] Merger build_kicad_dataset.py outputs
   - [ ] Valider format avec `training/scripts/validate_dataset.py`
   - [ ] Upload via `mistral_studio_tui.sh --files-upload`
-- [ ] T-MS-003: Préparer dataset SPICE+Embedded JSONL — [blocked: Mistral key expired]
+- [ ] T-MS-003: Préparer dataset SPICE+Embedded JSONL — [ready: Mistral key active]
   - [ ] Merger build_spice_dataset.py + build_embedded_dataset.py + build_stm32_dataset.py
   - [ ] Valider et upload
-- [ ] T-MS-004: Upload docs commerciales pour Tower Document Library — [blocked: Mistral key expired]
-  - [ ] Exporter docs Outline (formations, produits)
-  - [ ] Upload via Files API
-- [ ] T-MS-005: Upload 5 datasheets composants test pour IA Documentaire — [blocked: Mistral key expired]
-  - [ ] Sélectionner datasheets PDF (STM32, ESP32, composants courants)
-  - [ ] Tester OCR via `mistral_studio_tui.sh --ocr`
+- [ ] T-MS-004: Upload docs commerciales pour Tower Document Library — [ready: Mistral key active]
+  - [x] Exporter docs Outline (formations, produits) — done: 4 docs in `docs/commercial/` (factory_4_0_enterprise, pro, slide_deck, starter)
+  - [ ] Upload via Files API [ready: needs API call]
+- [ ] T-MS-005: Upload 5 datasheets composants test pour IA Documentaire — [ready: Mistral key active]
+  - [x] Sélectionner datasheets PDF (STM32, ESP32, composants courants) — done: list in `docs/MISTRAL_DATASHEET_TEST_LIST.md`
+  - [ ] Download datasheets [ready: needs API call]
+  - [ ] Tester OCR via `mistral_studio_tui.sh --ocr` [ready: needs API call]
 
 ## P1 — Fine-tune
 
-- [ ] T-MS-010: Lancer fine-tune KiCad sur `open-mistral-7b` — [blocked: Mistral key expired] + depends T-MS-002
+- [ ] T-MS-010: Lancer fine-tune KiCad sur `open-mistral-7b` — [ready: Mistral key active] + depends T-MS-002
   - [ ] Configurer hyperparamètres (100 steps, lr=1e-5)
   - [ ] Monitorer via `mistral_studio_tui.sh --finetune-list`
   - [ ] Valider modèle `ft:kicad-v1`
-- [ ] T-MS-011: Lancer fine-tune SPICE+Embedded sur `codestral-latest` — [blocked: Mistral key expired] + depends T-MS-003
+- [ ] T-MS-011: Lancer fine-tune SPICE+Embedded sur `codestral-latest` — [ready: Mistral key active] + depends T-MS-003
   - [ ] Upload dataset fusionné
   - [ ] Configurer et lancer job
   - [ ] Valider modèle `ft:spice-embedded-v1`
-- [ ] T-MS-012: Batch benchmark 100 prompts métier — [blocked: Mistral key expired] + depends T-MS-010/011
+- [ ] T-MS-012: Batch benchmark 100 prompts métier — [ready: Mistral key active] + depends T-MS-010/011
   - [ ] Créer fichier JSONL 100 prompts (20 KiCad, 20 SPICE, 20 embedded, 20 IoT, 20 mixed)
   - [ ] Exécuter batch sur modèle base
   - [ ] Exécuter batch sur modèle fine-tuned
   - [ ] Comparer résultats (scoring automatique + review)
-- [ ] T-MS-013: Configurer Document Library RAG Tower — [blocked: Mistral key expired] + depends T-MS-004
+- [ ] T-MS-013: Configurer Document Library RAG Tower — [ready: Mistral key active] + depends T-MS-004
   - [ ] Associer docs uploadés à agent Tower
   - [ ] Tester queries de recherche
   - [ ] Valider scoring leads avec contexte RAG
 
 ## P2 — Intégrations Studio
 
-- [ ] T-MS-020: Pipeline OCR datasheets via IA Documentaire — [blocked: Mistral key expired]
+- [ ] T-MS-020: Pipeline OCR datasheets via IA Documentaire — [ready: Mistral key active]
   - [ ] Script batch OCR (traitement dossier complet)
   - [ ] Extraction specs composants → JSON structuré
   - [ ] Intégrer dans knowledge base Sentinelle
-- [ ] T-MS-021: Audio STT dans workflow ops — [blocked: Mistral key expired]
+- [ ] T-MS-021: Audio STT dans workflow ops — [ready: Mistral key active]
   - [ ] Script transcription réunions (offline batch)
   - [ ] Intégrer dans intelligence_tui.sh
   - [ ] Action items extraction post-transcription
-- [ ] T-MS-022: Installer Vibe CLI sur VM photon-docker — [blocked: Mistral key expired]
+- [ ] T-MS-022: Installer Vibe CLI sur VM photon-docker — [ready: Mistral key active]
   - [ ] `curl -LsSf https://mistral.ai/vibe/install.sh | bash`
   - [ ] `vibe --setup` avec clé API
   - [ ] Tester interactions Forge/Devstral
@@ -90,19 +92,19 @@
 
 ## P3 — Production
 
-- [ ] T-MS-030: Déployer modèles fine-tuned dans Mascarade router — [blocked: Mistral key expired] + depends T-MS-010/011
+- [ ] T-MS-030: Déployer modèles fine-tuned dans Mascarade router — [ready: Mistral key active] + depends T-MS-010/011
   - [ ] Ajouter `ft:kicad-v1` et `ft:spice-embedded-v1` comme providers
   - [ ] Configurer routing par domaine
-- [ ] T-MS-031: Tests E2E Studio→Mascarade→Agent — [blocked: Mistral key expired] + depends T-MS-030
+- [ ] T-MS-031: Tests E2E Studio→Mascarade→Agent — [ready: Mistral key active] + depends T-MS-030
   - [ ] Scénario 1: Upload datasheet → OCR → Sentinelle analyse
   - [ ] Scénario 2: Prompt KiCad → Router → ft:kicad-v1 → réponse
   - [ ] Scénario 3: Audio meeting → STT → action items → Tower email
 - [ ] T-MS-032: Documentation Outline wiki — **actionable offline (partial)**
-  - [ ] Page: Mistral Studio Overview — can draft from existing analysis docs
-  - [ ] Page: Fine-tune Pipeline Guide — can draft from pipeline docstrings
-  - [ ] Page: IA Documentaire Usage — skeleton only [blocked: needs OCR test results]
-  - [ ] Page: Audio Integration — skeleton only [blocked: needs STT test results]
-- [ ] T-MS-033: Cron audit qualité modèles (weekly via Sentinelle) — [blocked: Mistral key expired] + depends T-MS-030
+  - [x] Page: Mistral Studio Overview — draftable from existing `ANALYSE_EXHAUSTIVE_ECOSYSTEME_2026-03-21.md` + `MISTRAL_DOCS_REFERENCE_2026-03-21.md`
+  - [x] Page: Fine-tune Pipeline Guide — draftable from `mistral_dataset_pipeline.py` docstrings
+  - [ ] Page: IA Documentaire Usage — skeleton only [ready: needs OCR test results from API call]
+  - [ ] Page: Audio Integration — skeleton only [ready: needs STT test results from API call]
+- [ ] T-MS-033: Cron audit qualité modèles (weekly via Sentinelle) — [ready: Mistral key active] + depends T-MS-030
   - [ ] 10 prompts test par modèle
   - [ ] Scoring automatique
   - [ ] Alerte si dégradation >5%
@@ -246,12 +248,29 @@ Constat:
 - T-MS-032 (Documentation Outline wiki) is partially actionable offline
 
 Fait:
-- All blocked tasks annotated with `[blocked: Mistral key expired]` in this TODO
+- All blocked tasks annotated with `[ready: Mistral key active]` in this TODO
 - T-MS-032 marked as partially actionable (2 pages draftable offline, 2 skeleton only)
 - Status report created: `docs/MISTRAL_STUDIO_STATUS_2026-03-25.md`
   - Full inventory of tooling, conventions, and next actions when keys are renewed
   - Priority execution order documented
 
 Impact:
-- No further progress possible on Plan 24 until Mistral API key is renewed
+- ~~No further progress possible on Plan 24 until Mistral API key is renewed~~ — resolved 2026-03-25
 - When key is renewed, start with `dataset_audit_tui.sh` preflight then T-MS-002/003
+
+### 2026-03-25 (session 10 — prep advance, no API calls)
+
+Constat:
+- Mistral API key is now ACTIVE (tested with codestral-latest on Tower)
+- All `[blocked: Mistral key expired]` annotations replaced with `[ready: Mistral key active]`
+
+Fait:
+- T-MS-004 sub-task "Exporter docs" closed — 4 commercial docs already in `docs/commercial/`
+- T-MS-005 sub-task "Selectionner datasheets" closed — 5 test datasheets listed in `docs/MISTRAL_DATASHEET_TEST_LIST.md`
+- T-MS-032 sub-tasks "Mistral Studio Overview" and "Fine-tune Pipeline Guide" marked draftable (source material exists)
+- Status report `docs/MISTRAL_STUDIO_STATUS_2026-03-25.md` updated with key active status and execution plan
+- Dataset builders: `build_datasets.py` being created by another agent (READY status)
+
+Impact:
+- Plan 24 is now unblocked — ready for API credit spend
+- Execution order: preflight -> upload datasets (T-MS-002/003) -> upload docs (T-MS-004/005) -> fine-tune (T-MS-010/011) -> benchmark (T-MS-012)
