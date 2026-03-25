@@ -48,8 +48,8 @@ Fichiers, Fine-tune, Batches, IA Documentaire, Audio, Vibe CLI, Codestral.
 |---|-------|-------|---------|--------|
 | 13 | Déployer modèles fine-tuned dans Mascarade | Architect | Router mis à jour | [ ] |
 | 14 | Tests E2E pipeline Studio→Mascarade→Agent | QA | Evidence pack | [ ] |
-| 15 | Documentation Outline (4 pages Studio) | Doc | Wiki à jour | [x] |
-| 16 | Cron audit qualité modèles (weekly) | QA + Sentinelle | Benchmark continu | [x] |
+| 15 | Documentation Outline (4 pages Studio + 4 guides agents) | Doc | Wiki à jour | [x] |
+| 16 | Cron audit qualité modèles (weekly) | QA + Sentinelle | `cron_model_audit.sh` | [x] |
 
 ---
 

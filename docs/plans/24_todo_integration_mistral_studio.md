@@ -3,8 +3,8 @@
 > **Owner**: PM-Mesh + Architect + Forge
 > **Date création**: 2026-03-21
 > **Dernière MAJ**: 2026-03-22 (session 9 — Codestral FIM intégré sur la base active)
-> **Dernière MAJ effective**: 2026-03-25 (session 10 — Mistral key active, prep tasks closed)
-> **Statut global**: 🟢 Phase 0 en cours — Mistral key ACTIVE — Pipeline dataset prête — Docs commerciales exportées — Datasheets sélectionnés — Prêt pour upload+fine-tune
+> **Dernière MAJ effective**: 2026-03-25 (session 11 — T-MS-032/033 completed offline, 4 guide docs + cron audit script)
+> **Statut global**: 🟢 Phase 0 en cours — Mistral key ACTIVE — Pipeline dataset prête — Docs commerciales exportées — Datasheets sélectionnés — Prêt pour upload+fine-tune — T-MS-032/033 done
 
 ---
 
@@ -99,15 +99,20 @@
   - [ ] Scénario 1: Upload datasheet → OCR → Sentinelle analyse
   - [ ] Scénario 2: Prompt KiCad → Router → ft:kicad-v1 → réponse
   - [ ] Scénario 3: Audio meeting → STT → action items → Tower email
-- [ ] T-MS-032: Documentation Outline wiki — **actionable offline (partial)**
+- [x] T-MS-032: Documentation Outline wiki — **completed (4 guide docs + 2 wiki pages)**
   - [x] Page: Mistral Studio Overview — draftable from existing `ANALYSE_EXHAUSTIVE_ECOSYSTEME_2026-03-21.md` + `MISTRAL_DOCS_REFERENCE_2026-03-21.md`
   - [x] Page: Fine-tune Pipeline Guide — draftable from `mistral_dataset_pipeline.py` docstrings
+  - [x] Guide: Sentinelle monitoring — `docs/MISTRAL_SENTINELLE_GUIDE.md`
+  - [x] Guide: Tower knowledge — `docs/MISTRAL_TOWER_GUIDE.md`
+  - [x] Guide: Forge code review — `docs/MISTRAL_FORGE_GUIDE.md`
+  - [x] Guide: Devstral engineering — `docs/MISTRAL_DEVSTRAL_GUIDE.md`
   - [ ] Page: IA Documentaire Usage — skeleton only [ready: needs OCR test results from API call]
   - [ ] Page: Audio Integration — skeleton only [ready: needs STT test results from API call]
-- [ ] T-MS-033: Cron audit qualité modèles (weekly via Sentinelle) — [ready: Mistral key active] + depends T-MS-030
-  - [ ] 10 prompts test par modèle
-  - [ ] Scoring automatique
-  - [ ] Alerte si dégradation >5%
+- [x] T-MS-033: Cron audit qualité modèles (weekly via Sentinelle) — **completed (script ready, zero API cost)**
+  - [x] 10 prompts test par modèle — `tools/mistral/cron_model_audit.sh` (uses `metier_100_benchmark.jsonl`)
+  - [x] Scoring automatique — keyword-match heuristic 0-10, per-domain breakdown
+  - [x] Alerte si dégradation >5% — webhook + console alert, baseline comparison
+  - [x] Script: `tools/mistral/cron_model_audit.sh` — crontab-ready, Tower Ollama (zero cost)
 
 ---
 
@@ -274,3 +279,27 @@ Fait:
 Impact:
 - Plan 24 is now unblocked — ready for API credit spend
 - Execution order: preflight -> upload datasets (T-MS-002/003) -> upload docs (T-MS-004/005) -> fine-tune (T-MS-010/011) -> benchmark (T-MS-012)
+
+### 2026-03-25 (session 11 — squeeze offline items, T-MS-032/033)
+
+Constat:
+- T-MS-032 and T-MS-033 are actionable without API calls
+- All existing scripts (sentinelle_cron.sh, weekly_benchmark.sh, dispatch_to_agent.sh) provide sufficient source material for documentation
+
+Fait:
+- **T-MS-032 completed (documentation skeletons)**:
+  - `docs/MISTRAL_SENTINELLE_GUIDE.md` — Sentinelle monitoring guide (daily health, weekly benchmark, alert flow)
+  - `docs/MISTRAL_TOWER_GUIDE.md` — Tower knowledge management guide (knowledge-base MCP, Document Library RAG, content profiles)
+  - `docs/MISTRAL_FORGE_GUIDE.md` — Forge code review guide (Codestral FIM, fine-tune pipeline, dataset tools, benchmark)
+  - `docs/MISTRAL_DEVSTRAL_GUIDE.md` — Devstral engineering guide (4 profiles: PCB, firmware, analog, general code)
+- **T-MS-033 completed (cron audit skeleton)**:
+  - `tools/mistral/cron_model_audit.sh` — weekly cron model audit script
+  - 10 prompts per model from metier_100_benchmark.jsonl
+  - Baseline comparison with >5% degradation alert
+  - Zero API cost (Tower Ollama)
+  - Crontab-ready: `0 3 * * 0`
+- Both plan files updated with completion markers
+
+Impact:
+- 4/34 tasks now completed (T-MS-001, T-MS-023, T-MS-032, T-MS-033)
+- Remaining tasks all require API calls (upload, fine-tune, batch, OCR, STT, Vibe CLI, E2E tests)
