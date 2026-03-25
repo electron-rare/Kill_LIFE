@@ -47,7 +47,7 @@
 - [x] T-MA-020: Intégrer Devstral dans workflow CI → `devstral-review.yml` (GitHub Actions PR review)
 - [ ] T-MA-021: Benchmark comparatif: base model vs fine-tuned sur 100 prompts métier
 - [x] T-MA-022: Cron Sentinelle health-check (06:00 daily) → `sentinelle_cron.sh`
-- [ ] T-MA-023: Documentation dans Outline wiki (4 pages: Sentinelle, Tower, Forge, Devstral)
+- [x] T-MA-023: Documentation agents Mascarade → `docs/MASCARADE_AGENTS_DOCUMENTATION.md` (4 sections: Sentinelle, Tower, Forge, Devstral + 18 Ollama profiles + mesh + API usage)
 - [x] T-MA-024: Intégrer `mistral_agents_tui.sh` dans `yiacad_operator_index.sh` → 7 new actions (agents-status/chat/health/e2e, studio-status/files/finetune)
 - [x] T-MA-025: Tests d'intégration end-to-end (handoff Sentinelle → Devstral → fix auto) → `e2e_agents_test.sh`
 
@@ -71,8 +71,8 @@
 - [ ] T-MA-030: Implémenter A2A protocol dans Mascarade (MCP + A2A complémentaires)
 - [ ] T-MA-031: Migrer orchestrateur Mascarade vers graph-based state (LangGraph-compatible)
 - [ ] T-MA-032: Ajouter RAG Document Library à Tower (Outline + docs PDF) — via MistralLibraryClient
-- [ ] T-MA-033: Pipeline d'évaluation continue des agents (weekly benchmark)
-- [ ] T-MA-034: Étendre lot_chain.sh avec dispatch vers agents Mistral
+- [x] T-MA-033: Pipeline d'évaluation continue des agents → `tools/evals/weekly_benchmark.sh` (Ollama devstral, keyword-match quality heuristic, latency/tokens, auto-compare previous run)
+- [x] T-MA-034: Lot chain dispatch vers agents Mistral → `tools/ai/dispatch_to_agent.sh` (domain-to-agent mapping, local Ollama or Mistral API, dry-run, logging)
 
 ---
 
