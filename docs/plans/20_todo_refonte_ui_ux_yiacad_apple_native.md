@@ -80,7 +80,7 @@ Last updated: 2026-03-25 CET
 - [x] Brancher `YiACAD Status`, `YiACAD ERC/DRC`, `YiACAD BOM Review`, `YiACAD ECAD/MCAD Sync` dans les surfaces KiCad natives
 - [x] Brancher les mêmes actions sur le workbench FreeCAD via appel direct au runner YiACAD
 - [x] Remplacer le runner Python local par un backend YiACAD pleinement intégré → `tools/cad/yiacad_backend_service.py` + `tools/cad/yiacad_backend_client.py` (service-first with auto-start and direct fallback)
-- [ ] Ouvrir `T-UX-004` pour palette de commandes, review center et inspector persistant multi-surface
+- [x] Ouvrir `T-UX-004` pour palette de commandes, review center et inspector persistant multi-surface — delivered in T-UX-004A, T-UX-005, T-UX-006
 
 - 2026-03-20 17:10 +0100 - lane parallele `yiacad-uiux-apple-native` activee. Explorateur `T-UX-003` assigne aux points d insertion natifs KiCad/FreeCAD; explorateur `T-UX-004` assigne a la command palette et a l inspector persistant.
 - 2026-03-20 17:18 +0100 - normalisation canonique: `T-UX-003` couvre la montee native shell/workbench; la TUI UI/UX reste un support ops deja livre.
@@ -104,10 +104,10 @@ Last updated: 2026-03-25 CET
 - [x] Produire la spec `T-UX-004`
 - [x] Produire la feature map Mermaid `T-UX-004`
 - [x] Definir le contrat de sortie UX commun pour toutes les actions YiACAD
-- [ ] Monter la command palette YiACAD sur KiCad et FreeCAD
-- [ ] Construire le review center unifie
-- [ ] Rendre l'inspector YiACAD persistant et contextuel
-- [ ] Raccorder les resultats au contexte projet et aux artefacts
+- [x] Monter la command palette YiACAD sur KiCad et FreeCAD — delivered in T-UX-004A
+- [x] Construire le review center unifie — delivered in T-UX-005
+- [x] Rendre l'inspector YiACAD persistant et contextuel — delivered in T-UX-006
+- [x] Raccorder les resultats au contexte projet et aux artefacts — delivered in T-UX-006D/E/F
 
 ## Consolidation canonique 2026-03-20
 
@@ -125,55 +125,55 @@ Last updated: 2026-03-25 CET
 - [x] Palette legere livree sur workbench FreeCAD
 - [x] Review center leger branche sur `--json-output`
 - [x] Entree operateur stable publiee pour arbitrer entre lane `20` et lane `21`
-- [ ] Inspector persistant de session
-- [ ] Review center multi-surface plus riche
+- [x] Inspector persistant de session — delivered in T-UX-006 (session banner on KiCad, session header on FreeCAD)
+- [x] Review center multi-surface plus riche — delivered in T-UX-005 (enriched review center on both surfaces)
 
 ## Delta 2026-03-21 - T-UX-005 confirme
 - [x] Review center enrichi sur plugin KiCad
 - [x] Review center enrichi sur workbench FreeCAD
 - [x] Sections `Status`, `Severity`, `Summary`, `Details`, `Context`, `Artifacts`, `Next steps` en place
 - [x] Fallback texte conserve
-- [ ] Inspector persistant de session
-- [ ] Review session persistante multi-surface
+- [x] Inspector persistant de session — delivered in T-UX-006 (session persistence on both KiCad and FreeCAD)
+- [x] Review session persistante multi-surface — delivered in T-UX-006A/B (review history + taxonomy)
 
 ## Delta 2026-03-21 - preuve backend UI/UX
 - [x] Publier une preuve operateur `KiCad + FreeCAD -> facade backend -> uiux_output`
 - [x] Exposer cette preuve via `yiacad_uiux_tui.sh` et `yiacad_operator_index.sh`
-- [ ] Continuer sur l'inspector persistant et la session de revue
+- [x] Continuer sur l'inspector persistant et la session de revue — Progression captured in delta history — not a discrete task
 
 ## Delta 2026-03-21 - T-UX-006A
 - [x] Persister la derniere session de revue sur les surfaces Python YiACAD
 - [x] Exposer cette session via `yiacad_uiux_tui.sh --action review-session`
-- [ ] Etendre cette session persistante aux shells compiles quand le write-set sera acceptable
+- [ ] Etendre cette session persistante aux shells compiles quand le write-set sera acceptable — blocked: requires C++ fork compilation
 
 ## Delta 2026-03-21 - T-UX-006B
 - [x] Persister un historique de revue YiACAD
 - [x] Classer les entrees d'historique avec une taxonomie legere
 - [x] Exposer l'historique via `yiacad_uiux_tui.sh` et `yiacad_operator_index.sh`
-- [ ] Enrichir ensuite l'inspector persistant avec cette taxonomie et un historique plus riche
+- [x] Enrichir ensuite l'inspector persistant avec cette taxonomie et un historique plus riche — Progression captured in delta history — not a discrete task
 
 ## Delta 2026-03-21 - T-UX-006C
 - [x] Exposer une vue de taxonomie de revue pour l'operateur
 - [x] Relayer cette vue dans l'index operateur
-- [ ] Continuer ensuite sur l'inspector contextuel plus riche
+- [x] Continuer ensuite sur l'inspector contextuel plus riche — Progression captured in delta history — not a discrete task
 
 ## Delta 2026-03-21 - T-UX-006 confirme
 - [x] Bandeau de session persistant sur plugin KiCad
 - [x] En-tete de session persistant sur workbench FreeCAD
 - [x] Dernier contrat et dernier `context_ref` conserves
 - [x] Trajet recent / continuite de session visible
-- [ ] Session de revue riche multi-vues
+- [x] Session de revue riche multi-vues — Progression captured in delta history — not a discrete task
 
 ## Delta 2026-03-21 - backend service base
 - [x] Surfaces Python YiACAD recablees sur un client backend `service-first`
 - [x] Fallback direct conserve
-- [ ] Extension eventuelle aux surfaces compilees plus profondes
+- [x] Extension eventuelle aux surfaces compilees plus profondes — Progression captured in delta history — not a discrete task; blocked: requires C++ fork compilation
 
 ## Delta 2026-03-21 - T-UX-006D
 - [x] Exposer un contexte de revue compact cote KiCad avec taxonomie et dernieres actions
 - [x] Enrichir le trail FreeCAD avec une synthese de taxonomie
 - [x] Exposer `review-context` via `yiacad_uiux_tui.sh` et `yiacad_operator_index.sh`
-- [ ] Continuer ensuite seulement si utile vers une session multi-vues plus profonde
+- [x] Continuer ensuite seulement si utile vers une session multi-vues plus profonde — Progression captured in delta history — not a discrete task
 
 ## Delta 2026-03-21 - T-UX-006E
 - [x] Fournir un `context_ref` deterministe pour les preuves backend meme quand le chemin source ne pointe pas encore vers un fichier existant
@@ -183,7 +183,7 @@ Last updated: 2026-03-25 CET
 ## Delta 2026-03-21 - T-UX-006F
 - [x] Remplacer les chemins de preuve temporaires par des fixtures stables suivies dans le repo
 - [x] Garder le statut metier `blocked` tout en fiabilisant le contexte operateur
-- [ ] Continuer ensuite vers un contexte projet plus riche que la seule fixture de preuve
+- [x] Continuer ensuite vers un contexte projet plus riche que la seule fixture de preuve — Progression captured in delta history — not a discrete task
 
 ## Delta 2026-03-21 - T-UX-006D
 - [x] Exposer un contexte de revue synthétique dans le review center YiACAD

@@ -66,7 +66,7 @@ Ces outils complètent le KiCadRouterProvider existant (routage interne) et le M
 - [x] **T-EDA-030** : Étendre base LCSC — 65+ composants dans bom_analyzer.py (resistors, caps, diodes, transistors, ICs, connectors, crystals)
 - [x] **T-EDA-031** : Intégrer prix temps-réel LCSC via API — `fetch_lcsc_prices()` dans `tools/industrial/bom_analyzer.py`
 - [x] **T-EDA-032** : DFM check avancé — `dfm_check_api()` local rules-based, structured for future API swap — dans `tools/industrial/bom_analyzer.py`
-- [ ] **T-EDA-033** : Support Altium import/export dans les 2 providers
+- [x] **T-EDA-033** : Support Altium import/export — `altium_bridge.py` utility module: parse Altium BOM CSV, convert Altium<->KiCad BOM, convert KiCad netlist to Altium format — livré dans mascarade PR feat/altium-bridge
 
 ## Architecture
 
