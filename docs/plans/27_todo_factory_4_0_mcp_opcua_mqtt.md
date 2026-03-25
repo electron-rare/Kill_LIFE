@@ -2,9 +2,9 @@
 
 ## P0 — MCP servers industriels
 
-- [ ] Créer `tools/industrial/opcua_mcp.py` — MCP server OPC-UA (browse, read, subscribe, write)
-- [ ] Créer `tools/industrial/mqtt_mcp.py` — MCP server MQTT (subscribe, publish, topic browse)
-- [ ] Créer `tools/industrial/run_opcua_mcp.sh` + `run_mqtt_mcp.sh` — scripts de lancement
+- [x] Créer `tools/industrial/opcua_mcp.py` — MCP server OPC-UA (browse, read, write, subscribe, discover) — asyncua + stub
+- [x] Créer `tools/industrial/mqtt_mcp.py` — MCP server MQTT (subscribe, publish, topics, history) — paho-mqtt + stub
+- [x] Créer `tools/industrial/run_opcua_mcp.sh` + `run_mqtt_mcp.sh` — scripts de lancement (pattern apify_mcp)
 - [ ] Enregistrer les 2 MCP dans Cline + Claude Code settings
 - [ ] Tester OPC-UA avec un simulateur (Prosys, open62541)
 - [ ] Tester MQTT avec Mosquitto local
