@@ -1,0 +1,11 @@
+{
+  "description": "LDO 3V3 depuis USB-C (AMS1117-3.3 + decoupling caps)",
+  "keywords": [
+    "power",
+    "ldo",
+    "3v3",
+    "usbc",
+    "ams1117"
+  ],
+  "fields": {}
+}

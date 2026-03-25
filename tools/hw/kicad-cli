@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Wrapper: calls kicad-cli inside kicad/kicad:10.0 Docker image
+# Translates absolute host paths under KILL_LIFE_ROOT → /project/ paths
+# Runs as current user so written files have correct ownership
+KILL_LIFE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+# Rewrite each argument: replace KILL_LIFE_ROOT prefix with /project
+args=()
+for arg in "$@"; do
+    if [[ "$arg" == "${KILL_LIFE_ROOT}"* ]]; then
+        arg="/project${arg#${KILL_LIFE_ROOT}}"
+    fi
+    args+=("$arg")
+done
+
+exec docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  -e HOME=/tmp \
+  -v "${KILL_LIFE_ROOT}:/project" \
+  -w /project \
+  kicad/kicad:10.0 \
+  kicad-cli "${args[@]}"

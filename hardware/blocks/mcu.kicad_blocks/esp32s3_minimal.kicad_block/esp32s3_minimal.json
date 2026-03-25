@@ -1,0 +1,11 @@
+{
+  "description": "ESP32-S3-WROOM-1 minimal (power + LED indicators)",
+  "keywords": [
+    "esp32",
+    "s3",
+    "wroom",
+    "wifi",
+    "mcu"
+  ],
+  "fields": {}
+}
