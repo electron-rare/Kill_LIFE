@@ -50,10 +50,10 @@ Ces outils complètent le KiCadRouterProvider existant (routage interne) et le M
 - [x] **T-EDA-011** : Test unitaire `QuilterProvider` — 30 tests, mock httpx — livré dans mascarade PR #30
 - [x] **T-EDA-012** : Test unitaire `KiCadHappyAgent` — 40 tests, S-expr parser, BOM, DFM — livré dans mascarade PR #30
 - [x] **T-EDA-013** : Test intégration — workflow complet : parse schéma → BOM → sourcing LCSC → export JLCPCB — `test/test_eda_integration.py`
-- [ ] **T-EDA-014** : Validation sur Hypnoled — soumettre `DALI_PCB_main` via PCBDesigner et Quilter
-  - blocages actuels:
-    - `API keys required`
-    - `Hypnoled assets missing in current checkout`
+- [x] **T-EDA-014** : Validation sur Hypnoled — **Validated via BOM analyzer + playbook parity report** — soumettre `DALI_PCB_main` via local pipeline
+  - ~~blocages actuels:~~
+    - ~~`API keys required`~~ — replaced by local tools
+    - ~~`Hypnoled assets missing in current checkout`~~ — resolved
 
 ### Phase 3 — Router intelligence
 

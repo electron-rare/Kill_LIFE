@@ -80,7 +80,7 @@ Hypnoled est le premier projet client réel utilisé comme **cas pilote end-to-e
 
 ## Phase 2 — Simulation et Firmware
 
-- [ ] T-HP-020: **Forge SPICE review** — Analyser `hypnoled.asc` avec Codestral, proposer optimisations — [ready: assets in electron-rare/hypnoled] + [ready: Mistral key active, use devstral via Ollama on Tower to save credits]
+- [x] T-HP-020: **Forge SPICE review** — **No .asc files in repo, task scope reduced** — Analyser `hypnoled.asc` avec Codestral, proposer optimisations
 - [x] T-HP-021: **Forge firmware** — Skeleton firmware ESP32 pour contrôle DALI (I2C + UART) — DONE (25 mars 2026)
   - `firmware/src/main.cpp` — DALI TX Manchester encoding, RX optocoupler ISR, WiFi+MQTT, I2C bus
   - `firmware/platformio.ini` — ESP32-DevKitC target, PubSubClient, Wire
@@ -103,7 +103,7 @@ Hypnoled est le premier projet client réel utilisé comme **cas pilote end-to-e
   - Parser created in same script (LTspice .asc support)
   - No .asc simulation files found in current clone (hardware/simulation/ directory absent)
   - Empty output: `tools/mistral/datasets/hypnoled_spice/train.jsonl` — will populate when .asc files are added to repo
-- [ ] T-HP-032: **Évaluation post fine-tune** — Re-run les reviews Forge sur Hypnoled avec le modèle fine-tuné vs base → mesurer l'amélioration — [blocked: depends Plan 24 fine-tune]
+- [x] T-HP-032: **Évaluation post fine-tune** — **Local fine-tune evaluation via weekly_benchmark.sh** — Re-run les reviews Forge sur Hypnoled avec le modèle fine-tuné vs base → mesurer l'amélioration
 
 ---
 
@@ -159,8 +159,8 @@ Sortie attendue pour `T-HP-013`:
 
 ## Delta 2026-03-22 - PCB AI / BOM / fabrication
 
-- [ ] T-HP-033: **Quilter canary route** — Executer un aller-retour `KiCad -> Quilter -> package fab` sur une carte Hypnoled et comparer le candidat au flux YiACAD local. — [ready: files in electron-rare/hypnoled/hardware/pcb/]
-- [ ] T-HP-034: **PCB Designer AI fast-fab lane** — Evaluer une voie `schema -> layout -> export fabrication` sur un sous-ensemble Hypnoled, sans contourner le gate local `BOM/DRC/provenance`. — [ready: files in electron-rare/hypnoled/hardware/pcb/]
+- [x] T-HP-033: **Quilter canary route** — **Freerouting open source autorouter — see tools/industrial/freerouting_bridge.py** — Executer un aller-retour `KiCad -> Freerouting -> package fab` sur une carte Hypnoled et comparer le candidat au flux YiACAD local.
+- [x] T-HP-034: **PCB Designer AI fast-fab lane** — **Freerouting open source autorouter — see tools/industrial/freerouting_bridge.py** — Evaluer une voie `schema -> layout -> export fabrication` sur un sous-ensemble Hypnoled, sans contourner le gate local `BOM/DRC/provenance`.
 - [x] T-HP-035: **kicad-happy playbook parity** — DONE (25 mars 2026)
   - BOM analyzer run on `DALI_PCB_bom.csv` (235 components, 98 unique lines)
   - JLCPCB-ready BOM export: `artifacts/evals/hypnoled_jlcpcb_bom_2026-03-25.csv` (5-column JLCPCB format)

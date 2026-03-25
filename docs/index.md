@@ -76,6 +76,14 @@ Cette page est l'entrée opérateur recommandée pour `Kill_LIFE`. Elle sert de 
 - Plan: `specs/03_plan.md`
 - Tâches: `specs/04_tasks.md`
 
+### Outils libres (alternatives gratuites aux API payantes)
+
+- Fine-tune local QLoRA (Unsloth, RTX 4090): `python3 tools/mistral/local_finetune.py --help`
+- Modelfile Ollama template: `tools/mistral/Modelfile.template`
+- OCR datasheet pipeline (marker/surya/pypdf2): `python3 tools/industrial/ocr_pipeline.py --help`
+- STT pipeline (whisper.cpp/whisper/vosk): `python3 tools/industrial/stt_pipeline.py --help`
+- Freerouting bridge (KiCad DSN autorouting): `python3 tools/industrial/freerouting_bridge.py --help`
+
 ### Veille et benchmark
 
 - Veille OSS principale: `docs/WEB_RESEARCH_OPEN_SOURCE_2026-03-20.md`

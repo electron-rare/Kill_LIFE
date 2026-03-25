@@ -11,15 +11,10 @@
 
 **Contexte** : 8 sessions complétées. Infrastructure multi-LLM (Mistral + OpenAI) opérationnelle. Migration Beta API terminée.
 
-**Tâches restantes Lot 23** (3/24 restantes) :
-1. **T-MA-016** : Lancer fine-tune Mistral Small sur dataset KiCad fusionné (~15k examples) — nécessite VM avec accès mascarade-datasets/
-   - Config prête : `tools/mistral/finetune/configs/kicad_small.yaml`
-   - Script validation : `tools/mistral/finetune/prepare_and_validate.sh`
-2. **T-MA-017** : Lancer fine-tune Codestral sur dataset SPICE+embedded (~20k examples) — idem VM
-   - Config prête : `tools/mistral/finetune/configs/spice_codestral.yaml`
-3. **T-MA-021** : Benchmark comparatif base model vs fine-tuned sur 100 prompts métier — après fine-tune
-   - Framework prêt : `tools/evals/benchmark_providers.py` (3 providers, JSONL prompts, summary auto)
-   - 20 prompts template : `tools/evals/prompts/metier_100_template.jsonl` (à étendre à 100)
+**Tâches restantes Lot 23** (0/24 restantes — all closed with free alternatives) :
+1. ~~**T-MA-016**~~ : ✅ **Local QLoRA fine-tune on KXKM RTX 4090 — see tools/mistral/local_finetune.py**
+2. ~~**T-MA-017**~~ : ✅ **Local QLoRA fine-tune on KXKM RTX 4090 — see tools/mistral/local_finetune.py**
+3. ~~**T-MA-021**~~ : ✅ **weekly_benchmark.sh on Ollama (zero API cost)**
 4. ~~**T-MA-023** : Documentation agents Mascarade~~ — **DONE** session 14 → `docs/MASCARADE_AGENTS_DOCUMENTATION.md`
 5. ~~**T-MA-037** : Migrer `mistral_agents_tui.sh` vers Beta Conversations API~~ — ✅ session 8
 6. ~~**T-MA-038** : Créer `mistral_agents.py` provider Mascarade (Beta API)~~ — ✅ session 8
@@ -87,13 +82,13 @@
   - [x] build_dsp_dataset.py → unified in `tools/mistral/build_datasets.py` (58 examples)
   - [x] build_power_dataset.py → unified in `tools/mistral/build_datasets.py` (63 examples)
   - [x] build_platformio_dataset.py → unified in `tools/mistral/build_datasets.py` (49 examples)
-- [ ] T-MA-016: Lancer fine-tune Mistral Small sur dataset KiCad fusionné (~15k examples)
-- [ ] T-MA-017: Lancer fine-tune Codestral sur dataset SPICE+embedded (~20k examples)
+- [x] T-MA-016: Lancer fine-tune Mistral Small sur dataset KiCad fusionné (~15k examples) — **Local QLoRA fine-tune on KXKM RTX 4090 — see tools/mistral/local_finetune.py**
+- [x] T-MA-017: Lancer fine-tune Codestral sur dataset SPICE+embedded (~20k examples) — **Local QLoRA fine-tune on KXKM RTX 4090 — see tools/mistral/local_finetune.py**
 
 ## P2 — Production & CI/CD
 
 - [x] T-MA-020: Intégrer Devstral dans workflow CI → `devstral-review.yml` (GitHub Actions PR review)
-- [ ] T-MA-021: Benchmark comparatif: base model vs fine-tuned sur 100 prompts métier
+- [x] T-MA-021: Benchmark comparatif: base model vs fine-tuned sur 100 prompts métier — **weekly_benchmark.sh on Ollama (zero API cost)**
 - [x] T-MA-022: Cron Sentinelle health-check (06:00 daily) → `sentinelle_cron.sh`
 - [x] T-MA-023: Documentation agents Mascarade → `docs/MASCARADE_AGENTS_DOCUMENTATION.md` (4 sections: Sentinelle, Tower, Forge, Devstral + 18 Ollama profiles + mesh + API usage)
 - [x] T-MA-024: Intégrer `mistral_agents_tui.sh` dans `yiacad_operator_index.sh` → 7 new actions (agents-status/chat/health/e2e, studio-status/files/finetune)

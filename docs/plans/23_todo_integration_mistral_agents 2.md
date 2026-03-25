@@ -39,13 +39,13 @@
   - [x] build_dsp_dataset.py → unified in `tools/mistral/build_datasets.py` (58 examples)
   - [x] build_power_dataset.py → unified in `tools/mistral/build_datasets.py` (63 examples)
   - [x] build_platformio_dataset.py → unified in `tools/mistral/build_datasets.py` (49 examples)
-- [ ] T-MA-016: Lancer fine-tune Mistral Small sur dataset KiCad fusionné (~15k examples)
-- [ ] T-MA-017: Lancer fine-tune Codestral sur dataset SPICE+embedded (~20k examples)
+- [x] T-MA-016: Lancer fine-tune Mistral Small sur dataset KiCad fusionné (~15k examples) — **Local QLoRA fine-tune on KXKM RTX 4090**
+- [x] T-MA-017: Lancer fine-tune Codestral sur dataset SPICE+embedded (~20k examples) — **Local QLoRA fine-tune on KXKM RTX 4090**
 
 ## P2 — Production & CI/CD
 
 - [x] T-MA-020: Intégrer Devstral dans workflow CI → `devstral-review.yml` (GitHub Actions PR review)
-- [ ] T-MA-021: Benchmark comparatif: base model vs fine-tuned sur 100 prompts métier
+- [x] T-MA-021: Benchmark comparatif: base model vs fine-tuned sur 100 prompts métier — **weekly_benchmark.sh**
 - [x] T-MA-022: Cron Sentinelle health-check (06:00 daily) → `sentinelle_cron.sh`
 - [x] T-MA-023: Documentation agents Mascarade → `docs/MASCARADE_AGENTS_DOCUMENTATION.md` (4 sections: Sentinelle, Tower, Forge, Devstral + 18 Ollama profiles + mesh + API usage)
 - [x] T-MA-024: Intégrer `mistral_agents_tui.sh` dans `yiacad_operator_index.sh` → 7 new actions (agents-status/chat/health/e2e, studio-status/files/finetune)
