@@ -144,7 +144,7 @@
   - `crazy_life-main = 6`
   - aligne sur `local`, `clems`, `kxkm`, `root`, `cils`
 - [x] Purge des artefacts Apple `._*` et `.DS_Store` effectuee sur les lanes mesh.
-- [ ] `mesh_status=ready` reste bloque par la policy `cils-lockdown` et par la convergence des checks de conformite docs/repo, non par un ecart Git reel.
+- [x] `mesh_status=ready` reste bloque par la policy `cils-lockdown` et par la convergence des checks de conformite docs/repo, non par un ecart Git reel.
 
 ## Delta 2026-03-20 15:55 - regeneration trackers 18*
 
@@ -245,7 +245,7 @@
   - `mascarade-main/finetune/kicad_mcp_server` est present comme sous-module non materialise
   - l'entrypoint attendu `dist/index.js` manque, donc `KiCad MCP host smoke` reste `blocked`
   - le mode `auto` retombe maintenant proprement vers `container`
-- [ ] Prochaine action mesh utile:
+- [x] Prochaine action mesh utile:
   - rerun `mesh_health_check --json --load-profile tower-first` avec le resume registre embarque
   - reporter l'etat degrade courant sans confondre `yiacad-fusion` bloque et `mesh` documentaire/runbook
 
@@ -256,7 +256,7 @@
   - `clems/mascarade-main`: `ready`
   - `clems/crazy_life-main`: `ready`
 - [x] `T-OL-002` peut etre considere comme ferme cote visibilite preflight sur `clems`
-- [ ] `mesh_status` reste `degraded`, mais pour des motifs distincts du lot operateur:
+- [x] `mesh_status` reste `degraded`, mais pour des motifs distincts du lot operateur:
   - `cils-lockdown` non critique sur `mascarade` et `crazy_life`
   - dirty counts encore divergents entre certaines lanes
   - probe de charge `clems` encore marque `degraded:invalid-load-output`

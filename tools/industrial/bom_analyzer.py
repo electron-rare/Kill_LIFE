@@ -99,6 +99,76 @@ BASIC_PATTERNS = [
 # Known LCSC part number patterns
 LCSC_PATTERN = re.compile(r"C\d{4,8}")
 
+# Extended LCSC knowledge base — common parts for JLCPCB assembly
+# Format: (value_pattern, footprint_pattern, lcsc_pn, category, description)
+LCSC_KNOWLEDGE_BASE = [
+    # Resistors (0402/0603/0805/1206)
+    ("100", "0402", "C25076", "basic", "100R 0402 1%"),
+    ("1K", "0402", "C11702", "basic", "1K 0402 1%"),
+    ("4.7K", "0402", "C25900", "basic", "4.7K 0402 1%"),
+    ("10K", "0402", "C25744", "basic", "10K 0402 1%"),
+    ("100K", "0402", "C25741", "basic", "100K 0402 1%"),
+    ("100", "0603", "C22775", "basic", "100R 0603 1%"),
+    ("1K", "0603", "C21190", "basic", "1K 0603 1%"),
+    ("2.2K", "0603", "C25879", "basic", "2.2K 0603 1%"),
+    ("4.7K", "0603", "C23162", "basic", "4.7K 0603 1%"),
+    ("10K", "0603", "C25804", "basic", "10K 0603 1%"),
+    ("47K", "0603", "C25819", "basic", "47K 0603 1%"),
+    ("100K", "0603", "C25803", "basic", "100K 0603 1%"),
+    ("1M", "0603", "C22935", "basic", "1M 0603 1%"),
+    ("10K", "0805", "C17414", "basic", "10K 0805 1%"),
+    ("100K", "0805", "C17407", "basic", "100K 0805 1%"),
+    # Capacitors
+    ("100nF", "0402", "C1525", "basic", "100nF 0402 X7R 16V"),
+    ("1uF", "0402", "C52923", "basic", "1uF 0402 X5R 10V"),
+    ("100nF", "0603", "C14663", "basic", "100nF 0603 X7R 50V"),
+    ("1uF", "0603", "C15849", "basic", "1uF 0603 X5R 25V"),
+    ("10uF", "0603", "C19702", "basic", "10uF 0603 X5R 10V"),
+    ("100nF", "0805", "C49678", "basic", "100nF 0805 X7R 50V"),
+    ("1uF", "0805", "C28323", "basic", "1uF 0805 X7R 25V"),
+    ("10uF", "0805", "C15850", "basic", "10uF 0805 X5R 25V"),
+    ("22uF", "0805", "C45783", "extended", "22uF 0805 X5R 10V"),
+    ("100uF", "1206", "C15008", "extended", "100uF 1206 X5R 10V"),
+    # LEDs
+    ("LED", "0603", "C72043", "basic", "LED green 0603"),
+    ("LED", "0805", "C2297", "basic", "LED red 0805"),
+    # Diodes
+    ("1N4148", "SOD-323", "C81598", "basic", "1N4148WS switching diode"),
+    ("SS34", "SMA", "C8678", "basic", "SS34 3A 40V Schottky"),
+    ("MB10S", "SOIC-4", "C216314", "extended", "MB10S 1A 1000V bridge"),
+    ("1SMA4746", "SMA", "C35548", "extended", "1SMA4746 18V Zener"),
+    # Transistors
+    ("BSS138", "SOT-23", "C21670", "basic", "BSS138 N-FET 50V"),
+    ("BSS123", "SOT-23", "C26212", "basic", "BSS123 N-FET 100V"),
+    ("BC847", "SOT-23", "C8550", "basic", "BC847 NPN 45V"),
+    ("BC857", "SOT-23", "C8556", "basic", "BC857 PNP 45V"),
+    ("AO3400A", "SOT-23", "C20917", "basic", "AO3400A N-FET 30V 5.7A"),
+    ("SI2301", "SOT-23", "C10487", "basic", "SI2301 P-FET -20V 2.3A"),
+    # Voltage regulators
+    ("AMS1117-3.3", "SOT-223", "C6186", "basic", "AMS1117-3.3 LDO 1A"),
+    ("AMS1117-5.0", "SOT-223", "C6187", "basic", "AMS1117-5.0 LDO 1A"),
+    ("ME6211C33", "SOT-23-5", "C82942", "basic", "ME6211 3.3V LDO 500mA"),
+    ("AP2112K-3.3", "SOT-23-5", "C51118", "extended", "AP2112K 3.3V LDO 600mA"),
+    ("TLV1117-33", "SOT-223", "C15578", "extended", "TLV1117LV33 3.3V LDO 1A"),
+    # ICs
+    ("CH340N", "SOP-8", "C2977777", "extended", "CH340N USB-UART"),
+    ("CH340C", "SOP-16", "C84681", "extended", "CH340C USB-UART (no crystal)"),
+    ("CP2102N", "QFN-28", "C6568", "extended", "CP2102N USB-UART"),
+    ("ESP32-S3-WROOM-1", "MODULE", "C2913202", "extended", "ESP32-S3 WiFi+BT module"),
+    ("ESP32-C3-MINI-1", "MODULE", "C2838502", "extended", "ESP32-C3 WiFi+BT module"),
+    ("STM32F103C8T6", "LQFP-48", "C8734", "extended", "STM32F103 ARM Cortex-M3"),
+    ("STM32G431CBT6", "LQFP-48", "C529328", "extended", "STM32G431 ARM Cortex-M4"),
+    ("W25Q32JVSS", "SOP-8", "C571134", "extended", "W25Q32 32Mbit SPI Flash"),
+    ("EL357N", "SOP-4", "C60693", "extended", "EL357N optocoupler"),
+    # Connectors
+    ("USB-C-16P", "SMD", "C2765186", "extended", "USB-C 16pin SMD"),
+    ("TYPE-C-31-M-12", "SMD", "C165948", "extended", "USB-C 6pin simple"),
+    # Crystals
+    ("8MHz", "3225", "C115962", "basic", "8MHz crystal 3225"),
+    ("12MHz", "3225", "C9002", "basic", "12MHz crystal 3225"),
+    ("32.768kHz", "2012", "C32346", "basic", "32.768kHz crystal"),
+]
+
 
 @dataclass
 class BomLine:
@@ -302,24 +372,26 @@ def suggest_alternatives(bl: BomLine) -> BomLine:
         bl.suggestion = f"LCSC {bl.lcsc} already specified"
         return bl
 
-    # Try MPN lookup
-    if bl.mpn:
-        key = bl.mpn.strip().lower()
-        if key in LCSC_KNOWLEDGE_BASE:
-            info = LCSC_KNOWLEDGE_BASE[key]
-            bl.lcsc = info["lcsc"]
-            bl.assembly_category = info["category"]
-            bl.suggestion = f"Matched MPN -> LCSC {info['lcsc']} ({info['category']}, ~${info['price_1k']}/pc @1k)"
-            return bl
+    # Try matching against extended LCSC knowledge base
+    val = bl.value.strip().upper().replace(" ", "")
+    fp = bl.footprint.strip().upper()
+    mpn = (bl.mpn or "").strip().upper()
 
-    # Try value+footprint lookup
-    lookup = normalize_value_for_lookup(bl.value, bl.footprint)
-    if lookup in LCSC_KNOWLEDGE_BASE:
-        info = LCSC_KNOWLEDGE_BASE[lookup]
-        bl.lcsc = info["lcsc"]
-        bl.assembly_category = info["category"]
-        bl.suggestion = f"Matched value+pkg -> LCSC {info['lcsc']} ({info['category']}, ~${info['price_1k']}/pc @1k)"
-        return bl
+    for entry_val, entry_fp, lcsc_pn, category, desc in LCSC_KNOWLEDGE_BASE:
+        ev = entry_val.upper().replace(" ", "")
+        ef = entry_fp.upper()
+        # Match by MPN
+        if mpn and ev in mpn:
+            bl.lcsc = lcsc_pn
+            bl.assembly_category = category
+            bl.suggestion = f"Matched MPN -> LCSC {lcsc_pn} ({category}) {desc}"
+            return bl
+        # Match by value + footprint
+        if ev in val and ef in fp:
+            bl.lcsc = lcsc_pn
+            bl.assembly_category = category
+            bl.suggestion = f"Matched value+pkg -> LCSC {lcsc_pn} ({category}) {desc}"
+            return bl
 
     # No match
     bl.suggestion = "No automatic match — manual sourcing required"

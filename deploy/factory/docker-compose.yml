@@ -1,0 +1,125 @@
+# Factory 4.0 — Stack déploiement on-premise
+# Usage: docker compose up -d
+# Prérequis: Docker + Docker Compose, 16 GB RAM, GPU optionnel
+
+version: "3.8"
+
+services:
+  # --- LLM Router ---
+  mascarade-core:
+    image: ghcr.io/electron-rare/mascarade/core:latest
+    build:
+      context: ../../
+      dockerfile: deploy/factory/Dockerfile.core
+    ports:
+      - "8100:8100"       # API principale
+      - "11434:11434"     # Fake Ollama API
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+      - QDRANT_URL=http://qdrant:6333
+      - DEFAULT_PROVIDER=ollama
+      - DEFAULT_MODEL=devstral
+      - ROUTER_FALLBACK=ollama
+      - FAKE_OLLAMA_ENABLED=true
+    depends_on:
+      - ollama
+      - qdrant
+    restart: unless-stopped
+    networks:
+      - factory
+
+  # --- LLM local ---
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11435:11434"     # Ollama natif (debug)
+    volumes:
+      - ollama-data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+    networks:
+      - factory
+
+  # --- Base vectorielle RAG ---
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    restart: unless-stopped
+    networks:
+      - factory
+
+  # --- Monitoring ---
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=factory4.0
+    volumes:
+      - grafana-data:/var/lib/grafana
+    restart: unless-stopped
+    networks:
+      - factory
+
+  influxdb:
+    image: influxdb:2
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=factory4.0
+      - DOCKER_INFLUXDB_INIT_ORG=electron-rare
+      - DOCKER_INFLUXDB_INIT_BUCKET=machines
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+    restart: unless-stopped
+    networks:
+      - factory
+
+  # --- Broker MQTT ---
+  mosquitto:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+      - "9001:9001"       # WebSocket
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto-data:/mosquitto/data
+    restart: unless-stopped
+    networks:
+      - factory
+
+  # --- Node-RED (automation) ---
+  nodered:
+    image: nodered/node-red:latest
+    ports:
+      - "1880:1880"
+    volumes:
+      - nodered-data:/data
+    environment:
+      - TZ=Europe/Paris
+    restart: unless-stopped
+    networks:
+      - factory
+
+volumes:
+  ollama-data:
+  qdrant-data:
+  grafana-data:
+  influxdb-data:
+  mosquitto-data:
+  nodered-data:
+
+networks:
+  factory:
+    driver: bridge
