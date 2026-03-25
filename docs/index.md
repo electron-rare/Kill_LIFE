@@ -13,7 +13,10 @@ Cette page est l'entrée opérateur recommandée pour `Kill_LIFE`. Elle sert de 
 | Gateway runtime/MCP/IA | synthèse consolidée des signaux runtime | `bash tools/cockpit/runtime_ai_gateway.sh --action status --refresh --json` |
 | Refonte cockpit | raccourcis historiques et lots | `bash tools/cockpit/refonte_tui.sh --action status` |
 | Lane opérateur | exécution consolidée, logs, preuves | `bash tools/cockpit/full_operator_lane.sh status --json` |
+| Ops unifié | logs + weekly + lane en un seul point | `bash tools/cockpit/unified_ops_entry.sh --action all --json` |
 | Routine quotidienne | health-check, logs, mesh, synthèse | `bash tools/cockpit/run_alignment_daily.sh --json` |
+| Evidence packs | consolidation multi-repo | `bash tools/cockpit/evidence_pack_builder.sh --json` |
+| Pilotage lots | workflow guidé lot lifecycle | `bash tools/cockpit/lot_pilot_assistant.sh --action status` |
 | Chaîne spec-first | source de vérité documentaire | `specs/README.md` |
 
 ## Navigation rapide
@@ -38,6 +41,13 @@ Cette page est l'entrée opérateur recommandée pour `Kill_LIFE`. Elle sert de 
 - TODO integration intelligence: `docs/plans/22_todo_integration_intelligence_agentique.md`
 - Plan YiACAD Git EDA: `docs/plans/23_plan_yiacad_git_eda_platform.md`
 - TODO YiACAD Git EDA: `docs/plans/23_todo_yiacad_git_eda_platform.md`
+- Plan Factory 4.0: `docs/plans/27_plan_factory_4_0_mcp_opcua_mqtt.md`
+- TODO Factory 4.0: `docs/plans/27_todo_factory_4_0_mcp_opcua_mqtt.md`
+- Vue canonique subsystems: `docs/CANONICAL_SUBSYSTEM_VIEW.md`
+- MCP/Service boundary: `docs/MCP_SERVICE_BOUNDARY.md`
+- Project template: `docs/PROJECT_TEMPLATE.md`
+- Hypnoled status: `docs/HYPNOLED_STATUS_2026-03-25.md`
+- Mistral Studio status: `docs/MISTRAL_STUDIO_STATUS_2026-03-25.md`
 - Backlog canonique: `specs/04_tasks.md`
 - Plan d'enchaînement autonome: `docs/plans/18_plan_enchainement_autonome_des_lots_utiles.md`
 

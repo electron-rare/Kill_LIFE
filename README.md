@@ -102,6 +102,11 @@ The positioning chosen for this consolidation pass is:
 - **Compliance**: Injected profiles, automatic validation.
 - **OpenClaw**: Sanitized labels & comments, never commit/push, mandatory sandbox.
 - **Workflow catalog**: JSON workflows editable by `crazy_life`, validated against a JSON schema.
+- **Mascarade LLM Router**: Fake Ollama API, Agentic RAG, Cody Gateway, 5-machine fleet (Tower/KXKM/Photon/CILS/Local).
+- **10 MCP servers**: kicad, freecad, openscad, github-dispatch, knowledge-base, apify, huggingface, mascarade-llm, opcua, mqtt.
+- **Factory 4.0**: Industrial agents (copilot, maintenance predictor, log analyst), OPC-UA/MQTT MCP servers.
+- **EDA AI tools**: PCBDesigner, Quilter, KiCadHappy providers for automated PCB design + fabrication.
+- **Project template**: `templates/kill-life-project/` scaffold for client repos (see `docs/PROJECT_TEMPLATE.md`).
 
 <div align="center" style="margin: 16px 0;">
   <img src="docs/assets/pipeline_hw_fw_generated.png" alt="Hardware/firmware pipeline" width="400" />
@@ -130,8 +135,11 @@ flowchart TD
   Agents --> OpenClaw[openclaw/]
   Specs --> Standards[standards/]
   Firmware --> Tests[test/]
-  Hardware --> MCP{7 MCP servers}
+  Hardware --> MCP{10 MCP servers}
   MCP --> KiCad[KiCad MCP]
+  MCP --> OPC[OPC-UA MCP]
+  MCP --> MQTT[MQTT MCP]
+  MCP --> Apify[Apify MCP]
   MCP --> FreeCAD[FreeCAD MCP]
   MCP --> OpenSCAD[OpenSCAD MCP]
   MCP --> YiACAD[YiACAD batch]
