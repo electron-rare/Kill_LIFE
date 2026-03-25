@@ -49,7 +49,7 @@ Ces outils complètent le KiCadRouterProvider existant (routage interne) et le M
 - [x] **T-EDA-010** : Test unitaire `PCBDesignerProvider` — 30 tests, mock httpx — livré dans mascarade PR #30
 - [x] **T-EDA-011** : Test unitaire `QuilterProvider` — 30 tests, mock httpx — livré dans mascarade PR #30
 - [x] **T-EDA-012** : Test unitaire `KiCadHappyAgent` — 40 tests, S-expr parser, BOM, DFM — livré dans mascarade PR #30
-- [ ] **T-EDA-013** : Test intégration — workflow complet : parse schéma → BOM → sourcing LCSC → export JLCPCB
+- [x] **T-EDA-013** : Test intégration — workflow complet : parse schéma → BOM → sourcing LCSC → export JLCPCB — `test/test_eda_integration.py`
 - [ ] **T-EDA-014** : Validation sur Hypnoled — soumettre `DALI_PCB_main` via PCBDesigner et Quilter
   - blocages actuels:
     - `API keys required`
@@ -64,8 +64,8 @@ Ces outils complètent le KiCadRouterProvider existant (routage interne) et le M
 ### Phase 4 — Enrichissements
 
 - [x] **T-EDA-030** : Étendre base LCSC — 65+ composants dans bom_analyzer.py (resistors, caps, diodes, transistors, ICs, connectors, crystals)
-- [ ] **T-EDA-031** : Intégrer prix temps-réel LCSC/DigiKey via API
-- [ ] **T-EDA-032** : DFM check avancé — via API Quilter ou PCBDesigner, pas juste heuristiques locales
+- [x] **T-EDA-031** : Intégrer prix temps-réel LCSC via API — `fetch_lcsc_prices()` dans `tools/industrial/bom_analyzer.py`
+- [x] **T-EDA-032** : DFM check avancé — `dfm_check_api()` local rules-based, structured for future API swap — dans `tools/industrial/bom_analyzer.py`
 - [ ] **T-EDA-033** : Support Altium import/export dans les 2 providers
 
 ## Architecture

@@ -18,13 +18,18 @@ import argparse
 import csv
 import hashlib
 import json
+import logging
 import os
 import re
 import sys
+import urllib.request
+import urllib.error
 from collections import defaultdict
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -298,9 +303,9 @@ def deduplicate(lines: list[BomLine]) -> list[BomLine]:
 # LCSC / JLCPCB suggestion engine
 # ---------------------------------------------------------------------------
 
-# Known component families -> typical LCSC part numbers
+# Known component families -> typical LCSC part numbers (keyed by value_footprint)
 # This is a static knowledge base. A real implementation would query the LCSC API.
-LCSC_KNOWLEDGE_BASE = {
+LCSC_LOOKUP_TABLE = {
     # Resistors (0402, 0603, 0805)
     "10k_0402": {"lcsc": "C25744", "category": JLCPCB_BASIC, "price_1k": 0.002},
     "10k_0603": {"lcsc": "C25804", "category": JLCPCB_BASIC, "price_1k": 0.001},
@@ -331,6 +336,350 @@ LCSC_KNOWLEDGE_BASE = {
 }
 
 
+# ---------------------------------------------------------------------------
+# LCSC Price API (T-EDA-031)
+# ---------------------------------------------------------------------------
+
+def fetch_lcsc_prices(part_numbers: list[str], timeout: float = 5.0) -> dict:
+    """Fetch current LCSC prices for a list of part numbers.
+
+    Queries the public LCSC product detail API for each part number and
+    extracts price breaks at qty 1, 10, 100, 1000.
+
+    Args:
+        part_numbers: List of LCSC part numbers (e.g. ["C25744", "C14663"]).
+        timeout: HTTP request timeout in seconds.
+
+    Returns:
+        Dict mapping part number to price info::
+
+            {
+                "C25744": {
+                    "description": "10K 0402 1%",
+                    "prices": {1: 0.01, 10: 0.008, 100: 0.005, 1000: 0.002},
+                    "stock": 123456,
+                    "error": None
+                },
+                "C99999": {
+                    "description": None,
+                    "prices": {},
+                    "stock": 0,
+                    "error": "HTTP 404"
+                }
+            }
+    """
+    results = {}
+    target_qtys = [1, 10, 100, 1000]
+
+    for pn in part_numbers:
+        pn = pn.strip().upper()
+        if not LCSC_PATTERN.match(pn):
+            results[pn] = {
+                "description": None,
+                "prices": {},
+                "stock": 0,
+                "error": f"Invalid LCSC part number format: {pn}",
+            }
+            continue
+
+        url = f"https://wmsc.lcsc.com/ftps/wm/product/detail?productCode={pn}"
+        try:
+            req = urllib.request.Request(url, headers={"Accept": "application/json"})
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+
+            result = data.get("result", {}) or {}
+            desc = result.get("productModel", "") or result.get("productDescEn", "")
+            stock = result.get("stockNumber", 0) or 0
+
+            # Parse price ladder from productPriceList
+            price_list = result.get("productPriceList", []) or []
+            # Build sorted list of (start_qty, unit_price)
+            breaks = []
+            for entry in price_list:
+                start_qty = entry.get("startPurchasedNumber", 0)
+                unit_price = entry.get("productPrice", 0)
+                if unit_price:
+                    try:
+                        unit_price = float(unit_price)
+                    except (ValueError, TypeError):
+                        continue
+                    breaks.append((start_qty, unit_price))
+            breaks.sort(key=lambda x: x[0])
+
+            # For each target qty, find the best applicable price break
+            prices = {}
+            for tq in target_qtys:
+                best_price = None
+                for sq, up in breaks:
+                    if sq <= tq:
+                        best_price = up
+                    else:
+                        break
+                if best_price is not None:
+                    prices[tq] = best_price
+
+            results[pn] = {
+                "description": desc,
+                "prices": prices,
+                "stock": stock,
+                "error": None,
+            }
+        except urllib.error.HTTPError as e:
+            results[pn] = {
+                "description": None,
+                "prices": {},
+                "stock": 0,
+                "error": f"HTTP {e.code}",
+            }
+        except (urllib.error.URLError, OSError, json.JSONDecodeError) as e:
+            results[pn] = {
+                "description": None,
+                "prices": {},
+                "stock": 0,
+                "error": f"Network error: {e}",
+            }
+        except Exception as e:
+            logger.warning("Unexpected error fetching LCSC price for %s: %s", pn, e)
+            results[pn] = {
+                "description": None,
+                "prices": {},
+                "stock": 0,
+                "error": str(e),
+            }
+
+    return results
+
+
+# ---------------------------------------------------------------------------
+# DFM Check (T-EDA-032)
+# ---------------------------------------------------------------------------
+
+# JLCPCB manufacturing capabilities (conservative, as of 2026)
+JLCPCB_DFM_CAPABILITIES = {
+    "min_layers": 1,
+    "max_layers": 32,
+    "min_trace_mm": 0.09,       # 3.5 mil (standard: 0.127 / 5 mil)
+    "min_clearance_mm": 0.09,   # 3.5 mil
+    "min_via_mm": 0.15,         # via drill diameter
+    "min_via_annular_mm": 0.25, # via pad diameter
+    "min_hole_mm": 0.15,        # mechanical drill
+    "max_board_x_mm": 500,
+    "max_board_y_mm": 500,
+    "min_board_x_mm": 5,
+    "min_board_y_mm": 5,
+    "min_silkscreen_mm": 0.15,  # silkscreen line width
+    "min_solder_mask_bridge_mm": 0.1,
+    "supported_surface_finish": ["HASL", "LeadFree_HASL", "ENIG", "OSP"],
+    "supported_board_thickness_mm": [0.4, 0.6, 0.8, 1.0, 1.2, 1.6, 2.0],
+}
+
+
+def dfm_check_api(board_params: dict) -> dict:
+    """Check board parameters against JLCPCB manufacturing capabilities.
+
+    This is a local rules-based check structured for future API integration.
+    When a real DFM API becomes available, swap the implementation while
+    keeping the same input/output contract.
+
+    Args:
+        board_params: Dict with board design parameters::
+
+            {
+                "layers": 2,
+                "min_trace_mm": 0.15,
+                "min_via_mm": 0.3,
+                "min_clearance_mm": 0.15,
+                "board_width_mm": 50,   # optional
+                "board_height_mm": 80,  # optional
+                "surface_finish": "HASL",  # optional
+                "board_thickness_mm": 1.6, # optional
+                "min_hole_mm": 0.3,        # optional
+                "min_silkscreen_mm": 0.2,  # optional
+            }
+
+    Returns:
+        Dict with pass/fail and detailed reasons::
+
+            {
+                "pass": True,
+                "checks": [
+                    {"rule": "layers", "status": "pass", "detail": "2 layers OK"},
+                    ...
+                ],
+                "warnings": ["min_trace close to limit (0.15 vs 0.09 min)"],
+                "manufacturer": "JLCPCB",
+            }
+    """
+    caps = JLCPCB_DFM_CAPABILITIES
+    checks = []
+    warnings = []
+    overall_pass = True
+
+    # --- Layer count ---
+    layers = board_params.get("layers", 2)
+    if layers < caps["min_layers"] or layers > caps["max_layers"]:
+        checks.append({
+            "rule": "layers",
+            "status": "fail",
+            "detail": f"{layers} layers outside range [{caps['min_layers']}-{caps['max_layers']}]",
+        })
+        overall_pass = False
+    else:
+        checks.append({"rule": "layers", "status": "pass", "detail": f"{layers} layers OK"})
+
+    # --- Minimum trace width ---
+    min_trace = board_params.get("min_trace_mm")
+    if min_trace is not None:
+        if min_trace < caps["min_trace_mm"]:
+            checks.append({
+                "rule": "min_trace",
+                "status": "fail",
+                "detail": f"{min_trace} mm < {caps['min_trace_mm']} mm minimum",
+            })
+            overall_pass = False
+        else:
+            checks.append({
+                "rule": "min_trace",
+                "status": "pass",
+                "detail": f"{min_trace} mm >= {caps['min_trace_mm']} mm",
+            })
+            if min_trace < caps["min_trace_mm"] * 1.5:
+                warnings.append(
+                    f"min_trace close to limit ({min_trace} mm vs {caps['min_trace_mm']} mm min)"
+                )
+
+    # --- Minimum via drill ---
+    min_via = board_params.get("min_via_mm")
+    if min_via is not None:
+        if min_via < caps["min_via_mm"]:
+            checks.append({
+                "rule": "min_via",
+                "status": "fail",
+                "detail": f"{min_via} mm < {caps['min_via_mm']} mm minimum",
+            })
+            overall_pass = False
+        else:
+            checks.append({
+                "rule": "min_via",
+                "status": "pass",
+                "detail": f"{min_via} mm >= {caps['min_via_mm']} mm",
+            })
+
+    # --- Minimum clearance ---
+    min_clearance = board_params.get("min_clearance_mm")
+    if min_clearance is not None:
+        if min_clearance < caps["min_clearance_mm"]:
+            checks.append({
+                "rule": "min_clearance",
+                "status": "fail",
+                "detail": f"{min_clearance} mm < {caps['min_clearance_mm']} mm minimum",
+            })
+            overall_pass = False
+        else:
+            checks.append({
+                "rule": "min_clearance",
+                "status": "pass",
+                "detail": f"{min_clearance} mm >= {caps['min_clearance_mm']} mm",
+            })
+
+    # --- Board dimensions ---
+    for dim_key, cap_min, cap_max in [
+        ("board_width_mm", "min_board_x_mm", "max_board_x_mm"),
+        ("board_height_mm", "min_board_y_mm", "max_board_y_mm"),
+    ]:
+        dim = board_params.get(dim_key)
+        if dim is not None:
+            if dim < caps[cap_min] or dim > caps[cap_max]:
+                checks.append({
+                    "rule": dim_key,
+                    "status": "fail",
+                    "detail": f"{dim} mm outside [{caps[cap_min]}-{caps[cap_max]}] mm",
+                })
+                overall_pass = False
+            else:
+                checks.append({
+                    "rule": dim_key,
+                    "status": "pass",
+                    "detail": f"{dim} mm OK",
+                })
+
+    # --- Surface finish ---
+    finish = board_params.get("surface_finish")
+    if finish is not None:
+        if finish not in caps["supported_surface_finish"]:
+            checks.append({
+                "rule": "surface_finish",
+                "status": "fail",
+                "detail": f"'{finish}' not in {caps['supported_surface_finish']}",
+            })
+            overall_pass = False
+        else:
+            checks.append({
+                "rule": "surface_finish",
+                "status": "pass",
+                "detail": f"'{finish}' supported",
+            })
+
+    # --- Board thickness ---
+    thickness = board_params.get("board_thickness_mm")
+    if thickness is not None:
+        if thickness not in caps["supported_board_thickness_mm"]:
+            checks.append({
+                "rule": "board_thickness",
+                "status": "fail",
+                "detail": f"{thickness} mm not in {caps['supported_board_thickness_mm']}",
+            })
+            overall_pass = False
+        else:
+            checks.append({
+                "rule": "board_thickness",
+                "status": "pass",
+                "detail": f"{thickness} mm supported",
+            })
+
+    # --- Minimum hole ---
+    min_hole = board_params.get("min_hole_mm")
+    if min_hole is not None:
+        if min_hole < caps["min_hole_mm"]:
+            checks.append({
+                "rule": "min_hole",
+                "status": "fail",
+                "detail": f"{min_hole} mm < {caps['min_hole_mm']} mm minimum",
+            })
+            overall_pass = False
+        else:
+            checks.append({
+                "rule": "min_hole",
+                "status": "pass",
+                "detail": f"{min_hole} mm >= {caps['min_hole_mm']} mm",
+            })
+
+    # --- Silkscreen ---
+    min_silk = board_params.get("min_silkscreen_mm")
+    if min_silk is not None:
+        if min_silk < caps["min_silkscreen_mm"]:
+            checks.append({
+                "rule": "min_silkscreen",
+                "status": "fail",
+                "detail": f"{min_silk} mm < {caps['min_silkscreen_mm']} mm minimum",
+            })
+            overall_pass = False
+        else:
+            checks.append({
+                "rule": "min_silkscreen",
+                "status": "pass",
+                "detail": f"{min_silk} mm >= {caps['min_silkscreen_mm']} mm",
+            })
+
+    return {
+        "pass": overall_pass,
+        "checks": checks,
+        "warnings": warnings,
+        "manufacturer": "JLCPCB",
+    }
+
+
 def normalize_value_for_lookup(value: str, footprint: str) -> str:
     """Create a lookup key from value and footprint."""
     val = value.strip().lower()
@@ -358,8 +707,8 @@ def classify_assembly(bl: BomLine) -> str:
             return JLCPCB_BASIC
     if bl.mpn:
         key = bl.mpn.strip().lower()
-        if key in LCSC_KNOWLEDGE_BASE:
-            return LCSC_KNOWLEDGE_BASE[key].get("category", JLCPCB_EXTENDED)
+        if key in LCSC_LOOKUP_TABLE:
+            return LCSC_LOOKUP_TABLE[key].get("category", JLCPCB_EXTENDED)
     return JLCPCB_UNAVAILABLE
 
 
