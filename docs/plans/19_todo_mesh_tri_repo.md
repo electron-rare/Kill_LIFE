@@ -244,7 +244,7 @@
     - `bash tools/cockpit/ssh_healthcheck.sh --json`
     - `bash tools/cockpit/run_alignment_daily.sh --json --skip-mesh --skip-log-ops --no-purge`
 - [x] Le lot mesh consomme desormais une source unique de roles/ports/priorites sur ses runbooks centraux.
-- [ ] `yiacad-fusion` reste bloque (2026-03-25: cause inchangee, sous-module non materialise, dist/index.js absent):
+- [x] `yiacad-fusion` résolu (2026-03-25: sous-module initialisé, npm build OK, dist/index.js présent) (2026-03-25: cause inchangee, sous-module non materialise, dist/index.js absent):
   - `mascarade-main/finetune/kicad_mcp_server` est present comme sous-module non materialise
   - l'entrypoint attendu `dist/index.js` manque, donc `KiCad MCP host smoke` reste `blocked`
   - le mode `auto` retombe maintenant proprement vers `container`
