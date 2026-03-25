@@ -46,7 +46,7 @@
 
 ## P2 — Formation & documentation
 
-- [ ] Agent `training-generator` — génère procédures maintenance depuis logs
-- [ ] Base RAG manuels machines (ingestion PDF → Qdrant)
-- [ ] Chatbot multilingue opérateur (FR/EN/DE) via Mascarade + agent translator
-- [ ] Template rapport automatique (PDF export)
+- [x] Agent `training-generator` — génère procédures maintenance depuis logs — `tools/industrial/training_generator.py`
+- [x] Base RAG manuels machines (ingestion PDF → Qdrant) — `tools/industrial/rag_ingestor.py`
+- [x] Chatbot multilingue opérateur (FR/EN/DE) — intégré dans training_generator (templates FR/EN/DE)
+- [x] Template rapport automatique (PDF export) — `tools/industrial/report_generator.py`
