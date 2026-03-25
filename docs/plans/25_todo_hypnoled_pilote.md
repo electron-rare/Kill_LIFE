@@ -69,7 +69,14 @@ Hypnoled est le premier projet client réel utilisé comme **cas pilote end-to-e
   - PDF : `Clients/Garnier/rapports/review_hardware_hypnoled_2026-03-22.pdf`
   - Markdown : `Projets/Hypnoled/docs/reviews/forge_review_DALI_PCB_2026-03-22.md`
 
-- [ ] T-HP-013: **BOM analysis** — Parser les BOMs CSV et proposer des alternatives composants (coût, disponibilité) — **tooling ready** (`tools/industrial/bom_analyzer.py`), [blocked: BOM CSVs not in checkout]
+- [x] T-HP-013: **BOM analysis** — ✅ BOM extraite et analysée (25 mars 2026)
+  - Source: 7 sous-schémas KiCad (.kicad_sch) parsés via extraction s-expression
+  - 235 composants extraits, 98 lignes uniques après déduplication
+  - LCSC coverage: 8/98 (8%) auto-matched — MB10S, 1SMA4746, BSS123, BC857, R 0603, C 0805
+  - 25 basic, 3 extended, 70 unavailable (manual sourcing needed)
+  - Assembly status: **BLOCKED** — 70 composants nécessitent sourcing LCSC manuel
+  - Artefacts: `hardware/bom/DALI_PCB_bom.csv`, `*_suggestions.csv`, `*_report.md`
+  - Repo: `hypnoled` branch main, commit pending push
 
 ## Phase 2 — Simulation et Firmware
 
