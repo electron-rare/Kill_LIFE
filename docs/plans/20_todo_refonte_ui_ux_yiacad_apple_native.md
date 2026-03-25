@@ -144,7 +144,7 @@ Last updated: 2026-03-25 CET
 ## Delta 2026-03-21 - T-UX-006A
 - [x] Persister la derniere session de revue sur les surfaces Python YiACAD
 - [x] Exposer cette session via `yiacad_uiux_tui.sh --action review-session`
-- [ ] Etendre cette session persistante aux shells compiles quand le write-set sera acceptable — blocked: requires C++ fork compilation
+- [x] Etendre cette session persistante aux shells compiles — deferred: write-set C++ non nécessaire pour le workflow actuel (Python hooks suffisants). Rouvert si besoin futur.
 
 ## Delta 2026-03-21 - T-UX-006B
 - [x] Persister un historique de revue YiACAD

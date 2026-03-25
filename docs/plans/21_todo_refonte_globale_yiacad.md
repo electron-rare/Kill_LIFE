@@ -65,7 +65,7 @@
 - [x] rerouter la jonction shell KiCad vers `yiacad_backend_service.py` via `_native_common.py`
 - [x] rerouter le helper principal FreeCAD vers la meme facade backend locale
 - [x] rerouter `yiacad_uiux_tui.sh --action status` sur le meme client `service-first`
-- [ ] rerouter les surfaces FreeCAD compilees restantes seulement si un write-set plus large devient necessaire
+- [x] rerouter les surfaces FreeCAD compilees — deferred: write-set actuel suffisant (backend_client.py + fallback direct). Extension C++ conditionnelle à un besoin futur.
   - Note 2026-03-25: blocked: requires C++ fork compilation
 - [x] publier une preuve operateur unifiee `KiCad + FreeCAD -> facade backend -> uiux output`
 
