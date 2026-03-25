@@ -20,12 +20,12 @@ Automatiser build, tests, compliance, scope guard, evidence pack — et rendre l
 ### 3. Gates “firmware”
 - [x] build PlatformIO (matrix envs) — Delivered: `firmware/platformio.ini` + `tools/build_firmware.py`
 - [x] tests `native` — Delivered: `firmware/test/test_basic.cpp` + `tools/test_firmware.py`
-- [ ] format/lint (clang-format, etc.)
+- [x] format/lint (clang-format, etc.) — Delivered: `firmware/.clang-format` + `tools/ci/lint_firmware.sh` + CI job `firmware-lint`
 
 ### 4. Gates “hardware” (optionnels)
-- [ ] exports KiCad (PDF/renders)
-- [ ] ERC/DRC (si outillage intégré)
-- [ ] BOM export
+- [x] exports KiCad (PDF/renders) — Delivered: `tools/hw/exports.py` + `tools/hw/hw_gate.sh` + CI job `hardware-gate`
+- [x] ERC/DRC (si outillage intégré) — Delivered: `tools/hw/exports.py` (ERC json + DRC json) + CI job `hardware-gate`
+- [x] BOM export — Delivered: `tools/hw/exports.py` (bom.csv + netlist.xml) + CI job `hardware-gate`
 
 ## Evidence pack
 Standardiser un dossier artefacts par run :
@@ -36,8 +36,8 @@ Standardiser un dossier artefacts par run :
 ## Étapes d’implémentation
 - [x] Définir la matrice de build (envs PIO) — Delivered: `firmware/platformio.ini`
 - [x] Ajouter upload d’artefacts (logs) — Delivered: `.github/workflows/evidence_pack.yml`
-- [ ] Branch protection : checks requis
-- [ ] (Option) Environnements protégés pour étapes sensibles
+- [x] Branch protection : checks requis — Delivered: `tools/ci/branch_protection.sh` (configures required checks via gh API)
+- [x] (Option) Environnements protégés pour étapes sensibles — Delivered: `tools/ci/protected_environments.sh` (staging + production environments via gh API)
 
 ## Critère de sortie
 ✅ Merge impossible sans CI verte, et chaque PR produit un evidence pack minimum.

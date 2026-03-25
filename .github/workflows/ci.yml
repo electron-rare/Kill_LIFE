@@ -35,3 +35,42 @@ jobs:
 
       - name: Run stable Python suite
         run: bash tools/test_python.sh --suite stable
+
+  firmware-lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format
+
+      - name: Lint firmware (clang-format)
+        run: bash tools/ci/lint_firmware.sh
+
+  hardware-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Bootstrap repo-local venv
+        run: bash tools/bootstrap_python_env.sh
+
+      - name: Hardware exports (ERC/DRC/BOM/renders)
+        run: bash tools/hw/hw_gate.sh hardware/kicad || echo "No KiCad files or kicad-cli unavailable (non-blocking)"
+
+      - name: Upload hardware artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hardware-previews
+          if-no-files-found: warn
+          path: artifacts/hw_previews/

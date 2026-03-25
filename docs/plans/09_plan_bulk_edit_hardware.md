@@ -15,19 +15,19 @@ Orchestrer des modifications massives (KiCad, exports, snapshots, artefacts) de 
 - [x] Mode dry‑run si script — Delivered: `tools/hw/cad_stack.sh doctor` provides dry-run verification
 
 ### 2. Snapshots “avant”
-- [ ] Export schéma PDF
-- [ ] Export PCB renders
-- [ ] Export BOM
+- [x] Export schéma PDF — Delivered: `tools/hw/snapshot.sh --label before` calls `tools/hw/exports.py` (SVG + PDF-ready renders)
+- [x] Export PCB renders — Delivered: `tools/hw/snapshot.sh` + `tools/hw/exports.py` (PCB SVG export)
+- [x] Export BOM — Delivered: `tools/hw/snapshot.sh` + `tools/hw/exports.py` (bom.csv + netlist.xml)
 - [x] Version des libs/footprints — Delivered: `hardware/rules/footprints.csv`
 
 ### 3. Exécution du bulk edit
-- [ ] Dry‑run
-- [ ] Apply
-- [ ] Vérifier ERC/DRC
+- [x] Dry‑run — Delivered: `tools/hw/bulk_edit.py --mode dry-run`
+- [x] Apply — Delivered: `tools/hw/bulk_edit.py --mode apply`
+- [x] Vérifier ERC/DRC — Delivered: `tools/hw/bulk_edit.py --mode verify` (runs ERC + DRC via kicad-cli)
 
 ### 4. Snapshots “après”
-- [ ] Exports identiques à “avant”
-- [ ] Diff visuel (captures)
+- [x] Exports identiques à “avant” — Delivered: `tools/hw/snapshot.sh --label after` (same export pipeline as “before”)
+- [x] Diff visuel (captures) — Delivered: `tools/hw/hw_diff.sh <before> <after>` (BOM diff, ERC/DRC comparison, SVG side-by-side)
 
 ### 5. Evidence pack
 - [x] Artefacts avant/après attachés à la PR — Delivered: `tools/collect_evidence.py` + `.github/workflows/evidence_pack.yml`

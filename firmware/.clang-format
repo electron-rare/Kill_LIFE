@@ -1,0 +1,38 @@
+---
+# Kill_LIFE firmware clang-format configuration
+# Based on LLVM style with project-specific tweaks
+
+BasedOnStyle: LLVM
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+ColumnLimit: 100
+
+# Braces
+BreakBeforeBraces: Attach
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# Includes
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex:    '^<Arduino'
+    Priority: 1
+  - Regex:    '^<'
+    Priority: 2
+  - Regex:    '^"'
+    Priority: 3
+
+# Pointers and references
+PointerAlignment: Right
+ReferenceAlignment: Right
+
+# Misc
+SpaceAfterCStyleCast: false
+SpaceBeforeParens: ControlStatements
+SpacesInParentheses: false
+AlignConsecutiveMacros: Consecutive
+AlignTrailingComments: true
