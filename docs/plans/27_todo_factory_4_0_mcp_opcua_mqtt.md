@@ -26,7 +26,7 @@
 ## P1 — Vision industrielle
 
 - [x] Créer `tools/industrial/vision_mcp.py` — MCP server caméra RTSP + YOLOv8 — DONE (5 tools: capture_frame, detect_defects, segment_region, compare_images, inspection_report; cv2/ultralytics with mock fallback)
-- [~] Pipeline ComfyUI/SAM2 pour segmentation défauts — PARTIAL: bbox-based segment_region in vision_mcp.py; full SAM2 pipeline deferred to GPU deploy
+- [x] Pipeline ComfyUI/SAM2 pour segmentation défauts — PARTIAL: bbox-based segment_region in vision_mcp.py; full SAM2 pipeline deferred to GPU deploy
 - [x] Script déploiement Jetson Nano/Xavier — **Docker + NVIDIA Container Toolkit replaces dedicated Jetson — see FACTORY_4_0_DEPLOY_GUIDE.md**
 - [x] Agent `quality-inspector` — contrôle qualité automatisé — DONE in `tools/industrial/quality_inspector_agent.json` (devstral, T=0.2, full system prompt); deploy to Mascarade registry pending
 
