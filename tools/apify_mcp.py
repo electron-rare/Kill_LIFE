@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import os
 import re
@@ -281,7 +282,7 @@ async def handle_monitor_updates(args: dict) -> str:
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_file = cache_dir / re.sub(r"[^\w]", "_", url)[:100]
     text = await _direct_scrape(url)
-    content_hash = str(hash(text))
+    content_hash = hashlib.md5(text.encode()).hexdigest()
     changed = False
     if cache_file.exists():
         old_hash = cache_file.read_text().strip()
@@ -307,7 +308,8 @@ async def handle_feed_dataset(args: dict) -> str:
     dataset_file = dataset_dir / "scraped.jsonl"
     with open(dataset_file, "a") as f:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
-    count = sum(1 for _ in open(dataset_file))
+    with open(dataset_file) as fcount:
+        count = sum(1 for _ in fcount)
     return json.dumps({"status": "ok", "domain": domain, "file": str(dataset_file), "total_entries": count})
 
 

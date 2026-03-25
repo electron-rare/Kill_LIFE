@@ -263,7 +263,10 @@ def _run_stdlib_server() -> None:
                 self._json({"error": "Not found"}, 404)
                 return
 
-            length = int(self.headers.get("Content-Length", 0))
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+            except (ValueError, TypeError):
+                length = 0
             raw = self.rfile.read(length)
             try:
                 body = json.loads(raw)
