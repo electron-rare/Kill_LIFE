@@ -80,14 +80,17 @@ Hypnoled est le premier projet client réel utilisé comme **cas pilote end-to-e
 
 ## Phase 2 — Simulation et Firmware
 
-- [ ] T-HP-020: **Forge SPICE review** — Analyser `hypnoled.asc` avec Codestral, proposer optimisations — [blocked: assets not in checkout] + [blocked: Mistral key expired]
-- [ ] T-HP-021: **Forge firmware** — Générer skeleton firmware ESP32 pour contrôle DALI (I2C + UART) — [blocked: Mistral key expired]
-- [ ] T-HP-022: **Benchmark Hypnoled** — 10 prompts Hypnoled-spécifiques dans le benchmark T-MA-021 — [blocked: Mistral key expired]
+- [ ] T-HP-020: **Forge SPICE review** — Analyser `hypnoled.asc` avec Codestral, proposer optimisations — [ready: assets in electron-rare/hypnoled] + [ready: Mistral key active, use devstral via Ollama on Tower to save credits]
+- [x] T-HP-021: **Forge firmware** — Skeleton firmware ESP32 pour contrôle DALI (I2C + UART) — DONE (25 mars 2026)
+  - `firmware/src/main.cpp` — DALI TX Manchester encoding, RX optocoupler ISR, WiFi+MQTT, I2C bus
+  - `firmware/platformio.ini` — ESP32-DevKitC target, PubSubClient, Wire
+  - Pushed to `electron-rare/hypnoled` main branch
+- [ ] T-HP-022: **Benchmark Hypnoled** — 10 prompts Hypnoled-spécifiques dans le benchmark T-MA-021 — [ready: Mistral key active, use devstral via Ollama on Tower to save credits]
 
 ## Phase 3 — Fine-tune enrichissement
 
-- [ ] T-HP-030: **Dataset KiCad** — Extraire les schémas Hypnoled en paires prompt/response pour enrichir le dataset fine-tune T-MA-016 — [blocked: KiCad files not in checkout]
-- [ ] T-HP-031: **Dataset SPICE** — Extraire les simulations LTspice pour enrichir T-MA-017 — [blocked: simulation files not in checkout]
+- [ ] T-HP-030: **Dataset KiCad** — Extraire les schémas Hypnoled en paires prompt/response pour enrichir le dataset fine-tune T-MA-016 — [ready: files in electron-rare/hypnoled/hardware/pcb/]
+- [ ] T-HP-031: **Dataset SPICE** — Extraire les simulations LTspice pour enrichir T-MA-017 — [ready: files in electron-rare/hypnoled/hardware/pcb/]
 - [ ] T-HP-032: **Évaluation post fine-tune** — Re-run les reviews Forge sur Hypnoled avec le modèle fine-tuné vs base → mesurer l'amélioration — [blocked: depends Plan 24 fine-tune]
 
 ---
@@ -144,9 +147,9 @@ Sortie attendue pour `T-HP-013`:
 
 ## Delta 2026-03-22 - PCB AI / BOM / fabrication
 
-- [ ] T-HP-033: **Quilter canary route** — Executer un aller-retour `KiCad -> Quilter -> package fab` sur une carte Hypnoled et comparer le candidat au flux YiACAD local. — [blocked: KiCad files not in checkout]
-- [ ] T-HP-034: **PCB Designer AI fast-fab lane** — Evaluer une voie `schema -> layout -> export fabrication` sur un sous-ensemble Hypnoled, sans contourner le gate local `BOM/DRC/provenance`. — [blocked: KiCad files not in checkout]
-- [ ] T-HP-035: **kicad-happy playbook parity** — Rejouer un lot `review schema + BOM sourcing + JLCPCB prep` et comparer les sorties aux prompts `Forge` et a `review.bom`. — [blocked: KiCad files not in checkout]
+- [ ] T-HP-033: **Quilter canary route** — Executer un aller-retour `KiCad -> Quilter -> package fab` sur une carte Hypnoled et comparer le candidat au flux YiACAD local. — [ready: files in electron-rare/hypnoled/hardware/pcb/]
+- [ ] T-HP-034: **PCB Designer AI fast-fab lane** — Evaluer une voie `schema -> layout -> export fabrication` sur un sous-ensemble Hypnoled, sans contourner le gate local `BOM/DRC/provenance`. — [ready: files in electron-rare/hypnoled/hardware/pcb/]
+- [ ] T-HP-035: **kicad-happy playbook parity** — Rejouer un lot `review schema + BOM sourcing + JLCPCB prep` et comparer les sorties aux prompts `Forge` et a `review.bom`. — [ready: files in electron-rare/hypnoled/hardware/pcb/]
 
 ---
 
