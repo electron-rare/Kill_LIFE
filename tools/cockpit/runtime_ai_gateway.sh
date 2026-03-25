@@ -377,6 +377,45 @@ def build_ia_surface(payload: dict[str, object] | None, path: Path | None) -> tu
     return surface, next_steps
 
 
+def build_web_platform_surface(ia_payload: dict[str, object] | None) -> tuple[dict[str, object], list[str]]:
+    """Extract web platform health from intelligence payload if present."""
+    wph = (ia_payload or {}).get("web_platform_health") or {}
+    probes = wph.get("probes") or {}
+    raw_status = wph.get("status", "unknown")
+    status = normalize(raw_status) if raw_status != "unknown" else "degraded"
+    up_count = wph.get("up_count", 0)
+    total = wph.get("total", 0)
+    degraded: list[str] = []
+    next_steps: list[str] = []
+    for probe_name, probe_data in probes.items():
+        if probe_data.get("status") != "up":
+            degraded.append(f"web-{probe_name}-down")
+    if not probes:
+        degraded.append("web-platform-no-probes")
+        next_steps.append("Run intelligence_tui.sh --action memory --json to populate web platform health probes.")
+    if any(p.get("status") != "up" for p in probes.values()):
+        next_steps.append("Check that Next.js (port 3000), Yjs realtime (port 1234), and Redis (port 6379) are running.")
+    queue_depth = None
+    queue_probe = probes.get("queue") or {}
+    if "depth" in queue_probe:
+        queue_depth = queue_probe["depth"]
+    surface = {
+        "status": status,
+        "summary_short": compact(
+            f"Web platform {raw_status}; {up_count}/{total} probes up; queue_depth={queue_depth if queue_depth is not None else 'n/a'}.",
+            220,
+        ),
+        "evidence": ["tools/cockpit/intelligence_tui.sh"],
+        "degraded_reasons": degraded,
+        "upstreams": ["web/realtime/server.mjs", "web/workers/eda-worker.mjs", "web/lib/eda-queue.ts"],
+        "probes": probes,
+        "up_count": up_count,
+        "total": total,
+        "queue_depth": queue_depth,
+    }
+    return surface, next_steps
+
+
 def build_firmware_cad_surface(root: Path) -> tuple[dict[str, object], dict[str, object], list[str]]:
     firmware_main = root / "firmware" / "src" / "main.cpp"
     firmware_platformio = root / "firmware" / "platformio.ini"
@@ -535,8 +574,9 @@ runtime_surface, runtime_next = build_runtime_surface(mascarade, mascarade_path)
 mcp_surface, mcp_next = build_mcp_surface(mesh, mesh_path)
 ia_surface, ia_next = build_ia_surface(intelligence, intelligence_path)
 firmware_cad_surface, firmware_cad_summary, firmware_cad_next = build_firmware_cad_surface(root)
+web_platform_surface, web_platform_next = build_web_platform_surface(intelligence)
 
-source_states = [runtime_surface["status"], mcp_surface["status"], ia_surface["status"]]
+source_states = [runtime_surface["status"], mcp_surface["status"], ia_surface["status"], web_platform_surface["status"]]
 if any(state == "blocked" for state in source_states):
     overall = "blocked"
 elif any(state == "degraded" for state in source_states):
@@ -577,12 +617,20 @@ for item in listify(firmware_cad_surface.get("evidence")):
     if item not in evidence:
         evidence.append(item)
 
+for reason in listify(web_platform_surface.get("degraded_reasons")):
+    if reason not in degraded_reasons:
+        degraded_reasons.append(reason)
+for step in web_platform_next:
+    if step not in next_steps:
+        next_steps.append(step)
+
 summary_short = compact(
     f"runtime={runtime_surface['status']} ({runtime_surface['summary_short']}) | "
     f"mcp={mcp_surface['status']} ({mcp_surface['summary_short']}) | "
     f"ia={ia_surface['status']} ({ia_surface['summary_short']}) | "
-    f"firmware_cad={firmware_cad_surface['status']} ({firmware_cad_surface['summary_short']})",
-    320,
+    f"firmware_cad={firmware_cad_surface['status']} ({firmware_cad_surface['summary_short']}) | "
+    f"web_platform={web_platform_surface['status']} ({web_platform_surface['summary_short']})",
+    420,
 )
 
 payload = {
@@ -606,7 +654,7 @@ payload = {
     "degraded_reasons": degraded_reasons,
     "next_steps": next_steps[:5],
     "goal": "Publier une sante canonique runtime/MCP/IA exploitable par cockpit, docs et extensions.",
-    "state": f"runtime={runtime_surface['status']} mcp={mcp_surface['status']} ia={ia_surface['status']}",
+    "state": f"runtime={runtime_surface['status']} mcp={mcp_surface['status']} ia={ia_surface['status']} web_platform={web_platform_surface['status']}",
     "blockers": degraded_reasons,
     "next": next_steps[:3],
     "owner": "Runtime-Companion/MCP-Health",
@@ -618,6 +666,7 @@ payload = {
         "mcp": mcp_surface,
         "ia": ia_surface,
         "firmware_cad": firmware_cad_surface,
+        "web_platform": web_platform_surface,
     },
     "sources": {
         "intelligence": {
@@ -645,6 +694,13 @@ payload = {
             "firmware_status": firmware_cad_surface["firmware_status"],
             "cad_status": firmware_cad_surface["cad_status"],
             "cad_proof_path": firmware_cad_surface["cad_proof_path"],
+        },
+        "web_platform": {
+            "status": web_platform_surface["status"],
+            "up_count": web_platform_surface.get("up_count", 0),
+            "total": web_platform_surface.get("total", 0),
+            "queue_depth": web_platform_surface.get("queue_depth"),
+            "probes": web_platform_surface.get("probes", {}),
         },
     },
     "summary_short_artifacts": {

@@ -10,7 +10,7 @@
 - [x] Replace the JSON queue stub with a Redis-backed queue contract via `BullMQ`
 - [x] Add a real EDA worker entry wired to KiCad headless, STEP export, KiBot fallback, and KiAuto hooks
 - [x] Fold `plan 23` into the intelligence lane and assign dedicated owners for `web/*`, realtime, and workers
-- [ ] Bind Excalidraw scene updates into Yjs room state
+- [x] Bind Excalidraw scene updates into Yjs room state
 - [x] Replace PR/artifact placeholder JSON with real Git and CI derived state
-- [ ] Surface worker, queue, and realtime health into the intelligence memory and runtime gateway
-- [ ] Add a first read-only review-assist surface backed by changed files, ERC/DRC outputs, and ops summary
+- [x] Surface worker, queue, and realtime health into the intelligence memory and runtime gateway
+- [x] Add a first read-only review-assist surface backed by changed files, ERC/DRC outputs, and ops summary

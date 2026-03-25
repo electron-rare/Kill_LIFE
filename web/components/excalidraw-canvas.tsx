@@ -1,7 +1,9 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { startTransition, useState } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
+import { useYjsExcalidraw } from "@/lib/use-yjs-excalidraw";
+import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types/types";
 
 const Excalidraw = dynamic(
   async () => {
@@ -40,6 +42,14 @@ function parseScene(scene: string | null) {
   }
 }
 
+/**
+ * Derive a stable room name from the diagram path so all users editing the
+ * same file end up in the same Yjs room.
+ */
+function roomNameFor(diagramPath: string | null): string {
+  return diagramPath ? `excalidraw:${diagramPath}` : "excalidraw:default";
+}
+
 export function ExcalidrawCanvas({
   diagramPath,
   scene,
@@ -47,11 +57,27 @@ export function ExcalidrawCanvas({
   saving
 }: Props) {
   const [draft, setDraft] = useState(scene ?? "");
+  const apiRef = useRef<ExcalidrawImperativeAPI | null>(null);
+
+  const room = roomNameFor(diagramPath);
+  const { connected, remoteElements, remoteVersion, pushElements } =
+    useYjsExcalidraw(room);
+
+  // Apply remote element updates coming from other peers.
+  useEffect(() => {
+    if (!remoteElements || !apiRef.current) return;
+    apiRef.current.updateScene({ elements: remoteElements });
+  }, [remoteVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <section style={styles.root}>
       <div style={styles.toolbar}>
-        <code style={styles.code}>{diagramPath ?? "project/diagrams/*.excalidraw"}</code>
+        <code style={styles.code}>
+          {diagramPath ?? "project/diagrams/*.excalidraw"}
+        </code>
+        <span style={styles.status}>
+          {connected ? "\u25CF live" : "\u25CB offline"}
+        </span>
         <button
           disabled={!diagramPath || saving}
           onClick={() => onSave(draft)}
@@ -63,8 +89,15 @@ export function ExcalidrawCanvas({
       </div>
       <div style={styles.canvas}>
         <Excalidraw
+          excalidrawAPI={(api) => {
+            apiRef.current = api;
+          }}
           initialData={parseScene(scene)}
           onChange={(elements, appState, files) => {
+            // Push local changes to Yjs for real-time sync.
+            pushElements(elements);
+
+            // Keep local draft for the manual "Save to Git" snapshot.
             const nextScene = JSON.stringify(
               {
                 type: "excalidraw",
@@ -106,6 +139,11 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: "12px",
     background: "rgba(5, 12, 24, 0.76)",
     color: "#8da6c8"
+  },
+  status: {
+    fontSize: "13px",
+    color: "#8da6c8",
+    marginRight: "auto"
   },
   button: {
     border: 0,

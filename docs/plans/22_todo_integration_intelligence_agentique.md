@@ -78,13 +78,13 @@
 ### P1
 
 - [x] Raccorder `docs/AI_WORKFLOWS.md`, `docs/index.md`, `README.md` et `tools/cockpit/README.md` au backlog commun `TODO 22 + TODO 23`.
-- [ ] Faire remonter le statut `queue/worker/realtime` du produit web dans la memoire intelligence et preparer son pont vers `runtime_ai_gateway.sh`.
+- [x] Faire remonter le statut `queue/worker/realtime` du produit web dans la memoire intelligence et preparer son pont vers `runtime_ai_gateway.sh`.
 - [x] Remplacer les placeholders Git/PR/artifacts de `web/` par un read model derive de Git et de la CI reelle.
 
 ### P2
 
-- [ ] Binder la scene Excalidraw a `Yjs` tout en gardant le save manuel comme snapshot Git.
-- [ ] Formaliser le boundary `MCP/service-first` pour `EDA worker`, `parts search`, `CI trigger`, `artifact fetch` et `review hints`.
+- [x] Binder la scene Excalidraw a `Yjs` tout en gardant le save manuel comme snapshot Git.
+- [x] Formaliser le boundary `MCP/service-first` pour `EDA worker`, `parts search`, `CI trigger`, `artifact fetch` et `review hints`.
 
 ## Evidence cycle 3
 

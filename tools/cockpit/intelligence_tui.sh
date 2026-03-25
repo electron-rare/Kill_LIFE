@@ -166,6 +166,58 @@ def parse_all_open_tasks(text: str) -> list[str]:
     return parse_open_tasks(text, 10_000)
 
 
+def web_platform_health() -> dict[str, object]:
+    """Probe Next.js, Yjs realtime server, and Redis/BullMQ queue."""
+    import urllib.request
+
+    probes: dict[str, object] = {}
+
+    # Next.js web app
+    try:
+        req = urllib.request.urlopen("http://localhost:3000/", timeout=3)
+        probes["nextjs"] = {"status": "up", "http_status": req.status}
+    except Exception as exc:
+        probes["nextjs"] = {"status": "down", "error": str(exc)[:120]}
+
+    # Yjs realtime server (default port 1234, see web/realtime/server.mjs)
+    try:
+        req = urllib.request.urlopen("http://localhost:1234/", timeout=3)
+        probes["realtime"] = {"status": "up", "http_status": req.status}
+    except Exception as exc:
+        probes["realtime"] = {"status": "down", "error": str(exc)[:120]}
+
+    # Redis / BullMQ queue depth
+    try:
+        import socket
+        sock = socket.create_connection(("127.0.0.1", 6379), timeout=2)
+        sock.sendall(b"LLEN bull:yiacad-eda:wait\r\n")
+        data = sock.recv(256).decode("utf-8", errors="replace").strip()
+        sock.close()
+        if data.startswith(":"):
+            depth = int(data[1:])
+            probes["queue"] = {"status": "up", "queue_name": "yiacad-eda", "depth": depth}
+        else:
+            probes["queue"] = {"status": "up", "queue_name": "yiacad-eda", "depth": None, "raw": data[:80]}
+    except Exception as exc:
+        probes["queue"] = {"status": "down", "error": str(exc)[:120]}
+
+    up_count = sum(1 for p in probes.values() if p.get("status") == "up")
+    total = len(probes)
+    if up_count == total:
+        overall = "up"
+    elif up_count == 0:
+        overall = "down"
+    else:
+        overall = "degraded"
+
+    return {
+        "status": overall,
+        "probes": probes,
+        "up_count": up_count,
+        "total": total,
+    }
+
+
 def repo_snapshot(repo_path: Path) -> dict[str, object]:
     exists = repo_path.exists()
     payload: dict[str, object] = {
@@ -245,6 +297,7 @@ extension_repos = [
     repo_snapshot(root.parent / "kill-life-mesh"),
     repo_snapshot(root.parent / "kill-life-operator"),
 ]
+web_health = web_platform_health()
 
 status = "degraded" if open_todos_all or web_open_todos_all or global_open_tasks_all else "done"
 degraded_reasons = []
@@ -313,6 +366,7 @@ payload = {
     "owners": owners,
     "research": research,
     "extension_repos": extension_repos,
+    "web_platform_health": web_health,
     "kill_life_memory": {
         "json": str(kill_life_memory_json) if kill_life_memory_json.exists() else "",
         "markdown": str(kill_life_memory_md) if kill_life_memory_md.exists() else "",
@@ -358,6 +412,11 @@ if action == "memory":
         md_lines.append(
             f"- {repo['name']}: branch={repo['branch'] or 'n/a'} dirty={repo['dirty_count']} version={repo['version'] or 'n/a'} terminal_app={repo['has_terminal_app']}"
         )
+    md_lines.extend(["", "## Web platform health"])
+    md_lines.append(f"- status: {web_health['status']} ({web_health['up_count']}/{web_health['total']} probes up)")
+    for probe_name, probe_data in web_health.get("probes", {}).items():
+        extra = f" depth={probe_data['depth']}" if "depth" in probe_data else ""
+        md_lines.append(f"- {probe_name}: {probe_data['status']}{extra}")
     md_lines.extend(["", "## Derived views"])
     md_lines.append(f"- scorecard: {scorecard_view['json']} | {scorecard_view['markdown']}")
     md_lines.append(f"- comparison: {comparison_view['json']} | {comparison_view['markdown']}")
@@ -469,6 +528,11 @@ for repo in payload.get("extension_repos", []):
 print("- priorities:")
 for lane, items in (payload.get("priority_lanes") or {}).items():
     print(f"  - {lane.upper()}: {', '.join(items) if items else 'none'}")
+wph = payload.get("web_platform_health") or {}
+print(f"- web_platform: {wph.get('status', 'unknown')} ({wph.get('up_count', 0)}/{wph.get('total', 0)} probes up)")
+for probe_name, probe_data in (wph.get("probes") or {}).items():
+    extra = f" depth={probe_data.get('depth')}" if "depth" in probe_data else ""
+    print(f"  - {probe_name}: {probe_data.get('status', 'unknown')}{extra}")
 PY
 }
 

@@ -7,12 +7,65 @@ import {
   requestGraphQL,
   type ProjectQueryResult
 } from "@/lib/graphql/client";
-import type { ProjectSnapshot } from "@/lib/types";
+import type { CiRun, ProjectSnapshot } from "@/lib/types";
 
 import { ProductNav } from "@/components/product-nav";
 
+/* ---------- ERC/DRC helpers ---------- */
+
+const EDA_PIPELINES = ["kibot", "erc", "drc", "kicad"];
+
+function isEdaRun(run: CiRun): boolean {
+  const lower = run.pipeline.toLowerCase();
+  return EDA_PIPELINES.some((p) => lower.includes(p));
+}
+
+function statusColor(status: string): string {
+  switch (status) {
+    case "passed":
+    case "success":
+      return "#77f2c9";
+    case "failed":
+    case "error":
+      return "#f27777";
+    case "running":
+      return "#77b8f2";
+    default:
+      return "#8da6c8";
+  }
+}
+
+/* ---------- Ops summary ---------- */
+
+type OpsHealth = {
+  status: string;
+  agents: number;
+  uptime: string | null;
+  message: string;
+};
+
+async function fetchOpsHealth(): Promise<OpsHealth> {
+  try {
+    const response = await fetch("/api/ops/health", { signal: AbortSignal.timeout(3000) });
+    if (response.ok) {
+      return (await response.json()) as OpsHealth;
+    }
+  } catch {
+    // endpoint may not exist yet — fall through
+  }
+  return {
+    status: "unavailable",
+    agents: 0,
+    uptime: null,
+    message: "Ops health endpoint not reachable. Deploy Mascarade agents to enable."
+  };
+}
+
+/* ---------- Component ---------- */
+
 export function PrReviewShell() {
   const [project, setProject] = useState<ProjectSnapshot | null>(null);
+  const [opsHealth, setOpsHealth] = useState<OpsHealth | null>(null);
   const [message, setMessage] = useState("Loading PR review...");
 
   useEffect(() => {
@@ -20,40 +73,135 @@ export function PrReviewShell() {
 
     requestGraphQL<ProjectQueryResult>(PROJECT_SNAPSHOT_QUERY)
       .then((result) => {
-        if (!active) {
-          return;
-        }
-
+        if (!active) return;
         setProject(result.project);
         setMessage("PR review cards loaded from the GraphQL gateway.");
       })
       .catch((error) => {
-        if (!active) {
-          return;
-        }
-
+        if (!active) return;
         setMessage(error instanceof Error ? error.message : "Review load failed");
       });
+
+    fetchOpsHealth().then((health) => {
+      if (active) setOpsHealth(health);
+    });
 
     return () => {
       active = false;
     };
   }, []);
 
+  const changedFiles = project?.changedFiles ?? [];
+  const edaRuns = (project?.ciRuns ?? []).filter(isEdaRun);
+  const otherRuns = (project?.ciRuns ?? []).filter((r) => !isEdaRun(r));
+
   return (
     <main style={styles.page}>
+      {/* ---- Header ---- */}
       <header style={styles.header}>
         <div>
           <p style={styles.eyebrow}>Killer feature lane</p>
           <h1 style={styles.title}>PR review</h1>
           <p style={styles.subtitle}>
-            The review surface combines KiCad diffs, Excalidraw diffs, and
-            artifact previews on top of Git-native pull requests.
+            Read-only review surface: changed files, ERC/DRC outputs, and ops
+            summary — backed by the GraphQL snapshot and Mascarade agents.
           </p>
         </div>
         <ProductNav />
       </header>
 
+      {/* ---- Review-assist panels (new) ---- */}
+      <section style={styles.assistGrid}>
+        {/* -- Changed files -- */}
+        <article style={styles.assistCard}>
+          <h2 style={styles.assistTitle}>Changed files</h2>
+          <p style={styles.assistCaption}>
+            Working-tree changes in the project repo
+            {project?.repoBranch ? ` (${project.repoBranch})` : ""}
+          </p>
+          <div style={styles.fileList}>
+            {changedFiles.length === 0 ? (
+              <p style={styles.muted}>Working tree clean.</p>
+            ) : (
+              changedFiles.map((filePath) => (
+                <code key={filePath} style={styles.fileItem}>
+                  {filePath}
+                </code>
+              ))
+            )}
+          </div>
+        </article>
+
+        {/* -- ERC/DRC results -- */}
+        <article style={styles.assistCard}>
+          <h2 style={styles.assistTitle}>ERC / DRC results</h2>
+          <p style={styles.assistCaption}>
+            KiCad electrical and design rule checks from EDA workers
+          </p>
+          <div style={styles.fileList}>
+            {edaRuns.length === 0 ? (
+              <p style={styles.muted}>
+                No ERC/DRC runs recorded yet. Queue a KiBot pipeline to populate.
+              </p>
+            ) : (
+              edaRuns.map((run) => (
+                <div key={run.id} style={styles.runRow}>
+                  <span
+                    style={{
+                      ...styles.runDot,
+                      background: statusColor(run.status)
+                    }}
+                  />
+                  <span style={styles.runPipeline}>{run.pipeline}</span>
+                  <span style={styles.runStatus}>{run.status}</span>
+                  <span style={styles.muted}>
+                    {new Date(run.queuedAt).toLocaleDateString()}
+                  </span>
+                </div>
+              ))
+            )}
+            {otherRuns.length > 0 ? (
+              <p style={styles.muted}>
+                + {otherRuns.length} non-EDA CI run{otherRuns.length > 1 ? "s" : ""}
+              </p>
+            ) : null}
+          </div>
+        </article>
+
+        {/* -- Ops summary -- */}
+        <article style={styles.assistCard}>
+          <h2 style={styles.assistTitle}>Ops summary</h2>
+          <p style={styles.assistCaption}>
+            Mascarade agent health and deployment state
+          </p>
+          <div style={styles.fileList}>
+            {opsHealth === null ? (
+              <p style={styles.muted}>Checking ops health...</p>
+            ) : (
+              <>
+                <div style={styles.runRow}>
+                  <span
+                    style={{
+                      ...styles.runDot,
+                      background: statusColor(
+                        opsHealth.status === "ok" ? "passed" : opsHealth.status
+                      )
+                    }}
+                  />
+                  <span>Status: {opsHealth.status}</span>
+                </div>
+                <div style={styles.opsDetail}>
+                  <span>Agents: {opsHealth.agents}</span>
+                  {opsHealth.uptime ? <span>Uptime: {opsHealth.uptime}</span> : null}
+                </div>
+                <p style={styles.muted}>{opsHealth.message}</p>
+              </>
+            )}
+          </div>
+        </article>
+      </section>
+
+      {/* ---- Existing PR cards ---- */}
       <section style={styles.grid}>
         {(project?.pullRequests ?? []).map((pullRequest) => {
           const linkedArtifacts = (project?.artifacts ?? []).filter((artifact) =>
@@ -138,6 +286,8 @@ export function PrReviewShell() {
   );
 }
 
+/* ---------- Styles ---------- */
+
 const styles: Record<string, React.CSSProperties> = {
   page: {
     minHeight: "100vh",
@@ -167,6 +317,65 @@ const styles: Record<string, React.CSSProperties> = {
     margin: 0,
     color: "#b7c8e3",
     maxWidth: "64ch"
+  },
+
+  /* Review-assist panels */
+  assistGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    gap: "18px"
+  },
+  assistCard: {
+    padding: "20px",
+    borderRadius: "24px",
+    background: "rgba(12, 22, 39, 0.84)",
+    border: "1px solid rgba(149, 188, 255, 0.18)"
+  },
+  assistTitle: {
+    margin: "0 0 4px",
+    fontSize: "1.05rem"
+  },
+  assistCaption: {
+    margin: "0 0 12px",
+    color: "#8da6c8",
+    fontSize: "0.82rem"
+  },
+
+  /* Run rows (ERC/DRC + ops) */
+  runRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    padding: "8px 10px",
+    borderRadius: "12px",
+    background: "rgba(149, 188, 255, 0.08)"
+  },
+  runDot: {
+    width: "8px",
+    height: "8px",
+    borderRadius: "50%",
+    flexShrink: 0
+  },
+  runPipeline: {
+    fontWeight: 600
+  },
+  runStatus: {
+    color: "#b7c8e3"
+  },
+  opsDetail: {
+    display: "flex",
+    gap: "16px",
+    padding: "8px 10px",
+    borderRadius: "12px",
+    background: "rgba(149, 188, 255, 0.08)",
+    color: "#d9ebff"
+  },
+
+  /* Shared / existing */
+  muted: {
+    margin: 0,
+    color: "#8da6c8",
+    fontSize: "0.88rem"
   },
   grid: {
     display: "grid",
