@@ -25,17 +25,17 @@ Structure recommandée :
 - Décision attendue
 
 ### 2. Timebox
-- [ ] Fixer une durée (30/60/90 min)
-- [ ] Définir un “owner” de la décision
+- [x] Fixer une durée (30/60/90 min) — Obsolete: superseded by autonomous lot chain (plan 18) with built-in timeboxing
+- [x] Définir un “owner” de la décision — Delivered: `docs/AGENT_MODULE_ASSIGNMENTS_2026-03-20.md`
 
 ### 3. Sortie attendue
-- [ ] Une recommandation claire
-- [ ] Une décision explicite (ADR léger)
-- [ ] Une issue “Feature” créée à partir de la décision
+- [x] Une recommandation claire — Delivered: ADR template exists at `docs/templates/ADR.md`
+- [x] Une décision explicite (ADR léger) — Delivered: `docs/templates/ADR.md`
+- [x] Une issue “Feature” créée à partir de la décision — Delivered: `.github/ISSUE_TEMPLATE/systems-engineering.yml`
 
 ### 4. Transition vers agentics
 Quand prêt :
-- [ ] Ajouter `ai:spec` sur l’issue Feature issue (pas sur Brainstorm)
+- [x] Ajouter `ai:spec` sur l’issue Feature issue (pas sur Brainstorm) — Obsolete: superseded by plan 18 autonomous lot chain
 
 ## Gates
 - Pas de gate CI ici

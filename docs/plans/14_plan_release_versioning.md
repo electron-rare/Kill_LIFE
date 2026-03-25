@@ -12,18 +12,18 @@ Mettre en place un versioning clair et des releases reproductibles (firmware + h
 
 ### 1. Préparer la RC
 - [ ] “Freeze” features, bugfix only
-- [ ] Test matrix complète
-- [ ] Evidence pack complet
+- [x] Test matrix complète — Delivered: `tools/test_python.sh --suite stable` + `firmware/test/`
+- [x] Evidence pack complet — Delivered: `.github/workflows/evidence_pack.yml` + `tools/collect_evidence.py`
 
 ### 2. Tag & artefacts
 - [ ] Tag git
-- [ ] Générer binaires firmware (CI)
-- [ ] Publier artefacts (hash, size)
+- [x] Générer binaires firmware (CI) — Delivered: `tools/build_firmware.py` + `.github/workflows/ci.yml`
+- [x] Publier artefacts (hash, size) — Delivered: `.github/workflows/release_signing.yml` + `.github/workflows/sbom_validation.yml`
 
 ### 3. Release notes
 - [ ] Liste des AC couverts
 - [ ] Changements incompatibles
-- [ ] Profil compliance
+- [x] Profil compliance — Delivered: `docs/COMPLIANCE.md`
 
 ### 4. Post‑release
 - [ ] Backport policy

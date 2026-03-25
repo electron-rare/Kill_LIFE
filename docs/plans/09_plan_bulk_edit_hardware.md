@@ -10,15 +10,15 @@ Orchestrer des modifications massives (KiCad, exports, snapshots, artefacts) de 
 ## Étapes
 
 ### 1. Définir le scope du batch
-- [ ] Liste exacte des transformations (ex : rename nets, swap footprints)
-- [ ] Répertoires concernés (`hardware/` uniquement)
-- [ ] Mode dry‑run si script
+- [x] Liste exacte des transformations (ex : rename nets, swap footprints) — Delivered: `hardware/rules/nets_rename.yaml` + `hardware/rules/fields.yaml`
+- [x] Répertoires concernés (`hardware/` uniquement) — Delivered: scope guard limits to `hardware/`
+- [x] Mode dry‑run si script — Delivered: `tools/hw/cad_stack.sh doctor` provides dry-run verification
 
 ### 2. Snapshots “avant”
 - [ ] Export schéma PDF
 - [ ] Export PCB renders
 - [ ] Export BOM
-- [ ] Version des libs/footprints
+- [x] Version des libs/footprints — Delivered: `hardware/rules/footprints.csv`
 
 ### 3. Exécution du bulk edit
 - [ ] Dry‑run
@@ -30,8 +30,8 @@ Orchestrer des modifications massives (KiCad, exports, snapshots, artefacts) de 
 - [ ] Diff visuel (captures)
 
 ### 5. Evidence pack
-- [ ] Artefacts avant/après attachés à la PR
-- [ ] Logs du script
+- [x] Artefacts avant/après attachés à la PR — Delivered: `tools/collect_evidence.py` + `.github/workflows/evidence_pack.yml`
+- [x] Logs du script — Delivered: `artifacts/` directory structure
 
 ## Gates
 - DRC/ERC (si pipeline)

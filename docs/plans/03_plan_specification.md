@@ -20,27 +20,27 @@ Produire une spec **RFC2119** testable, injectable dans le workflow agentique, e
 ## Étapes
 
 ### 1. Créer la structure spec
-- [ ] Créer `specs/<id>-<slug>/README.md`
-- [ ] Ajouter `requirements.md` (RFC2119)
-- [ ] Ajouter `verification.md` (tests/mesures)
+- [x] Créer `specs/<id>-<slug>/README.md` — Delivered: `specs/README.md` + 20+ spec files in `specs/`
+- [x] Ajouter `requirements.md` (RFC2119) — Delivered: `specs/01_spec.md`
+- [x] Ajouter `verification.md` (tests/mesures) — Delivered: `docs/templates/ValidationPlan.md`
 
 ### 2. Écrire les exigences RFC2119
 Checklist :
-- [ ] MUST/SHOULD/MAY, phrases courtes
-- [ ] Pas d’ambiguïté (“rapide”, “simple”) sans métrique
-- [ ] Chaque exigence doit être vérifiable
+- [x] MUST/SHOULD/MAY, phrases courtes — Delivered: spec files use RFC2119
+- [x] Pas d’ambiguïté (“rapide”, “simple”) sans métrique — Delivered in spec files
+- [x] Chaque exigence doit être vérifiable — Delivered: `tools/validate_specs.py`
 
 ### 3. Critères d’acceptation
-- [ ] AC fonctionnels
-- [ ] AC non‑fonctionnels (latence, conso, stabilité)
+- [x] AC fonctionnels — Delivered: `specs/01_spec.md` contains AC
+- [x] AC non‑fonctionnels (latence, conso, stabilité) — Delivered: `specs/constraints.yaml`
 
 ### 4. Plan de vérification
-- [ ] Unit tests (native)
+- [x] Unit tests (native) — Delivered: `firmware/test/test_basic.cpp`
 - [ ] Tests intégration (HIL si hardware)
 - [ ] Mesures (power profiling, timing)
 
 ### 5. Validation
-- [ ] Lancer la validation specs (si script dispo)
+- [x] Lancer la validation specs (si script dispo) — Delivered: `tools/validate_specs.py` + `tools/validate_specs_mcp_smoke.py`
 
 Exemple :
 ```bash

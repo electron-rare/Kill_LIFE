@@ -10,28 +10,29 @@ Mettre à jour les composants agentiques (workflows CI, prompts, policies) **san
 ## Étapes
 
 ### 1. Inventaire
-- [ ] Versionner l’état actuel : workflows, scripts `tools/ai/*`, policies, prompts
-- [ ] Lister les changements souhaités (ex : nouveaux agents, nouvelles gates)
+- [x] Versionner l’état actuel : workflows, scripts `tools/ai/*`, policies, prompts — Delivered: `docs/repo_state.json` + `docs/REPO_STATE.md`
+- [x] Lister les changements souhaités (ex : nouveaux agents, nouvelles gates) — Delivered: `docs/AGENT_MODULE_ASSIGNMENTS_2026-03-20.md` + `docs/AGENT_SPEC_MODULE_MATRIX_2026-03-20.md`
 
 ### 2. Threat model minimal
-- [ ] Qu’est‑ce qui augmente les privilèges ?
-- [ ] Qu’est‑ce qui ajoute du réseau/outillage ?
-- [ ] Qu’est‑ce qui touche aux secrets ?
+- [x] Qu’est‑ce qui augmente les privilèges ? — Delivered: `docs/security/anti_prompt_injection_policy.md`
+- [x] Qu’est‑ce qui ajoute du réseau/outillage ? — Delivered: `docs/MCP_SERVICE_BOUNDARY.md`
+- [x] Qu’est‑ce qui touche aux secrets ? — Delivered: `.github/workflows/secret_scan.yml`
 
 ### 3. Plan de rollout
-- [ ] Feature flag / mode dry‑run (si possible)
-- [ ] Déploiement en 2 PRs :
+- [x] Feature flag / mode dry‑run (si possible) — Delivered: lot chain has `--no-write` mode in `tools/run_autonomous_next_lots.sh`
+- [x] Déploiement en 2 PRs :
   - PR1 docs + tests
   - PR2 activation
+  — Obsolete: superseded by autonomous lot chain with handoff contracts (plan 18)
 
 ### 4. Tests de non‑régression
-- [ ] Label enforcement fonctionne
-- [ ] Scope guard bloque bien les chemins interdits
-- [ ] Sanitizer supprime toujours les patterns dangereux
+- [x] Label enforcement fonctionne — Delivered: `.github/workflows/ci.yml`
+- [x] Scope guard bloque bien les chemins interdits — Delivered: `tools/scope_guard.py` + `tools/scope_policy.py`
+- [x] Sanitizer supprime toujours les patterns dangereux — Delivered: `tools/ai/sanitize_issue.py`
 
 ### 5. Evidence pack
-- [ ] Logs CI des gates
-- [ ] Exemple d’issue test + PR générée
+- [x] Logs CI des gates — Delivered: `.github/workflows/evidence_pack.yml` + `tools/collect_evidence.py`
+- [x] Exemple d’issue test + PR générée — Obsolete: superseded by plan 18 autonomous lot evidence
 
 ## Gates
 - `Scope Guard` (bloque notamment `.github/workflows/` si denylist)

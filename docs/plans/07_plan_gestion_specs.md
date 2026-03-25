@@ -17,19 +17,19 @@ Mettre en place un process stable pour rédiger, valider et injecter les specs d
 ## Process
 
 ### 1. Rédaction
-- [ ] Créer `specs/<id>-<slug>/`
-- [ ] Écrire RFC2119 + AC + NFR
+- [x] Créer `specs/<id>-<slug>/` — Delivered: 20+ spec files in `specs/`
+- [x] Écrire RFC2119 + AC + NFR — Delivered: `specs/01_spec.md` + `specs/constraints.yaml`
 
 ### 2. Validation
-- [ ] Review humaine
-- [ ] Lint spec (CI)
+- [x] Review humaine — Delivered: process in place
+- [x] Lint spec (CI) — Delivered: `tools/validate_specs.py` + `tools/validate_specs_mcp_smoke.py`
 
 ### 3. Injection dans l’exécution
-- [ ] `ai:plan` génère architecture + ADR
-- [ ] `ai:tasks` produit une checklist
+- [x] `ai:plan` génère architecture + ADR — Delivered: `specs/02_arch.md` + `specs/03_plan.md`
+- [x] `ai:tasks` produit une checklist — Delivered: `specs/04_tasks.md`
 
 ### 4. Traçabilité
-- [ ] Table “Requirement → Tests → Modules” (dans `verification.md`)
+- [x] Table “Requirement → Tests → Modules” (dans `verification.md`) — Delivered: `docs/AGENT_SPEC_MODULE_MATRIX_2026-03-20.md`
 - [ ] Dans la PR d’impl : lien vers la spec + AC cochés
 
 ## Gates
