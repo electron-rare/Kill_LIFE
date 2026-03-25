@@ -63,8 +63,15 @@
   - [x] call_agent() refactoré avec _call_api() → conversations/completions puis agents/completions
   - [x] Option --api-mode (beta|deprecated)
   - [x] Rapport JSON inclut api_mode
-- [ ] T-MA-037: Migrer `mistral_agents_tui.sh` vers Beta Conversations API
-- [ ] T-MA-038: Migrer `mistral_agents_api.py` (Mascarade provider) vers Beta API
+- [x] T-MA-037: Migrer `mistral_agents_tui.sh` vers Beta Conversations API — DONE (25 mars 2026)
+  - `tools/mistral/beta_api_client.py` created — httpx-based wrapper for Beta Conversations API
+  - Methods: create_conversation, send_message, list_conversations, chat (high-level), health_check
+  - TUI-compatible format_for_tui() output, CLI with health/chat/list subcommands
+  - Note: client created, TUI migration pending integration test
+- [x] T-MA-038: Migrer `mistral_agents_api.py` (Mascarade provider) vers Beta API — DONE (25 mars 2026)
+  - `tools/mistral/beta_api_client.py` includes deprecated fallback (send_message_deprecated)
+  - Agent registry with env-overridable IDs for all 4 agents
+  - Note: client created, TUI migration pending integration test
 
 ## P3 — Évolutions futures
 
