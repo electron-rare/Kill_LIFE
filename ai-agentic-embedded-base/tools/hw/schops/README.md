@@ -79,3 +79,5 @@ python tools/hw/schops/schops.py block-make \
 
 python tools/hw/schops/schops.py block-ls --lib hardware/blocks/power.kicad_blocks
 ```
+
+<iframe src="https://github.com/sponsors/electron-rare/card" title="Sponsor electron-rare" height="225" width="600" style="border: 0;"></iframe>

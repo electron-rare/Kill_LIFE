@@ -734,3 +734,5 @@ Regles actives:
 - Surface de preuves: `bash tools/cockpit/yiacad_proofs_tui.sh --action status`.
 - Surface de logs: `bash tools/cockpit/yiacad_logs_tui.sh --action status`.
 - Les routes directes historiques restent compatibles, mais ne sont plus l'entree publique recommandee.
+
+<iframe src="https://github.com/sponsors/electron-rare/card" title="Sponsor electron-rare" height="225" width="600" style="border: 0;"></iframe>

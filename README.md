@@ -1,31 +1,31 @@
-# Kill_LIFE 🚀 — Control Plane IA-native, cockpit opérateur et lot pilote extensions
+# Kill_LIFE 🚀 — AI-native Control Plane, Operator Cockpit, and Extension Pilot Batch
 
 <!-- Badges -->
 [![CI](https://img.shields.io/github/actions/workflow/status/electron-rare/Kill_LIFE/ci.yml?branch=main&label=CI)](https://github.com/electron-rare/Kill_LIFE/actions)
-[![Licence MIT](https://img.shields.io/badge/license-MIT-blue)](licenses/MIT.txt)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue)](licenses/MIT.txt)
 [![Compliance](https://img.shields.io/badge/compliance-passed-brightgreen)](docs/COMPLIANCE.md)
 
 <div align="center">
-  <img src="docs/assets/banner_kill_life_generated.png" alt="Bannière Kill_LIFE" width="600" />
+  <img src="docs/assets/banner_kill_life_generated.png" alt="Kill_LIFE Banner" width="600" />
 </div>
 
 ---
 
-Bienvenue dans **Kill_LIFE**, le control plane public du programme agentique `Kill_LIFE`. Le repo concentre aujourd'hui le cockpit opérateur, la chaîne spec-first, les contrats runtime/MCP, les preuves d'exécution, et le lot pilote qui alimente les extensions VS Code soeurs `kill-life-studio`, `kill-life-mesh` et `kill-life-operator`.
+Welcome to **Kill_LIFE**, the public control plane of the `Kill_LIFE` agentic program. The repo now concentrates the operator cockpit, the spec-first pipeline, runtime/MCP contracts, execution evidence, and the pilot batch that powers sister VS Code extensions `kill-life-studio`, `kill-life-mesh`, and `kill-life-operator`.
 
-La regle de lecture 2026-03-22 est simple:
+The 2026-03-22 reading rule is simple:
 
-- ce `README.md` décrit le produit/programme et les décisions de consolidation
-- `docs/index.md` est la navigation opérateur canonique
-- `tools/cockpit/README.md` est l'entrée outillage/TUI canonique
-- `specs/README.md` reste la source de vérité de la chaîne spec-first
-- `docs/KILL_LIFE_CONSOLIDATION_AUDIT_2026-03-22.md` porte l'audit structure, les risques, la matrice IA et la carte de fonctionnalites
+- this `README.md` describes the product/program and consolidation decisions
+- `docs/index.md` is the canonical operator navigation
+- `tools/cockpit/README.md` is the canonical tooling/TUI entry point
+- `specs/README.md` remains the source of truth for the spec-first pipeline
+- `docs/KILL_LIFE_CONSOLIDATION_AUDIT_2026-03-22.md` contains the structural audit, risks, AI matrix, and feature map
 
-La boucle courte de gouvernance locale est désormais:
+The short local governance loop is now:
 
 `lot_chain -> intelligence_tui(memory) -> runtime_ai_gateway(status)`
 
-Le programme d'integration intelligence actuellement actif se suit dans:
+The currently active intelligence integration program is tracked in:
 
 - `docs/plans/22_plan_integration_intelligence_agentique.md`
 - `docs/plans/22_todo_integration_intelligence_agentique.md`
@@ -35,93 +35,93 @@ Le programme d'integration intelligence actuellement actif se suit dans:
 
 <div align="center" style="margin: 16px 0;">
   <img src="docs/assets/dont_panic_generated.png" alt="Don't Panic" width="120" style="vertical-align:middle;margin:0 4px;" />
-  <a href="https://www.youtube.com/playlist?list=PLApocalypse42" target="_blank">Playlist apocalypse</a>
+  <a href="https://www.youtube.com/playlist?list=PLApocalypse42" target="_blank">Apocalypse playlist</a>
 </div>
 
-## Entrées canoniques
+## Canonical Entry Points
 
-| Surface | Rôle | Entrée recommandée |
+| Surface | Role | Recommended entry point |
 | --- | --- | --- |
-| Produit / programme | Vue d'ensemble, périmètre, stratégie | `README.md` |
-| Navigation opérateur | Index docs, runbooks, preuves, routines | `docs/index.md` |
-| Cockpit / TUI | Commandes shell, contrats `cockpit-v1`, santé runtime | `bash tools/cockpit/yiacad_operator_index.sh --action status` |
-| Gouvernance intelligence | owners, mémoire et prochaines actions | `bash tools/cockpit/intelligence_tui.sh --action status --json` |
-| Gateway runtime/MCP/IA | synthèse consolidée runtime, mesh et Mascarade | `bash tools/cockpit/runtime_ai_gateway.sh --action status --refresh --json` |
-| Chaîne spec-first | Intake -> spec -> arch -> plan -> tasks | `specs/README.md` |
-| Audit consolidé | forces, faiblesses, opportunités, risques, IA | `docs/KILL_LIFE_CONSOLIDATION_AUDIT_2026-03-22.md` |
-| Veille OSS | benchmark MCP, orchestration, VS Code agents | `docs/WEB_RESEARCH_OPEN_SOURCE_2026-03-22.md` |
+| Product / program | Overview, scope, strategy | `README.md` |
+| Operator navigation | Docs index, runbooks, evidence, routines | `docs/index.md` |
+| Cockpit / TUI | Shell commands, `cockpit-v1` contracts, runtime health | `bash tools/cockpit/yiacad_operator_index.sh --action status` |
+| Intelligence governance | owners, memory, and next actions | `bash tools/cockpit/intelligence_tui.sh --action status --json` |
+| Runtime/MCP/AI gateway | consolidated runtime, mesh, and Mascarade summary | `bash tools/cockpit/runtime_ai_gateway.sh --action status --refresh --json` |
+| Spec-first pipeline | Intake -> spec -> arch -> plan -> tasks | `specs/README.md` |
+| Consolidated audit | strengths, weaknesses, opportunities, risks, AI | `docs/KILL_LIFE_CONSOLIDATION_AUDIT_2026-03-22.md` |
+| OSS watch | MCP benchmark, orchestration, VS Code agents | `docs/WEB_RESEARCH_OPEN_SOURCE_2026-03-22.md` |
 
-## 🧩 Présentation
+## 🧩 Overview
 
-Kill_LIFE n'est plus seulement un squelette embarqué. Le repo sert désormais de source de vérité publique pour un programme plus large: opérations locales, gouvernance tri-repo, runtime MCP/IA, lot YiACAD, et spécialisation progressive des extensions VS Code.
+Kill_LIFE is no longer just an embedded skeleton. The repo now serves as the public source of truth for a broader program: local operations, tri-repo governance, MCP/AI runtime, YiACAD batch, and progressive specialization of VS Code extensions.
 
-Le positionnement retenu pour cette passe de consolidation est:
+The positioning chosen for this consolidation pass is:
 
-- `Kill_LIFE` = control plane, cockpit, contrats, preuves et référentiel documentaire
-- `kill-life-studio` = produit, specs, décisions, périmètre, roadmap
-- `kill-life-mesh` = orchestration multi-repo, handoffs, ownership, dépendances
-- `kill-life-operator` = exécution, checks, evidence, runbooks
+- `Kill_LIFE` = control plane, cockpit, contracts, evidence, and documentation reference
+- `kill-life-studio` = product, specs, decisions, scope, roadmap
+- `kill-life-mesh` = multi-repo orchestration, handoffs, ownership, dependencies
+- `kill-life-operator` = execution, checks, evidence, runbooks
 
-> « Bienvenue dans le meilleur des mondes : ici, chaque commit est validé, chaque gate est passé, et chaque agent sait que la vraie liberté, c'est d'avoir un evidence pack bien rangé. »
-> — Aldous Huxley, version CI/CD
+> "Welcome to the best of all worlds: here, every commit is validated, every gate is passed, and every agent knows that true freedom is having a neatly organized evidence pack."
+> — Aldous Huxley, CI/CD edition
 
 ---
 
-## 🧩 Architecture & Principes
+## 🧩 Architecture & Principles
 
-- **Spec-first** : Chaque évolution commence par une définition claire dans `specs/` ([Spec Generator FX](https://www.youtube.com/watch?v=9bZkp7q19f0)).
-  > _Schaeffer : Les agents du pipeline écoutent le bruit des specs comme une symphonie de sons trouvés._
-- **Injection de standards** : Standards versionnés et profils injectés (Agent OS).
-- **BMAD / BMAD-METHOD** : Agents par rôles (PM, Architecte, Firmware, QA, Doc, HW), rituels, gates, handoffs ([agents/](agents/), [bmad/](bmad/)).
-- **Tool-first** : Scripts reproductibles ([tools/](tools/)), evidence pack canonique dans `docs/evidence/` et expose en artifact CI.
-- **Pipeline hardware/firmware** : Bulk edits, exports, tests, conformité, snapshots.
-- **CAD headless** : KiCad 10 first + FreeCAD + OpenSCAD via MCP, conteneurisés.
-- **YiACAD** : lot IA-native de fusion KiCad + FreeCAD (with logs dédiés et smoke canari).
-- **Pilotage tri-repo** : contract `ready|degraded|blocked` piloté par `mesh_sync_preflight.sh` + `refonte_tui.sh`.
-- **Sécurité & conformité** : Sanitisation, sorties sûres, sandboxing, scope guard, anti-prompt injection ([OpenClaw Sandbox](https://www.openclaw.io/)).
-- **Runtime agentique** : `ZeroClaw` en local on-demand, `LangGraph` et `AutoGen` comme patterns d'intégration optionnels.
+- **Spec-first**: Every evolution starts with a clear definition in `specs/` ([Spec Generator FX](https://www.youtube.com/watch?v=9bZkp7q19f0)).
+  > _Schaeffer: Pipeline agents listen to the noise of specs like a symphony of found sounds._
+- **Standards injection**: Versioned standards and injected profiles (Agent OS).
+- **BMAD / BMAD-METHOD**: Role-based agents (PM, Architect, Firmware, QA, Doc, HW), rituals, gates, handoffs ([agents/](agents/), [bmad/](bmad/)).
+- **Tool-first**: Reproducible scripts ([tools/](tools/)), canonical evidence pack in `docs/evidence/` and exposed as a CI artifact.
+- **Hardware/firmware pipeline**: Bulk edits, exports, tests, compliance, snapshots.
+- **Headless CAD**: KiCad 10 first + FreeCAD + OpenSCAD via MCP, containerized.
+- **YiACAD**: AI-native KiCad + FreeCAD fusion batch (with dedicated logs and canary smoke).
+- **Tri-repo steering**: `ready|degraded|blocked` contract driven by `mesh_sync_preflight.sh` + `refonte_tui.sh`.
+- **Security & compliance**: Sanitization, safe outputs, sandboxing, scope guard, anti-prompt injection ([OpenClaw Sandbox](https://www.openclaw.io/)).
+- **Agentic runtime**: `ZeroClaw` local on-demand, `LangGraph` and `AutoGen` as optional integration patterns.
 
 <div align="center" style="margin: 16px 0;">
-  <img src="docs/assets/agents_bmad_generated.png" alt="Schéma des agents BMAD" width="400" />
+  <img src="docs/assets/agents_bmad_generated.png" alt="BMAD agents diagram" width="400" />
 </div>
 
-> « La réponse à la question ultime de la vie, de l'univers et du développement embarqué IA : 42 specs, 7 agents, et un pipeline qui ne panique jamais. »
-> — Le README qui ne panique jamais
+> "The answer to the ultimate question of life, the universe, and AI embedded development: 42 specs, 7 agents, and a pipeline that never panics."
+> — The README that never panics
 > <img src="docs/assets/badge_42_generated.gif" alt="42" width="42" style="vertical-align:middle;" />
 
-([Les particules font-elles l'amour ?](https://lelectron-fou.bandcamp.com/album/les-particules-font-elles-l-amour-la-physique))
+([Do particles make love?](https://lelectron-fou.bandcamp.com/album/les-particules-font-elles-l-amour-la-physique))
 
 ---
 
-## ✨ Fonctionnalités principales
+## ✨ Main Features
 
-- **Développement guidé par la spec** : User stories, contraintes, architecture, plans, backlog.
-- **Automatisation** : Issue → PR avec tests unitaires, sanitisation, evidence pack.
-- **Multi-cibles** : ESP32, STM32, Linux, tests natifs.
-- **Pipeline matériel** : KiCad, exports SVG/ERC/DRC/BOM/netlist, bulk edits.
-- **Conformité** : Profils injectés, validation automatique.
-- **OpenClaw** : Labels & commentaires sanitisés, jamais de commit/push, sandbox obligatoire.
-- **Workflow catalog** : Workflows JSON éditables par `crazy_life`, validés contre un schéma JSON.
+- **Spec-driven development**: User stories, constraints, architecture, plans, backlog.
+- **Automation**: Issue → PR with unit tests, sanitization, evidence pack.
+- **Multi-target**: ESP32, STM32, Linux, native tests.
+- **Hardware pipeline**: KiCad, SVG/ERC/DRC/BOM/netlist exports, bulk edits.
+- **Compliance**: Injected profiles, automatic validation.
+- **OpenClaw**: Sanitized labels & comments, never commit/push, mandatory sandbox.
+- **Workflow catalog**: JSON workflows editable by `crazy_life`, validated against a JSON schema.
 
 <div align="center" style="margin: 16px 0;">
-  <img src="docs/assets/pipeline_hw_fw_generated.png" alt="Pipeline hardware/firmware" width="400" />
+  <img src="docs/assets/pipeline_hw_fw_generated.png" alt="Hardware/firmware pipeline" width="400" />
 </div>
 
 ---
 
-## 🖥️ Schéma agentique (Mermaid)
+## 🖥️ Agentic Diagram (Mermaid)
 
 <div align="center">
 
 ```mermaid
 flowchart TD
   Issue[Issue label ai:*] --> PR[Pull Request]
-  PR --> Gate[Gate tests + conformité]
+  PR --> Gate[Tests + compliance gate]
   Gate --> Evidence[Evidence Pack]
-  Evidence --> CI[22 workflows CI/CD]
-  CI --> Deploy[Déploiement multi-cible]
-  PR --> Agents[6 Agents PM Archi FW QA Doc HW]
-  Agents --> Specs[specs/ — 21 specs]
+  Evidence --> CI[22 CI/CD workflows]
+  CI --> Deploy[Multi-target deployment]
+  PR --> Agents[6 Agents PM Arch FW QA Doc HW]
+  Agents --> Specs[specs/ - 21 specs]
   Agents --> Firmware[firmware/ PlatformIO]
   Agents --> Hardware[hardware/ KiCad]
   Agents --> Docs[docs/]
@@ -130,11 +130,11 @@ flowchart TD
   Agents --> OpenClaw[openclaw/]
   Specs --> Standards[standards/]
   Firmware --> Tests[test/]
-  Hardware --> MCP{7 serveurs MCP}
+  Hardware --> MCP{7 MCP servers}
   MCP --> KiCad[KiCad MCP]
   MCP --> FreeCAD[FreeCAD MCP]
   MCP --> OpenSCAD[OpenSCAD MCP]
-  MCP --> YiACAD[YiACAD lot]
+  MCP --> YiACAD[YiACAD batch]
   MCP --> HF[HuggingFace MCP]
   Compliance --> Evidence
   OpenClaw --> Sandbox[Sandbox]
@@ -146,139 +146,139 @@ flowchart TD
 
 </div>
 
-> _Parmegiani : Un bulk edit, c'est une métamorphose électronique, un peu comme un pack d'évidence qui se transforme en nuage de sons._
+> _Parmegiani: A bulk edit is an electronic metamorphosis, a bit like an evidence pack turning into a cloud of sounds._
 
 ---
 
-## 🗺️ Structure du projet
+## 🗺️ Project Structure
 
 <div align="center" style="margin: 16px 0;">
-  <img src="docs/assets/arborescence_kill_life_generated.png" alt="Arborescence du projet Kill_LIFE" width="400" />
+  <img src="docs/assets/arborescence_kill_life_generated.png" alt="Kill_LIFE project tree" width="400" />
 </div>
 
 ```text
 Kill_LIFE/
-├── firmware/                    # Code PlatformIO (ESP32/STM32)
-├── hardware/                    # Assets hardware et blocs KiCad
-├── specs/                       # 21 specs et tâches canoniques (00_intake → 04_tasks + MCP/ZeroClaw/CAD)
-├── workflows/                   # Workflows JSON canoniques + templates + schéma
-├── agents/                      # 6 agents spécialisés (PM, Archi, FW, QA, Doc, HW)
-├── bmad/                        # Gates (S0, S1), rituels (kickoff), templates (handoff, status)
-├── compliance/                  # Profils réglementaires, standards catalog, evidence
-├── standards/                   # Standards globaux versionnés
+├── firmware/                    # PlatformIO code (ESP32/STM32)
+├── hardware/                    # Hardware assets and KiCad blocks
+├── specs/                       # 21 canonical specs and tasks (00_intake -> 04_tasks + MCP/ZeroClaw/CAD)
+├── workflows/                   # Canonical JSON workflows + templates + schema
+├── agents/                      # 6 specialized agents (PM, Arch, FW, QA, Doc, HW)
+├── bmad/                        # Gates (S0, S1), rituals (kickoff), templates (handoff, status)
+├── compliance/                  # Regulatory profiles, standards catalog, evidence
+├── standards/                   # Versioned global standards
 ├── openclaw/                    # Labels, sandbox, onboarding
 ├── tools/
-│   ├── compliance/              # Validation compliance
-│   ├── hw/                      # Stack CAD, MCP, exports, smoke, schops
-│   ├── ai/                      # ZeroClaw launchers, intégrations (langgraph, autogen, n8n)
-│   ├── mistral/                 # Safe patch et outils Mistral
-│   └── ci/                      # Audit CI
-├── web/                         # Frontend Next.js YiACAD (dashboard, editor, viewer, review)
-├── deploy/cad/                  # Dockerfiles et compose CAD/runtime
-├── docs/                        # Docs opérateur, bridge, plans, workflows
-├── test/                        # Tests Python (stable + MCP)
+│   ├── compliance/              # Compliance validation
+│   ├── hw/                      # CAD stack, MCP, exports, smoke, schops
+│   ├── ai/                      # ZeroClaw launchers, integrations (langgraph, autogen, n8n)
+│   ├── mistral/                 # Safe patch and Mistral tools
+│   └── ci/                      # CI audit
+├── web/                         # YiACAD Next.js frontend (dashboard, editor, viewer, review)
+├── deploy/cad/                  # Dockerfiles and CAD/runtime compose
+├── docs/                        # Operator docs, bridge, plans, workflows
+├── test/                        # Python tests (stable + MCP)
 ├── .github/
-│   ├── agents/                  # 6 définitions agents GitHub
+│   ├── agents/                  # 6 GitHub agent definitions
 │   ├── prompts/                 # 37 prompts (plan_wizard_*, start_*, Eureka_*)
-│   └── workflows/               # 22 workflows CI/CD
-├── KIKIFOU/                     # Diagnostic, diagramme, mapping, recommandations
-├── mcp.json                     # 7 serveurs MCP configurés
-└── mkdocs.yml                   # Site docs
+│   └── workflows/               # 22 CI/CD workflows
+├── KIKIFOU/                     # Diagnostics, diagram, mapping, recommendations
+├── mcp.json                     # 7 configured MCP servers
+└── mkdocs.yml                   # Docs site
 ```
 
-## Gouvernance refonte / IA-native
+## Refactor / AI-native Governance
 
-- Audit de consolidation: [docs/KILL_LIFE_CONSOLIDATION_AUDIT_2026-03-22.md](docs/KILL_LIFE_CONSOLIDATION_AUDIT_2026-03-22.md)
-- Spec intelligence: [specs/agentic_intelligence_integration_spec.md](specs/agentic_intelligence_integration_spec.md)
-- Feature map intelligence: [docs/AGENTIC_INTELLIGENCE_FEATURE_MAP_2026-03-21.md](docs/AGENTIC_INTELLIGENCE_FEATURE_MAP_2026-03-21.md)
-- Manifeste: [docs/REFACTOR_MANIFEST_2026-03-20.md](docs/REFACTOR_MANIFEST_2026-03-20.md)
-- Contrat mesh: [docs/TRI_REPO_MESH_CONTRACT_2026-03-20.md](docs/TRI_REPO_MESH_CONTRACT_2026-03-20.md)
-- Plans lot: [specs/04_tasks.md](specs/04_tasks.md)
-- Gestion des agents: [docs/plans/12_plan_gestion_des_agents.md](docs/plans/12_plan_gestion_des_agents.md)
-- To-do mesh: [docs/plans/19_todo_mesh_tri_repo.md](docs/plans/19_todo_mesh_tri_repo.md)
+- Consolidation audit: [docs/KILL_LIFE_CONSOLIDATION_AUDIT_2026-03-22.md](docs/KILL_LIFE_CONSOLIDATION_AUDIT_2026-03-22.md)
+- Intelligence spec: [specs/agentic_intelligence_integration_spec.md](specs/agentic_intelligence_integration_spec.md)
+- Intelligence feature map: [docs/AGENTIC_INTELLIGENCE_FEATURE_MAP_2026-03-21.md](docs/AGENTIC_INTELLIGENCE_FEATURE_MAP_2026-03-21.md)
+- Manifesto: [docs/REFACTOR_MANIFEST_2026-03-20.md](docs/REFACTOR_MANIFEST_2026-03-20.md)
+- Mesh contract: [docs/TRI_REPO_MESH_CONTRACT_2026-03-20.md](docs/TRI_REPO_MESH_CONTRACT_2026-03-20.md)
+- Batch plans: [specs/04_tasks.md](specs/04_tasks.md)
+- Agent management: [docs/plans/12_plan_gestion_des_agents.md](docs/plans/12_plan_gestion_des_agents.md)
+- Mesh to-do: [docs/plans/19_todo_mesh_tri_repo.md](docs/plans/19_todo_mesh_tri_repo.md)
 - CAD AI-native: [docs/CAD_AI_NATIVE_FORK_STRATEGY.md](docs/CAD_AI_NATIVE_FORK_STRATEGY.md)
 - Git EDA platform: [docs/YIACAD_GIT_EDA_PLATFORM_2026-03-22.md](docs/YIACAD_GIT_EDA_PLATFORM_2026-03-22.md)
 - Web stack spec: [specs/yiacad_git_eda_platform_spec.md](specs/yiacad_git_eda_platform_spec.md)
-- YiACAD lane: `bash tools/cockpit/refonte_tui.sh --action yiacad-fusion:prepare` et `tools/cad/yiacad_fusion_lot.sh`
-- Workflow IA: [docs/AI_WORKFLOWS.md](docs/AI_WORKFLOWS.md)
-- TUI intelligence: `bash tools/cockpit/intelligence_tui.sh --action status`
-- Memoire intelligence: `bash tools/cockpit/intelligence_tui.sh --action memory --json`
-- Scorecard intelligence: `bash tools/cockpit/intelligence_tui.sh --action scorecard --json`
-- Comparaison inter-repos: `bash tools/cockpit/intelligence_tui.sh --action comparison --json`
-- File recommandations IA: `bash tools/cockpit/intelligence_tui.sh --action recommendations --json`
-- Gateway runtime/MCP/IA: `bash tools/cockpit/runtime_ai_gateway.sh --action status --refresh --json`
-- Sync locale: `bash tools/cockpit/lot_chain.sh status` rafraichit la memoire `intelligence_tui` avant de mettre a jour le suivi `lots`
-- Commande d'entrée: `bash tools/cockpit/refonte_tui.sh --action status`
-- Index operateur YiACAD: `bash tools/cockpit/yiacad_operator_index.sh --action status`
-- Phase active 2026-03-21: alignement lot 22, durcissement cockpit/logs, veille officielle MCP/agentique/IA, politique racine/mirror explicite et priorisation firmware/CAD/MCP.
+- YiACAD lane: `bash tools/cockpit/refonte_tui.sh --action yiacad-fusion:prepare` and `tools/cad/yiacad_fusion_lot.sh`
+- AI workflow: [docs/AI_WORKFLOWS.md](docs/AI_WORKFLOWS.md)
+- Intelligence TUI: `bash tools/cockpit/intelligence_tui.sh --action status`
+- Intelligence memory: `bash tools/cockpit/intelligence_tui.sh --action memory --json`
+- Intelligence scorecard: `bash tools/cockpit/intelligence_tui.sh --action scorecard --json`
+- Cross-repo comparison: `bash tools/cockpit/intelligence_tui.sh --action comparison --json`
+- AI recommendations file: `bash tools/cockpit/intelligence_tui.sh --action recommendations --json`
+- Runtime/MCP/AI gateway: `bash tools/cockpit/runtime_ai_gateway.sh --action status --refresh --json`
+- Local sync: `bash tools/cockpit/lot_chain.sh status` refreshes `intelligence_tui` memory before updating `lots` tracking
+- Entry command: `bash tools/cockpit/refonte_tui.sh --action status`
+- YiACAD operator index: `bash tools/cockpit/yiacad_operator_index.sh --action status`
+- Active phase 2026-03-21: batch 22 alignment, cockpit/log hardening, official MCP/agentic/AI watch, explicit root/mirror policy, and firmware/CAD/MCP prioritization.
 
-### Refonte UI/UX Apple-native 2026
+### Apple-native UI/UX Refactor 2026
 
-- Audit UX: [docs/YIACAD_APPLE_UI_UX_AUDIT_2026-03-20.md](docs/YIACAD_APPLE_UI_UX_AUDIT_2026-03-20.md)
-- Audit exhaustif refonte: [docs/YIACAD_EXHAUSTIVE_REFOUNTE_AUDIT_2026-03-20.md](docs/YIACAD_EXHAUSTIVE_REFOUNTE_AUDIT_2026-03-20.md)
-- Spécification technique: [specs/yiacad_uiux_apple_native_spec.md](specs/yiacad_uiux_apple_native_spec.md)
-- Spécification lot suivant `T-UX-004`: [specs/yiacad_tux004_orchestration_spec.md](specs/yiacad_tux004_orchestration_spec.md)
-- Feature map UI/UX: [docs/YIACAD_APPLE_UI_UX_FEATURE_MAP_2026-03-20.md](docs/YIACAD_APPLE_UI_UX_FEATURE_MAP_2026-03-20.md)
-- Feature map lot suivant: [docs/YIACAD_TUX004_FEATURE_MAP_2026-03-20.md](docs/YIACAD_TUX004_FEATURE_MAP_2026-03-20.md)
-- Veille Apple + OSS: [docs/YIACAD_APPLE_UI_UX_OSS_RESEARCH_2026-03-20.md](docs/YIACAD_APPLE_UI_UX_OSS_RESEARCH_2026-03-20.md)
-- Plan dédié: [docs/plans/20_plan_refonte_ui_ux_yiacad_apple_native.md](docs/plans/20_plan_refonte_ui_ux_yiacad_apple_native.md)
-- To-do dédié: [docs/plans/20_todo_refonte_ui_ux_yiacad_apple_native.md](docs/plans/20_todo_refonte_ui_ux_yiacad_apple_native.md)
-- TUI dédiée: `bash tools/cockpit/yiacad_uiux_tui.sh --action status|program-audit|next-spec|next-feature-map`
+- UX audit: [docs/YIACAD_APPLE_UI_UX_AUDIT_2026-03-20.md](docs/YIACAD_APPLE_UI_UX_AUDIT_2026-03-20.md)
+- Exhaustive refactor audit: [docs/YIACAD_EXHAUSTIVE_REFOUNTE_AUDIT_2026-03-20.md](docs/YIACAD_EXHAUSTIVE_REFOUNTE_AUDIT_2026-03-20.md)
+- Technical specification: [specs/yiacad_uiux_apple_native_spec.md](specs/yiacad_uiux_apple_native_spec.md)
+- Next-batch specification `T-UX-004`: [specs/yiacad_tux004_orchestration_spec.md](specs/yiacad_tux004_orchestration_spec.md)
+- UI/UX feature map: [docs/YIACAD_APPLE_UI_UX_FEATURE_MAP_2026-03-20.md](docs/YIACAD_APPLE_UI_UX_FEATURE_MAP_2026-03-20.md)
+- Next-batch feature map: [docs/YIACAD_TUX004_FEATURE_MAP_2026-03-20.md](docs/YIACAD_TUX004_FEATURE_MAP_2026-03-20.md)
+- Apple + OSS watch: [docs/YIACAD_APPLE_UI_UX_OSS_RESEARCH_2026-03-20.md](docs/YIACAD_APPLE_UI_UX_OSS_RESEARCH_2026-03-20.md)
+- Dedicated plan: [docs/plans/20_plan_refonte_ui_ux_yiacad_apple_native.md](docs/plans/20_plan_refonte_ui_ux_yiacad_apple_native.md)
+- Dedicated to-do: [docs/plans/20_todo_refonte_ui_ux_yiacad_apple_native.md](docs/plans/20_todo_refonte_ui_ux_yiacad_apple_native.md)
+- Dedicated TUI: `bash tools/cockpit/yiacad_uiux_tui.sh --action status|program-audit|next-spec|next-feature-map`
 
-### Bundle global YiACAD 2026
+### Global YiACAD Bundle 2026
 
-- Audit global: [docs/YIACAD_GLOBAL_REFACTOR_AUDIT_2026-03-20.md](docs/YIACAD_GLOBAL_REFACTOR_AUDIT_2026-03-20.md)
-- Evaluation IA: [docs/YIACAD_GLOBAL_AI_INTEGRATION_ASSESSMENT_2026-03-20.md](docs/YIACAD_GLOBAL_AI_INTEGRATION_ASSESSMENT_2026-03-20.md)
-- Feature map globale: [docs/YIACAD_GLOBAL_FEATURE_MAP_2026-03-20.md](docs/YIACAD_GLOBAL_FEATURE_MAP_2026-03-20.md)
-- Recherche OSS globale: [docs/YIACAD_GLOBAL_OSS_RESEARCH_2026-03-20.md](docs/YIACAD_GLOBAL_OSS_RESEARCH_2026-03-20.md)
-- Architecture backend: [docs/YIACAD_BACKEND_ARCHITECTURE_2026-03-20.md](docs/YIACAD_BACKEND_ARCHITECTURE_2026-03-20.md)
-- Spec globale: [specs/yiacad_global_refonte_spec.md](specs/yiacad_global_refonte_spec.md)
-- Spec backend: [specs/yiacad_backend_architecture_spec.md](specs/yiacad_backend_architecture_spec.md)
-- Plan global: [docs/plans/21_plan_refonte_globale_yiacad.md](docs/plans/21_plan_refonte_globale_yiacad.md)
-- TODO globale: [docs/plans/21_todo_refonte_globale_yiacad.md](docs/plans/21_todo_refonte_globale_yiacad.md)
-- TUI globale: `bash tools/cockpit/yiacad_refonte_tui.sh --action status`
-- Prochain front canonique:
-  - architecture: backend YiACAD derriere `tools/cad/yiacad_native_ops.py`
-  - produit: `T-UX-004` (`command palette`, `review center`, `inspector` persistant)
+- Global audit: [docs/YIACAD_GLOBAL_REFACTOR_AUDIT_2026-03-20.md](docs/YIACAD_GLOBAL_REFACTOR_AUDIT_2026-03-20.md)
+- AI assessment: [docs/YIACAD_GLOBAL_AI_INTEGRATION_ASSESSMENT_2026-03-20.md](docs/YIACAD_GLOBAL_AI_INTEGRATION_ASSESSMENT_2026-03-20.md)
+- Global feature map: [docs/YIACAD_GLOBAL_FEATURE_MAP_2026-03-20.md](docs/YIACAD_GLOBAL_FEATURE_MAP_2026-03-20.md)
+- Global OSS research: [docs/YIACAD_GLOBAL_OSS_RESEARCH_2026-03-20.md](docs/YIACAD_GLOBAL_OSS_RESEARCH_2026-03-20.md)
+- Backend architecture: [docs/YIACAD_BACKEND_ARCHITECTURE_2026-03-20.md](docs/YIACAD_BACKEND_ARCHITECTURE_2026-03-20.md)
+- Global spec: [specs/yiacad_global_refonte_spec.md](specs/yiacad_global_refonte_spec.md)
+- Backend spec: [specs/yiacad_backend_architecture_spec.md](specs/yiacad_backend_architecture_spec.md)
+- Global plan: [docs/plans/21_plan_refonte_globale_yiacad.md](docs/plans/21_plan_refonte_globale_yiacad.md)
+- Global TODO: [docs/plans/21_todo_refonte_globale_yiacad.md](docs/plans/21_todo_refonte_globale_yiacad.md)
+- Global TUI: `bash tools/cockpit/yiacad_refonte_tui.sh --action status`
+- Next canonical front:
+  - architecture: YiACAD backend behind `tools/cad/yiacad_native_ops.py`
+  - product: `T-UX-004` (`command palette`, `review center`, persistent `inspector`)
 
-### Chaîne de specs
+### Specs Pipeline
 
-Le workflow spec-first suit une séquence canonique dans `specs/` :
+The spec-first workflow follows a canonical sequence in `specs/`:
 
 ```text
 00_intake.md → 01_spec.md → 02_arch.md → 03_plan.md → 04_tasks.md
 ```
 
-Specs spécialisées : `kicad_mcp_scope_spec.md`, `knowledge_base_mcp_spec.md`, `github_mcp_conversion_spec.md`, `cad_modeling_tasks.md`, `zeroclaw_dual_hw_orchestration_spec.md`, `mcp_agentics_target_backlog.md`.
+Specialized specs: `kicad_mcp_scope_spec.md`, `knowledge_base_mcp_spec.md`, `github_mcp_conversion_spec.md`, `cad_modeling_tasks.md`, `zeroclaw_dual_hw_orchestration_spec.md`, `mcp_agentics_target_backlog.md`.
 
-Contraintes : [`specs/constraints.yaml`](specs/constraints.yaml) — source de vérité pour cibles, toolchain, sécurité IA et compliance.
+Constraints: [`specs/constraints.yaml`](specs/constraints.yaml) — source of truth for targets, toolchain, AI security, and compliance.
 
 ### Agents & prompts
 
-6 agents spécialisés dans [`agents/`](agents/) et [`.github/agents/`](.github/agents/) :
+6 specialized agents in [`agents/`](agents/) and [`.github/agents/`](.github/agents/) :
 
-| Agent | Rôle |
+| Agent | Role |
 |---|---|
-| `pm_agent` | Gestion de projet, planning, backlog |
-| `architect_agent` | Architecture système, ADR |
-| `firmware_agent` | Code embarqué PlatformIO |
-| `hw_schematic_agent` | Schémas KiCad, bulk edits |
-| `qa_agent` | Tests, qualité, evidence packs |
+| `pm_agent` | Project management, planning, backlog |
+| `architect_agent` | System architecture, ADR |
+| `firmware_agent` | PlatformIO embedded code |
+| `hw_schematic_agent` | KiCad schematics, bulk edits |
+| `qa_agent` | Tests, quality, evidence packs |
 | `doc_agent` | Documentation, onboarding |
 
-37 prompts dans [`.github/prompts/`](.github/prompts/) couvrent : brainstorming, spécification, coordination agents, CI/CD, compliance, troubleshooting, release, bulk edit HW, et les prompts de démarrage (`start_*`) et d'idéation (`Eureka_*`).
+37 prompts in [`.github/prompts/`](.github/prompts/) cover: brainstorming, specification, agent coordination, CI/CD, compliance, troubleshooting, release, HW bulk edit, and startup prompts (`start_*`) and ideation prompts (`Eureka_*`).
 
-### BMAD (gates & rituels)
+### BMAD (gates & rituals)
 
-Le framework BMAD dans [`bmad/`](bmad/) structure la progression :
+The BMAD framework in [`bmad/`](bmad/) structures progression:
 
-- **Gates** : `gate_s0.md` (pré-spec), `gate_s1.md` (pré-implémentation)
-- **Rituels** : `kickoff.md`
-- **Templates** : `handoff.md`, `status_update.md`
+- **Gates**: `gate_s0.md` (pre-spec), `gate_s1.md` (pre-implementation)
+- **Rituals**: `kickoff.md`
+- **Templates**: `handoff.md`, `status_update.md`
 
-Voir [KIKIFOU/diagramme.md](KIKIFOU/diagramme.md) pour le diagramme complet et [KIKIFOU/mapping.md](KIKIFOU/mapping.md) pour la table de mapping.
+See [KIKIFOU/diagramme.md](KIKIFOU/diagramme.md) for the complete diagram and [KIKIFOU/mapping.md](KIKIFOU/mapping.md) for the mapping table.
 
-Plan d'analyse repo courant:
+Current repo analysis plan:
 
 - [docs/plans/REPO_DEEP_ANALYSIS_2026-03-11.md](docs/plans/REPO_DEEP_ANALYSIS_2026-03-11.md)
 - [docs/REFACTOR_MANIFEST_2026-03-20.md](docs/REFACTOR_MANIFEST_2026-03-20.md)
@@ -293,66 +293,66 @@ Plan d'analyse repo courant:
 - [docs/CAD_AI_NATIVE_FORK_STRATEGY.md](docs/CAD_AI_NATIVE_FORK_STRATEGY.md)
 - [docs/TRI_REPO_MESH_CONTRACT_2026-03-20.md](docs/TRI_REPO_MESH_CONTRACT_2026-03-20.md)
 
-Infrastructure opérationnelle:
+Operational infrastructure:
 
-- Machines SSH opérateur (port SSH: `22`, priorité opérationnelle: Tower -> KXKM -> CILS -> local -> root):
+- Operator SSH machines (SSH port: `22`, operational priority: Tower -> KXKM -> CILS -> local -> root):
 
-  | Machine | Utilisateur | Rôle | Port | Script principal |
+  | Machine | User | Role | Port | Main script |
   |---|---|---|---:|---|
-  | `clems@192.168.0.120` | `clems` | Machine de pilotage / orchestration locale | `22` | `run_alignment_daily.sh`, `ssh_healthcheck.sh` |
-  | `kxkm@kxkm-ai` | `kxkm` | Mac opérateur | `22` | `run_alignment_daily.sh` |
-  | `cils@100.126.225.111` | `cils` | Mac opérateur secondaire (`photon`, locké: pas de service essentiel) | `22` | `run_alignment_daily.sh` |
-  | `root@192.168.0.119` | `root` | Serveur système / exécution matérielle (réserve) | `22` | `run_alignment_daily.sh` |
+  | `clems@192.168.0.120` | `clems` | Control/orchestration machine | `22` | `run_alignment_daily.sh`, `ssh_healthcheck.sh` |
+  | `kxkm@kxkm-ai` | `kxkm` | Operator Mac | `22` | `run_alignment_daily.sh` |
+  | `cils@100.126.225.111` | `cils` | Secondary operator Mac (`photon`, locked: no essential service) | `22` | `run_alignment_daily.sh` |
+  | `root@192.168.0.119` | `root` | System server / hardware execution (reserve) | `22` | `run_alignment_daily.sh` |
 
-- Politique de charge P2P: `mesh_sync_preflight.sh --load-profile tower-first`
-  - ordre: `Tower -> KXKM -> CILS -> local -> root`
-  - `cils` accepte uniquement le repo critique `Kill_LIFE` en mode verrouillé.
-- Repos GitHub actifs:
+- P2P load policy: `mesh_sync_preflight.sh --load-profile tower-first`
+  - order: `Tower -> KXKM -> CILS -> local -> root`
+  - `cils` only accepts the critical repo `Kill_LIFE` in locked mode.
+- Active GitHub repos:
   - `electron-rare/Kill_LIFE`
   - `electron-rare/mascarade`
-  - `electron-rare/crazy-life` (privé)
-- Snapshot machines/repos:
+  - `electron-rare/crazy-life` (private)
+- Machine/repo snapshots:
   - [docs/MACHINE_SYNC_STATUS_2026-03-20.md](docs/MACHINE_SYNC_STATUS_2026-03-20.md)
   - [docs/MACHINE_ALIGNMENT_CONTRACT_2026-03-20.md](docs/MACHINE_ALIGNMENT_CONTRACT_2026-03-20.md)
 
-### Health-check SSH (vérification machine)
+### SSH health-check (machine verification)
 
 ```bash
 bash tools/cockpit/ssh_healthcheck.sh --json
 ```
 
-- Vérification de connectivité par machine avec statut `OK`/`KO` par ligne.
-- Logs horodatés: `artifacts/cockpit/ssh_healthcheck_<YYYYMMDD>_<HHMMSS>.log`.
-- Contrat d’alignement opérationnel: [docs/MACHINE_ALIGNMENT_CONTRACT_2026-03-20.md](docs/MACHINE_ALIGNMENT_CONTRACT_2026-03-20.md)
+- Per-machine connectivity check with `OK`/`KO` status per line.
+- Timestamped logs: `artifacts/cockpit/ssh_healthcheck_<YYYYMMDD>_<HHMMSS>.log`.
+- Operational alignment contract: [docs/MACHINE_ALIGNMENT_CONTRACT_2026-03-20.md](docs/MACHINE_ALIGNMENT_CONTRACT_2026-03-20.md)
 
-Routine quotidienne:
+Daily routine:
 
 ```bash
 bash tools/cockpit/run_alignment_daily.sh --json
 bash tools/cockpit/run_alignment_daily.sh --skip-healthcheck --json
 ```
 
-- Lance health-check SSH + `repo_refresh` en mode header-only.
-- Intègre la mémoire opérationnelle: [docs/MACHINE_SYNC_STATUS_2026-03-20.md](docs/MACHINE_SYNC_STATUS_2026-03-20.md) et [docs/MESH_SYNC_INCIDENT_REGISTER_2026-03-20.md](docs/MESH_SYNC_INCIDENT_REGISTER_2026-03-20.md).
-- En mode charge sensible, utiliser `--mesh-load-profile photon-safe`.
-- Écrit un log horodaté: `artifacts/cockpit/machine_alignment_daily_<YYYYMMDD>_<HHMMSS>.log`.
-- Purge auto configurable (`--purge-days <N>`, défaut `14`).
-- Sur les machines non-pilotes, utiliser `--skip-healthcheck` si la clé SSH n’est pas prévue pour l’auto-check mutuel.
+- Runs SSH health-check + `repo_refresh` in header-only mode.
+- Integrates operational memory: [docs/MACHINE_SYNC_STATUS_2026-03-20.md](docs/MACHINE_SYNC_STATUS_2026-03-20.md) and [docs/MESH_SYNC_INCIDENT_REGISTER_2026-03-20.md](docs/MESH_SYNC_INCIDENT_REGISTER_2026-03-20.md).
+- In sensitive load mode, use `--mesh-load-profile photon-safe`.
+- Writes a timestamped log: `artifacts/cockpit/machine_alignment_daily_<YYYYMMDD>_<HHMMSS>.log`.
+- Configurable auto-purge (`--purge-days <N>`, default `14`).
+- On non-pilot machines, use `--skip-healthcheck` if the SSH key is not intended for mutual auto-check.
 
 ---
 
-## 🚀 Installation & démarrage rapide
+## 🚀 Installation & Quick Start
 
-### Prérequis
+### Prerequisites
 
-- OS : Linux, macOS, Windows (WSL)
+- OS: Linux, macOS, Windows (WSL)
 - Python ≥ 3.10
 - Docker + `docker compose`
-- `gh` pour les opérations GitHub
-- PlatformIO en natif ou via la stack conteneurisée
+- `gh` for GitHub operations
+- PlatformIO natively or via the containerized stack
 - KiCad (hardware)
 
-### Installation rapide
+### Quick installation
 
 ```bash
 git clone https://github.com/electron-rare/Kill_LIFE.git
@@ -360,35 +360,35 @@ cd Kill_LIFE
 bash install_kill_life.sh
 ```
 
-Voir [INSTALL.md](INSTALL.md) pour les détails.
+See [INSTALL.md](INSTALL.md) for details.
 
-### Bootstrap Python repo-local
+### Repo-local Python bootstrap
 
 ```bash
 bash tools/bootstrap_python_env.sh
 ```
 
-Options utiles :
-- `--venv-dir /tmp/kill-life-venv` pour vérifier le bootstrap sur un environnement vierge
-- `--reinstall` pour recréer proprement le venv cible
+Useful options:
+- `--venv-dir /tmp/kill-life-venv` to verify bootstrap on a clean environment
+- `--reinstall` to cleanly recreate the target venv
 
-Le chemin supporté pour le Python du repo est `./.venv/bin/python`.
+The supported path for repo Python is `./.venv/bin/python`.
 
-### Tests Python
+### Python tests
 
 ```bash
 bash tools/test_python.sh
 ```
 
-| Suite | Commande | Contenu |
+| Suite | Command | Content |
 |---|---|---|
-| `stable` | `--suite stable` | Tests repo-locaux (specs, compliance, sanitizer, safe patch, schops) |
-| `mcp` | `--suite mcp` | Tests MCP locaux (knowledge-base, github-dispatch, nexar) |
-| `all` | `--suite all` | Les deux suites enchaînées |
+| `stable` | `--suite stable` | Repo-local tests (specs, compliance, sanitizer, safe patch, schops) |
+| `mcp` | `--suite mcp` | Local MCP tests (knowledge-base, github-dispatch, nexar) |
+| `all` | `--suite all` | Both suites chained |
 
-Options : `--bootstrap` pour créer le venv avant, `--list` pour lister les commandes couvertes.
+Options: `--bootstrap` to create the venv first, `--list` to list covered commands.
 
-### Vérifications utiles
+### Useful checks
 
 ```bash
 .venv/bin/python tools/compliance/validate.py --strict
@@ -397,101 +397,101 @@ bash tools/hw/cad_stack.sh doctor
 KILL_LIFE_PIO_MODE=container .venv/bin/python tools/auto_check_ci_cd.py
 ```
 
-`tools/validate_specs.py` inclut un preflight PyYAML avant d'appeler `tools/compliance/validate.py` et retourne un message d'installation explicite si la dependance manque.
+`tools/validate_specs.py` includes a PyYAML preflight before calling `tools/compliance/validate.py` and returns an explicit install message if the dependency is missing.
 
 ---
 
-## 🔧 Serveurs MCP
+## 🔧 MCP Servers
 
-Le projet expose **7 serveurs MCP** (Model Context Protocol) configurés dans [`mcp.json`](mcp.json) :
+The project exposes **7 MCP servers** (Model Context Protocol) configured in [`mcp.json`](mcp.json):
 
-| Serveur | Type | Rôle |
+| Server | Type | Role |
 |---|---|---|
-| `kicad` | local | Gestion de projet, schémas, PCB, bibliothèques, validation, exports, sourcing |
-| `validate-specs` | local | Validation specs, compliance, RFC2119 (CLI + MCP stdio) |
-| `knowledge-base` | local | Recherche, lecture, ajout de memos (docmost) |
-| `github-dispatch` | local | Dispatch de workflows GitHub allowlistés |
-| `freecad` | local | Modélisation 3D, rendu, export, validation |
-| `openscad` | local | Modélisation paramétrique, export, validation |
-| `huggingface` | distant | Accès au Hub HuggingFace (datasets, modèles, papers) |
+| `kicad` | local | Project management, schematics, PCB, libraries, validation, exports, sourcing |
+| `validate-specs` | local | Spec validation, compliance, RFC2119 (CLI + MCP stdio) |
+| `knowledge-base` | local | Search, read, add memos (docmost) |
+| `github-dispatch` | local | Dispatch allowlisted GitHub workflows |
+| `freecad` | local | 3D modeling, rendering, export, validation |
+| `openscad` | local | Parametric modeling, export, validation |
+| `huggingface` | remote | Access to HuggingFace Hub (datasets, models, papers) |
 
-La stack CAD est documentée dans [`deploy/cad/README.md`](deploy/cad/README.md) et pilotée par [`tools/hw/cad_stack.sh`](tools/hw/cad_stack.sh).
+The CAD stack is documented in [`deploy/cad/README.md`](deploy/cad/README.md) and managed by [`tools/hw/cad_stack.sh`](tools/hw/cad_stack.sh).
 
-- Cible actuelle : **KiCad 10 first** + FreeCAD + OpenSCAD
-- Launcher MCP : [`tools/hw/run_kicad_mcp.sh`](tools/hw/run_kicad_mcp.sh)
-- Configuration MCP : [`docs/MCP_SETUP.md`](docs/MCP_SETUP.md) et [`mcp.json`](mcp.json)
+- Current target: **KiCad 10 first** + FreeCAD + OpenSCAD
+- MCP launcher: [`tools/hw/run_kicad_mcp.sh`](tools/hw/run_kicad_mcp.sh)
+- MCP configuration: [`docs/MCP_SETUP.md`](docs/MCP_SETUP.md) and [`mcp.json`](mcp.json)
 
 ---
 
-## 🤖 ZeroClaw & intégrations agentiques (optionnel)
+## 🤖 ZeroClaw & Agentic Integrations (Optional)
 
-Le runtime opérateur `ZeroClaw` peut tourner nativement sur la machine opérateur. Le launcher supporté essaie d'abord le binaire repo-local `zeroclaw/target/release/zeroclaw`, puis retombe sur `command -v zeroclaw` (typiquement `~/.cargo/bin/zeroclaw`).
+The `ZeroClaw` operator runtime can run natively on the operator machine. The supported launcher first tries the repo-local binary `zeroclaw/target/release/zeroclaw`, then falls back to `command -v zeroclaw` (typically `~/.cargo/bin/zeroclaw`).
 
 ```bash
-bash tools/ai/zeroclaw_stack_up.sh    # démarrer
-bash tools/ai/zeroclaw_stack_down.sh  # arrêter
+bash tools/ai/zeroclaw_stack_up.sh    # start
+bash tools/ai/zeroclaw_stack_down.sh  # stop
 ```
 
-Les runbooks et intégrations vivent dans [`tools/ai/integrations/`](tools/ai/integrations/) :
+Runbooks and integrations live in [`tools/ai/integrations/`](tools/ai/integrations/):
 
-| Intégration | Rôle |
+| Integration | Role |
 |---|---|
-| `zeroclaw/` | Runtime opérateur local, boucles agentiques |
-| `langgraph/` | Pattern d'intégration LangGraph |
-| `autogen/` | Pattern d'intégration AutoGen |
-| `n8n/` | Orchestration no-code / workflows externes |
+| `zeroclaw/` | Local operator runtime, agentic loops |
+| `langgraph/` | LangGraph integration pattern |
+| `autogen/` | AutoGen integration pattern |
+| `n8n/` | No-code orchestration / external workflows |
 
-Ces intégrations restent consultables même quand le runtime n'est pas démarré.
+These integrations remain browsable even when the runtime is not started.
 
 ---
 
-## 📦 Workflow catalog
+## 📦 Workflow Catalog
 
-Les workflows éditables par `crazy_life` vivent dans [`workflows/`](workflows/) et sont validés contre [`workflows/workflow.schema.json`](workflows/workflow.schema.json).
+Workflows editable by `crazy_life` live in [`workflows/`](workflows/) and are validated against [`workflows/workflow.schema.json`](workflows/workflow.schema.json).
 
-| Workflow | Fichier |
+| Workflow | File |
 |---|---|
 | Spec-first | `workflows/spec-first.json` |
 | Embedded CI local | `workflows/embedded-ci-local.json` |
 | Compliance release | `workflows/compliance-release.json` |
 
-- `workflows/templates/*.json` : templates de création
-- `.crazy-life/runs/` : état des runs locaux généré par `crazy_life` si l'éditeur est utilisé
-- `.crazy-life/backups/workflows/` : révisions/restores générés localement par `crazy_life` (non versionnés)
+- `workflows/templates/*.json`: creation templates
+- `.crazy-life/runs/`: local run state generated by `crazy_life` when the editor is used
+- `.crazy-life/backups/workflows/`: revisions/restores generated locally by `crazy_life` (not versioned)
 
 ---
 
-## 🦾 Workflows agents détaillés
+## 🦾 Detailed Agent Workflows
 
-### 1. Spécification → Implémentation Firmware
+### 1. Specification → Firmware Implementation
 
-1. Rédige la spec dans `specs/`.
-2. Ouvre une issue avec le label `ai:spec`.
-3. L'agent PM/Architecte génère le plan et l'architecture.
-4. L'agent Firmware implémente le code dans `firmware/`.
-5. L'agent QA ajoute des tests Unity.
-6. Evidence pack généré automatiquement.
+1. Write the spec in `specs/`.
+2. Open an issue with label `ai:spec`.
+3. The PM/Architect agent generates the plan and architecture.
+4. The Firmware agent implements code in `firmware/`.
+5. The QA agent adds Unity tests.
+6. Evidence pack generated automatically.
 
 <div align="center" style="margin: 16px 0;">
   <img src="docs/assets/evidence_pack_generated.png" alt="Evidence Pack" width="200" />
 </div>
 
-### 2. Bulk Edit Hardware KiCad
+### 2. KiCad Hardware Bulk Edit
 
-1. Ouvre une issue `type:systems` + `scope:hardware`, puis ajoute `ai:plan` (ou `ai:impl` si le batch est déjà cadré).
-2. L'agent HW effectue un bulk edit via `tools/hw/schops`.
-3. Exporte ERC/DRC, BOM, netlist.
-4. Snapshot avant/après dans `artifacts/hw/<timestamp>/`.
+1. Open an issue `type:systems` + `scope:hardware`, then add `ai:plan` (or `ai:impl` if the batch is already framed).
+2. The HW agent performs a bulk edit via `tools/hw/schops`.
+3. Export ERC/DRC, BOM, netlist.
+4. Before/after snapshot in `artifacts/hw/<timestamp>/`.
 
 <div align="center" style="margin: 16px 0;">
   <img src="docs/assets/bulk_edit_party_generated.png" alt="Bulk Edit Party" width="200" />
 </div>
 
-### 3. Documentation & Conformité
+### 3. Documentation & Compliance
 
-1. Ouvre une issue avec le label `ai:docs` ou `ai:qa`.
-2. L'agent Doc met à jour `docs/` et le README.
-3. L'agent QA valide le profil de conformité et génère le rapport, avec relais doc si nécessaire.
+1. Open an issue with label `ai:docs` or `ai:qa`.
+2. The Doc agent updates `docs/` and the README.
+3. The QA agent validates the compliance profile and generates the report, with doc handoff if needed.
 
 <div align="center" style="margin: 16px 0;">
   <img src="docs/assets/gate_validation_generated.png" alt="Gate Validation" width="200" />
@@ -499,12 +499,12 @@ Les workflows éditables par `crazy_life` vivent dans [`workflows/`](workflows/)
 
 ---
 
-## 🛡️ Sécurité & conformité
+## 🛡️ Security & Compliance
 
-- OpenClaw : sandbox obligatoire, jamais d'accès aux secrets ou au code source.
-- Workflows CI : validation, sanitisation, scope guard, anti-prompt injection.
-- Evidence packs : tous les rapports dans `artifacts/<domaine>/<timestamp>/`.
-- Tests hardware reproductibles via scripts documentés.
+- OpenClaw: mandatory sandbox, never access to secrets or source code.
+- CI workflows: validation, sanitization, scope guard, anti-prompt injection.
+- Evidence packs: all reports in `artifacts/<domaine>/<timestamp>/`.
+- Reproducible hardware tests via documented scripts.
 
 <div align="center" style="margin: 16px 0;">
   <img src="docs/assets/openclaw_sandbox_generated.png" alt="OpenClaw Sandbox" width="200" />
@@ -516,118 +516,120 @@ Les workflows éditables par `crazy_life` vivent dans [`workflows/`](workflows/)
   <img src="docs/assets/openclaw_cicd_inactive.png" alt="CI Inactive" width="48" />
 </div>
 
-### Chaîne de compliance
+### Compliance Pipeline
 
 ```text
 compliance/
-├── active_profile.yaml          # Profil actif (ex: "prototype")
+├── active_profile.yaml          # Active profile (e.g. "prototype")
 ├── profiles/
-│   ├── prototype.yaml           # Standards requis + evidence pour prototype
-│   └── iot_wifi_eu.yaml         # Profil IoT WiFi marché EU
-├── standards_catalog.yaml       # Catalogue de standards versionnés
-├── plan.yaml                    # Produit, marché, radio, alimentation
+│   ├── prototype.yaml           # Required standards + evidence for prototype
+│   └── iot_wifi_eu.yaml         # IoT WiFi profile for EU market
+├── standards_catalog.yaml       # Versioned standards catalog
+├── plan.yaml                    # Product, market, radio, power
 └── evidence/
-    ├── risk_assessment.md       # Évaluation des risques
-    ├── security_architecture.md # Architecture de sécurité
-    ├── test_plan_radio_emc.md   # Plan de test radio/EMC
+    ├── risk_assessment.md       # Risk assessment
+    ├── security_architecture.md # Security architecture
+    ├── test_plan_radio_emc.md   # Radio/EMC test plan
     └── supply_chain_declarations.md
 ```
 
-Contraintes projet (depuis [`specs/constraints.yaml`](specs/constraints.yaml)) :
-- **Orientation** : ESP-first (cibles : esp32s3, esp32, esp32dev)
-- **Firmware** : PlatformIO + Unity (tests requis)
-- **Hardware** : KiCad ≥ 9 minimum, chemin préféré KiCad 10-first, bulk edits autorisés, ERC green requis
-- **IA** : un label `ai:*` adapte a l'etape est requis, secrets interdits, pas d'hypothese reseau
-- **Compliance** : profil actif injecté, validé par `tools/compliance/validate.py`
+Project constraints (from [`specs/constraints.yaml`](specs/constraints.yaml)):
+- **Orientation**: ESP-first (targets: esp32s3, esp32, esp32dev)
+- **Firmware**: PlatformIO + Unity (required tests)
+- **Hardware**: KiCad ≥ 9 minimum, preferred KiCad 10-first path, bulk edits allowed, ERC green required
+- **AI**: an `ai:*` label adapted to the step is required, no secrets, no network assumptions
+- **Compliance**: active profile injected, validated by `tools/compliance/validate.py`
 
 ---
 
-## 🌐 Écosystème
+## 🌐 Ecosystem
 
-| Repo | Rôle | Accès |
+| Repo | Role | Access |
 |---|---|---|
-| **Kill_LIFE** | Source de vérité : workflows, runtime, evidence packs, firmware, CAD, compliance | 🌍 public |
-| **ai-agentic-embedded-base** | Compagnon local : miroir exporté des `specs/` + seed firmware minimal, jamais source de vérité primaire | local |
-| **crazy_life** | Surface web/devops et workflow editor | 🔒 privé |
-| **mascarade** | Orchestration et bridge historique (sync uniquement) | 🔒 privé |
+| **Kill_LIFE** | Source of truth: workflows, runtime, evidence packs, firmware, CAD, compliance | 🌍 public |
+| **ai-agentic-embedded-base** | Local companion: exported mirror of `specs/` + minimal firmware seed, never primary source of truth | local |
+| **crazy_life** | Web/devops surface and workflow editor | 🔒 private |
+| **mascarade** | Orchestration and historical bridge (sync only) | 🔒 private |
 
-### Datasets HuggingFace
+### HuggingFace Datasets
 
-8 datasets de fine-tuning publiés sur [HuggingFace](https://huggingface.co/clemsail) (JSON, 1K-10K entrées chacun) :
+8 fine-tuning datasets published on [HuggingFace](https://huggingface.co/clemsail) (JSON, 1K-10K entries each):
 
 `mascarade-stm32` · `mascarade-spice` · `mascarade-iot` · `mascarade-power` · `mascarade-dsp` · `mascarade-emc` · `mascarade-kicad` · `mascarade-embedded`
 
-Articulation détaillée : [`docs/MASCARADE_BRIDGE.md`](docs/MASCARADE_BRIDGE.md)
+Detailed articulation: [`docs/MASCARADE_BRIDGE.md`](docs/MASCARADE_BRIDGE.md)
 
 ---
 
-## ⚙️ CI & release
+## ⚙️ CI & Release
 
-**22 workflows GitHub Actions** couvrent l'ensemble du cycle :
+**22 GitHub Actions workflows** cover the full cycle:
 
-| Catégorie | Workflows |
+| Category | Workflows |
 |---|---|
-| **Gate principal** | `ci.yml` (bootstrap Python + suite stable) |
-| **Release** | `release_signing.yml` (tag `v*` ou `workflow_dispatch`) |
-| **Qualité** | `badges.yml`, `evidence_pack.yml`, `repo_state.yml`, `repo_state_header_gate.yml` |
-| **Sécurité** | `secret_scan.yml`, `sbom_validation.yml`, `supply_chain.yml`, `incident_response.yml` |
-| **Tests avancés** | `api_contract.yml`, `model_validation.yml`, `performance_hil.yml` |
+| **Main gate** | `ci.yml` (Python bootstrap + stable suite) |
+| **Release** | `release_signing.yml` (tag `v*` or `workflow_dispatch`) |
+| **Quality** | `badges.yml`, `evidence_pack.yml`, `repo_state.yml`, `repo_state_header_gate.yml` |
+| **Security** | `secret_scan.yml`, `sbom_validation.yml`, `supply_chain.yml`, `incident_response.yml` |
+| **Advanced tests** | `api_contract.yml`, `model_validation.yml`, `performance_hil.yml` |
 | **Infra** | `dependency_update.yml`, `community_accessibility.yml` |
-| **Pages** | `jekyll-gh-pages.yml`, `static.yml` (surfaces secondaires docs/evidence) |
+| **Pages** | `jekyll-gh-pages.yml`, `static.yml` (secondary docs/evidence surfaces) |
 | **Orchestration** | `zeroclaw_dual_orchestrator.yml` |
 
 ---
 
-## 🤝 Contribuer
+## 🤝 Contributing
 
-1. Forke le dépôt et clone-le localement.
-2. Suis le guide d'onboarding ([docs/index.md](docs/index.md), [RUNBOOK.md](RUNBOOK.md)).
-3. Ajoute des exemples minimalistes pour chaque agent (voir [agents/](agents/)).
-4. Propose des blocks hardware, profils de conformité, tests.
-5. Ouvre une PR, passe les gates, fournis un evidence pack.
-6. Respecte les conventions de commit et de labelling (`ai:*`).
+1. Fork the repository and clone it locally.
+2. Follow the onboarding guide ([docs/index.md](docs/index.md), [RUNBOOK.md](RUNBOOK.md)).
+3. Add minimal examples for each agent (see [agents/](agents/)).
+4. Propose hardware blocks, compliance profiles, tests.
+5. Open a PR, pass the gates, provide an evidence pack.
+6. Respect commit and labeling conventions (`ai:*`).
 
-> « Les particules rêvent-elles d'électron-ironique ? Peut-être font-elles l'amour dans le dossier hardware, pendant que les agents QA se demandent si la conformité est un rêve ou une réalité. »
-> — Inspiré par Le Réplicant de K. Dick & Les particules font-elles l'amour
+> "Do particles dream of electron-irony? Maybe they make love in the hardware folder, while QA agents wonder whether compliance is a dream or a reality."
+> — Inspired by K. Dick's Replicant & Do particles make love
 
-_« J'ai vu des evidence packs briller dans l'obscurité près des gates S1… »_
+_“I've seen evidence packs glitter in the dark near S1 gates…”_
 
 ---
 
-## 🔗 Liens utiles
+## 🔗 Useful Links
 
-- [Documentation complète](docs/index.md)
-- [RUNBOOK opérateur](RUNBOOK.md)
-- [Guide d'installation](INSTALL.md)
-- [Configuration MCP](docs/MCP_SETUP.md)
-- [Synthèse technique](KIKIFOU/synthese.md)
-- [Diagramme pipeline](KIKIFOU/diagramme.md)
-- [Mapping dossiers](KIKIFOU/mapping.md)
+- [Full documentation](docs/index.md)
+- [Operator RUNBOOK](RUNBOOK.md)
+- [Installation guide](INSTALL.md)
+- [MCP configuration](docs/MCP_SETUP.md)
+- [Technical summary](KIKIFOU/synthese.md)
+- [Pipeline diagram](KIKIFOU/diagramme.md)
+- [Folder mapping](KIKIFOU/mapping.md)
 
 ---
 
 ## ❓ FAQ
 
-**Q : Comment démarrer rapidement ?**
-R : `bash install_kill_life.sh` puis `bash tools/bootstrap_python_env.sh`.
+**Q: How do I get started quickly?**  
+A: `bash install_kill_life.sh` then `bash tools/bootstrap_python_env.sh`.
 
-**Q : Comment lancer les tests ?**
-R : `bash tools/test_python.sh --suite stable`
+**Q: How do I run tests?**  
+A: `bash tools/test_python.sh --suite stable`
 
-**Q : Comment sécuriser OpenClaw ?**
-R : Sandbox obligatoire, jamais d'accès aux secrets ou au code source.
+**Q: How do I secure OpenClaw?**  
+A: Mandatory sandbox, never access to secrets or source code.
 
-**Q : Comment contribuer ?**
-R : Forke, suis le RUNBOOK, ouvre une PR avec evidence pack, respecte les labels `ai:*`.
+**Q: How do I contribute?**  
+A: Fork, follow the RUNBOOK, open a PR with an evidence pack, respect `ai:*` labels.
 
-**Q : Où trouver la documentation complète ?**
-R : [docs/index.md](docs/index.md), [RUNBOOK.md](RUNBOOK.md), [INSTALL.md](INSTALL.md).
+**Q: Where can I find the full documentation?**  
+A: [docs/index.md](docs/index.md), [RUNBOOK.md](RUNBOOK.md), [INSTALL.md](INSTALL.md).
 
 ---
 
-## 📜 Licence
+## 📜 License
 
-MIT. Voir [`licenses/MIT.txt`](licenses/MIT.txt).
+MIT. See [`licenses/MIT.txt`](licenses/MIT.txt).
+
+
 
 
 
@@ -662,37 +664,37 @@ MIT. Voir [`licenses/MIT.txt`](licenses/MIT.txt).
 - Debt markers: `6`
 - Source files: `156`
 
-### Corrections Prioritaires
-- [ ] Optimisation ciblée perf/maintenabilité
-- [ ] Ajouter/fiabiliser les commandes de vérification automatiques.
-- [ ] Clore les points bloquants avant optimisation avancée.
+### Priority Fixes
+- [ ] Targeted perf/maintainability optimization
+- [ ] Add/harden automatic verification commands.
+- [ ] Close blocking points before advanced optimization.
 
-### Optimisation
-- [ ] Identifier le hotspot principal et mesurer avant/après.
-- [ ] Réduire la complexité des modules les plus touchés.
+### Optimization
+- [ ] Identify the main hotspot and measure before/after.
+- [ ] Reduce complexity in the most impacted modules.
 
-### Mémoire chantier
+### Workstream memory
 - Control plane: `/Users/electron/.codex/memories/electron_rare_chantier`
 - Repo card: `/Users/electron/.codex/memories/electron_rare_chantier/REPOS/Kill_LIFE.md`
 
 <!-- CHANTIER:AUDIT END -->
 
-## Delta mesh tri-repo 2026-03-20
+## Tri-repo mesh delta 2026-03-20
 
-Cette refonte opere desormais en mode maillé entre `Kill_LIFE`, `mascarade` et `crazy_life`.
+This refactor now operates in meshed mode between `Kill_LIFE`, `mascarade`, and `crazy_life`.
 
-- Contrat de gouvernance: [docs/TRI_REPO_MESH_CONTRACT_2026-03-20.md](docs/TRI_REPO_MESH_CONTRACT_2026-03-20.md)
-- Spec des contrats publics: [specs/mesh_contracts.md](specs/mesh_contracts.md)
-- Todo de transition: [docs/plans/19_todo_mesh_tri_repo.md](docs/plans/19_todo_mesh_tri_repo.md)
-- Preflight machines/repos: [tools/cockpit/mesh_sync_preflight.sh](tools/cockpit/mesh_sync_preflight.sh)
+- Governance contract: [docs/TRI_REPO_MESH_CONTRACT_2026-03-20.md](docs/TRI_REPO_MESH_CONTRACT_2026-03-20.md)
+- Public contracts spec: [specs/mesh_contracts.md](specs/mesh_contracts.md)
+- Transition todo: [docs/plans/19_todo_mesh_tri_repo.md](docs/plans/19_todo_mesh_tri_repo.md)
+- Machine/repo preflight: [tools/cockpit/mesh_sync_preflight.sh](tools/cockpit/mesh_sync_preflight.sh)
 - Operations logs: [tools/cockpit/log_ops.sh](tools/cockpit/log_ops.sh)
 
-Regles actives:
+Active rules:
 
-- un lot doit declarer `owner_repo`, `owner_agent`, `write_set`, `preflight`, `validations`, `evidence`, `sync_targets`
-- aucun revert de changements externes
-- aucune propagation sans preflight de convergence
-- les MCP sont conformes en `ready` ou `degraded`; `blocked` doit etre justifie
+- a batch must declare `owner_repo`, `owner_agent`, `write_set`, `preflight`, `validations`, `evidence`, `sync_targets`
+- no revert of external changes
+- no propagation without convergence preflight
+- MCPs are compliant in `ready` or `degraded`; `blocked` must be justified
 
 ## Full operator lane (2026-03-20)
 
@@ -710,27 +712,29 @@ Regles actives:
   - live `success`
   - provider/model observed: `claude` / `claude-sonnet-4-6`
 
-### Refonte globale YiACAD 2026
+### Global YiACAD refactor 2026
 
-- Audit global: [docs/YIACAD_GLOBAL_REFACTOR_AUDIT_2026-03-20.md](docs/YIACAD_GLOBAL_REFACTOR_AUDIT_2026-03-20.md)
-- Evaluation IA: [docs/YIACAD_GLOBAL_AI_INTEGRATION_ASSESSMENT_2026-03-20.md](docs/YIACAD_GLOBAL_AI_INTEGRATION_ASSESSMENT_2026-03-20.md)
-- Feature map globale: [docs/YIACAD_GLOBAL_FEATURE_MAP_2026-03-20.md](docs/YIACAD_GLOBAL_FEATURE_MAP_2026-03-20.md)
-- Recherche OSS globale: [docs/YIACAD_GLOBAL_OSS_RESEARCH_2026-03-20.md](docs/YIACAD_GLOBAL_OSS_RESEARCH_2026-03-20.md)
-- Spec globale: [specs/yiacad_global_refonte_spec.md](specs/yiacad_global_refonte_spec.md)
-- Plan global: [docs/plans/21_plan_refonte_globale_yiacad.md](docs/plans/21_plan_refonte_globale_yiacad.md)
-- TODO globale: [docs/plans/21_todo_refonte_globale_yiacad.md](docs/plans/21_todo_refonte_globale_yiacad.md)
-- Index operateur: `bash tools/cockpit/yiacad_operator_index.sh --action status`
-- TUI globale: `bash tools/cockpit/yiacad_refonte_tui.sh --action status`
-- Facade backend locale: `python3 tools/cad/yiacad_backend_service.py status`
+- Global audit: [docs/YIACAD_GLOBAL_REFACTOR_AUDIT_2026-03-20.md](docs/YIACAD_GLOBAL_REFACTOR_AUDIT_2026-03-20.md)
+- AI assessment: [docs/YIACAD_GLOBAL_AI_INTEGRATION_ASSESSMENT_2026-03-20.md](docs/YIACAD_GLOBAL_AI_INTEGRATION_ASSESSMENT_2026-03-20.md)
+- Global feature map: [docs/YIACAD_GLOBAL_FEATURE_MAP_2026-03-20.md](docs/YIACAD_GLOBAL_FEATURE_MAP_2026-03-20.md)
+- Global OSS research: [docs/YIACAD_GLOBAL_OSS_RESEARCH_2026-03-20.md](docs/YIACAD_GLOBAL_OSS_RESEARCH_2026-03-20.md)
+- Global spec: [specs/yiacad_global_refonte_spec.md](specs/yiacad_global_refonte_spec.md)
+- Global plan: [docs/plans/21_plan_refonte_globale_yiacad.md](docs/plans/21_plan_refonte_globale_yiacad.md)
+- Global TODO: [docs/plans/21_todo_refonte_globale_yiacad.md](docs/plans/21_todo_refonte_globale_yiacad.md)
+- Operator index: `bash tools/cockpit/yiacad_operator_index.sh --action status`
+- Global TUI: `bash tools/cockpit/yiacad_refonte_tui.sh --action status`
+- Local backend facade: `python3 tools/cad/yiacad_backend_service.py status`
 
-### Delta 2026-03-21 - backend service YiACAD
+### Delta 2026-03-21 - YiACAD backend service
 
-- Service local: [docs/YIACAD_BACKEND_SERVICE_2026-03-21.md](docs/YIACAD_BACKEND_SERVICE_2026-03-21.md)
-- Client service-first: `python3 tools/cad/yiacad_backend_client.py --json-output health`
-- TUI backend: `bash tools/cockpit/yiacad_backend_service_tui.sh --action status`
+- Local service: [docs/YIACAD_BACKEND_SERVICE_2026-03-21.md](docs/YIACAD_BACKEND_SERVICE_2026-03-21.md)
+- Service-first client: `python3 tools/cad/yiacad_backend_client.py --json-output health`
+- Backend TUI: `bash tools/cockpit/yiacad_backend_service_tui.sh --action status`
 
 ## 2026-03-21 - Canonical operator entry
-- Entree publique recommandee: `bash tools/cockpit/yiacad_operator_index.sh --action status`.
-- Surface de preuves: `bash tools/cockpit/yiacad_proofs_tui.sh --action status`.
-- Surface de logs: `bash tools/cockpit/yiacad_logs_tui.sh --action status`.
-- Les routes directes historiques restent compatibles, mais ne sont plus l'entree publique recommandee.
+- Recommended public entry: `bash tools/cockpit/yiacad_operator_index.sh --action status`.
+- Proofs surface: `bash tools/cockpit/yiacad_proofs_tui.sh --action status`.
+- Logs surface: `bash tools/cockpit/yiacad_logs_tui.sh --action status`.
+- Historic direct routes remain compatible, but are no longer the recommended public entry.
+
+<iframe src="https://github.com/sponsors/electron-rare/card" title="Sponsor electron-rare" height="225" width="600" style="border: 0;"></iframe>

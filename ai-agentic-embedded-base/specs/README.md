@@ -82,3 +82,5 @@ flowchart LR
 - `tools/cockpit/refonte_tui.sh`
 - `tools/cockpit/log_ops.sh`
 - `docs/AI_WORKFLOWS.md`
+
+<iframe src="https://github.com/sponsors/electron-rare/card" title="Sponsor electron-rare" height="225" width="600" style="border: 0;"></iframe>

@@ -1,21 +1,23 @@
-# Onboarding contributeur OpenClaw
+# OpenClaw Contributor Onboarding
 
-Bienvenue ! Pour intégrer OpenClaw dans un projet Kill_LIFE ou contribuer :
+Welcome! To integrate OpenClaw into a Kill_LIFE project or contribute:
 
-## Encart onboarding
-- Lisez le README openclaw/ et la section "Workflows & Sécurité OpenClaw".
-- Vérifiez que votre environnement est sandboxé (pas d'accès aux secrets/code source).
-- Utilisez les labels `ai:*` pour toutes actions.
-- Publiez uniquement des commentaires sanitisés.
-- Ne modifiez jamais les workflows `.github/workflows/` sans validation humaine.
-- Consultez la FAQ et les guides sécurité.
+## Onboarding Box
+- Read the openclaw/ README and the "OpenClaw Workflows & Security" section.
+- Verify that your environment is sandboxed (no access to secrets/source code).
+- Use `ai:*` labels for all actions.
+- Publish only sanitized comments.
+- Never modify `.github/workflows/` workflows without human validation.
+- Check the FAQ and security guides.
 
-## Checklist contributeur
-- [ ] Sandbox activée, aucun accès aux secrets/code source
-- [ ] Actions limitées à labels/commentaires sanitisés
-- [ ] Respect du scope guard et des conventions
-- [ ] Evidence pack fourni pour toute contribution
-- [ ] Documentation mise à jour
-- [ ] Validation humaine pour toute modification sensible
+## Contributor Checklist
+- [ ] Sandbox enabled, no access to secrets/source code
+- [ ] Actions limited to sanitized labels/comments
+- [ ] Compliance with scope guard and conventions
+- [ ] Evidence pack provided for any contribution
+- [ ] Documentation updated
+- [ ] Human validation for any sensitive modification
 
-Pour toute question ou problème, ouvrez une issue ou contactez l’équipe.
+For any question or issue, open an issue or contact the team.
+
+<iframe src="https://github.com/sponsors/electron-rare/card" title="Sponsor electron-rare" height="225" width="600" style="border: 0;"></iframe>

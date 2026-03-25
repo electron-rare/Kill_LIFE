@@ -1,27 +1,29 @@
-# Spec-driven development (compat Spec Kit)
+# Spec-driven development (Spec Kit compatible)
 
-Ce repo adopte un style **spec-first** : avant de coder, on écrit la spec et le plan.
+This repo adopts a **spec-first** style: before coding, we write the spec and the plan.
 
-Pour rester compatible avec l'approche **Spec Kit**, on expose un dossier `.specify/` qui contient
-des templates minimalistes.
+To remain compatible with the **Spec Kit** approach, we expose a `.specify/` folder that contains
+minimalist templates.
 
-## Générer un dossier de spec
+## Generate a spec folder
 
 ```bash
 python tools/ai/specify_init.py --name <feature-or-epic>
 ```
 
-Cela crée :
+This creates:
 
-```
+```raw
 specs/<feature-or-epic>/
   00_prd.md
   01_tech_plan.md
   02_tasks.md
 ```
 
-## Règles
+## Rules
 
-- Un dossier `specs/<name>/` par feature/epic.
-- La PR doit référencer la spec (lien relatif).
-- Les tests/exports (firmware CI + hardware CI) doivent être verts.
+- One `specs/<name>/` folder per feature/epic.
+- The PR must reference the spec (relative link).
+- Tests/exports (firmware CI + hardware CI) must be green.
+
+<iframe src="https://github.com/sponsors/electron-rare/card" title="Sponsor electron-rare" height="225" width="600" style="border: 0;"></iframe>
