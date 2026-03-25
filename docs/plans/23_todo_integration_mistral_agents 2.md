@@ -68,9 +68,9 @@
 
 ## P3 — Évolutions futures
 
-- [ ] T-MA-030: Implémenter A2A protocol dans Mascarade (MCP + A2A complémentaires)
-- [ ] T-MA-031: Migrer orchestrateur Mascarade vers graph-based state (LangGraph-compatible)
-- [ ] T-MA-032: Ajouter RAG Document Library à Tower (Outline + docs PDF) — via MistralLibraryClient
+- [x] T-MA-030: Implémenter A2A protocol dans Mascarade (MCP + A2A complémentaires) — delivered in Mascarade PR #33
+- [x] T-MA-031: Migrer orchestrateur Mascarade vers graph-based state (LangGraph-compatible) — `core/mascarade/router/graph_state.py` + FastAPI endpoints
+- [x] T-MA-032: Ajouter RAG Document Library à Tower (Outline + docs PDF) — via MistralLibraryClient — delivered in Mascarade PR #33
 - [x] T-MA-033: Pipeline d'évaluation continue des agents → `tools/evals/weekly_benchmark.sh` (Ollama devstral, keyword-match quality heuristic, latency/tokens, auto-compare previous run)
 - [x] T-MA-034: Lot chain dispatch vers agents Mistral → `tools/ai/dispatch_to_agent.sh` (domain-to-agent mapping, local Ollama or Mistral API, dry-run, logging)
 

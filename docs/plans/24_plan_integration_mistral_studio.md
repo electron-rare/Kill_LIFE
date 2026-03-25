@@ -31,7 +31,7 @@ Fichiers, Fine-tune, Batches, IA Documentaire, Audio, Vibe CLI, Codestral.
 | 5 | Fine-tune KiCad sur Mistral Small | Forge + HW | ft:kicad-v1 | [ ] |
 | 6 | Fine-tune SPICE+Embedded sur Codestral | Forge + FW | ft:spice-embedded-v1 | [ ] |
 | 7 | Batch benchmark base vs fine-tuned (100 prompts) | QA + Forge | Rapport comparatif | [ ] |
-| 8 | Configurer Document Library RAG pour Tower | Tower | Recherche docs active | [ ] |
+| 8 | Configurer Document Library RAG pour Tower | Tower | Recherche docs active | [x] |
 
 ### P2 — Intégrations Studio (J8-J10)
 
@@ -40,7 +40,7 @@ Fichiers, Fine-tune, Batches, IA Documentaire, Audio, Vibe CLI, Codestral.
 | 9 | Intégrer IA Documentaire dans pipeline OCR | Sentinelle + HW | OCR automatisé | [ ] |
 | 10 | Intégrer Audio STT dans ops workflow | Sentinelle | Transcription auto | [ ] |
 | 11 | Installer Vibe CLI sur VM photon-docker | Devstral | CLI opérationnel | [ ] |
-| 12 | Intégrer Codestral FIM dans Mascarade | Architect + Devstral | Provider FIM | [ ] |
+| 12 | Intégrer Codestral FIM dans Mascarade | Architect + Devstral | Provider FIM | [x] |
 
 ### P3 — Production (J11-J14)
 
@@ -48,8 +48,8 @@ Fichiers, Fine-tune, Batches, IA Documentaire, Audio, Vibe CLI, Codestral.
 |---|-------|-------|---------|--------|
 | 13 | Déployer modèles fine-tuned dans Mascarade | Architect | Router mis à jour | [ ] |
 | 14 | Tests E2E pipeline Studio→Mascarade→Agent | QA | Evidence pack | [ ] |
-| 15 | Documentation Outline (4 pages Studio) | Doc | Wiki à jour | [ ] |
-| 16 | Cron audit qualité modèles (weekly) | QA + Sentinelle | Benchmark continu | [ ] |
+| 15 | Documentation Outline (4 pages Studio) | Doc | Wiki à jour | [x] |
+| 16 | Cron audit qualité modèles (weekly) | QA + Sentinelle | Benchmark continu | [x] |
 
 ---
 

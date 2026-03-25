@@ -51,10 +51,10 @@ Mascarade Router ──→ Mistral Agents API
 
 | # | Tâche | Agent BMAD | Livrable | Done |
 |---|-------|-----------|----------|------|
-| 11 | Intégrer Devstral dans workflow CI/CD | Architect + Devstral | PR automation | [ ] |
+| 11 | Intégrer Devstral dans workflow CI/CD | Architect + Devstral | PR automation | [x] |
 | 12 | Benchmark fine-tune: base vs KiCad-tuned (100 prompts) | QA + Forge | Rapport benchmark | [ ] |
-| 13 | Documentation complète dans Outline wiki | Doc | 4 pages wiki | [ ] |
-| 14 | Cron health-check Sentinelle (06:00 daily) | Ops | Cron configuré | [ ] |
+| 13 | Documentation complète dans Outline wiki | Doc | 4 pages wiki | [x] |
+| 14 | Cron health-check Sentinelle (06:00 daily) | Ops | Cron configuré | [x] |
 
 ## Critères de succès
 

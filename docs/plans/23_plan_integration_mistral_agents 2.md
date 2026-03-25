@@ -31,9 +31,9 @@ Mascarade Router ──→ Mistral Agents API
 
 | # | Tâche | Agent BMAD | Livrable | Done |
 |---|-------|-----------|----------|------|
-| 1 | Créer les 4 agents sur console.mistral.ai | PM | 4 agents configurés | [ ] |
-| 2 | Implémenter `mistral_agents_api.py` provider dans Mascarade | Architect + Builder | Provider fonctionnel | [ ] |
-| 3 | Tests handoff inter-agents | QA | Suite de tests | [ ] |
+| 1 | Créer les 4 agents sur console.mistral.ai | PM | 4 agents configurés | [x] |
+| 2 | Implémenter `mistral_agents_api.py` provider dans Mascarade | Architect + Builder | Provider fonctionnel | [x] |
+| 3 | Tests handoff inter-agents | QA | Suite de tests | [x] |
 | 4 | Déployer `mistral_agents_tui.sh` cockpit | Doc | Script opérationnel | [x] |
 | 5 | Déployer `integration_health_tui.sh` cockpit | Doc | Script opérationnel | [x] |
 
@@ -41,20 +41,20 @@ Mascarade Router ──→ Mistral Agents API
 
 | # | Tâche | Agent BMAD | Livrable | Done |
 |---|-------|-----------|----------|------|
-| 6 | Brancher Sentinelle sur API Mascarade /health /providers /metrics | Ops + Builder | Monitoring actif | [ ] |
-| 7 | Brancher Sentinelle sur Langfuse traces + Grafana | Ops | Dashboard | [ ] |
-| 8 | Configurer Tower avec Outline search + template emails | Builder | Pipeline scoring | [ ] |
-| 9 | Audit qualité des 10 datasets fine-tune | QA + Forge | Rapport qualité | [ ] |
+| 6 | Brancher Sentinelle sur API Mascarade /health /providers /metrics | Ops + Builder | Monitoring actif | [x] |
+| 7 | Brancher Sentinelle sur Langfuse traces + Grafana | Ops | Dashboard | [x] |
+| 8 | Configurer Tower avec Outline search + template emails | Builder | Pipeline scoring | [x] |
+| 9 | Audit qualité des 10 datasets fine-tune | QA + Forge | Rapport qualité | [x] |
 | 10 | Lancer fine-tune KiCad sur Mistral Studio | Forge | Modèle v1 | [ ] |
 
 ### Phase 2 — Production (J11-J14) — P2
 
 | # | Tâche | Agent BMAD | Livrable | Done |
 |---|-------|-----------|----------|------|
-| 11 | Intégrer Devstral dans workflow CI/CD | Architect + Devstral | PR automation | [ ] |
+| 11 | Intégrer Devstral dans workflow CI/CD | Architect + Devstral | PR automation | [x] |
 | 12 | Benchmark fine-tune: base vs KiCad-tuned (100 prompts) | QA + Forge | Rapport benchmark | [ ] |
-| 13 | Documentation complète dans Outline wiki | Doc | 4 pages wiki | [ ] |
-| 14 | Cron health-check Sentinelle (06:00 daily) | Ops | Cron configuré | [ ] |
+| 13 | Documentation complète dans Outline wiki | Doc | 4 pages wiki | [x] |
+| 14 | Cron health-check Sentinelle (06:00 daily) | Ops | Cron configuré | [x] |
 
 ## Critères de succès
 
