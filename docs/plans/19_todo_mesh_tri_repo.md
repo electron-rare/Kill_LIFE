@@ -79,8 +79,12 @@
 - [x] Weekly summary automatique par agent principal.
   - Lot attendu: `T-RE-301`
   - Réalisé par: `tools/cockpit/render_weekly_refonte_summary.sh`
-- [ ] Evidence packs consolides multi-repos.
-- [ ] Assistant operator pour pilotage de lots controles.
+- [x] Evidence packs consolides multi-repos.
+  - Lot attendu: `T-EP-001`
+  - Réalisé par: `tools/cockpit/evidence_pack_builder.sh`
+- [x] Assistant operator pour pilotage de lots controles.
+  - Lot attendu: `T-LP-001`
+  - Réalisé par: `tools/cockpit/lot_pilot_assistant.sh`
 - [x] Checklist de sortie lot avec preuves log + mesh + preflight.
   - Lot attendu: `T-RE-304`
   - Réalisé par: `docs/plans/18_plan_enchainement_autonome_des_lots_utiles.md` + `artifacts/cockpit/weekly_refonte_summary.md`
@@ -121,7 +125,7 @@
 
 ## Actions de convergence ouvertes après preflight
 
-- [ ] Restaurer le snapshot exploitable de `mascarade-main` sur `clems@192.168.0.120`.
+- [x] Restaurer le snapshot exploitable de `mascarade-main` sur `clems@192.168.0.120`.
 - [ ] Relancer `mesh_sync_preflight --load-profile tower-first --json` sur la fenêtre `clems` et confirmer `mesh_status=ready`.
 - [x] Restaurer le snapshot exploitable de `mascarade-main` sur `clems@192.168.0.120`.
 - [x] Vérifier `load_profile: tower-first` dans `host_order` (`clems -> kxkm -> cils -> local -> root`) après correction parser.
@@ -219,14 +223,14 @@
 - [x] The live bridge is now container-safe through `operator_live_provider_smoke.js`.
 - [x] The runtime payload now uses a top-level `system` field instead of a `system` message role.
 - [x] Official compatibility note captured in `docs/PROVIDER_RUNTIME_COMPAT_2026-03-20.md`.
-- [ ] Mesh preflight still needs a conservative recovery pass on `clems` before the lane can return to `ready`.
+- [x] Mesh preflight still needs a conservative recovery pass on `clems` before the lane can return to `ready`.
 
 ## Delta 2026-03-20 14:58 - staged sync + preflight
 
 - [x] `bash tools/cockpit/full_operator_lane_sync.sh --json` executed successfully in `staged` mode on the 4 mesh targets.
 - [x] `mesh_sync_preflight --json` moved from `blocked` back to `degraded`.
 - [x] `Kill_LIFE-main` and `crazy_life-main` are visible again on `clems`.
-- [ ] `mascarade-main` on `clems` still needs a conservative repair pass before the mesh can return to `ready`.
+- [x] `mascarade-main` on `clems` still needs a conservative repair pass before the mesh can return to `ready`.
 
 ## Delta 2026-03-20 16:21 - registre machine branche + YiACAD clarifie
 
