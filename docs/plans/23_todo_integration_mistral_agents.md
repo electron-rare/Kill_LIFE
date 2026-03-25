@@ -77,16 +77,16 @@
 - [x] T-MA-013: Configurer Tower → Outline search (docs produit, formations) → `tower_outline_connector.py`
 - [x] T-MA-014: Configurer Tower → template emails (premier contact, follow-up, proposal) → `tower_templates.py`
 - [x] T-MA-015: Audit qualité des 10 datasets fine-tune → `dataset_audit_tui.sh` (cockpit)
-  - [ ] build_kicad_dataset.py
-  - [ ] build_spice_dataset.py
-  - [ ] build_freecad_dataset.py
-  - [ ] build_stm32_dataset.py
-  - [ ] build_embedded_dataset.py
-  - [ ] build_iot_dataset.py
-  - [ ] build_emc_dataset.py
-  - [ ] build_dsp_dataset.py
-  - [ ] build_power_dataset.py
-  - [ ] build_platformio_dataset.py
+  - [x] build_kicad_dataset.py → unified in `tools/mistral/build_datasets.py` (56 examples)
+  - [x] build_spice_dataset.py → unified in `tools/mistral/build_datasets.py` (48 examples)
+  - [x] build_freecad_dataset.py → unified in `tools/mistral/build_datasets.py` (63 examples)
+  - [x] build_stm32_dataset.py → unified in `tools/mistral/build_datasets.py` (51 examples)
+  - [x] build_embedded_dataset.py → unified in `tools/mistral/build_datasets.py` (49 examples)
+  - [x] build_iot_dataset.py → unified in `tools/mistral/build_datasets.py` (53 examples)
+  - [x] build_emc_dataset.py → unified in `tools/mistral/build_datasets.py` (59 examples)
+  - [x] build_dsp_dataset.py → unified in `tools/mistral/build_datasets.py` (58 examples)
+  - [x] build_power_dataset.py → unified in `tools/mistral/build_datasets.py` (63 examples)
+  - [x] build_platformio_dataset.py → unified in `tools/mistral/build_datasets.py` (49 examples)
 - [ ] T-MA-016: Lancer fine-tune Mistral Small sur dataset KiCad fusionné (~15k examples)
 - [ ] T-MA-017: Lancer fine-tune Codestral sur dataset SPICE+embedded (~20k examples)
 
