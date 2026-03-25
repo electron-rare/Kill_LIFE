@@ -1,0 +1,20 @@
+kill_life:
+  version: 1
+  project: "{{PROJECT_NAME}}"
+  client: "{{CLIENT_NAME}}"
+  mascarade_url: "https://cody.saillant.cc"
+  agents:
+    - forge
+    - firmware-agent
+    - qa-agent
+  mcp_servers:
+    - kicad
+    - freecad
+    - apify
+  hardware:
+    pcb_dir: hardware/pcb
+    simulation_dir: hardware/simulation
+    bom_dir: hardware/bom
+  firmware:
+    framework: platformio
+    src_dir: firmware/src

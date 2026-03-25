@@ -1,0 +1,62 @@
+name: Kill_LIFE CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  erc-drc:
+    name: KiCad ERC/DRC
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/inti-cmnb/kicad8_auto:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run ERC
+        run: |
+          for sch in $(find hardware/pcb -name '*.kicad_sch' -not -path '*/libs/*'); do
+            echo "--- ERC: $sch ---"
+            kicad-cli sch erc --exit-code-violations "$sch" || exit 1
+          done
+
+      - name: Run DRC
+        run: |
+          for pcb in $(find hardware/pcb -name '*.kicad_pcb'); do
+            echo "--- DRC: $pcb ---"
+            kicad-cli pcb drc --exit-code-violations "$pcb" || exit 1
+          done
+
+  bom-check:
+    name: BOM Validation
+    runs-on: ubuntu-latest
+    needs: erc-drc
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate BOM exists
+        run: |
+          if [ ! -f hardware/bom/bom.csv ]; then
+            echo "WARNING: No BOM found at hardware/bom/bom.csv"
+          else
+            echo "BOM found, $(wc -l < hardware/bom/bom.csv) lines"
+          fi
+
+  firmware-build:
+    name: Firmware Build
+    runs-on: ubuntu-latest
+    if: hashFiles('firmware/platformio.ini') != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PlatformIO
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - run: pip install platformio
+
+      - name: Build firmware
+        run: cd firmware && pio run

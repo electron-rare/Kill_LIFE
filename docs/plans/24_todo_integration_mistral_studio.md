@@ -34,51 +34,51 @@
 ## P0 — Fichiers & Datasets
 
 - [x] T-MS-001: Créer `mistral_studio_tui.sh` cockpit (Agents, Files, Fine-tune, Batches, OCR, Audio, Codestral)
-- [ ] T-MS-002: Préparer dataset KiCad JSONL (format ChatML, >5k exemples)
+- [ ] T-MS-002: Préparer dataset KiCad JSONL (format ChatML, >5k exemples) — [blocked: Mistral key expired]
   - [ ] Merger build_kicad_dataset.py outputs
   - [ ] Valider format avec `training/scripts/validate_dataset.py`
   - [ ] Upload via `mistral_studio_tui.sh --files-upload`
-- [ ] T-MS-003: Préparer dataset SPICE+Embedded JSONL
+- [ ] T-MS-003: Préparer dataset SPICE+Embedded JSONL — [blocked: Mistral key expired]
   - [ ] Merger build_spice_dataset.py + build_embedded_dataset.py + build_stm32_dataset.py
   - [ ] Valider et upload
-- [ ] T-MS-004: Upload docs commerciales pour Tower Document Library
+- [ ] T-MS-004: Upload docs commerciales pour Tower Document Library — [blocked: Mistral key expired]
   - [ ] Exporter docs Outline (formations, produits)
   - [ ] Upload via Files API
-- [ ] T-MS-005: Upload 5 datasheets composants test pour IA Documentaire
+- [ ] T-MS-005: Upload 5 datasheets composants test pour IA Documentaire — [blocked: Mistral key expired]
   - [ ] Sélectionner datasheets PDF (STM32, ESP32, composants courants)
   - [ ] Tester OCR via `mistral_studio_tui.sh --ocr`
 
 ## P1 — Fine-tune
 
-- [ ] T-MS-010: Lancer fine-tune KiCad sur `open-mistral-7b`
+- [ ] T-MS-010: Lancer fine-tune KiCad sur `open-mistral-7b` — [blocked: Mistral key expired] + depends T-MS-002
   - [ ] Configurer hyperparamètres (100 steps, lr=1e-5)
   - [ ] Monitorer via `mistral_studio_tui.sh --finetune-list`
   - [ ] Valider modèle `ft:kicad-v1`
-- [ ] T-MS-011: Lancer fine-tune SPICE+Embedded sur `codestral-latest`
+- [ ] T-MS-011: Lancer fine-tune SPICE+Embedded sur `codestral-latest` — [blocked: Mistral key expired] + depends T-MS-003
   - [ ] Upload dataset fusionné
   - [ ] Configurer et lancer job
   - [ ] Valider modèle `ft:spice-embedded-v1`
-- [ ] T-MS-012: Batch benchmark 100 prompts métier
+- [ ] T-MS-012: Batch benchmark 100 prompts métier — [blocked: Mistral key expired] + depends T-MS-010/011
   - [ ] Créer fichier JSONL 100 prompts (20 KiCad, 20 SPICE, 20 embedded, 20 IoT, 20 mixed)
   - [ ] Exécuter batch sur modèle base
   - [ ] Exécuter batch sur modèle fine-tuned
   - [ ] Comparer résultats (scoring automatique + review)
-- [ ] T-MS-013: Configurer Document Library RAG Tower
+- [ ] T-MS-013: Configurer Document Library RAG Tower — [blocked: Mistral key expired] + depends T-MS-004
   - [ ] Associer docs uploadés à agent Tower
   - [ ] Tester queries de recherche
   - [ ] Valider scoring leads avec contexte RAG
 
 ## P2 — Intégrations Studio
 
-- [ ] T-MS-020: Pipeline OCR datasheets via IA Documentaire
+- [ ] T-MS-020: Pipeline OCR datasheets via IA Documentaire — [blocked: Mistral key expired]
   - [ ] Script batch OCR (traitement dossier complet)
   - [ ] Extraction specs composants → JSON structuré
   - [ ] Intégrer dans knowledge base Sentinelle
-- [ ] T-MS-021: Audio STT dans workflow ops
+- [ ] T-MS-021: Audio STT dans workflow ops — [blocked: Mistral key expired]
   - [ ] Script transcription réunions (offline batch)
   - [ ] Intégrer dans intelligence_tui.sh
   - [ ] Action items extraction post-transcription
-- [ ] T-MS-022: Installer Vibe CLI sur VM photon-docker
+- [ ] T-MS-022: Installer Vibe CLI sur VM photon-docker — [blocked: Mistral key expired]
   - [ ] `curl -LsSf https://mistral.ai/vibe/install.sh | bash`
   - [ ] `vibe --setup` avec clé API
   - [ ] Tester interactions Forge/Devstral
@@ -90,19 +90,19 @@
 
 ## P3 — Production
 
-- [ ] T-MS-030: Déployer modèles fine-tuned dans Mascarade router
+- [ ] T-MS-030: Déployer modèles fine-tuned dans Mascarade router — [blocked: Mistral key expired] + depends T-MS-010/011
   - [ ] Ajouter `ft:kicad-v1` et `ft:spice-embedded-v1` comme providers
   - [ ] Configurer routing par domaine
-- [ ] T-MS-031: Tests E2E Studio→Mascarade→Agent
+- [ ] T-MS-031: Tests E2E Studio→Mascarade→Agent — [blocked: Mistral key expired] + depends T-MS-030
   - [ ] Scénario 1: Upload datasheet → OCR → Sentinelle analyse
   - [ ] Scénario 2: Prompt KiCad → Router → ft:kicad-v1 → réponse
   - [ ] Scénario 3: Audio meeting → STT → action items → Tower email
-- [ ] T-MS-032: Documentation Outline wiki
-  - [ ] Page: Mistral Studio Overview
-  - [ ] Page: Fine-tune Pipeline Guide
-  - [ ] Page: IA Documentaire Usage
-  - [ ] Page: Audio Integration
-- [ ] T-MS-033: Cron audit qualité modèles (weekly via Sentinelle)
+- [ ] T-MS-032: Documentation Outline wiki — **actionable offline (partial)**
+  - [ ] Page: Mistral Studio Overview — can draft from existing analysis docs
+  - [ ] Page: Fine-tune Pipeline Guide — can draft from pipeline docstrings
+  - [ ] Page: IA Documentaire Usage — skeleton only [blocked: needs OCR test results]
+  - [ ] Page: Audio Integration — skeleton only [blocked: needs STT test results]
+- [ ] T-MS-033: Cron audit qualité modèles (weekly via Sentinelle) — [blocked: Mistral key expired] + depends T-MS-030
   - [ ] 10 prompts test par modèle
   - [ ] Scoring automatique
   - [ ] Alerte si dégradation >5%
@@ -237,3 +237,21 @@ Decision retenue:
 Impact pour `T-MS-*`:
 - ne pas introduire de seconde variable Mistral cote Mascarade sans consumer explicite
 - conserver `MISTRAL_API_KEY` comme seule interface Mistral canonique dans `/Users/electron/Documents/Projets/mascarade`
+
+## Session 5 — 2026-03-25 — Audit blockers, status report
+
+Constat:
+- Mistral API key expired — all P0/P1/P2/P3 tasks requiring API calls are blocked
+- 2/34 tasks completed (T-MS-001, T-MS-023)
+- T-MS-032 (Documentation Outline wiki) is partially actionable offline
+
+Fait:
+- All blocked tasks annotated with `[blocked: Mistral key expired]` in this TODO
+- T-MS-032 marked as partially actionable (2 pages draftable offline, 2 skeleton only)
+- Status report created: `docs/MISTRAL_STUDIO_STATUS_2026-03-25.md`
+  - Full inventory of tooling, conventions, and next actions when keys are renewed
+  - Priority execution order documented
+
+Impact:
+- No further progress possible on Plan 24 until Mistral API key is renewed
+- When key is renewed, start with `dataset_audit_tui.sh` preflight then T-MS-002/003

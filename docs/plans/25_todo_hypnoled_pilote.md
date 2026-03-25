@@ -69,19 +69,19 @@ Hypnoled est le premier projet client réel utilisé comme **cas pilote end-to-e
   - PDF : `Clients/Garnier/rapports/review_hardware_hypnoled_2026-03-22.pdf`
   - Markdown : `Projets/Hypnoled/docs/reviews/forge_review_DALI_PCB_2026-03-22.md`
 
-- [ ] T-HP-013: **BOM analysis** — Parser les BOMs CSV et proposer des alternatives composants (coût, disponibilité)
+- [ ] T-HP-013: **BOM analysis** — Parser les BOMs CSV et proposer des alternatives composants (coût, disponibilité) — **tooling ready** (`tools/industrial/bom_analyzer.py`), [blocked: BOM CSVs not in checkout]
 
 ## Phase 2 — Simulation et Firmware
 
-- [ ] T-HP-020: **Forge SPICE review** — Analyser `hypnoled.asc` avec Codestral, proposer optimisations
-- [ ] T-HP-021: **Forge firmware** — Générer skeleton firmware ESP32 pour contrôle DALI (I2C + UART)
-- [ ] T-HP-022: **Benchmark Hypnoled** — 10 prompts Hypnoled-spécifiques dans le benchmark T-MA-021
+- [ ] T-HP-020: **Forge SPICE review** — Analyser `hypnoled.asc` avec Codestral, proposer optimisations — [blocked: assets not in checkout] + [blocked: Mistral key expired]
+- [ ] T-HP-021: **Forge firmware** — Générer skeleton firmware ESP32 pour contrôle DALI (I2C + UART) — [blocked: Mistral key expired]
+- [ ] T-HP-022: **Benchmark Hypnoled** — 10 prompts Hypnoled-spécifiques dans le benchmark T-MA-021 — [blocked: Mistral key expired]
 
 ## Phase 3 — Fine-tune enrichissement
 
-- [ ] T-HP-030: **Dataset KiCad** — Extraire les schémas Hypnoled en paires prompt/response pour enrichir le dataset fine-tune T-MA-016
-- [ ] T-HP-031: **Dataset SPICE** — Extraire les simulations LTspice pour enrichir T-MA-017
-- [ ] T-HP-032: **Évaluation post fine-tune** — Re-run les reviews Forge sur Hypnoled avec le modèle fine-tuné vs base → mesurer l'amélioration
+- [ ] T-HP-030: **Dataset KiCad** — Extraire les schémas Hypnoled en paires prompt/response pour enrichir le dataset fine-tune T-MA-016 — [blocked: KiCad files not in checkout]
+- [ ] T-HP-031: **Dataset SPICE** — Extraire les simulations LTspice pour enrichir T-MA-017 — [blocked: simulation files not in checkout]
+- [ ] T-HP-032: **Évaluation post fine-tune** — Re-run les reviews Forge sur Hypnoled avec le modèle fine-tuné vs base → mesurer l'amélioration — [blocked: depends Plan 24 fine-tune]
 
 ---
 
@@ -137,6 +137,21 @@ Sortie attendue pour `T-HP-013`:
 
 ## Delta 2026-03-22 - PCB AI / BOM / fabrication
 
-- [ ] T-HP-033: **Quilter canary route** — Executer un aller-retour `KiCad -> Quilter -> package fab` sur une carte Hypnoled et comparer le candidat au flux YiACAD local.
-- [ ] T-HP-034: **PCB Designer AI fast-fab lane** — Evaluer une voie `schema -> layout -> export fabrication` sur un sous-ensemble Hypnoled, sans contourner le gate local `BOM/DRC/provenance`.
-- [ ] T-HP-035: **kicad-happy playbook parity** — Rejouer un lot `review schema + BOM sourcing + JLCPCB prep` et comparer les sorties aux prompts `Forge` et a `review.bom`.
+- [ ] T-HP-033: **Quilter canary route** — Executer un aller-retour `KiCad -> Quilter -> package fab` sur une carte Hypnoled et comparer le candidat au flux YiACAD local. — [blocked: KiCad files not in checkout]
+- [ ] T-HP-034: **PCB Designer AI fast-fab lane** — Evaluer une voie `schema -> layout -> export fabrication` sur un sous-ensemble Hypnoled, sans contourner le gate local `BOM/DRC/provenance`. — [blocked: KiCad files not in checkout]
+- [ ] T-HP-035: **kicad-happy playbook parity** — Rejouer un lot `review schema + BOM sourcing + JLCPCB prep` et comparer les sorties aux prompts `Forge` et a `review.bom`. — [blocked: KiCad files not in checkout]
+
+---
+
+## Journal 2026-03-25
+
+- `tools/industrial/bom_analyzer.py` created — generic BOM parser for T-HP-013
+  - 4 commands: parse, suggest, report, batch
+  - Column normalization covers KiCad, Altium, Eagle, generic CSV
+  - Deduplication by value+footprint+MPN fingerprint
+  - LCSC/JLCPCB alternative suggestion engine with static knowledge base
+  - JLCPCB assembly category classification (basic/extended/unavailable)
+  - Markdown report generation with assembly-ready status
+- All blocked tasks annotated with explicit blocker tags
+- Status report: `docs/HYPNOLED_STATUS_2026-03-25.md`
+- Execution order documented for when assets become available

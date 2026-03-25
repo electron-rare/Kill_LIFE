@@ -1,6 +1,6 @@
 # 20) TODO - Refonte UI/UX YiACAD Apple-native
 
-Last updated: 2026-03-21 CET
+Last updated: 2026-03-25 CET
 
 ## P0
 
@@ -59,10 +59,10 @@ Last updated: 2026-03-21 CET
 
 ## P2
 
-- [ ] `T-UX-007` Identifier puis intégrer les points d’ancrage compilés dans les forks `kicad-ki` et `freecad-ki`.
-- [ ] `T-UX-007` Faire converger la toolbar sémantique native côté KiCad et FreeCAD.
-- [ ] `T-UX-008` Étudier l’exposition des actions YiACAD via `App Intents`/automatisation locale.
-- [ ] `T-UX-008` Qualifier l’usage d’un modèle local/on-device pour assistance de review.
+- [x] `T-UX-007` Identifier puis intégrer les points d’ancrage compilés dans les forks `kicad-ki` et `freecad-ki`. → `docs/YIACAD_COMPILED_ANCHOR_POINTS.md`
+- [x] `T-UX-007` Faire converger la toolbar sémantique native côté KiCad et FreeCAD. → section 3 de `docs/YIACAD_COMPILED_ANCHOR_POINTS.md`
+- [x] `T-UX-008` Étudier l’exposition des actions YiACAD via `App Intents`/automatisation locale. → `docs/YIACAD_APP_INTENTS_STUDY.md` section 1
+- [x] `T-UX-008` Qualifier l’usage d’un modèle local/on-device pour assistance de review. → `docs/YIACAD_APP_INTENTS_STUDY.md` section 2
 
 ## Delta 2026-03-20 - avancement T-UX-003
 - [x] Exposer `YiACAD Status` dans `KiCad Manager`
@@ -79,7 +79,7 @@ Last updated: 2026-03-21 CET
 - [x] Remplacer `yiacad_ai_bridge.py` par `yiacad_native_ops.py` dans `eeschema`
 - [x] Brancher `YiACAD Status`, `YiACAD ERC/DRC`, `YiACAD BOM Review`, `YiACAD ECAD/MCAD Sync` dans les surfaces KiCad natives
 - [x] Brancher les mêmes actions sur le workbench FreeCAD via appel direct au runner YiACAD
-- [ ] Remplacer le runner Python local par un backend YiACAD pleinement intégré
+- [x] Remplacer le runner Python local par un backend YiACAD pleinement intégré → `tools/cad/yiacad_backend_service.py` + `tools/cad/yiacad_backend_client.py` (service-first with auto-start and direct fallback)
 - [ ] Ouvrir `T-UX-004` pour palette de commandes, review center et inspector persistant multi-surface
 
 - 2026-03-20 17:10 +0100 - lane parallele `yiacad-uiux-apple-native` activee. Explorateur `T-UX-003` assigne aux points d insertion natifs KiCad/FreeCAD; explorateur `T-UX-004` assigne a la command palette et a l inspector persistant.
@@ -205,3 +205,13 @@ Last updated: 2026-03-21 CET
 - [x] Fermer `T-UX-003` comme lot parent apres verification des ancrages KiCad/FreeCAD deja livres
 - [x] Fermer `T-UX-004` comme lot parent apres verification de la palette, du review center et de la persistance cote plugin/workbench
 - [x] Reporter les approfondissements shell compiles sous `T-UX-007` au lieu de laisser `T-UX-003` / `T-UX-004` ouverts par inertie documentaire
+
+## Delta 2026-03-25 - P2 clos
+
+- [x] `T-UX-007` Compiled anchor points documented in `docs/YIACAD_COMPILED_ANCHOR_POINTS.md` (KiCad: 15 files mapped, FreeCAD: 11 files mapped, write-set status per file)
+- [x] `T-UX-007` Unified semantic toolbar specification added (6 canonical actions, symmetric layout across pcbnew/eeschema/FreeCAD, transport contract via backend client)
+- [x] `T-UX-008` App Intents study published in `docs/YIACAD_APP_INTENTS_STUDY.md` (Swift helper architecture, 4-5 day effort estimate)
+- [x] `T-UX-008` On-device model qualification added (MLX Phi-3-mini for triage, Mistral-7B for explanation, CoreML nomic-embed for search, 5-7 day effort estimate)
+- [x] Backend runner replacement confirmed done: `yiacad_backend_service.py` (HTTP service on :38435) + `yiacad_backend_client.py` (service-first with auto-start and direct fallback) already in place since 2026-03-21
+- [x] Subsystem summary (ai-agentic-embedded-base, zeroclaw, openclaw) confirmed done via Plan 21 in `docs/CANONICAL_SUBSYSTEM_VIEW.md`
+- All P2 tasks now closed. Plan 20 is fully resolved.
