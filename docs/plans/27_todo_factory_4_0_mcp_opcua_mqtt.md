@@ -35,14 +35,14 @@
 - [ ] Pipeline InfluxDB → PatchTST/TimesNet pour maintenance prédictive
 - [x] Connecteur Node-RED → Mascarade (HTTP nodes) — `tools/industrial/nodered_connector.py` + `deploy/factory/nodered-flows.json`
 - [ ] Connecteur OpenMES/Odoo → MCP server
-- [ ] Dashboard Grafana template industriel (vibrations, température, courant)
+- [x] Dashboard Grafana template industriel (vibrations, température, courant) — `deploy/factory/grafana-dashboard.json`
 
 ## P1 — Packaging déploiement
 
 - [ ] Docker Compose `factory-stack.yml` (Mascarade + Ollama + Qdrant + Grafana + InfluxDB + Mosquitto)
-- [ ] Script `deploy_factory.sh` one-liner
+- [x] Script `deploy_factory.sh` one-liner — health check retry, Grafana auto-import, env var customization
 - [ ] Documentation déploiement on-premise
-- [ ] Test end-to-end avec données simulées
+- [x] Test end-to-end avec données simulées — `deploy/factory/simulate_data.py` (MQTT fake sensors + anomalies)
 
 ## P2 — Formation & documentation
 
