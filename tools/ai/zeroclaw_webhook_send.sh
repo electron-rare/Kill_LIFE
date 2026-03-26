@@ -24,6 +24,8 @@ CONVO_FILE="$ART_DIR/conversations.jsonl"
 BUDGET_FILE="$ART_DIR/webhook_budget.json"
 MAX_CALLS_PER_HOUR="${ZEROCLAW_WEBHOOK_MAX_CALLS_PER_HOUR:-40}"
 MAX_CHARS="${ZEROCLAW_WEBHOOK_MAX_CHARS:-1200}"
+CONNECT_TIMEOUT_SECS="${ZEROCLAW_WEBHOOK_CONNECT_TIMEOUT_SECS:-5}"
+TIMEOUT_SECS="${ZEROCLAW_WEBHOOK_TIMEOUT_SECS:-90}"
 
 usage() {
   cat >&2 <<USAGE
@@ -193,6 +195,8 @@ fi
 PAYLOAD="$(python3 -c 'import json,sys;print(json.dumps({"message":sys.argv[1]}))' "$MESSAGE")"
 TMP_BODY="$(mktemp)"
 HTTP_STATUS="$(curl -sS -o "$TMP_BODY" -w "%{http_code}" -X POST "http://$HOST:$PORT/webhook" \
+  --connect-timeout "$CONNECT_TIMEOUT_SECS" \
+  --max-time "$TIMEOUT_SECS" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d "$PAYLOAD" || true)"

@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-RTC_REPO="${ZEROCLAW_RTC_REPO:-$HOME/RTC_HW}"
-ZACUS_REPO="${ZEROCLAW_ZACUS_REPO:-$HOME/ZACUS_HW}"
+RTC_REPO="${ZEROCLAW_RTC_REPO:-/Users/cils/Documents/Lelectron_rare/RTC_BL_PHONE}"
+ZACUS_REPO="${ZEROCLAW_ZACUS_REPO:-/Users/cils/Documents/Lelectron_rare/le-mystere-professeur-zacus}"
+RTC_UPLOAD_PORT_HINT_DEFAULT="${ZEROCLAW_RTC_PORT_HINT:-${ZEROCLAW_UPLOAD_PORT_HINT:-cp2102,10c4,esp32audiokit,audio,audiokit,slab_usb}}"
+ZACUS_UPLOAD_PORT_HINT_DEFAULT="${ZEROCLAW_ZACUS_PORT_HINT:-${ZEROCLAW_UPLOAD_PORT_HINT:-1a86,usbserial,ch340,freenove,esp32s3,esp32-s3,usbmodem}}"
+RTC_UPLOAD_PORT_HINT="${ZEROCLAW_RTC_UPLOAD_PORT_HINT:-$RTC_UPLOAD_PORT_HINT_DEFAULT}"
+ZACUS_UPLOAD_PORT_HINT="${ZEROCLAW_ZACUS_UPLOAD_PORT_HINT:-$ZACUS_UPLOAD_PORT_HINT_DEFAULT}"
 
 RTC_FW_DIR="$RTC_REPO"
 ZACUS_FW_DIR="$ZACUS_REPO/hardware/firmware"
@@ -11,9 +15,6 @@ RTC_ENV_DEFAULT="${ZEROCLAW_RTC_PIO_ENV:-esp32dev}"
 ZACUS_ENV_DEFAULT="${ZEROCLAW_ZACUS_PIO_ENV:-esp32dev}"
 MONITOR_SECS_DEFAULT="${ZEROCLAW_MONITOR_SECS:-60}"
 BAUD_DEFAULT="${ZEROCLAW_SERIAL_BAUD:-115200}"
-ZEROCLAW_CHIP_MISMATCH_FALLBACK="${ZEROCLAW_CHIP_MISMATCH_FALLBACK:-1}"
-ZEROCLAW_USB_STABILITY_SAMPLES="${ZEROCLAW_USB_STABILITY_SAMPLES:-2}"
-ZEROCLAW_USB_STABILITY_DELAY="${ZEROCLAW_USB_STABILITY_DELAY:-1}"
 
 usage() {
   cat <<USAGE
@@ -106,60 +107,102 @@ env_exists() {
   rg -q "^\[env:${env_name}\]" "$FW_DIR/platformio.ini"
 }
 
-serial_port_signature() {
-  local port="$1"
-  cd "$FW_DIR"
-  python3 - "$port" <<'PY'
+pick_port_for_target() {
+  local pick_target="$1"
+  local pick_hint="$2"
+  local devices_json
+
+  devices_json="$(cd "$FW_DIR" && pio device list --json-output 2>/dev/null || true)"
+
+  ZEROCLAW_TARGET="$pick_target" \
+  ZEROCLAW_TARGET_HINT="$pick_hint" \
+  ZEROCLAW_DEVICE_LIST_JSON="$devices_json" \
+  python3 - <<'PY'
+import os
 import json
-import sys
-import subprocess
 
-port = sys.argv[1]
-raw = subprocess.check_output(["pio", "device", "list", "--json-output"], text=True)
-if not raw or not raw.strip():
-  raise SystemExit(1)
+target = (os.environ.get("ZEROCLAW_TARGET", "rtc") or "rtc").strip().lower()
+hint = (os.environ.get("ZEROCLAW_TARGET_HINT", "") or "").strip().lower()
+raw = (os.environ.get("ZEROCLAW_DEVICE_LIST_JSON", "") or "").strip()
+
 try:
-  items = json.loads(raw)
+    devices = json.loads(raw) if raw else []
 except Exception:
-  raise SystemExit(1)
+    devices = []
 
-for it in items:
-  if str(it.get("port", "")) != port:
-    continue
-  print(f"{it.get('hwid','unknown')}|{it.get('description','unknown')}|{it.get('serial_number','')}")
-  raise SystemExit(0)
 
-raise SystemExit(1)
-PY
+if not isinstance(devices, list):
+    devices = []
+
+
+score_board = {
+    "rtc": ["cp210", "10c4", "cp2102", "audio", "esp32 audio", "esp32audio", "esp32audiokit", "audio kit", "slab_usb"],
+    "zacus": ["1a86", "ch340", "freenove", "usb single serial", "usbserial", "esp32-s3", "esp32s3", "usbmodem"],
+}
+penalty_board = {
+    "rtc": ["1a86", "ch340", "freenove", "usbmodem"],
+    "zacus": ["10c4", "cp2102", "cp210"],
 }
 
-is_usb_port_stable() {
-  local port="$1"
-  local samples="$2"
-  local delay_secs="$3"
 
-  if (( samples < 2 )); then
-    return 0
-  fi
+def norm(value):
+    return (value or "").strip().lower()
 
-  local i=0
-  local last_sig
-  local sig
-  while (( i < samples )); do
-    if ! sig="$(serial_port_signature "$port" 2>/dev/null || true)"; then
-      return 1
-    fi
-    if [[ "$i" -eq 0 ]]; then
-      last_sig="$sig"
-    elif [[ "$sig" != "$last_sig" ]]; then
-      return 1
-    fi
-    ((i++))
-    if (( i < samples )); then
-      sleep "$delay_secs"
-    fi
-  done
-  return 0
+
+def contains_any(text, needles):
+    return any(needle in text for needle in needles if needle)
+
+
+preferred = score_board.get(target, score_board["rtc"])
+penalize = penalty_board.get(target, penalty_board["rtc"])
+hint_tokens = [token.strip().lower() for token in hint.split(",") if token.strip()]
+
+best_port = ""
+best_score = -10 ** 9
+
+for idx, device in enumerate(devices):
+    if not isinstance(device, dict):
+        continue
+    port_raw = device.get("port", "")
+    port = norm(port_raw)
+    if not port:
+        continue
+    desc = norm(device.get("description", ""))
+    hwid = norm(device.get("hwid", ""))
+    board = norm(device.get("board", ""))
+    low = f"{port} {desc} {hwid} {board}"
+
+    score = 0
+    if hwid and hwid != "n/a":
+        score += 50
+    if "usb" in low:
+        score += 20
+    if "uart" in low:
+        score += 15
+    if "bluetooth" in low:
+        score -= 80
+
+    if contains_any(low, preferred):
+        score += 120
+    if contains_any(low, penalize):
+        score -= 80
+
+    for token in hint_tokens:
+        if token in low:
+            score += 200
+
+    if "/dev/cu." in port and hwid == "n/a":
+        score -= 40
+
+    if score > best_score:
+        best_score = score
+        best_port = port_raw
+
+if best_port:
+    print(best_port)
+    raise SystemExit(0)
+raise SystemExit(1)
+PY
 }
 
 if ! env_exists "$ENV_NAME"; then
@@ -169,46 +212,25 @@ if ! env_exists "$ENV_NAME"; then
   exit 1
 fi
 
+target_port_hint=""
+if [[ "$target" == "rtc" ]]; then
+  target_port_hint="$RTC_UPLOAD_PORT_HINT"
+else
+  target_port_hint="$ZACUS_UPLOAD_PORT_HINT"
+fi
+
 if [[ -z "$PORT" ]]; then
-  if ! PORT="$(
-    cd "$FW_DIR"
-    pio device list --json-output 2>/dev/null | python3 -c 'import json,sys
-raw=sys.stdin.read().strip()
-try:
-  arr=json.loads(raw) if raw else []
-except Exception:
-  arr=[]
-best=None
-best_score=-10**9
-for d in arr:
-  p=str(d.get("port",""))
-  desc=str(d.get("description",""))
-  hwid=str(d.get("hwid",""))
-  if not p:
-    continue
-  score=0
-  low=f\"{p} {desc} {hwid}\".lower()
-  if hwid and hwid.lower() != \"n/a\":
-    score += 50
-  if \"usb\" in low:
-    score += 30
-  if \"cp210\" in low or \"ch340\" in low or \"uart\" in low:
-    score += 20
-  if \"bluetooth\" in low:
-    score -= 100
-  if \"/cu.urt\" in p.lower() and hwid.lower() == \"n/a\":
-    score -= 120
-  if score > best_score:
-    best_score=score
-    best=p
-if best:
-  print(best)
-  raise SystemExit(0)
-raise SystemExit(1)'
-  )"; then
+  if [[ -n "$target_port_hint" ]]; then
+    PORT="$(pick_port_for_target "$target" "$target_port_hint" || true)"
+  else
+    PORT="$(pick_port_for_target "$target" "" || true)"
+  fi
+
+  if [[ -z "$PORT" ]]; then
     PORT=""
   fi
 fi
+echo "[info] serial port resolved for $target: ${PORT}"
 
 if [[ -z "$PORT" ]]; then
   echo "[fail] no serial port detected. Upload/monitor are forced by default." >&2
@@ -278,24 +300,6 @@ resolve_env_fallback() {
   return 1
 }
 
-can_use_fallback_on_mismatch() {
-  local failed_env="$1"
-  local fallback_env="$2"
-
-  if [[ "${ZEROCLAW_CHIP_MISMATCH_FALLBACK}" != "1" ]]; then
-    echo "[warn] chip mismatch detected for $failed_env -> $fallback_env, but ZEROCLAW_CHIP_MISMATCH_FALLBACK=${ZEROCLAW_CHIP_MISMATCH_FALLBACK} (auto-fallback disabled)."
-    return 1
-  fi
-
-  if ! is_usb_port_stable "$PORT" "$ZEROCLAW_USB_STABILITY_SAMPLES" "$ZEROCLAW_USB_STABILITY_DELAY"; then
-    echo "[warn] chip mismatch detected for $failed_env but serial port is unstable (flapping signature on $PORT)."
-    echo "[hint] Retry with a stable USB link or set ZEROCLAW_USB_STABILITY_SAMPLES=1 after manual validation."
-    return 1
-  fi
-
-  return 0
-}
-
 UPLOAD_ARGS=()
 MONITOR_ARGS=()
 if [[ -n "$PORT" ]]; then
@@ -312,21 +316,104 @@ echo "[info] target=$target fw_dir=$FW_DIR env=$ACTIVE_ENV port=$PORT baud=$BAUD
 echo "[step] build"
 (cd "$FW_DIR" && pio run -e "$ACTIVE_ENV")
 
+port_still_present() {
+  local expected_port="$1"
+  local list
+  if [[ -z "$expected_port" ]]; then
+    return 1
+  fi
+  list="$(cd "$FW_DIR" && pio device list --json-output 2>/dev/null || true)"
+  if [[ -z "$list" ]]; then
+    return 1
+  fi
+  python3 - "$expected_port" "$list" <<'PY'
+import json
+import sys
+
+def norm(value):
+    return (value or "").strip().lower()
+
+port = norm(sys.argv[1])
+raw = sys.argv[2].strip()
+
+try:
+    devices = json.loads(raw)
+except Exception:
+    sys.exit(1)
+
+if not isinstance(devices, list):
+    sys.exit(1)
+
+for device in devices:
+    if not isinstance(device, dict):
+        continue
+    if norm(device.get("port", "")) == port:
+        sys.exit(0)
+sys.exit(1)
+PY
+}
+
+upload_target_with_retries() {
+  local env_name="$1"
+  local max_retries="${2:-1}"
+  local attempts=0
+  local output
+
+  while true; do
+    if ! port_still_present "$PORT"; then
+      echo "[warn] selected port $PORT is not visible anymore; re-detecting."
+      PORT="$(pick_port_for_target "$target" "$target_port_hint" || true)"
+      if [[ -z "$PORT" ]]; then
+        PORT=""
+      fi
+      UPLOAD_ARGS=()
+      MONITOR_ARGS=()
+      if [[ -n "$PORT" ]]; then
+        UPLOAD_ARGS+=(--upload-port "$PORT")
+        MONITOR_ARGS+=(-p "$PORT")
+      fi
+      if [[ -n "$PORT" ]]; then
+        echo "[info] serial port re-resolved for $target: $PORT"
+      else
+        echo "[warn] no serial port re-detected; upload might fail."
+      fi
+    fi
+
+    upload_once "$env_name"
+    rc=$?
+    output="${UPLOAD_LAST_OUTPUT:-}"
+
+    if [[ $rc -eq 0 ]]; then
+      return 0
+    fi
+
+    if [[ $attempts -ge $max_retries ]]; then
+      return $rc
+    fi
+
+    if printf '%s' "$output" | rg -qi "(Could not connect|No such file|No such device|not found|not ready|in use|busy|Permission denied|Device or resource busy|No such file or directory)"; then
+      attempts=$((attempts + 1))
+      echo "[warn] upload failure likely linked to transient serial port state; retry ${attempts}/${max_retries}."
+      continue
+    fi
+
+    return $rc
+  done
+}
+
 echo "[step] upload/flash (forced default)"
 UPLOAD_LAST_OUTPUT=""
-if ! upload_once "$ACTIVE_ENV"; then
+if ! upload_target_with_retries "$ACTIVE_ENV" 1; then
   fallback_env="$(resolve_env_fallback "$ACTIVE_ENV" "$UPLOAD_LAST_OUTPUT" || true)"
   if [[ -n "$fallback_env" ]]; then
-    if ! can_use_fallback_on_mismatch "$ACTIVE_ENV" "$fallback_env"; then
-      echo "[fail] upload skipped fallback for retry due to unstable link or disabled policy."
-      exit 3
-    fi
     echo "[warn] detected chip/env mismatch for $ACTIVE_ENV; retrying with '$fallback_env'."
     ACTIVE_ENV="$fallback_env"
     echo "[step] rebuild (fallback env)"
     (cd "$FW_DIR" && pio run -e "$ACTIVE_ENV")
     echo "[step] upload/flash retry (forced default)"
-    upload_once "$ACTIVE_ENV"
+    if ! upload_target_with_retries "$ACTIVE_ENV" 1; then
+      exit 3
+    fi
   else
     exit 3
   fi

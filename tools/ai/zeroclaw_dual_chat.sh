@@ -27,6 +27,7 @@ Usage:
   $(basename "$0") <rtc|zacus|path> --hardware
   $(basename "$0") <rtc|zacus|path> --provider-check
   $(basename "$0") <rtc|zacus|path> --cheap -m "message"
+  $(basename "$0") <rtc|zacus|path> --local-only -m "message"
 USAGE
 }
 
@@ -58,15 +59,85 @@ if [[ ! -x "$ZEROCLAW_BIN" ]]; then
   fi
 fi
 
-if [[ "${1:-}" == "--hardware" ]]; then
+MODE=""
+MESSAGE=""
+LOCAL_ONLY=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --cheap)
+      export ZEROCLAW_PREFER_LOCAL_AI=1
+      shift
+      ;;
+    --local-only)
+      export ZEROCLAW_PREFER_LOCAL_AI=1
+      LOCAL_ONLY=1
+      shift
+      ;;
+    --hardware)
+      MODE="hardware"
+      shift
+      ;;
+    --provider-check)
+      MODE="provider-check"
+      shift
+      ;;
+    --interactive)
+      MODE="interactive"
+      shift
+      ;;
+    -m)
+      shift
+      if [[ $# -lt 1 ]]; then
+        usage
+        exit 1
+      fi
+      MODE="message"
+      MESSAGE="$*"
+      break
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      usage
+      exit 1
+      ;;
+  esac
+done
+
+if [[ -z "$MODE" ]]; then
+  usage
+  exit 1
+fi
+
+if [[ "$MODE" == "hardware" ]]; then
   ZEROCLAW_WORKSPACE="$workspace" "$ZEROCLAW_BIN" hardware discover
   exit 0
 fi
 
-if [[ "${1:-}" == "--cheap" ]]; then
-  export ZEROCLAW_PREFER_LOCAL_AI=1
-  shift
-fi
+lmstudio_has_models() {
+  local base_url="${ZEROCLAW_LMSTUDIO_BASE_URL:-http://127.0.0.1:1234/v1}"
+  python3 - "$base_url" <<'PY'
+import json
+import sys
+import urllib.request
+
+base = sys.argv[1].rstrip("/")
+url = f"{base}/models"
+try:
+    req = urllib.request.Request(url, headers={"Accept": "application/json"})
+    with urllib.request.urlopen(req, timeout=3) as resp:
+        payload = json.loads(resp.read().decode("utf-8", "replace"))
+    models = payload.get("data", [])
+    if isinstance(models, list) and models:
+        raise SystemExit(0)
+except Exception:
+    pass
+raise SystemExit(1)
+PY
+}
 
 resolve_provider() {
   if [[ -n "${ZEROCLAW_PROVIDER:-}" ]]; then
@@ -90,6 +161,13 @@ resolve_provider() {
         return 0
       fi
     fi
+  fi
+
+  if [[ "${ZEROCLAW_PREFER_LOCAL_AI:-0}" == "1" ]] && lmstudio_has_models; then
+    export LMSTUDIO_BASE_URL="${ZEROCLAW_LMSTUDIO_BASE_URL:-http://127.0.0.1:1234/v1}"
+    export LMSTUDIO_API_KEY="${LMSTUDIO_API_KEY:-lm-studio}"
+    echo "lmstudio"
+    return 0
   fi
 
   if [[ "${ZEROCLAW_SKIP_COPILOT_CHECK:-0}" != "1" ]] && command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
@@ -144,21 +222,26 @@ ERR
 }
 
 provider="$(resolve_provider)"
+
+if [[ "$LOCAL_ONLY" -eq 1 && "$provider" != "ollama" && "$provider" != "lmstudio" ]]; then
+  cat <<'ERR' >&2
+Local-only mode requested, but no local provider is ready.
+- Start Ollama and set ZEROCLAW_OLLAMA_MODEL (or run tools/ai/ollama_local_setup.sh)
+- Or start LM Studio local server on 127.0.0.1:1234/v1
+ERR
+  exit 1
+fi
+
 echo "[zeroclaw-dual-chat] workspace=$workspace provider=$provider"
 
-if [[ "${1:-}" == "--provider-check" ]]; then
+if [[ "$MODE" == "provider-check" ]]; then
   exit 0
 fi
 
 export ZEROCLAW_WORKSPACE="$workspace"
 
-if [[ "${1:-}" == "--interactive" ]]; then
+if [[ "$MODE" == "interactive" ]]; then
   exec "$ZEROCLAW_BIN" agent -p "$provider"
 fi
 
-if [[ "${1:-}" != "-m" || -z "${2:-}" ]]; then
-  usage
-  exit 1
-fi
-
-exec "$ZEROCLAW_BIN" agent -p "$provider" -m "$2"
+exec "$ZEROCLAW_BIN" agent -p "$provider" -m "$MESSAGE"
