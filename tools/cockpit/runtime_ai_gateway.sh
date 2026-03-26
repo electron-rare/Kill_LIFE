@@ -21,9 +21,12 @@ MESH_REPORT=""
 INTELLIGENCE_SCRIPT="${RUNTIME_GATEWAY_INTELLIGENCE_SCRIPT:-${ROOT_DIR}/tools/cockpit/intelligence_tui.sh}"
 MESH_SCRIPT="${RUNTIME_GATEWAY_MESH_SCRIPT:-${ROOT_DIR}/tools/cockpit/mesh_health_check.sh}"
 MASCARADE_SCRIPT="${RUNTIME_GATEWAY_MASCARADE_SCRIPT:-${ROOT_DIR}/tools/cockpit/mascarade_runtime_health.sh}"
+LANGFUSE_SCRIPT="${RUNTIME_GATEWAY_LANGFUSE_SCRIPT:-${ROOT_DIR}/tools/cockpit/langfuse_health.sh}"
+LANGFUSE_REPORT="${ROOT_DIR}/artifacts/ops/langfuse_health/latest.json"
 INTELLIGENCE_TIMEOUT_SEC="${RUNTIME_GATEWAY_INTELLIGENCE_TIMEOUT_SEC:-15}"
 MESH_TIMEOUT_SEC="${RUNTIME_GATEWAY_MESH_TIMEOUT_SEC:-15}"
 MASCARADE_TIMEOUT_SEC="${RUNTIME_GATEWAY_MASCARADE_TIMEOUT_SEC:-15}"
+LANGFUSE_TIMEOUT_SEC="${RUNTIME_GATEWAY_LANGFUSE_TIMEOUT_SEC:-10}"
 
 usage() {
   cat <<'EOF'
@@ -118,6 +121,14 @@ def fallback(reason: str, detail: str) -> dict[str, object]:
                 "host": "unknown",
             }
         )
+    elif label == "langfuse":
+        payload.update(
+            {
+                "langfuse_status": "unknown",
+                "langfuse_version": "unknown",
+                "langfuse_url": "unknown",
+            }
+        )
     return payload
 
 
@@ -183,10 +194,16 @@ refresh_sources() {
   run_refresh_probe mascarade "${MASCARADE_TIMEOUT_SEC}" "${mascarade_out}" "${LOAD_PROFILE}" \
     bash "${MASCARADE_SCRIPT}" --json
   MASCARADE_REPORT="${mascarade_out}"
+
+  local langfuse_out="${ARTIFACT_DIR}/langfuse-${STAMP}.json"
+  log_line "INFO" "refreshing Langfuse health"
+  run_refresh_probe langfuse "${LANGFUSE_TIMEOUT_SEC}" "${langfuse_out}" "${LOAD_PROFILE}" \
+    bash "${LANGFUSE_SCRIPT}" --json
+  LANGFUSE_REPORT="${langfuse_out}"
 }
 
 emit_status_json() {
-  python3 - "${ROOT_DIR}" "${INTELLIGENCE_REPORT}" "${MESH_REPORT}" "${MASCARADE_REPORT}" "${RUN_LOG}" <<'PY'
+  python3 - "${ROOT_DIR}" "${INTELLIGENCE_REPORT}" "${MESH_REPORT}" "${MASCARADE_REPORT}" "${LANGFUSE_REPORT}" "${RUN_LOG}" <<'PY'
 from __future__ import annotations
 
 import json
@@ -198,7 +215,8 @@ root = Path(sys.argv[1])
 intelligence_path = Path(sys.argv[2]) if sys.argv[2] else None
 mesh_path = Path(sys.argv[3]) if sys.argv[3] else None
 mascarade_path = Path(sys.argv[4]) if sys.argv[4] else None
-run_log = Path(sys.argv[5])
+langfuse_path = Path(sys.argv[5]) if sys.argv[5] else None
+run_log = Path(sys.argv[6])
 
 
 def read_json(path: Path | None) -> dict[str, object] | None:
@@ -416,6 +434,45 @@ def build_web_platform_surface(ia_payload: dict[str, object] | None) -> tuple[di
     return surface, next_steps
 
 
+def build_langfuse_surface(payload: dict[str, object] | None, path: Path | None) -> tuple[dict[str, object], list[str]]:
+    status = normalize((payload or {}).get("status"))
+    langfuse_status = (payload or {}).get("langfuse_status", "unknown")
+    langfuse_version = (payload or {}).get("langfuse_version", "unknown")
+    langfuse_url = (payload or {}).get("langfuse_url", "unknown")
+    degraded = listify((payload or {}).get("degraded_reasons"))
+    if status != "ready" and not degraded:
+        degraded = [f"langfuse-{status}"]
+    next_steps = collect_next_steps(payload)
+    if status != "ready" and not next_steps:
+        next_steps = ["Check Langfuse instance health and verify tracing connectivity."]
+    surface = {
+        "status": status,
+        "summary_short": compact(
+            f"Langfuse {status}; version={langfuse_version}; url={langfuse_url}.",
+            220,
+        ),
+        "evidence": path_evidence("langfuse", path),
+        "degraded_reasons": degraded,
+        "upstreams": ["tools/cockpit/langfuse_health.sh"],
+        "langfuse_status": langfuse_status,
+        "langfuse_version": langfuse_version,
+        "langfuse_url": langfuse_url,
+        "path": relative_path(path),
+    }
+    return surface, next_steps
+
+
+def build_mascarade_capabilities(mascarade_payload: dict[str, object] | None) -> dict[str, object]:
+    """Extract Mascarade capabilities from the runtime health payload."""
+    caps = (mascarade_payload or {}).get("capabilities", {})
+    return {
+        "voice_pipeline": bool(caps.get("voice_pipeline")),
+        "eval_harness": bool(caps.get("eval_harness")),
+        "langfuse_tracing": bool(caps.get("langfuse_tracing")),
+        "kicad_seeed_mcp": bool(caps.get("kicad_seeed_mcp")),
+    }
+
+
 def build_firmware_cad_surface(root: Path) -> tuple[dict[str, object], dict[str, object], list[str]]:
     firmware_main = root / "firmware" / "src" / "main.cpp"
     firmware_platformio = root / "firmware" / "platformio.ini"
@@ -569,12 +626,15 @@ def build_firmware_cad_surface(root: Path) -> tuple[dict[str, object], dict[str,
 intelligence = read_json(intelligence_path)
 mesh = read_json(mesh_path)
 mascarade = read_json(mascarade_path)
+langfuse = read_json(langfuse_path)
 
 runtime_surface, runtime_next = build_runtime_surface(mascarade, mascarade_path)
 mcp_surface, mcp_next = build_mcp_surface(mesh, mesh_path)
 ia_surface, ia_next = build_ia_surface(intelligence, intelligence_path)
 firmware_cad_surface, firmware_cad_summary, firmware_cad_next = build_firmware_cad_surface(root)
 web_platform_surface, web_platform_next = build_web_platform_surface(intelligence)
+langfuse_surface, langfuse_next = build_langfuse_surface(langfuse, langfuse_path)
+mascarade_capabilities = build_mascarade_capabilities(mascarade)
 
 source_states = [runtime_surface["status"], mcp_surface["status"], ia_surface["status"], web_platform_surface["status"]]
 if any(state == "blocked" for state in source_states):
@@ -592,6 +652,7 @@ for label, path, surface, extra_next in (
     ("runtime", mascarade_path, runtime_surface, runtime_next),
     ("mcp", mesh_path, mcp_surface, mcp_next),
     ("ia", intelligence_path, ia_surface, ia_next),
+    ("langfuse", langfuse_path, langfuse_surface, langfuse_next),
 ):
     if path and path.exists():
         rel = relative_path(path)
@@ -629,8 +690,9 @@ summary_short = compact(
     f"mcp={mcp_surface['status']} ({mcp_surface['summary_short']}) | "
     f"ia={ia_surface['status']} ({ia_surface['summary_short']}) | "
     f"firmware_cad={firmware_cad_surface['status']} ({firmware_cad_surface['summary_short']}) | "
-    f"web_platform={web_platform_surface['status']} ({web_platform_surface['summary_short']})",
-    420,
+    f"web_platform={web_platform_surface['status']} ({web_platform_surface['summary_short']}) | "
+    f"langfuse={langfuse_surface['status']} ({langfuse_surface['summary_short']})",
+    500,
 )
 
 payload = {
@@ -647,6 +709,7 @@ payload = {
         "tools/cockpit/intelligence_tui.sh",
         "tools/cockpit/mesh_health_check.sh",
         "tools/cockpit/mascarade_runtime_health.sh",
+        "tools/cockpit/langfuse_health.sh",
         "docs/AI_WORKFLOWS.md",
     ],
     "summary_short": summary_short,
@@ -654,7 +717,7 @@ payload = {
     "degraded_reasons": degraded_reasons,
     "next_steps": next_steps[:5],
     "goal": "Publier une sante canonique runtime/MCP/IA exploitable par cockpit, docs et extensions.",
-    "state": f"runtime={runtime_surface['status']} mcp={mcp_surface['status']} ia={ia_surface['status']} web_platform={web_platform_surface['status']}",
+    "state": f"runtime={runtime_surface['status']} mcp={mcp_surface['status']} ia={ia_surface['status']} web_platform={web_platform_surface['status']} langfuse={langfuse_surface['status']}",
     "blockers": degraded_reasons,
     "next": next_steps[:3],
     "owner": "Runtime-Companion/MCP-Health",
@@ -667,7 +730,9 @@ payload = {
         "ia": ia_surface,
         "firmware_cad": firmware_cad_surface,
         "web_platform": web_platform_surface,
+        "langfuse": langfuse_surface,
     },
+    "mascarade_capabilities": mascarade_capabilities,
     "sources": {
         "intelligence": {
             "path": relative_path(intelligence_path),
@@ -701,6 +766,13 @@ payload = {
             "total": web_platform_surface.get("total", 0),
             "queue_depth": web_platform_surface.get("queue_depth"),
             "probes": web_platform_surface.get("probes", {}),
+        },
+        "langfuse": {
+            "path": relative_path(langfuse_path),
+            "status": langfuse_surface["status"],
+            "langfuse_status": langfuse_surface.get("langfuse_status", "unknown"),
+            "langfuse_version": langfuse_surface.get("langfuse_version", "unknown"),
+            "langfuse_url": langfuse_surface.get("langfuse_url", "unknown"),
         },
     },
     "summary_short_artifacts": {
@@ -837,6 +909,10 @@ while [ "$#" -gt 0 ]; do
       ;;
     --mascarade-report)
       MASCARADE_REPORT="${2:-}"
+      shift 2
+      ;;
+    --langfuse-report)
+      LANGFUSE_REPORT="${2:-}"
       shift 2
       ;;
     -h|--help)

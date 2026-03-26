@@ -122,6 +122,11 @@ AGENT_SMOKE_MODEL=""
 ROUTING_STATUS="unknown"
 MEMORY_STATUS="unknown"
 TRUST_LEVEL="inferred"
+VOICE_PIPELINE_STATUS="unknown"
+EVAL_HARNESS_STATUS="unknown"
+MACHINE_PROFILE=""
+LANGFUSE_STATUS="unknown"
+KICAD_SEEED_TOOL_COUNT=0
 RESUME_REF="kill-life:mascarade-runtime-health:${RUN_ID}:${HOST}:${AGENT}"
 STATUS="ok"
 CONTRACT_STATUS="ready"
@@ -172,6 +177,36 @@ if curl -fsS --max-time 5 http://127.0.0.1:11434/api/tags >/dev/null 2>&1; then
 else
   echo "ollama_tags=ko"
 fi
+voice_resp="$(curl -s --max-time 5 http://127.0.0.1:3100/voice/pipeline 2>/dev/null || true)"
+if printf "%s" "$voice_resp" | grep -qi '"enabled"'; then
+  echo "voice_pipeline=ok"
+  voice_enabled="$(printf "%s" "$voice_resp" | python3 -c "import sys,json; print(json.load(sys.stdin).get(\"enabled\",False))" 2>/dev/null || echo "false")"
+  echo "voice_pipeline_enabled=$voice_enabled"
+else
+  echo "voice_pipeline=ko"
+fi
+eval_resp="$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 http://127.0.0.1:3100/v1/eval/runs 2>/dev/null || true)"
+if [[ "$eval_resp" == "200" || "$eval_resp" == "401" ]]; then
+  echo "eval_harness=ok"
+else
+  echo "eval_harness=ko"
+fi
+machine_profile="$(curl -s --max-time 5 http://127.0.0.1:3100/api/machine-profile 2>/dev/null || true)"
+if printf "%s" "$machine_profile" | grep -q '{'; then
+  echo "machine_profile=ok"
+  echo "machine_profile_data=$machine_profile"
+else
+  echo "machine_profile=ko"
+fi
+langfuse_resp="$(curl -s --max-time 5 http://127.0.0.1:3100/api/langfuse/status 2>/dev/null || true)"
+if printf "%s" "$langfuse_resp" | grep -qi '"active"\|"enabled"\|"ok"'; then
+  echo "langfuse=ok"
+else
+  echo "langfuse=ko"
+fi
+kicad_tools="$(curl -s --max-time 5 http://127.0.0.1:3100/api/mcp/tools 2>/dev/null || true)"
+kicad_count="$(printf "%s" "$kicad_tools" | python3 -c "import sys,json; tools=json.load(sys.stdin); print(len([t for t in tools if \"kicad\" in t.get(\"name\",\"\").lower() or \"seeed\" in t.get(\"name\",\"\").lower()]))" 2>/dev/null || echo "0")"
+echo "kicad_seeed_tool_count=$kicad_count"
 '
 
 if ssh -o BatchMode=yes -o ConnectTimeout="$SSH_CONNECT_TIMEOUT" "$HOST" "bash -s" >"$REMOTE_CAPTURE" 2>>"$RUN_LOG" <<<"$REMOTE_SCRIPT"; then
@@ -211,6 +246,36 @@ if ssh -o BatchMode=yes -o ConnectTimeout="$SSH_CONNECT_TIMEOUT" "$HOST" "bash -
         OLLAMA_TAGS_STATUS="ko"
         append_reason "le runtime Ollama ne répond pas sur $HOST"
         append_next_step "Contrôler mascarade-ollama-runtime et l'endpoint 127.0.0.1:11434."
+        ;;
+      voice_pipeline=ok)
+        VOICE_PIPELINE_STATUS="ok"
+        ;;
+      voice_pipeline=ko)
+        VOICE_PIPELINE_STATUS="ko"
+        ;;
+      eval_harness=ok)
+        EVAL_HARNESS_STATUS="ok"
+        ;;
+      eval_harness=ko)
+        EVAL_HARNESS_STATUS="ko"
+        ;;
+      machine_profile=ok)
+        MACHINE_PROFILE="available"
+        ;;
+      machine_profile=ko)
+        MACHINE_PROFILE="unavailable"
+        ;;
+      machine_profile_data=*)
+        MACHINE_PROFILE="${line#machine_profile_data=}"
+        ;;
+      langfuse=ok)
+        LANGFUSE_STATUS="ok"
+        ;;
+      langfuse=ko)
+        LANGFUSE_STATUS="ko"
+        ;;
+      kicad_seeed_tool_count=*)
+        KICAD_SEEED_TOOL_COUNT="${line#kicad_seeed_tool_count=}"
         ;;
     esac
   done <"$REMOTE_CAPTURE"
@@ -422,6 +487,11 @@ json_from_py \
   "$MEMORY_STATUS" \
   "$TRUST_LEVEL" \
   "$RESUME_REF" \
+  "$VOICE_PIPELINE_STATUS" \
+  "$EVAL_HARNESS_STATUS" \
+  "$MACHINE_PROFILE" \
+  "$LANGFUSE_STATUS" \
+  "$KICAD_SEEED_TOOL_COUNT" \
   "${ARTIFACTS[@]}" \
   --reasons \
   "${DEGRADED_REASONS[@]}" \
@@ -432,7 +502,7 @@ import json
 import sys
 from pathlib import Path
 
-run_at, host, agent, status, contract_status, ssh_ok, docker_status, api_agents_status, ollama_tags_status, agent_smoke_status, agent_smoke_provider, agent_smoke_model, run_log, run_json, api_container, core_container, ollama_container, routing_capture, routing_status, memory_capture, memory_status, trust_level, resume_ref, *tail = sys.argv[1:]
+run_at, host, agent, status, contract_status, ssh_ok, docker_status, api_agents_status, ollama_tags_status, agent_smoke_status, agent_smoke_provider, agent_smoke_model, run_log, run_json, api_container, core_container, ollama_container, routing_capture, routing_status, memory_capture, memory_status, trust_level, resume_ref, voice_pipeline_status, eval_harness_status, machine_profile, langfuse_status, kicad_seeed_tool_count, *tail = sys.argv[1:]
 
 def split_sections(values):
     artifacts = []
@@ -509,6 +579,25 @@ payload = {
             "mascarade-core": core_container,
             "mascarade-ollama-runtime": ollama_container,
         },
+        "voice_pipeline": {
+            "status": voice_pipeline_status,
+        },
+        "eval_harness": {
+            "status": eval_harness_status,
+        },
+        "langfuse": {
+            "status": langfuse_status,
+        },
+        "kicad_seeed_mcp": {
+            "tool_count": int(kicad_seeed_tool_count) if kicad_seeed_tool_count.isdigit() else 0,
+        },
+    },
+    "machine_profile": json.loads(machine_profile) if machine_profile.startswith("{") else {"status": machine_profile or "unknown"},
+    "capabilities": {
+        "voice_pipeline": voice_pipeline_status == "ok",
+        "eval_harness": eval_harness_status == "ok",
+        "langfuse_tracing": langfuse_status == "ok",
+        "kicad_seeed_mcp": int(kicad_seeed_tool_count) > 0 if kicad_seeed_tool_count.isdigit() else False,
     },
     "artifacts": artifacts,
     "degraded_reasons": degraded_reasons,
@@ -531,6 +620,10 @@ host: $HOST
 status: $STATUS
 agent smoke: $AGENT_SMOKE_STATUS (${AGENT_SMOKE_PROVIDER:-unknown}/${AGENT_SMOKE_MODEL:-unknown})
 containers: api=${CONTAINERS[mascarade-api]} core=${CONTAINERS[mascarade-core]} ollama=${CONTAINERS[mascarade-ollama-runtime]}
+voice_pipeline: $VOICE_PIPELINE_STATUS
+eval_harness: $EVAL_HARNESS_STATUS
+langfuse: $LANGFUSE_STATUS
+kicad_seeed_tools: $KICAD_SEEED_TOOL_COUNT
 artifacts:
   - $RUN_LOG
   - $RUN_JSON
