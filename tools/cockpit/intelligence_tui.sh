@@ -167,54 +167,70 @@ def parse_all_open_tasks(text: str) -> list[str]:
 
 
 def web_platform_health() -> dict[str, object]:
-    """Probe Next.js, Yjs realtime server, and Redis/BullMQ queue."""
+    """Probe Next.js, Yjs realtime server, and Redis/BullMQ queue.
+
+    Primary: calls /api/ops/platform on the running Next.js app (T-AI-323).
+    Fallback: direct socket probes when the app is not running.
+    """
+    import json
     import urllib.request
 
+    platform_url = "http://localhost:3000/api/ops/platform"
+    try:
+        req = urllib.request.urlopen(platform_url, timeout=4)
+        data = json.loads(req.read())
+        # Normalise probe keys for downstream consumers
+        probes = data.get("probes", {})
+        return {
+            "status": data.get("status", "unknown"),
+            "probes": {
+                "nextjs":   probes.get("next-js", {"status": "unknown"}),
+                "realtime": probes.get("yjs-realtime", {"status": "unknown"}),
+                "queue":    probes.get("eda-queue", {"status": "unknown"}),
+            },
+            "up_count": data.get("up_count", 0),
+            "total":    data.get("total", 3),
+            "source":   "platform-api",
+        }
+    except Exception:
+        pass  # fall through to direct probes
+
+    # --- Fallback: direct probes (app not running) ---
     probes: dict[str, object] = {}
 
-    # Next.js web app
     try:
         req = urllib.request.urlopen("http://localhost:3000/", timeout=3)
         probes["nextjs"] = {"status": "up", "http_status": req.status}
     except Exception as exc:
         probes["nextjs"] = {"status": "down", "error": str(exc)[:120]}
 
-    # Yjs realtime server (default port 1234, see web/realtime/server.mjs)
     try:
         req = urllib.request.urlopen("http://localhost:1234/", timeout=3)
         probes["realtime"] = {"status": "up", "http_status": req.status}
     except Exception as exc:
         probes["realtime"] = {"status": "down", "error": str(exc)[:120]}
 
-    # Redis / BullMQ queue depth
     try:
         import socket
         sock = socket.create_connection(("127.0.0.1", 6379), timeout=2)
         sock.sendall(b"LLEN bull:yiacad-eda:wait\r\n")
         data = sock.recv(256).decode("utf-8", errors="replace").strip()
         sock.close()
-        if data.startswith(":"):
-            depth = int(data[1:])
-            probes["queue"] = {"status": "up", "queue_name": "yiacad-eda", "depth": depth}
-        else:
-            probes["queue"] = {"status": "up", "queue_name": "yiacad-eda", "depth": None, "raw": data[:80]}
+        depth = int(data[1:]) if data.startswith(":") else None
+        probes["queue"] = {"status": "up", "queue_name": "yiacad-eda", "depth": depth}
     except Exception as exc:
         probes["queue"] = {"status": "down", "error": str(exc)[:120]}
 
-    up_count = sum(1 for p in probes.values() if p.get("status") == "up")
+    up_count = sum(1 for p in probes.values() if isinstance(p, dict) and p.get("status") == "up")
     total = len(probes)
-    if up_count == total:
-        overall = "up"
-    elif up_count == 0:
-        overall = "down"
-    else:
-        overall = "degraded"
+    overall = "up" if up_count == total else ("down" if up_count == 0 else "degraded")
 
     return {
         "status": overall,
         "probes": probes,
         "up_count": up_count,
         "total": total,
+        "source": "direct-probes",
     }
 
 
