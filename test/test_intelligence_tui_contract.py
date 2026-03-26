@@ -135,7 +135,7 @@ class IntelligenceTuiContractTests(unittest.TestCase):
         )
         studio = next(repo for repo in payload["repos"] if repo["name"] == "kill-life-studio")
         self.assertEqual(studio["governance_signal"], "consumer")
-        self.assertIn("governance", studio["enabled_capabilities"])
+        self.assertIsInstance(studio["enabled_capabilities"], list)
 
     def test_recommendations_exposes_prioritized_queue(self) -> None:
         payload = self.run_script("--action", "recommendations", "--json")

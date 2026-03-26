@@ -120,3 +120,7 @@ firmware/test/.pio/
 web/.next/
 web/node_modules/
 .platformio-local/
+
+# QEMU binaries (download locally)
+tools/sim/qemu-system-xtensa
+tools/sim/*.bin

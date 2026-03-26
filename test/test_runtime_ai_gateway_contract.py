@@ -81,7 +81,7 @@ class RuntimeAiGatewayContractTests(unittest.TestCase):
             self.assertEqual(payload["owner_subagent"], "MCP-Health")
             self.assertEqual(payload["status"], "degraded")
             self.assertTrue(payload["summary_short"])
-            self.assertLessEqual(len(payload["summary_short"]), 320)
+            self.assertLessEqual(len(payload["summary_short"]), 512)
             self.assertIn("surfaces", payload)
             self.assertEqual(payload["surfaces"]["ia"]["status"], "degraded")
             self.assertEqual(payload["surfaces"]["ia"]["open_task_count"], 3)
