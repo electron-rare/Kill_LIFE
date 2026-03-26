@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { startTransition, useEffect, useRef, useState } from "react";
 import { useYjsExcalidraw } from "@/lib/use-yjs-excalidraw";
-import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types/types";
+import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
 const Excalidraw = dynamic(
   async () => {
