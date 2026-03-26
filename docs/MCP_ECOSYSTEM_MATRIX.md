@@ -1,6 +1,6 @@
 # MCP ecosystem matrix
 
-Last updated: 2026-03-14
+Last updated: 2026-03-25
 
 Matrice transverse des surfaces MCP et non-MCP observees dans `Kill_LIFE`, `mascarade` et `crazy_life`.
 
@@ -32,12 +32,15 @@ Matrice transverse des surfaces MCP et non-MCP observees dans `Kill_LIFE`, `masc
 | `component_database` | `mascarade` | micro-serveur MCP | `python3 -m mcp_servers.component_db` | supporte avec dependance externe | custom local | serveur auxiliaire; depend du cache KiCad v10 et du repo compagnon |
 | `kicad_tools` | `mascarade` | micro-serveur MCP | `python3 -m mcp_servers.kicad_tools` | supporte avec dependance externe | custom local | serveur auxiliaire; depend des fichiers KiCad reels et du repo compagnon |
 | `nexar_api` | `Kill_LIFE` + `mascarade` | micro-serveur MCP | `tools/run_nexar_mcp.sh` | supporte avec dependance externe | custom local | chemin live valide, mais encore borne par un quota externe |
+| `ngspice` | `Kill_LIFE` | serveur MCP | `tools/run_ngspice_mcp.sh` | supporte | custom local | simulation SPICE batch via ngspice-42 host; 4 tools: `run_simulation`, `validate_netlist`, `parse_operating_point`, `get_runtime_info`; circuits de reference dans `spice/` |
+| `platformio` | `Kill_LIFE` | serveur MCP | `tools/run_platformio_mcp.sh` | supporte | custom local | build/test firmware ESP32-S3; PlatformIO 6.1.19 dans `.pio-venv/`; 6 tools: `build`, `run_tests`, `check_code`, `get_metadata`, `install_platformio`, `get_runtime_info` |
+| `apify` | `Kill_LIFE` | serveur MCP | `tools/run_apify_mcp.sh` | supporte | custom local | fetch documentaire Espressif/KiCad/PlatformIO; mode dual: Apify API si `APIFY_API_KEY`, scrape direct sinon; 5 tools: `fetch_espressif_docs`, `fetch_platformio_registry`, `fetch_kicad_library_info`, `ingest_to_rag`, `get_runtime_info` |
 
 ## 2. Consommateurs et configs MCP
 
 | Surface | Repo principal | Type | Point d'entree | Statut | Provenance | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| `mcp.json` | `Kill_LIFE` | config consommateur MCP | `mcp.json` | supporte | custom local | reference `kicad`, `validate-specs`, `knowledge-base`, `github-dispatch`, `freecad`, `openscad` et `huggingface` |
+| `mcp.json` | `Kill_LIFE` | config consommateur MCP | `mcp.json` | supporte | custom local | reference `kicad`, `validate-specs`, `knowledge-base`, `github-dispatch`, `freecad`, `openscad`, `ngspice`, `platformio`, `apify` et `huggingface` (10 serveurs) |
 | `MCP setup` | `Kill_LIFE` | doc operateur MCP | `docs/MCP_SETUP.md` | supporte | custom local | source de verite d'usage local et de provenance operatoire |
 | `ops MCP probe` | `mascarade` | observabilite synthetique | `/api/ops/summary` via `api/src/routes/ops.ts` | supporte avec dependance externe | custom local | expose l'etat agrege des surfaces MCP locales et distantes suivies par le cockpit |
 | `crazy_life MCP positionnement` | `crazy_life` | doc de non-ownership / cockpit | `docs/MCP_PLAN_2026-03-07.md` | supporte | custom local | `crazy_life` consomme l'etat MCP et les probes, sans porter de serveur |
@@ -61,8 +64,8 @@ Matrice transverse des surfaces MCP et non-MCP observees dans `Kill_LIFE`, `masc
 
 ## 5. Conclusion
 
-- `Kill_LIFE` porte des MCP locaux supportes pour `kicad`, `validate-specs`, `knowledge-base`, `github-dispatch`, `freecad` et `openscad`, tous classes `custom local`
-- `huggingface` reste la surface MCP distante officielle suivie dans `mcp.json`
-- `mascarade` porte l'agregation ops et les integrations applicatives encore existantes en parallele
+- `Kill_LIFE` porte des MCP locaux supportes pour `kicad`, `validate-specs`, `knowledge-base`, `github-dispatch`, `freecad`, `openscad`, `ngspice`, `platformio` et `apify`, tous classes `custom local` — 10 serveurs total dans `mcp.json`
+- `huggingface` reste la surface MCP distante officielle versionnee dans `mcp.json`
+- `mascarade` porte l'agregation ops, les agents specialises (18 agents dont `firmware-engineer`, `spice-expert`, `kicad-designer`, `openseeker`) et la pipeline RAG (Qdrant + nomic-embed-text + qwen3:4b reranking + devstral)
 - `crazy_life` consomme et supervise, mais n'own pas de serveur MCP
 - les references `community valide` restent des apports de benchmark ou d'infra, pas des runtimes canoniques par defaut

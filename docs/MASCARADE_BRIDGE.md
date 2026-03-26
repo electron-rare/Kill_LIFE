@@ -71,6 +71,11 @@ Ce pipeline sert à produire de petits modèles spécialisés exploitables local
 | Specs, ADR, gates, evidence packs | `Kill_LIFE` | c’est la source de vérité méthodologique |
 | Exécution LLM locale et orchestration provider/model | `Mascarade` | c’est le cockpit d’exécution |
 | KiCad/FreeCAD/PlatformIO en conteneur | `Kill_LIFE` | stack CAD désormais intégrée localement |
+| Simulation SPICE (ngspice) | `Kill_LIFE` | MCP ngspice local, circuits dans `spice/` |
+| Build/test firmware PlatformIO | `Kill_LIFE` | MCP platformio local, pio dans `.pio-venv/` |
+| Fetch docs Espressif/KiCad | `Kill_LIFE` | MCP apify, mode scrape direct |
+| Pipeline RAG (embed + rerank + synthèse) | `Mascarade` | nomic-embed-text + qwen3:4b + devstral sur RTX 4090 |
+| Agents spécialisés avec RAG contextuel | `Mascarade` | 18 agents dont firmware-engineer, spice-expert, openseeker |
 | Datasets, distillation, adapters LoRA/QLoRA | `Mascarade` | pipeline de training déjà opérationnel |
 | Rapports finaux, runbooks, conformité | `Kill_LIFE` | cohérence des artefacts et traçabilité |
 
@@ -141,6 +146,48 @@ Conséquence pour `Kill_LIFE` :
 - ne pas mélanger la méthode et la couche d’exécution
 - documenter `Mascarade` comme repo compagnon, pas comme dépendance cachée
 - garder les evidence packs et la gouvernance dans `Kill_LIFE`
+
+## 3. Pipeline RAG agentic (ajouté 2026-03-25)
+
+`Mascarade` est maintenant le compute backend RAG pour `Kill_LIFE` :
+
+- **Embeddings**: `nomic-embed-text` via `mascarade-ollama-runtime` (RTX 4090, GPU)
+- **Reranking**: `qwen3:4b` via Ollama (scoring 0-10)
+- **Synthèse**: `devstral:latest` via Ollama (code model 4090)
+- **Stockage vectoriel**: Qdrant local dans `mascarade-main_mascarade-network`
+
+Collections peuplées (2026-03-25) :
+
+| Collection | Chunks | Contenu |
+|---|---|---|
+| `kb-firmware` | ~113 | Code ESP32-S3, specs, plans firmware |
+| `kb-kicad` | ~119 | Docs KiCad, hardware rules, MCP specs |
+| `kb-espressif` | ~146 | Docs ESP-IDF live (I2S, WiFi, BLE, GPIO, FreeRTOS, OTA...) |
+| `kb-freecad` | ~11 | CAD modeling specs |
+| `kb-components` | ~16 | YAML fields, footprints, compliance |
+| `kb-spice` | ~11 | 4 netlists référence + README |
+
+Endpoints RAG (port 8100, pas d’auth requise) :
+
+- `POST /v1/rag/ingest` — ingestion de textes bruts
+- `POST /v1/rag/search` — recherche sémantique dans une collection
+- `POST /v1/rag/query` — pipeline complet (embed → search → rerank → synthèse)
+- `POST /v1/agents/openseeker/search` — multi-hop fan-out sur N collections
+
+## 4. Agents spécialisés Mascarade pour Kill_LIFE (2026-03-25)
+
+18 agents enregistrés. Agents avec RAG contextuel automatique:
+
+| Agent | Modèle | Collection RAG |
+|---|---|---|
+| `firmware-engineer` | devstral:latest (Ollama) | kb-firmware + kb-espressif |
+| `spice-expert` | mistral-large | kb-spice |
+| `kicad-designer` | mascarade-kicad (Ollama) | kb-kicad |
+| `freecad-designer` | ollama | kb-freecad |
+| `components-expert` | ollama | kb-components |
+| `openseeker` | routellm strong | fan-out sur toutes collections |
+
+Appel via `POST /v1/agents/{name}/run` ou endpoint dédié `openseeker/search`.
 
 ## Statut actuel
 

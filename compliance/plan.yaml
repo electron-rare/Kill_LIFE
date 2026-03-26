@@ -1,20 +1,49 @@
 version: 1
 product:
-  name: "TBD"
-  description: "TBD"
-  intended_market: "TBD (prototype / EU)"
+  name: "Kill_LIFE"
+  description: "Radio internet pilotée par la voix pour installations artistiques (L'électron rare / KXKM)"
+  intended_market: "EU/EEE — petite série pour installations artistiques"
   radio:
-    technologies: ["TBD"]  # e.g. ["Wi-Fi 2.4GHz", "BLE"]
-    bands: ["TBD"]
-    max_tx_power_dbm: "TBD"
+    technologies: ["Wi-Fi 2.4 GHz (802.11 b/g/n)"]
+    bands: ["2400–2483.5 MHz ISM"]
+    max_tx_power_dbm: 20  # ESP32-S3-WROOM-1 limite par défaut, configurable via esp_wifi_set_max_tx_power()
+    module: "ESP32-S3-WROOM-1-N16R8 (Espressif)"
+    module_certification: "Module pré-certifié RED/FCC/IC par Espressif"
+    ble_active: false
   power:
-    source: "TBD"  # USB / battery / mains adapter
-    nominal_voltage_v: "TBD"
+    source: "USB-C 5V (alimentation externe)"
+    nominal_voltage_v: 3.3  # AMS1117-3.3 LDO en sortie
+    max_input_voltage_v: 5.0
+    regulator: "AMS1117-3.3 (Advanced Monolithic Systems)"
+  mcu:
+    part: "ESP32-S3-WROOM-1-N16R8"
+    manufacturer: "Espressif Systems"
+    flash_mb: 16
+    psram_mb: 8
+  audio:
+    dac: "PCM5101 (Texas Instruments) — sortie I2S"
+    mic: "ICS-43434 (TDK InvenSense) — entrée I2S MEMS"
+  display:
+    type: "LCD SPI 1.85 pouces"
+  connectivity:
+    backend: "Serveur Mascarade (HTTP)"
+    tls: false  # À implémenter — voir security_architecture.md
+    ota: "HTTP sans signature"  # À sécuriser — voir security_architecture.md
 compliance:
   profile: "${ACTIVE_PROFILE}"  # resolved by tools/compliance/validate.py
-  standards_applied: []         # optional explicit list (otherwise from profile)
+  standards_applied:
+    - EU-RED-2014-53
+    - EU-RED-CYBER-2022-30
+    - EU-RED-EN18031-OJEU-2025-138
+    - ETSI-EN-300-328-V2-2-2
+    - ETSI-EN-301-489-17-V3-3-1
+    - NF-EN-55032-A11-2020
+    - EN-55035-A11-2020
+    - EU-RoHS-2011-65
+    - EU-REACH-1907-2006
+    - EU-WEEE-2012-19
+    - IEC-62368-1-2023
 evidence:
-  # Map "requirement -> evidence path" for regulated profiles.
   risk_assessment: "compliance/evidence/risk_assessment.md"
   security_architecture: "compliance/evidence/security_architecture.md"
   test_plan_radio_emc: "compliance/evidence/test_plan_radio_emc.md"

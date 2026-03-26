@@ -1,6 +1,6 @@
 # MCP setup
 
-Last updated: 2026-03-20
+Last updated: 2026-03-25
 
 Source canonique pour l'usage MCP local de `Kill_LIFE`.
 
@@ -13,8 +13,6 @@ References canoniques:
 - note de lot provenance: `docs/MCP_CAD_PROVENANCE_2026-03-14.md`
 - backlog MCP KiCad: `specs/mcp_tasks.md`
 - backlog cible MCP/agentics: `specs/mcp_agentics_target_backlog.md`
-- surfaces GUI natives YiACAD: `docs/CAD_AI_NATIVE_GUI_RUNBOOK_2026-03-20.md`
-- hooks natifs YiACAD: `docs/CAD_AI_NATIVE_HOOKS_2026-03-20.md`
 
 ## Source de verite et ownership
 
@@ -38,6 +36,9 @@ References canoniques:
 - `github-dispatch`: `tools/run_github_dispatch_mcp.sh`
 - `freecad`: `tools/run_freecad_mcp.sh`
 - `openscad`: `tools/run_openscad_mcp.sh`
+- `ngspice`: `tools/run_ngspice_mcp.sh` — simulation SPICE via ngspice-42 (host `/usr/bin/ngspice`)
+- `platformio`: `tools/run_platformio_mcp.sh` — build/test firmware ESP32-S3 via pio (`.pio-venv/`)
+- `apify`: `tools/run_apify_mcp.sh` — fetch docs Espressif/KiCad/PlatformIO; mode scrape direct si `APIFY_API_KEY` absent
 - `huggingface`: `https://huggingface.co/mcp`
 - transport supporte: `stdio` local par defaut; l'unique exception versionnee ici est `huggingface` en endpoint `url` distant officiel
 
@@ -49,45 +50,12 @@ References canoniques:
 - `github-dispatch`: MCP local pour workflows GitHub allowlistes
 - `freecad`: MCP local headless pour infos runtime, document minimal, export et script Python controle
 - `openscad`: MCP local headless pour infos runtime, validation, rendu et export
+- `ngspice`: MCP local pour simulation SPICE batch — `run_simulation`, `validate_netlist`, `parse_operating_point`, `get_runtime_info`; circuits de reference dans `spice/`
+- `platformio`: MCP local pour build/test firmware — `build`, `run_tests`, `check_code`, `get_metadata`, `install_platformio`; pointe sur `firmware/`; PlatformIO 6.1.19 installe dans `.pio-venv/`
+- `apify`: MCP local de fetch documentaire — `fetch_espressif_docs` (12 topics ESP32-S3), `fetch_platformio_registry`, `fetch_kicad_library_info`, `ingest_to_rag`; fonctionne sans cle en mode scrape direct
 - `huggingface`: surface MCP distante officielle, optionnelle et hors chaine CAD locale
 
 Les micro-serveurs `kicad_kic_ai` de `mascarade` restent suivis comme surfaces auxiliaires dans `docs/MCP_SUPPORT_MATRIX.md`.
-
-## Topologie d'exploitation (SSH / hôtes)
-
-| Machine | Utilisateur | Priorité | Rôle | Port SSH | Port(s) service cible |
-|---|---|---:|---|---:|---:|
-| `clems@192.168.0.120` | `clems` | `1` | Machine opérateur, hôte de référence de travail | `22` | `22` |
-| `kxkm@kxkm-ai` | `kxkm` | `2` | Mac opérateur | `22` | `22` |
-| `cils@100.126.225.111` | `cils` | `3` | Mac opérateur secondaire (`photon`, locké: pas de service essentiel) | `22` | `22` |
-| `root@192.168.0.119` | `root` | `4` | Serveur système / exécution système (réserve) | `22` | `22` |
-
-Politique d’équilibrage P2P:
-
-- Ordre par défaut: `Tower -> KXKM -> CILS -> local -> root` (réserve).
-- `cils` est en verrouillage opérationnel: seul `Kill_LIFE` peut y être vérifié par défaut.
-- Les préchecks non critiques sont délestés en présence de charge via `tools/cockpit/mesh_sync_preflight.sh --load-profile tower-first`.
-
-### Health-check SSH (script unique)
-
-Depuis `Kill_LIFE`, exécuter:
-
-```bash
-bash tools/cockpit/ssh_healthcheck.sh
-```
-Prérequis: clés SSH pré-configurées pour un login sans prompt.
-
-Options utiles:
-
-- `--json` : format machine à machine.
-- `--no-log` : exécute sans écrire dans `artifacts/cockpit`.
-
-## Repos GitHub associés
-
-- Core: `https://github.com/electron-rare/Kill_LIFE.git`
-- Compagnon: `https://github.com/electron-rare/mascarade`
-- Orchestration: `https://github.com/electron-rare/crazy-life` (repo privé)
-- Références techniques: `https://github.com/electron-rare/Kill_LIFE` (source de vérité)
 
 ## Prerequis
 
@@ -115,21 +83,30 @@ tools/run_knowledge_base_mcp.sh --doctor
 tools/run_github_dispatch_mcp.sh --doctor
 tools/run_freecad_mcp.sh --doctor
 tools/run_openscad_mcp.sh --doctor
+tools/run_ngspice_mcp.sh --doctor
+tools/run_platformio_mcp.sh --doctor
+tools/run_apify_mcp.sh --doctor
 python3 tools/validate_specs_mcp_smoke.py --json --quick
 python3 tools/knowledge_base_mcp_smoke.py --json --quick
 python3 tools/github_dispatch_mcp_smoke.py --json --quick
 python3 tools/freecad_mcp_smoke.py --json
 python3 tools/openscad_mcp_smoke.py --json
+python3 tools/ngspice_mcp_smoke.py --json
+python3 tools/platformio_mcp_smoke.py --json
 python3 tools/hw/freecad_smoke.py --json
 python3 tools/hw/openscad_smoke.py --json
 python3 tools/mcp_runtime_status.py --json
 ```
 
-Sur la machine de reference:
+Sur la machine de reference (`kxkm-ai`, 2026-03-25):
 
-- `kicad`, `validate-specs`, `freecad`, `openscad` et `huggingface` sont `ready`
+- `kicad`, `validate-specs`, `freecad`, `openscad`, `ngspice`, `platformio` et `apify` sont `ready`
+- `huggingface` est `ready` avec `HUGGINGFACE_API_KEY`
 - `knowledge-base` est `ready` sur le provider actif `memos` auto-heberge
 - `github-dispatch` est `ready`, avec validation live fermee via token GitHub persiste
+- `ngspice` valide: ngspice-42 host `/usr/bin/ngspice`, smoke OP passe (V(in)=5V RC circuit)
+- `platformio` valide: PlatformIO 6.1.19 dans `.pio-venv/`, envs `esp32s3_waveshare / esp32s3_arduino / native` detectes
+- `apify` valide: mode `direct-scrape-fallback`, 12 topics ESP32-S3 preconfigures
 
 ## Configuration locale
 
@@ -172,6 +149,25 @@ Le fichier versionne [mcp.json](../mcp.json) pointe vers les serveurs MCP reelle
       "type": "local",
       "command": "bash",
       "args": ["tools/run_openscad_mcp.sh"],
+      "tools": ["*"]
+    },
+    "ngspice": {
+      "type": "local",
+      "command": "bash",
+      "args": ["tools/run_ngspice_mcp.sh"],
+      "tools": ["*"]
+    },
+    "platformio": {
+      "type": "local",
+      "command": "bash",
+      "args": ["tools/run_platformio_mcp.sh"],
+      "tools": ["*"]
+    },
+    "apify": {
+      "type": "local",
+      "command": "bash",
+      "args": ["tools/run_apify_mcp.sh"],
+      "env": { "APIFY_API_KEY": "${APIFY_API_KEY}" },
       "tools": ["*"]
     },
     "huggingface": {
@@ -220,12 +216,6 @@ Ce bootstrap enregistre:
 - `validate-specs`
 - `knowledge-base`
 - `github-dispatch`
-- Les surfaces GUI YiACAD restent hors protocole MCP et s'installent via:
-
-```bash
-bash tools/cad/install_yiacad_native_gui.sh install
-bash tools/cad/switch_yiacad_surfaces_to_native_forks.sh
-```
 - `freecad`
 - `openscad`
 - `huggingface`
@@ -278,6 +268,8 @@ Les smokes dedies supplementaires sont:
 - `tools/github_dispatch_mcp_smoke.py`
 - `tools/freecad_mcp_smoke.py`
 - `tools/openscad_mcp_smoke.py`
+- `tools/ngspice_mcp_smoke.py` — valide `validate_netlist` + `parse_operating_point` sur circuit RC
+- `tools/platformio_mcp_smoke.py` — valide `get_metadata` sur `firmware/` si pio installe
 
 Le chemin d'observabilite synthetique n'est pas fourni par `Kill_LIFE` seul. Si la stack compagnon `mascarade` tourne, `/api/ops/summary` expose un bloc `mcp` agrege qui remonte `kicad`, `validate-specs`, `knowledge-base`, `github-dispatch`, `freecad`, `openscad` et les surfaces distantes suivies par le cockpit.
 
@@ -294,17 +286,8 @@ Le chemin d'observabilite synthetique n'est pas fourni par `Kill_LIFE` seul. Si 
 
 ## Points encore ouverts
 
-- finir l'observabilite MCP homogene
+- finir l'observabilite MCP homogene (integrer `ngspice`, `platformio`, `apify` dans `/api/ops/summary`)
+- configurer `APIFY_API_KEY` pour activer le mode API Apify (scrape direct suffisant pour l'usage courant)
 - requalifier l'ouverture future de `A2A` une fois l'observabilite MCP homogene fermee
 - garder `K-012` comme validation host-native optionnelle tant que le runtime KiCad canonique reste le conteneur; `K-014` est valide en live, avec une limite externe de quota Nexar sur le token de reference
 - si un futur lot active `KiAuto`, suivre `docs/KICAD_BENCHMARK_MATRIX.md`, rester opt-in et rejouer `bash tools/tui/cad_mcp_audit.sh audit`
-
-## Delta mesh 2026-03-20
-
-Interpretation normative des statuts MCP dans cette refonte:
-
-- `ready`: outil demarre et ses dependances/secrets critiques sont presents.
-- `degraded`: outil demarre sans crash d'import, expose son envelope/outils, mais une dependance non critique manque.
-- `blocked`: execution impossible ou securite/gate non satisfaite.
-
-Pour `knowledge-base` et `github-dispatch`, l'absence de secrets ou de providers externes en developpement doit retomber en `degraded`, pas en echec silencieux. Cette section supersede toute mention plus ancienne qui presenterait ces surfaces comme forcement `ready` sur une machine non configuree.

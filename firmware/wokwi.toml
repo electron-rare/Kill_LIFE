@@ -1,0 +1,8 @@
+# Wokwi simulation config for Kill_LIFE ESP32-S3 firmware
+# Usage (local): wokwi-cli --timeout 30000 --scenario scenario.yaml
+# Usage (CI): wokwi/wokwi-ci-action@v1
+
+[wokwi]
+version = 1
+firmware = ".pio/build/esp32s3_waveshare/firmware.bin"
+elf = ".pio/build/esp32s3_waveshare/firmware.elf"

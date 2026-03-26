@@ -4,30 +4,26 @@ _« L’intake du projet s’écoute comme une partition acousmatique : chaque
 # Intake
 
 ## Problème
-- Le projet Kill_LIFE a déjà une architecture agentique et un socle MCP, mais les artefacts canoniques sont en partie désynchronisés.
-- Le référentiel doit passer en mode refonte complète sans perdre la traction opérationnelle ni casser les chaînes CI.
-- Les lots d’optimisation existent, mais les priorités et responsabilités ne sont pas suffisamment structurées pour un cycle autonome.
+L'appareil Kill_LIFE (ESP32-S3 Waveshare LCD 1.85”) doit pouvoir scanner les réseaux WiFi disponibles, exposer les résultats en JSON via Serial et les transmettre au backend Mascarade, afin de permettre le diagnostic réseau, la sélection guidée par voix, et la configuration AP intelligente.
 
 ## Utilisateurs / contexte
-- Équipe produit embarquée (PM, firmware, hardware, QA, doc) qui pilote des lots hebdomadaires.
-- Opérateurs locaux (`clems@192.168.0.120`, `root@192.168.0.119`, `kxkm@kxkm-ai`, `cils@100.126.225.111`) qui exécutent la refonte.
-- Mainteneurs souhaitant une piste claire entre specs, plans, automatisation et preuve.
+- **Utilisateur final** : configure le device via le portail captif ; veut voir les réseaux disponibles triés par signal.
+- **Backend Mascarade** : reçoit les résultats de scan via `SendPlayerEvent(“wifi_scan_complete”)` pour décider d'une action (suggestion de réseau, alerte de signal faible).
+- **Développeur** : valide l'intégration WiFi via Serial monitor et les tests Unity natifs.
 
 ## Hypothèses
-- La spec-driven chain (`00_intake -> 01_spec -> 02_arch -> 03_plan -> 04_tasks`) reste la source de vérité.
-- Les labels `ai:*` et le scope guard restent les garde-fous principaux.
-- Les intégrations IA (ZeroClaw, MCP, LangGraph, AutoGen) restent optionnelles quand non sécurisées par les gates.
-- Les données de télémetrie/logs doivent être exploitables, lisibles, puis nettoyables.
+- Le WiFi est en mode STA ou APSTA pendant le scan.
+- `WiFi.scanNetworks()` retourne les résultats en ≤ 4s sur hardware réel.
+- Le JSON de sortie est consommable directement par `ArduinoJson` et par le backend Python.
 
 ## Risques
-- Perte de cohérence entre README/plans/specs.
-- Dérive de portée AI (automatisation trop invasive hors garde-fous).
-- Faux positifs dans les détections de lot auto.
-- Chute de conformité si les evidences et gates sont sautées.
+- Scan bloquant > 4s sur réseau très encombré → timeout explicite.
+- SSID avec caractères UTF-8 ou apostrophes → encodage JSON géré par ArduinoJson.
+- Faux négatifs (réseau présent non détecté) → toléré, scan non-exhaustif par nature.
 
 ## Définition du “done”
-- `docs/REFACTOR_MANIFEST_2026-03-20.md` et `docs/WEB_RESEARCH_OPEN_SOURCE_2026-03-20.md` mis à jour.
-- Plans/tâches ré-assignés (`docs/plans/12`, `docs/plans/18`, `specs/04_tasks.md`) avec priorités.
-- Nouveau script TUI opérationnel : `tools/cockpit/refonte_tui.sh`.
-- Diagrammes et cartes mises à jour dans `docs/KILL_LIFE_FEATURE_MAP_2026-03-11.md`, `docs/AGENTIC_LANDSCAPE.md`, workflows.
-- Logs de lot lus, analysés et purgeables avec commande dédiée.
+- `WifiScanner::Scan()` retourne les réseaux en ≤ 5s.
+- Sortie JSON valide : `{“networks”: [...], “count”: N, “duration_ms”: T}`.
+- Tests Unity natifs sur `RssiQuality`, `ToJson`, tri par RSSI — tous verts.
+- Build `esp32s3_waveshare` SUCCESS après intégration.
+- Événement `wifi_scan_complete` visible dans le log Mascarade.

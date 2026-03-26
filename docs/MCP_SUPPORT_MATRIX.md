@@ -1,6 +1,6 @@
 # MCP support matrix
 
-Last updated: 2026-03-14
+Last updated: 2026-03-25
 
 Matrice canonique du statut MCP pour `Kill_LIFE`, `mascarade` et les surfaces associees.
 
@@ -35,6 +35,9 @@ Vue plus large de l'ecosysteme:
 | `component_database` | `python3 -m mcp_servers.component_db` | `mascarade/finetune/kicad_kic_ai` | `2025-03-26` observe au handshake | supporte avec dependance externe | custom local | micro-serveur auxiliaire; depend du cache KiCad v10 et du repo compagnon |
 | `kicad_tools` | `python3 -m mcp_servers.kicad_tools` | `mascarade/finetune/kicad_kic_ai` | `2025-03-26` observe au handshake | supporte avec dependance externe | custom local | micro-serveur auxiliaire; analyses reelles si les fichiers KiCad et dependances associees sont disponibles |
 | `nexar_api` | `tools/run_nexar_mcp.sh` | launcher `Kill_LIFE`, serveur `mascarade/finetune/kicad_kic_ai/mcp_servers/nexar.py` | `2025-03-26` observe au handshake | supporte avec dependance externe | custom local | micro-serveur auxiliaire; le chemin live est valide avec `Bearer NEXAR_TOKEN`; sur la machine de reference, le token actuel atteint Nexar mais retourne un quota `part limit of 0` |
+| `ngspice` | `tools/run_ngspice_mcp.sh` | `Kill_LIFE` | `2025-03-26` observe au smoke | supporte | custom local | simulation SPICE batch via ngspice-42 (`/usr/bin/ngspice`); smoke passe sur circuit RC; circuits de reference: `spice/01-04_*.sp` |
+| `platformio` | `tools/run_platformio_mcp.sh` | `Kill_LIFE` | `2025-03-26` observe au smoke | supporte | custom local | PlatformIO 6.1.19 dans `.pio-venv/`; smoke passe avec `get_metadata` sur `firmware/`; envs `esp32s3_waveshare / esp32s3_arduino / native` |
+| `apify` | `tools/run_apify_mcp.sh` | `Kill_LIFE` | `2025-03-26` observe au smoke | supporte | custom local | mode `direct-scrape-fallback` sans cle; mode `apify-api` avec `APIFY_API_KEY`; 12 topics ESP32-S3 preconfigures; endpoint `ingest_to_rag` connecte a mascarade core |
 
 ## Hors chaine supportee
 
@@ -55,3 +58,5 @@ Vue plus large de l'ecosysteme:
 
 - fermer `K-012` sur une machine avec `pcbnew` host-native
 - si un sourcing Nexar live complet est requis, prevoir un token/plan Nexar avec quota de parts non nul
+- configurer `APIFY_API_KEY` pour activer le mode Apify API sur `apify` (optionnel, scrape direct suffisant)
+- integrer `ngspice`, `platformio` et `apify` dans le rapport `python3 tools/mcp_runtime_status.py --json`

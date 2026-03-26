@@ -1,0 +1,53 @@
+# KiBot configuration — Kill_LIFE ESP32-S3 Minimal Power Board
+# Usage: kibot -c .kibot.yaml -e esp32_minimal.kicad_sch
+# CI:    See .github/workflows/ci.yml job hardware-export
+
+kibot:
+  version: 1
+
+global:
+  output: '../../artifacts/hw/%D/'
+  date_format: '%Y-%m-%d'
+
+outputs:
+  # Schematic SVG export
+  - name: sch_svg
+    comment: "Export schematic to SVG"
+    type: svg_sch_print
+    options:
+      output: '%f-sch.%x'
+
+  # Schematic PDF export
+  - name: sch_pdf
+    comment: "Export schematic to PDF"
+    type: pdf_sch_print
+    options:
+      output: '%f-sch.%x'
+
+  # BOM — Bill of Materials (CSV)
+  - name: bom_csv
+    comment: "Generate BOM as CSV"
+    type: bom
+    options:
+      output: '%f-bom.%x'
+      format: CSV
+      columns:
+        - field: Reference
+          name: Reference
+        - field: Value
+          name: Value
+        - field: Footprint
+          name: Footprint
+        - field: Manufacturer
+          name: Manufacturer
+        - field: MPN
+          name: MPN
+        - field: Quantity Per PCB
+          name: Qty
+
+  # Netlist export
+  - name: netlist
+    comment: "Export KiCad netlist"
+    type: netlist
+    options:
+      output: '%f.%x'

@@ -1,23 +1,9 @@
 #include "voice_controller.h"
+#include "firmware_utils.h"
 
-#include <sstream>
+#include <Arduino.h>  // yield() — feeds WDT, lets other FreeRTOS tasks run
+
 #include <utility>
-
-namespace {
-
-std::string ModeLabel(MediaMode mode) {
-  switch (mode) {
-    case MediaMode::kMp3:
-      return "MP3";
-    case MediaMode::kRadio:
-      return "Radio";
-    case MediaMode::kIdle:
-    default:
-      return "Idle";
-  }
-}
-
-}  // namespace
 
 VoiceController::VoiceController(std::string device_id,
                                  BackendClient& backend,
@@ -59,6 +45,8 @@ bool VoiceController::CompletePushToTalk(const std::vector<uint8_t>& wav_data) {
 
   last_response_ = backend_.SubmitVoiceSession(device_id_, media_.Snapshot(),
                                                wav_data);
+  yield();  // WDT: feed watchdog after HTTP POST round-trip
+
   if (!last_response_.ok) {
     const std::string error_text =
         last_response_.error.empty() ? "session vocale en echec"
@@ -89,6 +77,7 @@ bool VoiceController::CompletePushToTalk(const std::vector<uint8_t>& wav_data) {
     std::vector<uint8_t> reply_audio;
     if (backend_.DownloadReplyAudio(last_response_.reply_audio_url,
                                     &reply_audio)) {
+      yield();  // WDT: feed watchdog after audio download
       if (!media_.PlayReplyAudio(reply_audio)) {
         backend_.SendPlayerEvent(device_id_, "playback_failed",
                                  media_.Snapshot(),
@@ -127,31 +116,11 @@ void VoiceController::RenderState(const std::string& headline,
 }
 
 std::string VoiceController::IdleSummary(const MediaSnapshot& media) {
-  std::ostringstream summary;
-  summary << ModeLabel(media.mode) << " | volume " << media.volume;
-  if (media.mode == MediaMode::kRadio && !media.station.empty()) {
-    summary << " | " << media.station;
-  } else if (media.mode == MediaMode::kMp3 && !media.track.empty()) {
-    summary << " | " << media.track;
-  } else if (!media.playing) {
-    summary << " | pause";
-  }
-  return summary.str();
+  return FwIdleSummary(media);
 }
 
 bool VoiceController::ShouldPublishPlaybackStarted(
     const MediaSnapshot& before, const MediaSnapshot& after,
     const VoiceIntent& intent) {
-  if (!after.playing) {
-    return false;
-  }
-
-  if (intent.type == "play" || intent.type == "switch_mode" ||
-      intent.type == "select_station" || intent.type == "next" ||
-      intent.type == "previous") {
-    return !before.playing || before.station != after.station ||
-           before.track != after.track || before.mode != after.mode;
-  }
-
-  return false;
+  return FwShouldPublishPlaybackStarted(before, after, intent);
 }

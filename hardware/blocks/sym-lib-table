@@ -1,0 +1,8 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "power")(type "KiCad")(uri "/usr/share/kicad/symbols/power.kicad_sym")(options "")(descr ""))
+  (lib (name "Device")(type "KiCad")(uri "/usr/share/kicad/symbols/Device.kicad_sym")(options "")(descr ""))
+  (lib (name "Connector")(type "KiCad")(uri "/usr/share/kicad/symbols/Connector.kicad_sym")(options "")(descr ""))
+  (lib (name "Regulator_Linear")(type "KiCad")(uri "/usr/share/kicad/symbols/Regulator_Linear.kicad_sym")(options "")(descr ""))
+  (lib (name "RF_Module")(type "KiCad")(uri "/usr/share/kicad/symbols/RF_Module.kicad_sym")(options "")(descr ""))
+)

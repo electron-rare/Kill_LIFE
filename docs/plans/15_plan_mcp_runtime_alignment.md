@@ -1,6 +1,6 @@
 # 15) Plan d'alignement MCP local
 
-Last updated: 2026-03-14
+Last updated: 2026-03-25
 
 Ce fichier est le plan MCP canonique cote `Kill_LIFE`.
 
@@ -20,7 +20,7 @@ Faire de `Kill_LIFE` le repo de consommation et de gouvernance MCP, sans mainten
 
 ## Etat actuel
 
-- `mcp.json` pointe vers des launchers MCP reels pour `kicad`, `validate-specs`, `knowledge-base`, `github-dispatch`, `freecad`, `openscad` et `huggingface`
+- `mcp.json` pointe vers 10 serveurs MCP reels: `kicad`, `validate-specs`, `knowledge-base`, `github-dispatch`, `freecad`, `openscad`, `ngspice`, `platformio`, `apify`, `huggingface`
 - `tools/hw/run_kicad_mcp.sh` est le point d'entree canonique pour le runtime KiCad
 - `tools/hw/cad_stack.sh mcp` est deja aligne sur ce launcher
 - `python3 tools/hw/mcp_smoke.py --timeout 30` passe sur la machine auditee via fallback conteneur
@@ -28,6 +28,7 @@ Faire de `Kill_LIFE` le repo de consommation et de gouvernance MCP, sans mainten
 - la pile MCP locale converge sur `2025-03-26`
 - l'observabilite synthetique MCP est exposee via `/api/ops/summary` si la stack compagnon `mascarade` tourne
 - le garde-fou `bash tools/tui/cad_mcp_audit.sh audit` retourne `0 actionable hit` au lot provenance du `2026-03-14`
+- **2026-03-25**: ajout de `ngspice` (simulation SPICE), `platformio` (build firmware), `apify` (fetch docs); smokes passes; PlatformIO 6.1.19 installe dans `.pio-venv/`
 
 ## Decisions figees
 
@@ -50,6 +51,9 @@ Faire de `Kill_LIFE` le repo de consommation et de gouvernance MCP, sans mainten
 6. Ajouter un smoke consommateur versionne
 7. Fixer une doc d'usage canonique et une matrice de support
 8. Classer la provenance MCP/CAD sans desserrer le garde-fou d'audit
+9. **[2026-03-25]** Ajouter MCP `ngspice`: simulation SPICE batch via ngspice-42, 4 tools, 4 circuits de reference dans `spice/`, smoke passe
+10. **[2026-03-25]** Ajouter MCP `platformio`: build/test/check/metadata ESP32-S3, PlatformIO 6.1.19 dans `.pio-venv/`, smoke passe
+11. **[2026-03-25]** Ajouter MCP `apify`: fetch docs Espressif/KiCad/PlatformIO, mode dual API/scrape, `ingest_to_rag` connecte a mascarade core, smoke passe
 
 ## Travail restant
 

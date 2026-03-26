@@ -36,6 +36,27 @@
       "args": ["tools/run_openscad_mcp.sh"],
       "tools": ["*"]
     },
+    "ngspice": {
+      "type": "local",
+      "command": "bash",
+      "args": ["tools/run_ngspice_mcp.sh"],
+      "tools": ["*"]
+    },
+    "platformio": {
+      "type": "local",
+      "command": "bash",
+      "args": ["tools/run_platformio_mcp.sh"],
+      "tools": ["*"]
+    },
+    "apify": {
+      "type": "local",
+      "command": "bash",
+      "args": ["tools/run_apify_mcp.sh"],
+      "env": {
+        "APIFY_API_KEY": "${APIFY_API_KEY}"
+      },
+      "tools": ["*"]
+    },
     "huggingface": {
       "type": "url",
       "url": "https://huggingface.co/mcp",

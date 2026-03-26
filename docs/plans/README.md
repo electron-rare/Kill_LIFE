@@ -32,6 +32,11 @@ Ces plans sont des **runbooks** : tu peux les suivre tels quels, ou les transfor
 22. [Plan integration intelligence agentique](22_plan_integration_intelligence_agentique.md)
 23. [TODO integration intelligence agentique](22_todo_integration_intelligence_agentique.md)
 
+### TODOs actifs
+
+- [TODO 2026-03-10](TODO_2026-03-10.md) — Toolchain, firmware Semaine 1/2 (partiellement accompli)
+- [TODO 2026-03-25](TODO_2026-03-25.md) — **Actuel** — MCP ngspice/platformio/apify + RAG pipeline + collections Qdrant ✅, prochains : build firmware + premier schéma KiCad
+
 ---
 
 Astuce : si tu veux exécuter ces plans “à la chaîne” en mode agentique, commence par créer une issue “Program” et découpe en sous‑issues (ou en checklists), puis applique les labels `ai:*` progressivement.

@@ -76,6 +76,25 @@ CHECKS: tuple[dict[str, Any], ...] = (
         "optional_degraded_when_live_validation": ("quota_exceeded",),
         "timeout_s": 120.0,
     },
+    {
+        "name": "ngspice",
+        "cmd": ["python3", "tools/ngspice_mcp_smoke.py", "--json", "--quick"],
+        "accept_degraded": False,
+        "timeout_s": 60.0,
+    },
+    {
+        "name": "platformio",
+        "cmd": ["python3", "tools/platformio_mcp_smoke.py", "--json", "--quick"],
+        "accept_degraded": False,
+        "timeout_s": 90.0,
+    },
+    {
+        "name": "apify",
+        "cmd": ["python3", "tools/apify_mcp_smoke.py", "--json", "--quick"],
+        "accept_degraded": True,
+        "blocked_when": "APIFY_API_KEY not configured (direct-scrape fallback active)",
+        "timeout_s": 60.0,
+    },
 )
 
 
