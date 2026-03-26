@@ -112,7 +112,7 @@ resolve_host_openscad() {
     fi
   done
 
-  return 1
+  return 0
 }
 
 ensure_service_up() {

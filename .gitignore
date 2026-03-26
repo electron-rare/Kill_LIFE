@@ -16,6 +16,11 @@ ENV/
 .pio/
 .pioenvs/
 .build/
+.pio-venv/
+
+# Tool virtual environments (local installs, not part of repo)
+.kibot-venv/
+.zeroclaw-venv/
 
 # VSCode
 .vscode/

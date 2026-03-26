@@ -1,0 +1,209 @@
+{
+  "contract_version": "ops-kill-life-erp-v1",
+  "updated_at": "2026-03-22",
+  "ops_surface": {
+    "name": "L'electronrare Ops",
+    "url": "https://www.lelectronrare.fr/ops",
+    "role": "ERP",
+    "description": "Business and operational governance layer for priorities, actions, CRM workflow, launch workflow, and operator-level arbitration."
+  },
+  "system_of_record": {
+    "tracking_root": "/Users/electron/Documents/Lelectron_rare/Kill_LIFE",
+    "mascarade_root": "/Users/electron/Documents/Projets/mascarade"
+  },
+  "layers": [
+    {
+      "id": "PLM",
+      "name": "Product Lifecycle Management",
+      "owner_agent": "PLM-Archivist",
+      "purpose": "Specifications, plans, contracts, diagrams, design memory"
+    },
+    {
+      "id": "ERP",
+      "name": "L'electronrare Ops",
+      "owner_agent": "Ops-Governor",
+      "purpose": "Resource governance, machine allocation, ownership, secret scopes, priorities"
+    },
+    {
+      "id": "MES",
+      "name": "Kill_LIFE Cockpit",
+      "owner_agent": "SyncOps",
+      "purpose": "Execution, lots, operator lane, daily alignment, handoffs"
+    },
+    {
+      "id": "WMS",
+      "name": "Artifacts and Operational Memory",
+      "owner_agent": "Artifact-Curator",
+      "purpose": "Artifacts, logs, datasets, handoff outputs, retention"
+    },
+    {
+      "id": "DCS",
+      "name": "Runtime and Mesh Control",
+      "owner_agent": "Runtime-Guard",
+      "purpose": "Runtimes, SSH mesh, dispatch P2P, health checks, load balancing"
+    }
+  ],
+  "machines": [
+    {
+      "label": "tower",
+      "host": "clems@192.168.0.120",
+      "canonical_root": "/home/clems/mascarade",
+      "runtime_roots": ["/home/clems/mascarade", "/home/clems/mascarade-main"],
+      "role": "primary-heavy",
+      "criticality": "high",
+      "owner_agent": "Runtime-Guard",
+      "priority_order": 1,
+      "load_policy": "prefer-heavy",
+      "secret_scope": ["router", "governance"],
+      "ports": [3100, 8000, 11434]
+    },
+    {
+      "label": "photon",
+      "host": "root@192.168.0.119",
+      "canonical_root": "/root/mascarade-main",
+      "runtime_roots": ["/root/mascarade-main"],
+      "role": "vm-governance-reserve",
+      "criticality": "medium",
+      "owner_agent": "Ops-Governor",
+      "priority_order": 5,
+      "load_policy": "avoid-heavy",
+      "secret_scope": ["router", "governance"],
+      "ports": [3000, 3100]
+    },
+    {
+      "label": "kxkm",
+      "host": "kxkm@kxkm-ai",
+      "canonical_root": "/home/kxkm/mascarade",
+      "runtime_roots": ["/home/kxkm/mascarade", "/home/kxkm/mascarade-main"],
+      "role": "interactive-ai",
+      "criticality": "high",
+      "owner_agent": "Ops-Governor",
+      "priority_order": 2,
+      "load_policy": "secondary-heavy",
+      "secret_scope": ["router", "governance"],
+      "ports": [3000, 3100, 8080, 11434]
+    },
+    {
+      "label": "cils",
+      "host": "cils@100.126.225.111",
+      "canonical_root": "/Users/cils/mascarade-main",
+      "runtime_roots": ["/Users/cils/mascarade-main", "/Users/cils/mascarade"],
+      "role": "non-essential-burst",
+      "criticality": "medium",
+      "owner_agent": "Runtime-Guard",
+      "priority_order": 3,
+      "load_policy": "burst-only",
+      "secret_scope": ["router", "governance"],
+      "ports": [11434]
+    },
+    {
+      "label": "local",
+      "host": "local",
+      "canonical_root": "/Users/electron/Documents/Projets/mascarade",
+      "runtime_roots": ["/Users/electron/Documents/Projets/mascarade"],
+      "role": "control-and-fallback",
+      "criticality": "medium",
+      "owner_agent": "SyncOps",
+      "priority_order": 4,
+      "load_policy": "fallback",
+      "secret_scope": ["router", "governance"],
+      "ports": []
+    }
+  ],
+  "secret_scopes": [
+    {
+      "name": "router",
+      "env_var": "MISTRAL_API_KEY",
+      "owner_agent": "Ops-Governor",
+      "consumer_scope": "Mascarade router and Studio integrations",
+      "storage": [
+        "/Users/electron/Documents/Projets/mascarade/.env",
+        "mesh .env via tools/cockpit/mascarade_mesh_env_sync.sh"
+      ]
+    },
+    {
+      "name": "governance",
+      "env_var": "MISTRAL_GOVERNANCE_API_KEY",
+      "owner_agent": "KillLife-Bridge",
+      "consumer_scope": "Kill_LIFE governance scripts and Mistral operator tooling",
+      "storage": [
+        "~/.kill-life/mistral.env",
+        "mesh secret files via tools/cockpit/kill_life_mistral_governance_sync.sh"
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "path": "docs/",
+      "layer": "PLM",
+      "owner_agent": "PLM-Archivist",
+      "purpose": "Plans, contracts, diagrams, research"
+    },
+    {
+      "path": "specs/",
+      "layer": "PLM",
+      "owner_agent": "PLM-Archivist",
+      "purpose": "Task backlog, contracts, structured specifications"
+    },
+    {
+      "path": "tools/cockpit/full_operator_lane.sh",
+      "layer": "MES",
+      "owner_agent": "SyncOps",
+      "purpose": "Primary operator lane"
+    },
+    {
+      "path": "tools/cockpit/run_alignment_daily.sh",
+      "layer": "MES",
+      "owner_agent": "SyncOps",
+      "purpose": "Daily alignment and reporting"
+    },
+    {
+      "path": "tools/cockpit/lot_chain.sh",
+      "layer": "MES",
+      "owner_agent": "SyncOps",
+      "purpose": "Lot sequencing and resumption"
+    },
+    {
+      "path": "tools/cockpit/machine_registry.sh",
+      "layer": "ERP",
+      "owner_agent": "Ops-Governor",
+      "purpose": "Machine and capacity registry"
+    },
+    {
+      "path": "tools/cockpit/mascarade_mesh_env_sync.sh",
+      "layer": "ERP",
+      "owner_agent": "Ops-Governor",
+      "purpose": "Router secret propagation"
+    },
+    {
+      "path": "tools/cockpit/kill_life_mistral_governance_sync.sh",
+      "layer": "ERP",
+      "owner_agent": "KillLife-Bridge",
+      "purpose": "Governance secret propagation"
+    },
+    {
+      "path": "artifacts/",
+      "layer": "WMS",
+      "owner_agent": "Artifact-Curator",
+      "purpose": "Artifacts, logs, reports, watchboards"
+    },
+    {
+      "path": "tools/cockpit/dataset_audit_tui.sh",
+      "layer": "WMS",
+      "owner_agent": "Dataset-Curator",
+      "purpose": "Dataset audit and preflight"
+    },
+    {
+      "path": "tools/cockpit/mesh_sync_preflight.sh",
+      "layer": "DCS",
+      "owner_agent": "Runtime-Guard",
+      "purpose": "Mesh preflight and dispatch readiness"
+    },
+    {
+      "path": "tools/cockpit/mascarade_runtime_health.sh",
+      "layer": "DCS",
+      "owner_agent": "Runtime-Guard",
+      "purpose": "Mascarade and Ollama runtime health"
+    }
+  ]
+}

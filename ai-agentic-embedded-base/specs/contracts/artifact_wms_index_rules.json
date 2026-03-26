@@ -1,0 +1,108 @@
+{
+  "contract_version": "artifact-wms-index-v1",
+  "updated_at": "2026-03-22",
+  "root": "artifacts/",
+  "scan": {
+    "max_depth": 4,
+    "latest_patterns": ["*latest*.json", "*latest*.md", "*latest*.log"]
+  },
+  "rules": [
+    {
+      "match": "product_contract",
+      "consumer_layer": "MES",
+      "owner_agent": "SyncOps",
+      "lot_refs": ["T-RE-273", "T-RE-276", "T-RE-279", "T-RE-284"],
+      "purpose": "Product contract audit and handoff continuity"
+    },
+    {
+      "match": "kill_life_memory",
+      "consumer_layer": "MES",
+      "owner_agent": "KillLife-Bridge",
+      "lot_refs": ["T-RE-261", "T-RE-262", "T-RE-267"],
+      "purpose": "Canonical execution memory and resume continuity"
+    },
+    {
+      "match": "daily_operator_summary",
+      "consumer_layer": "MES",
+      "owner_agent": "SyncOps",
+      "lot_refs": ["T-RE-236", "T-RE-247"],
+      "purpose": "Operator handoff summary"
+    },
+    {
+      "match": "weekly_refonte",
+      "consumer_layer": "MES",
+      "owner_agent": "SyncOps",
+      "lot_refs": ["T-RE-234", "T-RE-253", "T-RE-257"],
+      "purpose": "Weekly execution summary"
+    },
+    {
+      "match": "mascarade_incident",
+      "consumer_layer": "WMS",
+      "owner_agent": "Artifact-Curator",
+      "lot_refs": ["T-RE-233", "T-RE-240", "T-RE-241", "T-RE-245"],
+      "purpose": "Incident brief, registry, queue, and watch outputs"
+    },
+    {
+      "match": "mascarade_watch",
+      "consumer_layer": "WMS",
+      "owner_agent": "Artifact-Curator",
+      "lot_refs": ["T-RE-250", "T-RE-252", "T-RE-257"],
+      "purpose": "Short watchboard and history artifacts"
+    },
+    {
+      "match": "mascarade_runtime_health",
+      "consumer_layer": "DCS",
+      "owner_agent": "Runtime-Guard",
+      "lot_refs": ["T-RE-222", "T-RE-263"],
+      "purpose": "Mascarade and Ollama runtime health"
+    },
+    {
+      "match": "mascarade_agent_smoke",
+      "consumer_layer": "DCS",
+      "owner_agent": "Runtime-Guard",
+      "lot_refs": ["T-RE-*"],
+      "purpose": "Agent smoke checks and runtime reachability"
+    },
+    {
+      "match": "mesh",
+      "consumer_layer": "DCS",
+      "owner_agent": "Runtime-Guard",
+      "lot_refs": ["T-RE-*"],
+      "purpose": "Mesh, dispatch, and runtime preflight"
+    },
+    {
+      "match": "dataset",
+      "consumer_layer": "WMS",
+      "owner_agent": "Dataset-Curator",
+      "lot_refs": ["T-MA-015", "T-MS-002", "T-MS-003"],
+      "purpose": "Dataset audit, preflight, and fine-tune staging"
+    },
+    {
+      "match": "repo_state",
+      "consumer_layer": "PLM",
+      "owner_agent": "PLM-Archivist",
+      "lot_refs": ["T-RE-*"],
+      "purpose": "Repository coherence and state evidence"
+    },
+    {
+      "match": "specs",
+      "consumer_layer": "PLM",
+      "owner_agent": "PLM-Archivist",
+      "lot_refs": ["T-RE-*"],
+      "purpose": "Specification-derived artifacts"
+    },
+    {
+      "match": "operator_lane",
+      "consumer_layer": "MES",
+      "owner_agent": "SyncOps",
+      "lot_refs": ["T-RE-*"],
+      "purpose": "Primary operator lane evidence"
+    }
+  ],
+  "defaults": {
+    "consumer_layer": "WMS",
+    "owner_agent": "Artifact-Curator",
+    "lot_refs": [],
+    "purpose": "Unclassified artifact group"
+  }
+}

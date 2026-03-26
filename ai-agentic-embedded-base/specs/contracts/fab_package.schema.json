@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://electron-rare.local/specs/contracts/fab_package.schema.json",
+  "title": "Fab Package",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "generated_at",
+    "status",
+    "board_id",
+    "route_origin",
+    "source_schematic",
+    "source_board",
+    "bom_file",
+    "cpl_file",
+    "gerber_dir",
+    "drill_file",
+    "drc_report",
+    "review_artifacts",
+    "provenance",
+    "acceptance_gates"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "const": "fab-package-v1"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ready",
+        "degraded",
+        "blocked"
+      ]
+    },
+    "board_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_schematic": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_board": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "route_origin": {
+      "type": "string",
+      "enum": [
+        "local",
+        "quilter",
+        "pcbdesigner"
+      ]
+    },
+    "bom_file": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cpl_file": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "gerber_dir": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "drill_file": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "drc_report": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "review_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "producer",
+        "tool",
+        "mode",
+        "route_origin"
+      ],
+      "properties": {
+        "producer": {
+          "type": "string"
+        },
+        "tool": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "dry",
+            "live"
+          ]
+        },
+        "route_origin": {
+          "type": "string",
+          "enum": [
+            "local",
+            "quilter",
+            "pcbdesigner"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "acceptance_gates": {
+      "type": "object",
+      "required": [
+        "erc_ok",
+        "drc_ok",
+        "bom_review_ok",
+        "artifacts_complete"
+      ],
+      "properties": {
+        "erc_ok": {
+          "type": "boolean"
+        },
+        "drc_ok": {
+          "type": "boolean"
+        },
+        "bom_review_ok": {
+          "type": "boolean"
+        },
+        "artifacts_complete": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "degraded_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_steps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "additionalProperties": true
+}

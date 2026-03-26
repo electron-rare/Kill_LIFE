@@ -180,6 +180,25 @@ Elle ne remplace pas le contrat principal `runtime-mcp-ia-gateway/v1` tant que:
 - `firmware/src/voice_controller.cpp` et `firmware/include/voice_controller.h` restent en pre-integration tant qu'ils ne sont ni relies au `main.cpp`, ni couverts par une lane de build/test/release explicite.
 - `ai-agentic-embedded-base/firmware/` reste un repo compagnon minimal, pas une source de verite runtime.
 
+### F8 - Boundary MCP/service-first (T-AI-326)
+
+Le principe `service-first` signifie que tout appel IA à une capacité externe passe par un contrat MCP ou un endpoint de service, jamais par appel de fonction directe depuis le LLM.
+
+| Surface | Mode autorisé | Serveur MCP / endpoint | Statut |
+|---------|---------------|------------------------|--------|
+| EDA worker | `tools/call` via MCP | `platformio` MCP (`pio` tool) | ready |
+| Parts search | `tools/call` via MCP | `nexar-api` MCP ou `apify` MCP (`search_components`) | nexar: accept_degraded; apify: ready |
+| CI trigger | `tools/call` via MCP | `github-dispatch` MCP (`trigger_workflow`) | accept_degraded (token manquant) |
+| Artifact fetch | `GET /api/artifacts/[...segments]` | Next.js API route (`web/app/api/artifacts/`) | prêt si Next.js up |
+| Review hints | `tools/call` via MCP | `validate-specs` MCP (`validate_compliance`) | ready |
+| KiCad ERC/DRC | `tools/call` via MCP | `kicad` MCP (container) ou host `kicad-cli` | kicad: accept_degraded; host pcbnew: ok |
+
+Règles d'arbitrage:
+- Un agent **ne peut pas** appeler `subprocess`, `os.system` ou un binaire directement depuis du code LLM-généré — uniquement via `run_cad_stack()` ou un tool MCP.
+- Un agent **doit** préférer le chemin MCP local (`tools/call`) avant tout appel réseau externe.
+- Si un MCP est `accept_degraded`, l'agent doit dégrader proprement et signaler `degraded_reasons` sans bloquer le workflow.
+- Le `gateway/v1` (`runtime_ai_gateway.sh`) est la surface de vérité du statut de chaque serveur MCP.
+
 ## Architecture cible minimale
 
 ```mermaid

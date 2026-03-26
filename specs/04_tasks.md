@@ -134,7 +134,11 @@ Last updated: 2026-03-22
     - Preuves:
       - `docs/plans/12_plan_gestion_des_agents.md`
       - `docs/AGENT_SPEC_MODULE_MATRIX_2026-03-20.md`
-  - [ ] T-AI-323 — Faire remonter le statut `queue/worker/realtime` du produit web dans la memoire intelligence et preparer le pont vers `runtime_ai_gateway.sh`.
+  - [x] T-AI-323 — Faire remonter le statut `queue/worker/realtime` du produit web dans la memoire intelligence et preparer le pont vers `runtime_ai_gateway.sh`.
+    - Preuves:
+      - `tools/cockpit/intelligence_tui.sh` → `web_platform_health()` probe Next.js :3000, Yjs :1234, Redis :6379
+      - `artifacts/cockpit/intelligence_program/latest.json` → `web_platform_health` key présent, refreshed 2026-03-26
+      - `tools/cockpit/runtime_ai_gateway.sh` → `build_web_platform_surface()` lit le snapshot, expose `web_platform=degraded; 1/3 probes up`
   - [x] T-AI-324 — Remplacer les placeholders Git/PR/artifacts de `web/` par un read model derive de Git et de la CI.
     - Preuves:
       - `web/lib/git-project.ts`
@@ -145,8 +149,15 @@ Last updated: 2026-03-22
       - `web/components/pcb-workbench.tsx`
       - `web/components/pr-review-shell.tsx`
       - `web/workers/eda-worker.mjs`
-  - [ ] T-AI-325 — Binder Excalidraw a `Yjs` tout en gardant le save manuel comme snapshot Git.
-  - [ ] T-AI-326 — Formaliser le boundary `MCP/service-first` pour `EDA worker`, `parts search`, `CI trigger`, `artifact fetch` et `review hints`.
+  - [x] T-AI-325 — Binder Excalidraw a `Yjs` tout en gardant le save manuel comme snapshot Git.
+    - Preuves:
+      - `web/lib/use-yjs-excalidraw.ts` — hook `useYjsExcalidraw(roomName)`: `Y.Doc` + `WebsocketProvider` + `Y.Array<excalidraw-elements>`, observer remote, `pushElements()` pour sync locale
+      - `web/components/excalidraw-canvas.tsx` — consomme `useYjsExcalidraw`
+      - `web/components/project-shell.tsx` — `saveDiagram()` via GraphQL mutation → `project-store.ts` → sauvegarde Git-tracked `.excalidraw`
+      - `web/realtime/server.mjs` — serveur `y-websocket` port 1234
+  - [x] T-AI-326 — Formaliser le boundary `MCP/service-first` pour `EDA worker`, `parts search`, `CI trigger`, `artifact fetch` et `review hints`.
+    - Preuves:
+      - `specs/agentic_intelligence_integration_spec.md` → section `F8 - Boundary MCP/service-first` avec table des 6 surfaces, modes autorisés, statuts MCP et règles d'arbitrage
 
 <!-- BEGIN AUTO LOT-CHAIN TASKS -->
 - [x] T-LC-001 - Keep the README/repo coherence lot clean via the dedicated audit loop.
@@ -1548,8 +1559,14 @@ Last updated: 2026-03-22
   - Livrable:
     - `tools/cockpit/pcb_ai_fab_tui.sh`
 - [ ] T-RE-296 — Executer un canary `Quilter` sur une carte pilote `Hypnoled` avec preuve de round-trip CAD.
-- [ ] T-RE-297 — Formaliser le contrat `fab package` (`Gerber + BOM + CPL + DRC + provenance`) avant toute lane `one-click fab`.
-- [ ] T-RE-298 — Traduire les patterns `kicad-happy` dans les playbooks `YiACAD / Forge / HW-BOM`.
+- [x] T-RE-297 — Formaliser le contrat `fab package` (`Gerber + BOM + CPL + DRC + provenance`) avant toute lane `one-click fab`.
+  - Preuves:
+    - `specs/contracts/fab_package.schema.json` — schema JSON Draft 2020-12, `contract_version: fab-package-v1`, champs requis: `bom_file`, `cpl_file`, `gerber_dir`, `drill_file`, `drc_report`, `provenance`, `acceptance_gates`
+    - `tools/cockpit/fab_package_tui.sh` — TUI de génération et validation du package
+- [x] T-RE-298 — Traduire les patterns `kicad-happy` dans les playbooks `YiACAD / Forge / HW-BOM`.
+  - Preuves:
+    - `docs/playbooks/kicad_happy_hw_bom_forge.md` — 8 steps canoniques, ownership matrix (Forge/HW-BOM/Embedded-CAD), critères assembly-ready
+    - Pilote validé sur Hypnoled: `artifacts/evals/hypnoled_playbook_2026-03-25.md`
 
 ## Delta 2026-03-22 - realignment lot 26 + fab package local
 

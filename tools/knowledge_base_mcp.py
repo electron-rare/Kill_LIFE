@@ -150,16 +150,17 @@ def _integration_unavailable_payload() -> dict[str, Any]:
 
 
 async def _with_client(callback):
+    # Auth check takes priority: missing credentials is more actionable than import errors
+    if not knowledge_base_auth_configured():
+        return error_tool_result(
+            knowledge_base_status_detail(),
+            _missing_secret_payload(),
+        )
     if KNOWLEDGE_BASE_IMPORT_ERROR is not None:
         detail = knowledge_base_status_detail()
         return error_tool_result(
             detail,
             _integration_unavailable_payload(),
-        )
-    if not knowledge_base_auth_configured():
-        return error_tool_result(
-            knowledge_base_status_detail(),
-            _missing_secret_payload(),
         )
 
     client = KnowledgeBaseClient()

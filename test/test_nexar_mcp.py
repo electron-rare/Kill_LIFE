@@ -14,6 +14,11 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / 'tools' / 'run_nexar_mcp.sh'
 PROTOCOL_VERSION = '2025-03-26'
 
+# Nexar MCP requires kicad_kic_ai mcp_servers to be populated
+_MASCARADE_DIR = os.environ.get("MASCARADE_DIR", str(REPO_ROOT / ".." / "mascarade-main"))
+_NEXAR_MCP_SERVERS = Path(_MASCARADE_DIR) / "finetune" / "kicad_kic_ai" / "mcp_servers"
+_NEXAR_AVAILABLE = _NEXAR_MCP_SERVERS.is_dir() and any(_NEXAR_MCP_SERVERS.iterdir())
+
 
 def send_message(proc: subprocess.Popen[str], payload: dict) -> None:
     body = json.dumps(payload)
@@ -56,6 +61,7 @@ def terminate(proc: subprocess.Popen[str]) -> None:
             handle.close()
 
 
+@unittest.skipUnless(_NEXAR_AVAILABLE, f"kicad_kic_ai mcp_servers not populated: {_NEXAR_MCP_SERVERS}")
 class NexarMcpTests(unittest.TestCase):
     def test_server_supports_initialize_tools_list_and_demo_search(self):
         env = os.environ.copy()

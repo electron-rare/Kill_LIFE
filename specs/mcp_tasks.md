@@ -63,14 +63,14 @@ Format:
 - [x] K-011 — Ajouter une observabilité MCP synthétique
   - AC: un état `ready / degraded / failed` est visible sans lecture manuelle des logs.
 
-- [ ] K-012 — Rejouer la validation host-native sur une machine avec `pcbnew`
+- [~] K-012 — Rejouer la validation host-native sur une machine avec `pcbnew`
   - AC: le smoke passe aussi sur le chemin hote, pas seulement via le fallback conteneur.
-  - Statut: optionnel tant que le runtime canonique reste `container` et valide en production locale.
-  - Helper pret: `python3 tools/hw/kicad_host_mcp_smoke.py --json --quick` degrade proprement si `pcbnew` est absent.
-  - Derniere verification: `2026-03-09` sur cette machine -> `blocked by host environment`
+  - Statut: pcbnew importable ✓ — bloque uniquement sur `kicad_mcp_server/dist/index.js` manquant (mascarade-main vide), meme cause que kicad-host.
+  - Helper pret: `python3 tools/hw/kicad_host_mcp_smoke.py --json --quick`
+  - Derniere verification: `2026-03-26` sur cette machine
   - Evidence: `python3 tools/hw/kicad_host_mcp_smoke.py --json --quick`
-  - Resultat: `{"status":"degraded","requested_runtime":"host","runtime_mode":"host","quick":true,"host_pcbnew_import":"missing","error":"pcbnew not importable on host runtime"}`
-  - Note: `command -v pcbnew` retourne vide sur cette machine; aucun lot automatique supplementaire n'est pertinent tant que le runtime host KiCad n'est pas installe.
+  - Resultat: `{"status":"blocked","host_pcbnew_import":"ok","entrypoint_state":"missing","error":"host entrypoint missing: .../kicad_mcp_server/dist/index.js"}`
+  - Note: `host_pcbnew_import` est passe de `missing` a `ok` (KiCad 10 installe nativement). Reste: peupler `mascarade-main/finetune/kicad_mcp_server/` depuis la source.
 
 - [x] K-013 — Décider du statut final des micro-serveurs `kicad_kic_ai`
   - AC: `component_database`, `kicad_tools` et `nexar_api` sont explicitement promus en surfaces auxiliaires supportées.

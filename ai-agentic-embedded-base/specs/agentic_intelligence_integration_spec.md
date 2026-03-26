@@ -6,7 +6,9 @@
 
 La phase initiale du lot 22 etait volontairement minimale: elle fixait les contrats et la gouvernance documentaire. La realite livree a depuis depasse ce cadre, avec une TUI `intelligence_tui`, une gateway `runtime_ai_gateway`, des artefacts `latest.*` et des tests de contrat deja publies.
 
-La phase active `2026-03-21` couvre donc des travaux de durcissement et d'alignement: coherence docs/spec/plan/TODO, garde-fous de purge, robustesse des sorties machine, veille officielle actualisee et priorisation des integrations firmware/CAD/MCP.
+La phase active `2026-03-22` couvre donc des travaux de durcissement et d'alignement: coherence docs/spec/plan/TODO, garde-fous de purge, robustesse des sorties machine, veille officielle actualisee et priorisation des integrations firmware/CAD/MCP.
+
+Elle couvre maintenant aussi la plateforme Git EDA `web/`: `specs/yiacad_git_eda_platform_spec.md`, `docs/plans/23_*`, `docs/YIACAD_GIT_EDA_PLATFORM_2026-03-22.md` et `web/README.md` deviennent des sources canoniques de la meme gouvernance intelligence.
 
 ## Objectifs
 
@@ -15,6 +17,8 @@ La phase active `2026-03-21` couvre donc des travaux de durcissement et d'aligne
 - O3: aligner la spec, le plan 22 et `docs/AI_WORKFLOWS.md` sur ces deux contrats.
 - O4: garder la future surface TUI en aval de ces contrats, pas l'inverse.
 - O5: durcir les surfaces cockpit deja livrees pour que la memoire, les purges et les sorties JSON restent fiables hors cas ideal.
+- O6: etendre la gouvernance intelligence au backlog `web/` sans casser la separation `spec/plan/todo`.
+- O7: documenter une matrice unique `contrat -> champs requis -> source canonique -> artefact publie -> cadence de refresh`.
 
 ## Hors scope
 
@@ -99,7 +103,13 @@ Les sources suivantes doivent rester alignees pour ce lot:
 
 - `specs/agentic_intelligence_integration_spec.md`
 - `docs/plans/22_plan_integration_intelligence_agentique.md`
+- `docs/plans/22_todo_integration_intelligence_agentique.md`
 - `docs/AI_WORKFLOWS.md`
+- `specs/yiacad_git_eda_platform_spec.md`
+- `docs/plans/23_plan_yiacad_git_eda_platform.md`
+- `docs/plans/23_todo_yiacad_git_eda_platform.md`
+- `docs/YIACAD_GIT_EDA_PLATFORM_2026-03-22.md`
+- `web/README.md`
 - `specs/contracts/summary_short.schema.json`
 - `specs/contracts/runtime_mcp_ia_gateway.schema.json`
 
@@ -111,6 +121,14 @@ Le vocabulaire canonique reste:
 - `write_set`
 - `status`
 - `evidence`
+
+La matrice contractuelle minimale doit rester reconstructible sans lire le shell:
+
+| Contrat | Champs requis minimum | Source canonique | Artefact publie | Cadence |
+| --- | --- | --- | --- | --- |
+| `cockpit-v1` | `contract_version`, `component`, `action`, `status`, `contract_status`, `artifacts`, `degraded_reasons`, `next_steps` | `tools/cockpit/*.sh`, `tools/cockpit/README.md` | `artifacts/cockpit/**/latest.json` et sorties TUI | a chaque run |
+| `summary-short/v1` | `contract_version`, `generated_at`, `component`, `owner_repo`, `owner_agent`, `owner_subagent`, `write_set`, `status`, `summary_short`, `evidence` | cette spec + `docs/AI_WORKFLOWS.md` + schemas | stdout ou artefact court de lot | a chaque passe structurante |
+| `runtime-mcp-ia-gateway/v1` | `contract_version`, `generated_at`, `component`, `owner_repo`, `owner_agent`, `owner_subagent`, `write_set`, `status`, `summary_short`, `evidence`, `surfaces` | cette spec + `docs/AI_WORKFLOWS.md` + schemas | `artifacts/cockpit/runtime_ai_gateway/latest.json` | a chaque refresh runtime |
 
 ### F4 - Sequencement minimal
 
@@ -128,6 +146,31 @@ La phase active durcit maintenant:
 - la stabilite des sorties JSON et des chemins de reference
 - la priorisation des integrations firmware/CAD/MCP a raccorder aux contrats
 
+### F6 - Couverture `web/` et YiACAD Git EDA
+
+La gouvernance intelligence doit aussi remonter un backlog vivant pour la plateforme `web/`.
+
+Minimum requis:
+
+- `intelligence_tui` lit `docs/plans/23_todo_yiacad_git_eda_platform.md` en plus du `TODO 22`
+- les `next_steps` priorisent d'abord les ecarts `lot 22`, puis `plan 23`, puis `specs/04_tasks.md`
+- la matrice agents affecte explicitement les modules `web/app/*`, `web/components/*`, `web/lib/*`, `web/realtime/*`, `web/workers/*`
+- le wording canonique distingue clairement:
+  - `Git` = source de verite produit
+  - `Yjs` = transport/collab temps reel
+  - `BullMQ + workers` = execution EDA
+  - `MCP / service-first AI` = overlay de review, parts, CI et artefacts
+
+### F7 - Firmware/CAD bridge auxiliaire
+
+La surface `firmware_cad` publiee par `runtime_ai_gateway.sh` reste un bridge auxiliaire de sante.
+
+Elle ne remplace pas le contrat principal `runtime-mcp-ia-gateway/v1` tant que:
+
+- les preuves firmware et CAD ne sont pas stabilisees sous une cadence unique
+- le raccord `voice` reste en pre-integration
+- la lane `web/` n'a pas encore un read model live de ses workers/artifacts
+
 ### F5 - Politique canonique root / miroir / firmware
 
 - `Kill_LIFE/specs/` reste la source de verite documentaire et contractuelle.
@@ -137,19 +180,42 @@ La phase active durcit maintenant:
 - `firmware/src/voice_controller.cpp` et `firmware/include/voice_controller.h` restent en pre-integration tant qu'ils ne sont ni relies au `main.cpp`, ni couverts par une lane de build/test/release explicite.
 - `ai-agentic-embedded-base/firmware/` reste un repo compagnon minimal, pas une source de verite runtime.
 
+### F8 - Boundary MCP/service-first (T-AI-326)
+
+Le principe `service-first` signifie que tout appel IA à une capacité externe passe par un contrat MCP ou un endpoint de service, jamais par appel de fonction directe depuis le LLM.
+
+| Surface | Mode autorisé | Serveur MCP / endpoint | Statut |
+|---------|---------------|------------------------|--------|
+| EDA worker | `tools/call` via MCP | `platformio` MCP (`pio` tool) | ready |
+| Parts search | `tools/call` via MCP | `nexar-api` MCP ou `apify` MCP (`search_components`) | nexar: accept_degraded; apify: ready |
+| CI trigger | `tools/call` via MCP | `github-dispatch` MCP (`trigger_workflow`) | accept_degraded (token manquant) |
+| Artifact fetch | `GET /api/artifacts/[...segments]` | Next.js API route (`web/app/api/artifacts/`) | prêt si Next.js up |
+| Review hints | `tools/call` via MCP | `validate-specs` MCP (`validate_compliance`) | ready |
+| KiCad ERC/DRC | `tools/call` via MCP | `kicad` MCP (container) ou host `kicad-cli` | kicad: accept_degraded; host pcbnew: ok |
+
+Règles d'arbitrage:
+- Un agent **ne peut pas** appeler `subprocess`, `os.system` ou un binaire directement depuis du code LLM-généré — uniquement via `run_cad_stack()` ou un tool MCP.
+- Un agent **doit** préférer le chemin MCP local (`tools/call`) avant tout appel réseau externe.
+- Si un MCP est `accept_degraded`, l'agent doit dégrader proprement et signaler `degraded_reasons` sans bloquer le workflow.
+- Le `gateway/v1` (`runtime_ai_gateway.sh`) est la surface de vérité du statut de chaque serveur MCP.
+
 ## Architecture cible minimale
 
 ```mermaid
 flowchart TD
   Spec["Spec intelligence"] --> Plan["Plan 22"]
+  Spec --> WebPlan["Plan 23 web Git EDA"]
   Spec --> Summary["summary-short/v1"]
   Spec --> Gateway["runtime-mcp-ia-gateway/v1"]
   Plan --> AIFlows["docs/AI_WORKFLOWS.md"]
+  WebPlan --> WebDocs["docs/YIACAD_GIT_EDA_PLATFORM_2026-03-22.md"]
+  WebDocs --> WebReadme["web/README.md"]
   Runtime["runtime health"] --> Gateway
   MCP["mcp health"] --> Gateway
   IA["ia health"] --> Gateway
   Summary --> FutureTUI["future intelligence TUI"]
   Gateway --> FutureTUI
+  FutureTUI --> WebBacklog["TODO 22 + TODO 23 + specs/04_tasks"]
 ```
 
 ## Modele de donnees minimum
@@ -182,6 +248,7 @@ Contrat agrege de sante pour repondre rapidement a:
 | sante runtime/MCP/IA | pilote | `runtime-mcp-ia-gateway/v1` comme contrat agrege |
 | orchestration longue | optionnelle | LangGraph / Agents SDK comme overlays, pas comme coeur documentaire |
 | MCP | pilote | standard de connexion et de discovery prioritaire |
+| web Git EDA | pilote | backlog `plan 23`, Git source of truth, Yjs transport, AI overlay service-first |
 
 ## Criteres d'acceptation
 
@@ -193,3 +260,5 @@ Contrat agrege de sante pour repondre rapidement a:
 - AC6: les purges non interactives exigent un opt-in explicite et les sorties JSON critiques restent parseables.
 - AC7: la politique `Kill_LIFE/specs` canonique -> `ai-agentic-embedded-base/specs` miroir exporte est documentee avec sa commande de synchronisation.
 - AC8: le chemin firmware canonique et le statut pre-integration de la stack voice sont documentes avant tout raccord aux contrats intelligence.
+- AC9: `intelligence_tui` couvre aussi `specs/yiacad_git_eda_platform_spec.md`, `docs/plans/23_*`, `docs/YIACAD_GIT_EDA_PLATFORM_2026-03-22.md` et `web/README.md`.
+- AC10: la spec, le plan 22, le TODO 22, le plan 23, le TODO 23 et `docs/AI_WORKFLOWS.md` distinguent explicitement `cockpit-v1`, `summary-short/v1`, `runtime-mcp-ia-gateway/v1` et le bridge auxiliaire `firmware_cad`.

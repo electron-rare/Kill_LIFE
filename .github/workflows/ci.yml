@@ -10,7 +10,6 @@ on:
 permissions:
   contents: read
 
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -47,28 +46,139 @@ jobs:
       - name: Lint firmware (clang-format)
         run: bash tools/ci/lint_firmware.sh
 
-  hardware-gate:
+  firmware-native:
+    name: Firmware — Unity tests (native)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Install PlatformIO
+        run: |
+          pip install platformio
+          pio --version
+
+      - name: Run Unity tests (native env)
+        working-directory: firmware
+        run: pio test -e native
+
+  firmware-build:
+    name: Firmware — ESP32-S3 build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: firmware-native
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      - name: Cache PlatformIO packages
+        uses: actions/cache@v4
         with:
-          python-version: "3.11"
+          path: ~/.platformio
+          key: pio-esp32s3-${{ hashFiles('firmware/platformio.ini') }}
+          restore-keys: pio-esp32s3-
 
-      - name: Bootstrap repo-local venv
-        run: bash tools/bootstrap_python_env.sh
+      - name: Build esp32s3_waveshare
+        working-directory: firmware
+        run: pio run -e esp32s3_waveshare
 
-      - name: Hardware exports (ERC/DRC/BOM/renders)
-        run: bash tools/hw/hw_gate.sh hardware/kicad || echo "No KiCad files or kicad-cli unavailable (non-blocking)"
-
-      - name: Upload hardware artifacts
-        if: always()
+      - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: hardware-previews
-          if-no-files-found: warn
-          path: artifacts/hw_previews/
+          name: firmware-bin
+          path: firmware/.pio/build/esp32s3_waveshare/firmware.bin
+          retention-days: 30
+
+  firmware-sim:
+    name: Firmware — Wokwi simulation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: firmware-build
+    if: ${{ vars.WOKWI_CLI_TOKEN != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download firmware artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: firmware-bin
+          path: firmware/.pio/build/esp32s3_waveshare/
+
+      - name: Install PlatformIO & build ELF
+        run: |
+          pip install platformio
+          cd firmware && pio run -e esp32s3_waveshare
+
+      - name: Wokwi CI simulation
+        uses: wokwi/wokwi-ci-action@v1
+        with:
+          token: ${{ vars.WOKWI_CLI_TOKEN }}
+          path: firmware
+          timeout: 15000
+          scenario: scenario.yaml
+
+  hardware-export:
+    name: Hardware — KiCad ERC + exports
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install KiCad 10
+        run: |
+          sudo add-apt-repository -y ppa:kicad/kicad-10.0-releases
+          sudo apt-get update
+          sudo apt-get install -y kicad
+          kicad-cli version
+
+      - name: Run ERC
+        run: |
+          mkdir -p artifacts/hw
+          kicad-cli sch erc hardware/esp32_minimal/esp32_minimal.kicad_sch \
+            --format json --output artifacts/hw/erc_report.json
+          python3 -c "
+          import json, sys
+          d = json.load(open('artifacts/hw/erc_report.json'))
+          v = d['sheets'][0]['violations']
+          errs = [x for x in v if x['severity'] == 'error']
+          print(f'ERC: {len(errs)} errors, {len(v)-len(errs)} warnings')
+          if errs: sys.exit(1)
+          "
+
+      - name: Export SVG + PDF + netlist
+        run: |
+          mkdir -p artifacts/hw
+          kicad-cli sch export svg hardware/esp32_minimal/esp32_minimal.kicad_sch \
+            --output artifacts/hw/
+          kicad-cli sch export pdf hardware/esp32_minimal/esp32_minimal.kicad_sch \
+            --output artifacts/hw/schematic.pdf
+          kicad-cli sch export netlist hardware/esp32_minimal/esp32_minimal.kicad_sch \
+            --output artifacts/hw/netlist.xml
+
+      - name: Install KiBot
+        run: pip install kibot
+
+      - name: KiBot exports (SVG, PDF, BOM, netlist)
+        working-directory: hardware/esp32_minimal
+        continue-on-error: true
+        run: |
+          mkdir -p ../../artifacts/hw/kibot
+          kibot -c .kibot.yaml -e esp32_minimal.kicad_sch \
+            -d ../../artifacts/hw/kibot/ 2>&1 || echo "[kibot] non-zero exit (KiCad 10 compat)"
+
+      - name: Compliance validation (prototype profile)
+        run: |
+          python3 tools/compliance/validate.py --strict
+
+      - name: Upload hardware artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: hardware-exports
+          path: artifacts/hw/
+          retention-days: 30

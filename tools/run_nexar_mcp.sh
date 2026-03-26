@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MASCARADE_DIR="${MASCARADE_DIR:-$ROOT_DIR/../mascarade}"
+MASCARADE_DIR="${MASCARADE_DIR:-$ROOT_DIR/../mascarade-main}"
 KICAD_KIC_AI_DIR="${KICAD_KIC_AI_DIR:-$MASCARADE_DIR/finetune/kicad_kic_ai}"
 PYTHON_BIN="${NEXAR_MCP_PYTHON:-}"
 TOKEN_CONFIGURED="no"

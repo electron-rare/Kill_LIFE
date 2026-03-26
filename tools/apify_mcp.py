@@ -313,6 +313,117 @@ async def handle_feed_dataset(args: dict) -> str:
     return json.dumps({"status": "ok", "domain": domain, "file": str(dataset_file), "total_entries": count})
 
 
+async def handle_get_runtime_info(_args: dict) -> str:
+    apify_key = os.environ.get("APIFY_API_KEY", "")
+    mode = "apify-api" if apify_key and len(apify_key) > 10 else "direct-scrape"
+    return json.dumps({
+        "ok": True,
+        "mode": mode,
+        "apify_key_configured": bool(apify_key),
+        "tools": [t["name"] for t in TOOLS],
+    })
+
+
+async def handle_fetch_espressif_docs(args: dict) -> str:
+    """Fetch Espressif ESP-IDF / ESP32 documentation for a given topic."""
+    topic = args.get("topic", "")
+    chip = args.get("chip", "esp32s3")
+    base = f"https://docs.espressif.com/projects/esp-idf/en/latest/{chip}"
+    url = args.get("url", base)
+    return await handle_scrape_docs({"url": url, "topic": topic})
+
+
+async def handle_fetch_platformio_registry(args: dict) -> str:
+    """Fetch PlatformIO library registry entry for a library name or ID."""
+    library = args.get("library", "")
+    url = args.get("url", f"https://registry.platformio.org/search?q={library}")
+    return await handle_scrape_docs({"url": url, "topic": library})
+
+
+async def handle_fetch_kicad_library_info(args: dict) -> str:
+    """Fetch KiCad component library information (symbols, footprints)."""
+    component = args.get("component", "")
+    url = args.get("url", f"https://www.kicad.org/libraries/search/?q={component}")
+    return await handle_scrape_docs({"url": url, "topic": component})
+
+
+async def handle_ingest_to_rag(args: dict) -> str:
+    """Ingest scraped content into the Mascarade RAG pipeline."""
+    collection = args.get("collection", "kb-firmware")
+    content = args.get("content", "")
+    source = args.get("source", "apify-scrape")
+    if not content:
+        return json.dumps({"ok": False, "error": "content is required"})
+    rag_url = os.environ.get("MASCARADE_URL", "http://localhost:8100")
+    payload = {"collection": collection, "text": content, "metadata": {"source": source}}
+    try:
+        import urllib.request as _req
+        data = json.dumps(payload).encode()
+        req = _req.Request(f"{rag_url}/v1/rag/ingest", data=data,
+                           headers={"Content-Type": "application/json"}, method="POST")
+        with _req.urlopen(req, timeout=30) as r:
+            resp = json.loads(r.read().decode())
+        return json.dumps({"ok": True, "collection": collection, "response": resp})
+    except Exception as exc:
+        return json.dumps({"ok": False, "error": str(exc)})
+
+
+# Append Kill_LIFE-specific tools to the shared list.
+TOOLS.extend([
+    {
+        "name": "get_runtime_info",
+        "description": "Return Apify MCP runtime info: mode (apify-api vs direct-scrape), key status, registered tools.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "fetch_espressif_docs",
+        "description": "Fetch Espressif ESP-IDF / ESP32-S3 documentation for a topic or URL.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "topic": {"type": "string", "description": "Documentation topic to fetch"},
+                "chip": {"type": "string", "description": "Target chip (default: esp32s3)"},
+                "url": {"type": "string", "description": "Override URL"},
+            },
+        },
+    },
+    {
+        "name": "fetch_platformio_registry",
+        "description": "Fetch PlatformIO library registry info for a library name.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "library": {"type": "string", "description": "Library name or search query"},
+                "url": {"type": "string", "description": "Override URL"},
+            },
+        },
+    },
+    {
+        "name": "fetch_kicad_library_info",
+        "description": "Fetch KiCad component library info (symbols, footprints) for a component.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "component": {"type": "string", "description": "Component name or search query"},
+                "url": {"type": "string", "description": "Override URL"},
+            },
+        },
+    },
+    {
+        "name": "ingest_to_rag",
+        "description": "Ingest scraped content into the Mascarade RAG pipeline (Qdrant).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "collection": {"type": "string", "description": "RAG collection (e.g. kb-firmware, kb-kicad)"},
+                "content": {"type": "string", "description": "Text content to ingest"},
+                "source": {"type": "string", "description": "Source label (e.g. espressif-docs)"},
+            },
+            "required": ["content"],
+        },
+    },
+])
+
 HANDLERS = {
     "scrape_datasheet": handle_scrape_datasheet,
     "search_components": handle_search_components,
@@ -320,6 +431,11 @@ HANDLERS = {
     "scrape_docs": handle_scrape_docs,
     "monitor_updates": handle_monitor_updates,
     "feed_dataset": handle_feed_dataset,
+    "get_runtime_info": handle_get_runtime_info,
+    "fetch_espressif_docs": handle_fetch_espressif_docs,
+    "fetch_platformio_registry": handle_fetch_platformio_registry,
+    "fetch_kicad_library_info": handle_fetch_kicad_library_info,
+    "ingest_to_rag": handle_ingest_to_rag,
 }
 
 # ---------------------------------------------------------------------------
@@ -352,24 +468,25 @@ async def handle_message(msg: dict) -> dict | None:
         args = params.get("arguments", {})
         handler = HANDLERS.get(name)
         if not handler:
-            return make_response(mid, error_tool_result(f"Unknown tool: {name}"))
+            return make_response(mid, error_tool_result(f"Unknown tool: {name}", {}))
         try:
             result = await handler(args)
-            return make_response(mid, ok_tool_result(result))
+            structured = json.loads(result) if isinstance(result, str) else result
+            return make_response(mid, ok_tool_result(result if isinstance(result, str) else json.dumps(result), structured if isinstance(structured, dict) else {}))
         except Exception as exc:
-            return make_response(mid, error_tool_result(f"{type(exc).__name__}: {exc}"))
+            return make_response(mid, error_tool_result(f"{type(exc).__name__}: {exc}", {}))
 
     return make_error(mid, -32601, f"Method not found: {method}")
 
 
 async def main() -> None:
     while True:
-        msg = await read_message()
+        msg = read_message()
         if msg is None:
             break
         resp = await handle_message(msg)
         if resp is not None:
-            await write_message(resp)
+            write_message(resp)
 
 
 if __name__ == "__main__":

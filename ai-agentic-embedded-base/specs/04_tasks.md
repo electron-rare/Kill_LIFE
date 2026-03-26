@@ -1,6 +1,6 @@
 # Tasks enchainement autonome des lots utiles
 
-Last updated: 2026-03-21
+Last updated: 2026-03-22
 
 ## Cadre
 
@@ -111,6 +111,53 @@ Last updated: 2026-03-21
       - `specs/agentic_intelligence_integration_spec.md`
       - `firmware/src/main.cpp`
       - `firmware/src/voice_controller.cpp`
+      - `tools/cockpit/runtime_ai_gateway.sh`
+      - `artifacts/cockpit/runtime_ai_gateway/firmware_cad_summary_short_latest.json`
+  - [x] T-AI-319 — Rendre `runtime_ai_gateway.sh --refresh` fail-fast quand une probe runtime/mesh dépasse un délai raisonnable.
+    - Preuves:
+      - `tools/cockpit/runtime_ai_gateway.sh`
+      - `test/test_runtime_ai_gateway_contract.py`
+  - [x] T-AI-320 — Etendre la lane intelligence aux sources `web/` et au backlog `plan 23`.
+    - Preuves:
+      - `specs/agentic_intelligence_integration_spec.md`
+      - `docs/plans/22_plan_integration_intelligence_agentique.md`
+      - `docs/plans/22_todo_integration_intelligence_agentique.md`
+      - `docs/plans/23_plan_yiacad_git_eda_platform.md`
+      - `docs/plans/23_todo_yiacad_git_eda_platform.md`
+      - `tools/cockpit/intelligence_tui.sh`
+  - [x] T-AI-321 — Publier un audit, une veille et une feature map `2026-03-22` alignes sur `web/`, MCP et l'integration intelligence.
+    - Preuves:
+      - `docs/KILL_LIFE_CONSOLIDATION_AUDIT_2026-03-22.md`
+      - `docs/WEB_RESEARCH_OPEN_SOURCE_2026-03-22.md`
+      - `docs/AGENTIC_INTELLIGENCE_FEATURE_MAP_2026-03-22.md`
+  - [x] T-AI-322 — Affecter explicitement les owners et sous-agents de `web/*` et de la lane Git EDA dans les plans canoniques.
+    - Preuves:
+      - `docs/plans/12_plan_gestion_des_agents.md`
+      - `docs/AGENT_SPEC_MODULE_MATRIX_2026-03-20.md`
+  - [x] T-AI-323 — Faire remonter le statut `queue/worker/realtime` du produit web dans la memoire intelligence et preparer le pont vers `runtime_ai_gateway.sh`.
+    - Preuves:
+      - `tools/cockpit/intelligence_tui.sh` → `web_platform_health()` probe Next.js :3000, Yjs :1234, Redis :6379
+      - `artifacts/cockpit/intelligence_program/latest.json` → `web_platform_health` key présent, refreshed 2026-03-26
+      - `tools/cockpit/runtime_ai_gateway.sh` → `build_web_platform_surface()` lit le snapshot, expose `web_platform=degraded; 1/3 probes up`
+  - [x] T-AI-324 — Remplacer les placeholders Git/PR/artifacts de `web/` par un read model derive de Git et de la CI.
+    - Preuves:
+      - `web/lib/git-project.ts`
+      - `web/lib/project-store.ts`
+      - `web/lib/graphql/schema.ts`
+      - `web/app/api/artifacts/[...segments]/route.ts`
+      - `web/components/project-shell.tsx`
+      - `web/components/pcb-workbench.tsx`
+      - `web/components/pr-review-shell.tsx`
+      - `web/workers/eda-worker.mjs`
+  - [x] T-AI-325 — Binder Excalidraw a `Yjs` tout en gardant le save manuel comme snapshot Git.
+    - Preuves:
+      - `web/lib/use-yjs-excalidraw.ts` — hook `useYjsExcalidraw(roomName)`: `Y.Doc` + `WebsocketProvider` + `Y.Array<excalidraw-elements>`, observer remote, `pushElements()` pour sync locale
+      - `web/components/excalidraw-canvas.tsx` — consomme `useYjsExcalidraw`
+      - `web/components/project-shell.tsx` — `saveDiagram()` via GraphQL mutation → `project-store.ts` → sauvegarde Git-tracked `.excalidraw`
+      - `web/realtime/server.mjs` — serveur `y-websocket` port 1234
+  - [x] T-AI-326 — Formaliser le boundary `MCP/service-first` pour `EDA worker`, `parts search`, `CI trigger`, `artifact fetch` et `review hints`.
+    - Preuves:
+      - `specs/agentic_intelligence_integration_spec.md` → section `F8 - Boundary MCP/service-first` avec table des 6 surfaces, modes autorisés, statuts MCP et règles d'arbitrage
 
 <!-- BEGIN AUTO LOT-CHAIN TASKS -->
 - [x] T-LC-001 - Keep the README/repo coherence lot clean via the dedicated audit loop.
@@ -1243,3 +1290,310 @@ Last updated: 2026-03-21
     - familles lourdes `heavy-code`, `heavy-analysis`, `heavy-research` routees vers `tower -> kxkm`
     - texte/docs interactifs gardes sur `kxkm -> tower`
     - `cils` et `root-reserve` restent en bout de chaine
+
+## Delta 2026-03-21 - T-RE-260 product contract consolidation
+- [x] T-RE-260 - Publier le contrat produit commun `ops <-> Mascarade <-> kill_life`.
+  - preuves:
+    - `specs/contracts/ops_mascarade_kill_life.contract.json`
+    - `docs/OPS_MASCARADE_KILL_LIFE_PRODUCT_CONTRACT_2026-03-21.md`
+    - `tools/cockpit/README.md`
+  - resultat:
+    - contrat minimal commun defini
+    - `trust_level`, `resume_ref`, `routing` et `memory_entry` identifies comme champs de convergence
+    - la priorite produit bascule de l'extension de surface vers la consolidation de confiance et de continuite
+
+## Delta 2026-03-21 - T-RE-261 contract projection operator lane
+- [x] T-RE-261 - Projeter le contrat produit dans `full_operator_lane`.
+  - preuves:
+    - `tools/cockpit/full_operator_lane.sh`
+    - `tools/cockpit/write_kill_life_memory_entry.sh`
+  - resultat:
+    - `owner`, `decision`, `resume_ref`, `trust_level`, `routing` et `memory_entry` exposes en JSON
+    - la lane operateur ecrit aussi une trace de continuite `kill_life`
+
+## Delta 2026-03-21 - T-RE-262 contract projection daily
+- [x] T-RE-262 - Projeter le contrat produit dans `run_alignment_daily`.
+  - preuves:
+    - `tools/cockpit/run_alignment_daily.sh`
+    - `tools/cockpit/write_kill_life_memory_entry.sh`
+    - `tools/cockpit/README.md`
+  - resultat:
+    - la routine daily expose `routing`, `resume_ref`, `trust_level` et `memory_entry`
+    - la memoire `kill_life` latest devient le point de reprise canonique pour les runs cockpit
+
+## Delta 2026-03-21 - T-RE-263 contract projection Mascarade short surfaces
+- [x] T-RE-263 - Aligner `mascarade_runtime_health` et `mascarade_incidents_tui` sur le contrat produit.
+  - preuves:
+    - `tools/cockpit/mascarade_runtime_health.sh`
+    - `tools/cockpit/mascarade_incidents_tui.sh`
+  - resultat:
+    - les surfaces Mascarade courtes exposent `resume_ref`, `trust_level`, `routing` et `memory_entry`
+    - la lecture de confiance n'est plus reservee aux seules lanes longues
+
+## Delta 2026-03-21 - T-RE-264 handoff continuity markdown
+- [x] T-RE-264 - Faire remonter la continuite `kill_life` dans les handoffs quotidiens et hebdomadaires.
+  - preuves:
+    - `tools/cockpit/render_daily_operator_summary.sh`
+    - `tools/cockpit/render_weekly_refonte_summary.sh`
+    - `tools/cockpit/README.md`
+  - resultat:
+    - `trust_level`, `resume_ref` et la cible de routing apparaissent dans les handoffs Markdown
+    - l'operateur peut reprendre un run sans relire l'historique brut
+
+## Delta 2026-03-21 - T-RE-265 micro-surfaces Mascarade
+- [x] T-RE-265 - Aligner les micro-surfaces Mascarade sur la continuité `kill_life`.
+  - preuves:
+    - `tools/cockpit/render_mascarade_incident_brief.sh`
+    - `tools/cockpit/render_mascarade_incident_queue.sh`
+    - `tools/cockpit/render_mascarade_incident_watch.sh`
+    - `tools/cockpit/render_mascarade_watch_history.sh`
+  - resultat:
+    - `trust_level`, `resume_ref`, `routing` et `memory_entry` remontent aussi dans les vues les plus courtes
+    - le contexte de reprise est homogène entre JSON et Markdown
+
+## Delta 2026-03-21 - T-RE-266 veille mémoire agentique
+- [x] T-RE-266 - Documenter la veille primaire utile sur mémoire, reprise et confiance agentiques.
+  - preuves:
+    - `docs/WEB_RESEARCH_MASCARADE_OBSERVABILITY_2026-03-21.md`
+  - resultat:
+    - LangChain, LangGraph, AutoGen et OpenTelemetry recoupes comme sources primaires utiles
+    - la marche suivante est clarifiée: stabiliser la mémoire latest avant tout store plus riche
+
+## Delta 2026-03-21 - T-RE-267 kill_life writer fix
+- [x] T-RE-267 - Corriger le writer `kill_life` pour persister réellement la liste des artefacts.
+  - preuves:
+    - `tools/cockpit/write_kill_life_memory_entry.sh`
+  - resultat:
+    - les `artifacts` sont maintenant correctement transmis à la charge Python
+    - la mémoire `kill_life` latest devient exploitable comme inventaire réel de reprise
+
+## Delta 2026-03-21 - T-RE-268 registry/logs continuity
+- [x] T-RE-268 - Aligner le registre d'incidents et les vues logs sur la mémoire de reprise `kill_life`.
+  - preuves:
+    - `tools/cockpit/mascarade_incident_registry.sh`
+    - `tools/cockpit/mascarade_logs_tui.sh`
+    - `tools/cockpit/README.md`
+  - resultat:
+    - `trust_level`, `resume_ref`, `routing` et `memory_entry` remontent aussi dans le registre et les logs
+    - l'opérateur garde la même lecture de confiance entre état, incidents et continuité
+
+## Delta 2026-03-21 - T-RE-269 operator entry continuity
+- [x] T-RE-269 - Exposer la continuité `kill_life` dans les points d'entrée opérateur.
+  - preuves:
+    - `tools/cockpit/yiacad_operator_index.sh`
+    - `tools/cockpit/README.md`
+  - resultat:
+    - l'index opérateur YiACAD pointe explicitement vers la mémoire `kill_life` latest
+    - la reprise n'est plus implicite au niveau des entrées opérateur
+
+## Delta 2026-03-21 - T-RE-270 intelligence memory bridge
+- [x] T-RE-270 - Relier la mémoire de gouvernance `intelligence_tui` à la mémoire de reprise `kill_life`.
+  - preuves:
+    - `tools/cockpit/intelligence_tui.sh`
+    - `docs/WEB_RESEARCH_MASCARADE_OBSERVABILITY_2026-03-21.md`
+  - resultat:
+    - la mémoire intelligence expose aussi les artefacts `kill_life`
+    - la gouvernance et la reprise opérateur partagent le même point de continuité
+
+## Delta 2026-03-21 - T-RE-271 refonte_tui continuity
+- [x] T-RE-271 - Exposer la continuité `kill_life` depuis l'entrée courte `refonte_tui`.
+  - preuves:
+    - `tools/cockpit/refonte_tui.sh`
+    - `tools/cockpit/README.md`
+  - resultat:
+    - `refonte_tui.sh --action status` pointe explicitement vers la mémoire `kill_life` latest et le handoff quotidien
+    - l'entrée courte cockpit garde le même point de reprise que les autres surfaces opérateur
+
+## Delta 2026-03-21 - T-RE-272 lot_chain continuity bridge
+- [x] T-RE-272 - Faire remonter la continuité `kill_life` dans la chaîne de lots cockpit et ses blocs auto-plan/todo.
+  - preuves:
+    - `tools/cockpit/lot_chain.sh`
+    - `tools/cockpit/README.md`
+  - resultat:
+    - `useful_lots_status.md` affiche aussi la mémoire `kill_life`
+    - le bloc auto-plan/todo rappelle le point de reprise commun à la chaîne de lots
+
+## Delta 2026-03-21 - T-RE-273 product contract static audit
+- [x] T-RE-273 - Ajouter un audit statique léger pour surveiller la cohérence du contrat `ops <-> Mascarade <-> kill_life`.
+  - preuves:
+    - `tools/cockpit/product_contract_audit.sh`
+    - `artifacts/cockpit/product_contract_audit/latest.json`
+    - `artifacts/cockpit/product_contract_audit/latest.md`
+  - resultat:
+    - la cohérence minimale des surfaces peut être contrôlée sans relancer toute la pile
+    - les écarts de continuité deviennent visibles dans un artefact dédié
+
+## Delta 2026-03-21 - T-RE-274 product feature map
+- [x] T-RE-274 - Publier une carte de fonctionnalités Mermaid de la convergence produit `ops / Mascarade / kill_life`.
+  - preuves:
+    - `docs/OPS_MASCARADE_KILL_LIFE_FEATURE_MAP_2026-03-21.md`
+    - `tools/cockpit/README.md`
+  - resultat:
+    - la frontière entre état réel, recommandation et mémoire de reprise devient explicite
+    - la priorisation future peut se faire par couche sans réouvrir l'ambiguïté produit
+
+## Delta 2026-03-21 - T-RE-275 durable execution research
+- [x] T-RE-275 - Documenter la veille officielle sur contrôle humain et exécution durable pour la couche agentique.
+  - preuves:
+    - `docs/WEB_RESEARCH_MASCARADE_OBSERVABILITY_2026-03-21.md`
+  - resultat:
+    - LangGraph, AutoGen et OpenTelemetry recoupés comme sources primaires sur mémoire, HITL et observabilité d'agents
+    - la stratégie retenue reste: stabiliser le contrat et la reprise avant toute instrumentation plus lourde
+
+## Delta 2026-03-21 - T-RE-276 product contract handoff
+- [x] T-RE-276 - Générer un handoff produit minimal entre audit, mémoire `kill_life` et synthèse quotidienne.
+  - preuves:
+    - `tools/cockpit/render_product_contract_handoff.sh`
+    - `artifacts/cockpit/product_contract_handoff/latest.json`
+    - `artifacts/cockpit/product_contract_handoff/latest.md`
+  - resultat:
+    - un seul point de reprise court résume l'état du contrat produit et le prochain pas opérateur
+    - le socle `ops / Mascarade / kill_life` devient lisible sans navigation profonde
+
+## Delta 2026-03-21 - T-RE-277 HITL handoff research
+- [x] T-RE-277 - Compléter la veille officielle sur le lien entre HITL, interruption/reprise et handoff opérateur.
+  - preuves:
+    - `docs/WEB_RESEARCH_MASCARADE_OBSERVABILITY_2026-03-21.md`
+  - resultat:
+    - LangGraph HITL et incident.io Scribe sont recoupés comme références utiles pour le triplet `pause / resume / summary`
+    - le handoff court est confirmé comme meilleur format de reprise avant toute pile plus lourde
+
+## Delta 2026-03-21 - T-RE-278 handoff degraded-safe
+- [x] T-RE-278 - Rendre le handoff produit honnête quand les artefacts `kill_life` ou `daily` sont absents.
+  - preuves:
+    - `tools/cockpit/render_product_contract_handoff.sh`
+    - `artifacts/cockpit/product_contract_handoff/latest.json`
+  - resultat:
+    - le handoff ne remonte plus `ok` si la mémoire de reprise ou le handoff quotidien manquent
+    - les prochains pas explicites pointent vers la régénération des artefacts manquants
+
+## Delta 2026-03-21 - T-RE-279 handoff self-healing
+- [x] T-RE-279 - Auto-régénérer les prérequis légers du handoff produit sans relancer de lane lourde.
+  - preuves:
+    - `tools/cockpit/render_product_contract_handoff.sh`
+    - `artifacts/cockpit/product_contract_handoff/latest.json`
+  - resultat:
+    - le handoff tente maintenant de recréer `kill_life_memory/latest.*` et `daily_operator_summary_latest.*` par défaut
+    - un mode strict `--no-refresh` reste disponible pour l'audit lecture seule
+
+## Delta 2026-03-21 - T-RE-280 handoff operator integration
+- [x] T-RE-280 - Exposer le handoff produit dans `run_alignment_daily` et `full_operator_lane`.
+  - preuves:
+    - `tools/cockpit/run_alignment_daily.sh`
+    - `tools/cockpit/full_operator_lane.sh`
+  - resultat:
+    - les JSON opérateur remontent `product_contract_handoff_status`, `product_contract_handoff_artifact` et `product_contract_handoff_markdown`
+    - le point de reprise canonique devient visible depuis les sorties opérateur principales
+
+## Delta 2026-03-21 - T-RE-281 handoff entrypoint exposure
+- [x] T-RE-281 - Afficher le handoff produit dans les points d'entrée opérateur courts.
+  - preuves:
+    - `tools/cockpit/yiacad_operator_index.sh`
+    - `tools/cockpit/refonte_tui.sh`
+    - `tools/cockpit/product_contract_audit.sh`
+  - resultat:
+    - l'opérateur voit le handoff canonique depuis `yiacad_operator_index` et `refonte_tui`
+    - l'audit statique vérifie aussi cette exposition
+
+## Delta 2026-03-21 - T-RE-282 handoff runtime/static split
+- [x] T-RE-282 - Documenter et verrouiller la séparation audit statique / handoff runtime léger.
+  - preuves:
+    - `tools/cockpit/README.md`
+    - `tools/cockpit/product_contract_audit.sh`
+  - resultat:
+    - la différence entre cohérence source et disponibilité runtime du point de reprise est explicitée
+    - le garde-fou statique reste non-invasif
+
+## Delta 2026-03-21 - T-RE-283 handoff producer fixes
+- [x] T-RE-283 - Corriger les deux producteurs légers qui bloquaient le self-healing du handoff produit.
+  - preuves:
+    - `tools/cockpit/write_kill_life_memory_entry.sh`
+    - `tools/cockpit/render_daily_operator_summary.sh`
+    - `artifacts/cockpit/product_contract_handoff/latest.json`
+  - resultat:
+    - le writer `kill_life` ne casse plus sur sa génération Markdown
+    - `render_daily_operator_summary.sh --json` n'émet plus deux fois le même payload
+
+## Delta 2026-03-21 - T-RE-284 handoff markdown propagation
+- [x] T-RE-284 - Réinjecter le chemin Markdown du handoff produit dans son contrat JSON.
+  - preuves:
+    - `tools/cockpit/render_product_contract_handoff.sh`
+    - `artifacts/cockpit/product_contract_handoff/latest.json`
+  - resultat:
+    - les chemins opérateur peuvent relire `product_contract_handoff_markdown` sans valeur vide
+    - la propagation `run_alignment_daily` / `full_operator_lane` retrouve un contrat complet
+
+## Delta 2026-03-21 - T-RE-285 operator lane multi-json tolerance
+- [x] T-RE-285 - Rendre `full_operator_lane` tolérant aux artefacts JSON concaténés hérités.
+  - preuves:
+    - `tools/cockpit/full_operator_lane.sh`
+  - resultat:
+    - le helper `json_get` sait relire le dernier objet JSON valide
+    - la lane opérateur reste exploitable même si un artefact historique contient plusieurs payloads concaténés
+
+### 2026-03-22 — ERP minimal / Ops bridge
+
+- `T-RE-286` — create canonical `ERP / L'electronrare Ops` bridge contract
+- `T-RE-287` — create machine/module/secret ownership registry in `specs/contracts/ops_kill_life_erp_registry.json`
+- `T-RE-288` — add TUI registry surface `tools/cockpit/ops_erp_registry_tui.sh`
+- `T-RE-289` — document OSS reference set for `PLM / ERP / WMS / MES / DCS`
+
+### 2026-03-22 — WMS artifact index
+
+- `T-RE-290` — create WMS artifact classification contract in `specs/contracts/artifact_wms_index_rules.json`
+- `T-RE-291` — add artifact index TUI `tools/cockpit/artifact_wms_index_tui.sh`
+- `T-RE-292` — document WMS artifact retrieval and unknown-group surfacing
+- `T-RE-293` — extend digital factory research with WMS index and cockpit catalog references (`MLflow`, `Dagster`, `DVC`, `Backstage`, `Rundeck`)
+
+## Delta 2026-03-22 - PCB AI / Forge / BOM / fabrication stack
+
+- [x] T-RE-294 — Documenter la cartographie `PCB Designer AI / Quilter / kicad-happy` autour de `Forge + YiACAD + BOM + JLCPCB`.
+  - Livrables:
+    - `docs/PCB_AI_FAB_INTEGRATION_MAP_2026-03-22.md`
+    - `specs/contracts/pcb_ai_fab_registry.json`
+  - Lecture retenue:
+    - `PCB Designer AI` = voie `fast-fab` potentielle, sous garde-fou package local.
+    - `Quilter` = voie `canary-route` pour placement/routage sous contraintes physiques.
+    - `kicad-happy` = reference de playbooks `review/BOM/sourcing/JLCPCB`.
+- [x] T-RE-295 — Publier une surface TUI pour lire le registre `PCB AI / fabrication`.
+  - Livrable:
+    - `tools/cockpit/pcb_ai_fab_tui.sh`
+- [ ] T-RE-296 — Executer un canary `Quilter` sur une carte pilote `Hypnoled` avec preuve de round-trip CAD.
+- [x] T-RE-297 — Formaliser le contrat `fab package` (`Gerber + BOM + CPL + DRC + provenance`) avant toute lane `one-click fab`.
+  - Preuves:
+    - `specs/contracts/fab_package.schema.json` — schema JSON Draft 2020-12, `contract_version: fab-package-v1`, champs requis: `bom_file`, `cpl_file`, `gerber_dir`, `drill_file`, `drc_report`, `provenance`, `acceptance_gates`
+    - `tools/cockpit/fab_package_tui.sh` — TUI de génération et validation du package
+- [x] T-RE-298 — Traduire les patterns `kicad-happy` dans les playbooks `YiACAD / Forge / HW-BOM`.
+  - Preuves:
+    - `docs/playbooks/kicad_happy_hw_bom_forge.md` — 8 steps canoniques, ownership matrix (Forge/HW-BOM/Embedded-CAD), critères assembly-ready
+    - Pilote validé sur Hypnoled: `artifacts/evals/hypnoled_playbook_2026-03-25.md`
+
+## Delta 2026-03-22 - realignment lot 26 + fab package local
+
+- [x] T-RE-299 — Realigner `Plan 26` et la cartographie ecosyteme sur l'etat reel du repo Mascarade actif.
+  - preuves:
+    - `docs/plans/26_todo_integration_eda_ai_tools.md`
+    - `docs/references/github_ecosystem_map.md`
+  - resultat:
+    - `T-EDA-001` a `T-EDA-005` ne sont plus annonces comme livres sans fichiers reels dans `/Users/electron/Documents/Projets/mascarade`
+    - les statuts EDA externes sont ramenes a `planned / not implemented in active repo`
+- [x] T-RE-300 — Publier le contrat local `fab package` et sa TUI cockpit.
+  - preuves:
+    - `specs/contracts/fab_package.schema.json`
+    - `docs/FAB_PACKAGE_CONTRACT_2026-03-22.md`
+    - `tools/cockpit/fab_package_tui.sh`
+  - resultat:
+    - un package local standardise `BOM + CPL + Gerber + drill + DRC + provenance` est defini
+    - la chaine locale peut sortir `ready|degraded|blocked` avec artefacts `latest.*`
+- [x] T-RE-301 — Requalifier l'ordre d'execution Hypnoled autour du gate `fab package`.
+  - preuves:
+    - `docs/plans/25_todo_hypnoled_pilote.md`
+  - resultat:
+    - l'ordre strict `T-HP-013 -> T-RE-297 -> T-HP-035 -> T-HP-033 -> T-HP-034` est acte
+    - les lots Hypnoled sont explicitement bloques tant que les assets ne sont pas presents dans le checkout courant
+- [x] T-RE-302 — Reporter les lots VM Mistral apres fermeture de la chaine hardware/fab locale.
+  - preuves:
+    - `docs/plans/25_todo_hypnoled_pilote.md`
+    - `tools/cockpit/pcb_ai_fab_tui.sh`
+  - resultat:
+    - la priorite produit reste `BOM/sourcing/fab package` avant `Quilter` et avant `fine-tune VM`

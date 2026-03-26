@@ -68,15 +68,17 @@ Last updated: 2026-02-21
   - statut local courant: `2026-03-20` restauré sur cette machine.
   - détail: Docker Desktop relancé, conteneur `mascarade-n8n` auto-provisionné depuis `docker.n8n.io/n8nio/n8n`, HTTP local `5678` OK.
   - correction appliquée: le workflow smoke utilise désormais un `Schedule Trigger` annuel activable; le chemin CLI officiel `publish:workflow` reste prioritaire, avec fallback legacy `update:workflow --active=true`.
-  - validation locale `2026-03-21`: l'activation reste vérifiée explicitement, mais les scripts ont aussi été durcis pour échouer vite si la CLI Docker locale se fige.
-  - état machine `2026-03-21`: la réactivation live est bloquée par des timeouts `docker ps|inspect|logs|restart` sur cette machine; la régression du workflow `manualTrigger` est néanmoins corrigée côté artefact versionné.
+  - récupération locale `2026-03-21`: les scripts sondent maintenant `healthz`, échouent vite sur les timeouts Docker, et peuvent court-circuiter l'import si la DB n8n contient déjà le workflow conforme et actif.
+  - incident local `2026-03-21`: un workflow historique `manualTrigger` restait stocké dans la base SQLite n8n et le runtime local a nécessité une réinitialisation contrôlée du conteneur/volume avec sauvegarde avant de repartir sur une DB saine.
   - résultat courant:
     - `python3 -m unittest discover -s test -p 'test_zeroclaw_n8n_workflow_contract.py'` -> `OK`
-    - `bash tools/ai/zeroclaw_integrations_import_n8n.sh --json` -> `blocked` avec `docker_timeout`
-    - `bash tools/ai/zeroclaw_integrations_lot.sh verify --json` -> `blocked` tant que le daemon Docker local ne répond pas de nouveau
+    - `bash tools/ai/zeroclaw_integrations_status.sh --json` -> `status=ready`
+    - `bash tools/ai/zeroclaw_integrations_import_n8n.sh --json` -> `imported|skipped / published|skipped / active=true`
+    - `bash tools/ai/zeroclaw_integrations_lot.sh verify --json` -> `overall_status=ready`
   - command: `bash tools/ai/zeroclaw_integrations_up.sh --json`
   - command: `bash tools/ai/zeroclaw_integrations_status.sh --json`
   - command: `bash tools/ai/zeroclaw_integrations_import_n8n.sh --json`
   - evidence:
-    - `{"status":"blocked","reason":"docker_cli_timeout","container":"mascarade-n8n","container_status":"docker cli timeout"}`
-    - `{"workflow_id":"kill-life-n8n-smoke","reason":"docker_timeout|docker ps -a timed out while checking mascarade-n8n"}`
+    - `{"status":"ready","reason":"","container":"mascarade-n8n","host_http_ok":true,"internal_http_ok":true,"n8n_health_url":"http://127.0.0.1:5678/healthz"}`
+    - `{"workflow_id":"kill-life-n8n-smoke","import_action":"imported|skipped","publish_action":"published|skipped","active":true}`
+    - `artifacts/cockpit/zeroclaw_n8n_recovery_2026-03-21/live_volume_backup/`

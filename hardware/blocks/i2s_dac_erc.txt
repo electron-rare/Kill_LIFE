@@ -1,0 +1,27 @@
+ERC report (2026-03-25T05:32:47, Encoding UTF8)
+Report includes: Errors, Warnings, Exclusions
+
+***** Sheet /
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(35.56 mm, 60.96 mm): Label '+3V3'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(35.56 mm, 63.50 mm): Label 'I2S_BCK'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(35.56 mm, 66.04 mm): Label 'I2S_WS'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(35.56 mm, 68.58 mm): Label 'I2S_DOUT'
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(35.56 mm, 71.12 mm): Label 'I2S_DIN'
+
+ ** ERC messages: 5  Errors 0  Warnings 5
+
+ ** Ignored checks:
+    - Global label only appears once in the schematic
+    - Four connection points are joined together
+    - SPICE model issue
+    - Assigned footprint doesn't match footprint filters

@@ -48,6 +48,11 @@ except ModuleNotFoundError as exc:  # pragma: no cover - exercised through smoke
 
     class GitHubDispatchClient:
         async def dispatch_workflow(self, workflow_file: str, ref: str | None = None, inputs: dict[str, Any] | None = None) -> dict[str, Any]:
+            token = os.getenv("KILL_LIFE_GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN")
+            if not token:
+                raise GitHubDispatchAuthError(
+                    "GitHub token not configured: set KILL_LIFE_GITHUB_TOKEN or GITHUB_TOKEN"
+                )
             raise GitHubDispatchError(
                 f"Mascarade github_dispatch integration unavailable: {GITHUB_DISPATCH_IMPORT_ERROR}"
             )

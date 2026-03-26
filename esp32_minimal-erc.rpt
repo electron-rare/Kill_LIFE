@@ -1,0 +1,387 @@
+ERC report (2026-03-26T10:18:53, Encoding UTF8)
+Report includes: Errors, Warnings
+
+***** Sheet /
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.24 mm, 44.60 mm): Symbol J1 Pin A4 [VBUS, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(20.00 mm, 55.00 mm): Symbol #PWR01 Pin 1 [Power input, Line]
+[power_pin_not_driven]: Input Power pin not driven by any Output Power pins
+    ; error
+    @(20.00 mm, 55.00 mm): Symbol #PWR01 Pin 1 [Power input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(25.00 mm, 55.00 mm): Symbol #PWR013 Pin 1 [Power output, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.24 mm, 49.68 mm): Symbol J1 Pin A5 [CC1, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.24 mm, 52.22 mm): Symbol J1 Pin B5 [CC2, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.24 mm, 57.30 mm): Symbol J1 Pin A7 [D-, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.24 mm, 59.84 mm): Symbol J1 Pin B7 [D-, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.24 mm, 62.38 mm): Symbol J1 Pin A6 [D+, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.24 mm, 64.92 mm): Symbol J1 Pin B6 [D+, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.24 mm, 70.00 mm): Symbol J1 Pin B10 [RX1-, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.24 mm, 72.54 mm): Symbol J1 Pin B11 [RX1+, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(60.00 mm, 55.00 mm): Symbol #PWR03 Pin 1 [Power input, Line]
+[power_pin_not_driven]: Input Power pin not driven by any Output Power pins
+    ; error
+    @(60.00 mm, 55.00 mm): Symbol #PWR03 Pin 1 [Power input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(65.00 mm, 55.00 mm): Symbol #PWR014 Pin 1 [Power output, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.24 mm, 77.62 mm): Symbol J1 Pin A3 [TX1-, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.00 mm, 78.19 mm): Symbol R1 Pin 1 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.24 mm, 80.16 mm): Symbol J1 Pin A2 [TX1+, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(42.00 mm, 78.19 mm): Symbol R2 Pin 1 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.24 mm, 85.24 mm): Symbol J1 Pin A10 [RX2-, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.00 mm, 85.81 mm): Symbol R1 Pin 2 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(52.00 mm, 78.19 mm): Symbol C3 Pin 1 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.24 mm, 87.78 mm): Symbol J1 Pin A11 [RX2+, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(42.00 mm, 85.81 mm): Symbol R2 Pin 2 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.00 mm, 92.00 mm): Symbol #PWR07 Pin 1 [Power input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.24 mm, 92.86 mm): Symbol J1 Pin B3 [TX2-, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(52.00 mm, 85.81 mm): Symbol C3 Pin 2 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(42.00 mm, 92.00 mm): Symbol #PWR08 Pin 1 [Power input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.24 mm, 95.40 mm): Symbol J1 Pin B2 [TX2+, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(70.00 mm, 78.19 mm): Symbol C4 Pin 1 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.24 mm, 100.48 mm): Symbol J1 Pin A8 [SBU1, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(60.00 mm, 90.00 mm): Symbol #PWR04 Pin 1 [Power input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(35.24 mm, 103.02 mm): Symbol J1 Pin B8 [SBU2, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(70.00 mm, 85.81 mm): Symbol C4 Pin 2 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(12.38 mm, 110.64 mm): Symbol J1 Pin SH [SHIELD, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(20.00 mm, 110.64 mm): Symbol J1 Pin A1 [GND, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 47.14 mm): Symbol U1 Pin 3 [EN, Input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(80.00 mm, 84.19 mm): Symbol C1 Pin 1 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 52.22 mm): Symbol U1 Pin 27 [IO0, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 54.76 mm): Symbol U1 Pin 39 [IO1, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 57.30 mm): Symbol U1 Pin 38 [IO2, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 59.84 mm): Symbol U1 Pin 15 [IO3, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(80.00 mm, 91.81 mm): Symbol C1 Pin 2 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(88.00 mm, 84.19 mm): Symbol C2 Pin 1 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 62.38 mm): Symbol U1 Pin 4 [IO4, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 64.92 mm): Symbol U1 Pin 5 [IO5, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(80.00 mm, 95.00 mm): Symbol #PWR09 Pin 1 [Power input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 67.46 mm): Symbol U1 Pin 6 [IO6, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 70.00 mm): Symbol U1 Pin 7 [IO7, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(120.00 mm, 42.06 mm): Symbol U1 Pin 2 [3V3, Power input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(88.00 mm, 91.81 mm): Symbol C2 Pin 2 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 72.54 mm): Symbol U1 Pin 12 [IO8, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 75.08 mm): Symbol U1 Pin 17 [IO9, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(88.00 mm, 95.00 mm): Symbol #PWR010 Pin 1 [Power input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 77.62 mm): Symbol U1 Pin 18 [IO10, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 80.16 mm): Symbol U1 Pin 19 [IO11, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(120.00 mm, 55.00 mm): Symbol #PWR05 Pin 1 [Power input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 82.70 mm): Symbol U1 Pin 20 [IO12, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 85.24 mm): Symbol U1 Pin 21 [IO13, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 87.78 mm): Symbol U1 Pin 22 [IO14, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 90.32 mm): Symbol U1 Pin 8 [IO15, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(104.76 mm, 92.86 mm): Symbol U1 Pin 9 [IO16, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 47.14 mm): Symbol U1 Pin 37 [TXD0, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 49.68 mm): Symbol U1 Pin 36 [RXD0, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 52.22 mm): Symbol U1 Pin 10 [IO17, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 54.76 mm): Symbol U1 Pin 11 [IO18, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 57.30 mm): Symbol U1 Pin 13 [USB_D-, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 59.84 mm): Symbol U1 Pin 14 [USB_D+, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 62.38 mm): Symbol U1 Pin 23 [IO21, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(110.00 mm, 101.19 mm): Symbol R3 Pin 1 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(120.00 mm, 90.00 mm): Symbol #PWR06 Pin 1 [Power input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 64.92 mm): Symbol U1 Pin 28 [IO35, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 67.46 mm): Symbol U1 Pin 29 [IO36, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 70.00 mm): Symbol U1 Pin 30 [IO37, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 72.54 mm): Symbol U1 Pin 31 [IO38, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(110.00 mm, 108.19 mm): Symbol D1 Pin 1 [K, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 75.08 mm): Symbol U1 Pin 32 [IO39, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(110.00 mm, 108.81 mm): Symbol R3 Pin 2 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(120.00 mm, 97.94 mm): Symbol U1 Pin 1 [GND, Power input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 77.62 mm): Symbol U1 Pin 33 [IO40, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(120.00 mm, 101.19 mm): Symbol R4 Pin 1 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 80.16 mm): Symbol U1 Pin 34 [IO41, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 82.70 mm): Symbol U1 Pin 35 [IO42, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(110.00 mm, 115.81 mm): Symbol D1 Pin 2 [A, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 85.24 mm): Symbol U1 Pin 26 [IO45, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 87.78 mm): Symbol U1 Pin 16 [IO46, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(110.00 mm, 118.00 mm): Symbol #PWR011 Pin 1 [Power input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(120.00 mm, 108.19 mm): Symbol D2 Pin 1 [K, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(120.00 mm, 108.81 mm): Symbol R4 Pin 2 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 90.32 mm): Symbol U1 Pin 24 [IO47, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(135.24 mm, 92.86 mm): Symbol U1 Pin 25 [IO48, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(120.00 mm, 115.81 mm): Symbol D2 Pin 2 [A, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(120.00 mm, 118.00 mm): Symbol #PWR012 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(20.00 mm, 55.00 mm): Symbol #PWR01 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(25.00 mm, 55.00 mm): Symbol #PWR013 Pin 1 [Power output, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(60.00 mm, 55.00 mm): Symbol #PWR03 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(65.00 mm, 55.00 mm): Symbol #PWR014 Pin 1 [Power output, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(35.00 mm, 78.19 mm): Symbol R1 Pin 1 [Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(42.00 mm, 78.19 mm): Symbol R2 Pin 1 [Passive, Line]
+[footprint_link_issues]: The current configuration does not include the footprint library 'Resistor_SMD'
+    ; warning
+    @(35.00 mm, 82.00 mm): Symbol R1 [R]
+[footprint_link_issues]: The current configuration does not include the footprint library 'Resistor_SMD'
+    ; warning
+    @(42.00 mm, 82.00 mm): Symbol R2 [R]
+[lib_symbol_mismatch]: Symbol 'AMS1117-3.3' doesn't match copy in library 'Regulator_Linear'
+    ; warning
+    @(60.00 mm, 70.00 mm): Symbol U2 [AMS1117-3.3]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(52.00 mm, 78.19 mm): Symbol C3 Pin 1 [Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(35.00 mm, 92.00 mm): Symbol #PWR07 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(42.00 mm, 92.00 mm): Symbol #PWR08 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(70.00 mm, 78.19 mm): Symbol C4 Pin 1 [Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(60.00 mm, 90.00 mm): Symbol #PWR04 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(20.00 mm, 110.64 mm): Symbol J1 Pin A1 [GND, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(80.00 mm, 84.19 mm): Symbol C1 Pin 1 [Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(88.00 mm, 84.19 mm): Symbol C2 Pin 1 [Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(80.00 mm, 95.00 mm): Symbol #PWR09 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(88.00 mm, 95.00 mm): Symbol #PWR010 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(120.00 mm, 55.00 mm): Symbol #PWR05 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(110.00 mm, 101.19 mm): Symbol R3 Pin 1 [Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(120.00 mm, 90.00 mm): Symbol #PWR06 Pin 1 [Power input, Line]
+[footprint_link_issues]: The current configuration does not include the footprint library 'Resistor_SMD'
+    ; warning
+    @(110.00 mm, 105.00 mm): Symbol R3 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(110.00 mm, 108.19 mm): Symbol D1 Pin 1 [K, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(120.00 mm, 97.94 mm): Symbol U1 Pin 1 [GND, Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(120.00 mm, 101.19 mm): Symbol R4 Pin 1 [Passive, Line]
+[footprint_link_issues]: The current configuration does not include the footprint library 'LED_SMD'
+    ; warning
+    @(110.00 mm, 112.00 mm): Symbol D1 [LED]
+[footprint_link_issues]: The current configuration does not include the footprint library 'Resistor_SMD'
+    ; warning
+    @(120.00 mm, 105.00 mm): Symbol R4 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(110.00 mm, 118.00 mm): Symbol #PWR011 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(120.00 mm, 108.19 mm): Symbol D2 Pin 1 [K, Passive, Line]
+[footprint_link_issues]: The current configuration does not include the footprint library 'LED_SMD'
+    ; warning
+    @(120.00 mm, 112.00 mm): Symbol D2 [LED]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(120.00 mm, 118.00 mm): Symbol #PWR012 Pin 1 [Power input, Line]
+
+ ** ERC messages: 125  Errors 93  Warnings 32
+
+ ** Ignored checks:
+    - Global label only appears once in the schematic
+    - Four connection points are joined together
+    - SPICE model issue
+    - Assigned footprint doesn't match footprint filters

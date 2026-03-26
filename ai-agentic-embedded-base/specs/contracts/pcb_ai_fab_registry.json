@@ -1,0 +1,132 @@
+{
+  "version": "2026-03-22",
+  "scope": "pcb-ai-fab",
+  "source_of_truth": {
+    "doc": "docs/PCB_AI_FAB_INTEGRATION_MAP_2026-03-22.md",
+    "registry": "specs/contracts/pcb_ai_fab_registry.json",
+    "tui": "tools/cockpit/pcb_ai_fab_tui.sh"
+  },
+  "tools": [
+    {
+      "id": "pcbdesigner-ai",
+      "name": "PCB Designer AI",
+      "kind": "saas-eda-fast-fab",
+      "status": "evaluate-fast-fab",
+      "owner_agent": "Embedded-CAD",
+      "sub_agent": "HW-BOM",
+      "inputs": ["schematic", "kicad-import", "altium-import"],
+      "outputs": ["gerber", "odb++", "kicad", "altium", "bom"],
+      "strengths": [
+        "upload schematic then AI placement+routing",
+        "one-click fab ordering",
+        "live BOM pricing and alternates",
+        "JLCPCB and PCBWay oriented DRC"
+      ],
+      "risks": [
+        "external SaaS IP boundary",
+        "vendor-managed rule interpretation",
+        "needs local fab package gate before acceptance"
+      ],
+      "fit_with_kill_life": [
+        "prototype acceleration",
+        "bom and fabrication handoff",
+        "quick-turn board ordering"
+      ],
+      "links": [
+        "https://pcbdesigner.ai/"
+      ]
+    },
+    {
+      "id": "quilter",
+      "name": "Quilter",
+      "kind": "physics-driven-routing-engine",
+      "status": "canary-route",
+      "owner_agent": "CAD-Bridge",
+      "sub_agent": "CAD-Smoke",
+      "inputs": ["schematic", "board-file", "project-file"],
+      "outputs": ["same-cad-format", "layout-candidates", "constraint-review"],
+      "strengths": [
+        "physics constraints from schematic",
+        "candidate review workflow",
+        "fabricator and stack-up parameters",
+        "returns output in source CAD format"
+      ],
+      "risks": [
+        "no verified one-click JLCPCB claim in source reviewed",
+        "needs guarded round-trip into local proof chain",
+        "requires per-project routing acceptance criteria"
+      ],
+      "fit_with_kill_life": [
+        "routing canary",
+        "constraint-heavy boards",
+        "candidate comparison against YiACAD"
+      ],
+      "links": [
+        "https://www.quilter.ai/",
+        "https://docs.quilter.ai/using-quilter/upload-your-design-files"
+      ]
+    },
+    {
+      "id": "kicad-happy",
+      "name": "kicad-happy",
+      "kind": "open-source-claude-skills",
+      "status": "adopt-patterns",
+      "owner_agent": "HW-BOM",
+      "sub_agent": "Forge",
+      "inputs": ["kicad-sch", "kicad-pcb", "gerbers", "bom"],
+      "outputs": ["reviews", "pricing", "supplier-orders", "jlcpcb-order-files"],
+      "strengths": [
+        "schematic and PCB analysis",
+        "BOM lifecycle and pricing",
+        "DigiKey Mouser LCSC sourcing",
+        "JLCPCB fabrication and assembly workflow"
+      ],
+      "risks": [
+        "Claude Code specific",
+        "reference workflow more than drop-in runtime dependency",
+        "needs adaptation into local prompts and runbooks"
+      ],
+      "fit_with_kill_life": [
+        "review.bom patterns",
+        "sourcing playbooks",
+        "fabrication prep patterns"
+      ],
+      "links": [
+        "https://github.com/aklofas/kicad-happy"
+      ]
+    }
+  ],
+  "gaps": [
+    "no canonical fab package contract in Kill_LIFE today",
+    "no direct one-click JLCPCB workflow implemented in Kill_LIFE",
+    "no external PCB AI canary lane with round-trip evidence",
+    "no unified BOM alternates plus sourcing plus CPL preparation flow"
+  ],
+  "recommended_lots": [
+    {
+      "id": "T-RE-294",
+      "title": "Document PCB AI / Forge / BOM / fabrication map",
+      "status": "done"
+    },
+    {
+      "id": "T-RE-295",
+      "title": "Publish machine-readable PCB AI registry and TUI",
+      "status": "done"
+    },
+    {
+      "id": "T-RE-296",
+      "title": "Run Quilter routing canary on Hypnoled and compare round-trip evidence",
+      "status": "todo"
+    },
+    {
+      "id": "T-RE-297",
+      "title": "Formalize fab package contract for JLCPCB BOM CPL Gerber provenance",
+      "status": "todo"
+    },
+    {
+      "id": "T-RE-298",
+      "title": "Translate kicad-happy patterns into YiACAD and Forge playbooks",
+      "status": "todo"
+    }
+  ]
+}

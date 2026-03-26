@@ -67,12 +67,12 @@ SEED_QUESTIONS = {
 
 
 def rag_query(collection: str, question: str) -> dict | None:
-    """Query RAG pipeline and return the response."""
+    """Query RAG pipeline and return the response (LLM synthesis, ~45-90s)."""
     try:
         resp = requests.post(
             f"{MASCARADE_URL}/v1/rag/query",
             json={"query": question, "collection": collection, "retrieve_k": 5, "rerank_top_k": 3},
-            timeout=30,
+            timeout=120,
         )
         if resp.status_code == 200:
             return resp.json()
@@ -87,7 +87,7 @@ def rag_search(collection: str, question: str) -> list[str]:
         resp = requests.post(
             f"{MASCARADE_URL}/v1/rag/search",
             json={"query": question, "collection": collection, "limit": 3},
-            timeout=15,
+            timeout=30,
         )
         if resp.status_code == 200:
             data = resp.json()

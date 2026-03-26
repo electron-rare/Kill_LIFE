@@ -55,12 +55,24 @@ class McpRuntimeStatusTests(unittest.TestCase):
         self.assertEqual(classify_overall(results, strict=True), "failed")
         self.assertEqual(derive_blockers(results), [])
 
-    def test_classify_failed_when_hard_failure_exists(self):
+    def test_classify_failed_accept_degraded_counts_as_degraded_non_strict(self):
+        # accept_degraded=True on a failed check: in non-strict mode counts as degraded (not failed).
+        # This matches the kicad/nexar use-case where source is missing but runtime remains usable.
         results = [
             {"status": "ready", "accept_degraded": False},
             {"status": "failed", "accept_degraded": True},
         ]
+        self.assertEqual(classify_overall(results, strict=False), "degraded")
+        self.assertEqual(classify_overall(results, strict=True), "failed")
+
+    def test_classify_failed_when_hard_failure_no_accept(self):
+        # accept_degraded=False on a failed check: always fails regardless of strict mode.
+        results = [
+            {"status": "ready", "accept_degraded": False},
+            {"status": "failed", "accept_degraded": False},
+        ]
         self.assertEqual(classify_overall(results, strict=False), "failed")
+        self.assertEqual(classify_overall(results, strict=True), "failed")
 
     def test_derive_blockers_only_from_degraded_task_checks(self):
         results = [
