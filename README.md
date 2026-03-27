@@ -13,6 +13,8 @@
 
 Welcome to **Kill_LIFE**, the public control plane of the `Kill_LIFE` agentic program. The repo now concentrates the operator cockpit, the spec-first pipeline, runtime/MCP contracts, execution evidence, and the pilot batch that powers sister VS Code extensions `kill-life-studio`, `kill-life-mesh`, and `kill-life-operator`.
 
+*Last updated: 2026-03-27*
+
 The 2026-03-22 reading rule is simple:
 
 - this `README.md` describes the product/program and consolidation decisions
@@ -104,6 +106,9 @@ The positioning chosen for this consolidation pass is:
 - **Workflow catalog**: JSON workflows editable by `crazy_life`, validated against a JSON schema.
 - **Mascarade LLM Router**: Fake Ollama API, Agentic RAG, Cody Gateway, 5-machine fleet (Tower/KXKM/Photon/CILS/Local).
 - **10 MCP servers**: kicad, freecad, openscad, github-dispatch, knowledge-base, apify, huggingface, mascarade-llm, opcua, mqtt.
+- **RAG pipeline**: Agentic RAG with Qdrant hybrid search, LLM reranking, CRAG fallback, SearXNG web search.
+- **KiCad CI exports**: SVG, ERC, DRC, BOM, netlist -- headless via KiCad 10 MCP.
+- **Firmware Gate S1**: PlatformIO build gate for ESP32/STM32 targets with evidence pack generation.
 - **Factory 4.0**: Industrial agents (copilot, maintenance predictor, log analyst), OPC-UA/MQTT MCP servers.
 - **EDA AI tools**: PCBDesigner, Quilter, KiCadHappy providers for automated PCB design + fabrication.
 - **Project template**: `templates/kill-life-project/` scaffold for client repos (see `docs/PROJECT_TEMPLATE.md`).
