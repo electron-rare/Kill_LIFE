@@ -269,6 +269,60 @@ function buildReviewSummary(
   return `${branch ?? "detached-head"} · ${changeLabel} · latest CI ${latestRun} · ${artifacts.length} artifact(s)`;
 }
 
+// ---------------------------------------------------------------------------
+// GitHub PR API
+// ---------------------------------------------------------------------------
+
+const GITHUB_REPO =
+  process.env.GITHUB_REPO ?? "electron-rare/Kill_LIFE";
+const GITHUB_API = "https://api.github.com";
+
+async function fetchGitHubPRs(artifacts: ArtifactRecord[]): Promise<PullRequestRecord[] | null> {
+  const token = process.env.GITHUB_TOKEN;
+  if (!token) return null;
+
+  try {
+    const resp = await fetch(`${GITHUB_API}/repos/${GITHUB_REPO}/pulls?state=open&per_page=20`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!resp.ok) return null;
+
+    const prs = (await resp.json()) as Array<Record<string, unknown>>;
+    const artifactIds = artifacts.map((a) => a.id);
+
+    return prs.map((pr) => {
+      const files: string[] = [];
+      const title = typeof pr.title === "string" ? pr.title : "";
+      const sourceBranch = (pr.head as Record<string, unknown>)?.ref as string ?? "";
+      const targetBranch = (pr.base as Record<string, unknown>)?.ref as string ?? "main";
+      const author = ((pr.user as Record<string, unknown>)?.login as string) ?? "unknown";
+      const state = typeof pr.state === "string" ? pr.state : "open";
+      const number = typeof pr.number === "number" ? pr.number : 0;
+
+      return {
+        id: String(number),
+        title,
+        status: state,
+        author,
+        hasPcbDiff: false,
+        hasDiagramDiff: false,
+        hasArtifactPreview: artifactIds.length > 0,
+        sourceBranch,
+        targetBranch,
+        changedFiles: files,
+        artifactIds,
+      } satisfies PullRequestRecord;
+    });
+  } catch {
+    return null;
+  }
+}
+
 function derivePullRequests(
   branch: string | null,
   head: string | null,
@@ -321,20 +375,22 @@ export async function getProjectSnapshot() {
       loadArtifacts(),
       getGitProjectState(REPO_ROOT, PROJECT_ROOT)
     ]);
-  const pullRequests = derivePullRequests(
-    gitState.branch,
-    gitState.head,
-    gitState.author,
-    gitState.changedFiles,
-    ciRuns,
-    artifacts
-  );
+  const pullRequests =
+    (await fetchGitHubPRs(artifacts)) ??
+    derivePullRequests(
+      gitState.branch,
+      gitState.head,
+      gitState.author,
+      gitState.changedFiles,
+      ciRuns,
+      artifacts
+    );
 
   return {
     id: `yiacad-${gitState.branch ?? "local"}`,
     name: "YiACAD Local Workspace",
     rootPath: toPosixPath(relative(REPO_ROOT, PROJECT_ROOT)),
-    repoProvider: "local git read model (ready for gitea/gitlab adapter)",
+    repoProvider: `github:${GITHUB_REPO}`,
     repoVisibility: "repo-backed working tree",
     repoBranch: gitState.branch,
     repoHead: gitState.head,
