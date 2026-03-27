@@ -128,10 +128,10 @@ flowchart TD
   Issue[Issue label ai:*] --> PR[Pull Request]
   PR --> Gate[Tests + compliance gate]
   Gate --> Evidence[Evidence Pack]
-  Evidence --> CI[22 CI/CD workflows]
+  Evidence --> CI[20 CI/CD workflows]
   CI --> Deploy[Multi-target deployment]
   PR --> Agents[6 Agents PM Arch FW QA Doc HW]
-  Agents --> Specs[specs/ - 21 specs]
+  Agents --> Specs[specs/ — 16 specs]
   Agents --> Firmware[firmware/ PlatformIO]
   Agents --> Hardware[hardware/ KiCad]
   Agents --> Docs[docs/]
@@ -193,7 +193,7 @@ Kill_LIFE/
 ├── .github/
 │   ├── agents/                  # 6 GitHub agent definitions
 │   ├── prompts/                 # 37 prompts (plan_wizard_*, start_*, Eureka_*)
-│   └── workflows/               # 22 CI/CD workflows
+│   └── workflows/               # 20 CI/CD workflows
 ├── KIKIFOU/                     # Diagnostics, diagram, mapping, recommendations
 ├── mcp.json                     # 7 configured MCP servers
 └── mkdocs.yml                   # Docs site
@@ -576,7 +576,7 @@ Detailed articulation: [`docs/MASCARADE_BRIDGE.md`](docs/MASCARADE_BRIDGE.md)
 
 ## ⚙️ CI & Release
 
-**22 GitHub Actions workflows** cover the full cycle:
+**20 GitHub Actions workflows** cover the full cycle:
 
 | Category | Workflows |
 |---|---|
@@ -585,8 +585,8 @@ Detailed articulation: [`docs/MASCARADE_BRIDGE.md`](docs/MASCARADE_BRIDGE.md)
 | **Quality** | `badges.yml`, `evidence_pack.yml`, `repo_state.yml`, `repo_state_header_gate.yml` |
 | **Security** | `secret_scan.yml`, `sbom_validation.yml`, `supply_chain.yml`, `incident_response.yml` |
 | **Advanced tests** | `api_contract.yml`, `model_validation.yml`, `performance_hil.yml` |
-| **Infra** | `dependency_update.yml`, `community_accessibility.yml` |
-| **Pages** | `jekyll-gh-pages.yml`, `static.yml` (secondary docs/evidence surfaces) |
+| **Infra** | `dependency_update.yml`, `community_accessibility.yml`, `ci_cd_audit.yml` |
+| **Pages** | `jekyll-gh-pages.yml`, `static.yml`, `pages_publish.yml` (secondary docs/evidence surfaces) |
 | **Orchestration** | `zeroclaw_dual_orchestrator.yml` |
 
 ---
