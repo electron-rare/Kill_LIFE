@@ -1,23 +1,24 @@
 #include "wifi_manager.h"
 
 #include <Arduino.h>
-#include <WiFi.h>
-#include <WebServer.h>
+
 #include <DNSServer.h>
 #include <Preferences.h>
+#include <WebServer.h>
+#include <WiFi.h>
 
 // ---------------------------------------------------------------------------
 // NVS namespace
 // ---------------------------------------------------------------------------
-static constexpr const char* kNvsNamespace = "killlife";
+static constexpr const char *kNvsNamespace = "killlife";
 static Preferences prefs;
 
 // ---------------------------------------------------------------------------
 // Captive portal
 // ---------------------------------------------------------------------------
-static WebServer*  web_server = nullptr;
-static DNSServer*  dns_server = nullptr;
-static WifiManager* g_mgr = nullptr;  // back-pointer for handlers
+static WebServer *web_server = nullptr;
+static DNSServer *dns_server = nullptr;
+static WifiManager *g_mgr = nullptr; // back-pointer for handlers
 
 // HTML page served by the captive portal.
 static const char kPortalHtml[] PROGMEM = R"rawhtml(
@@ -97,8 +98,7 @@ static const char kSavedHtml[] PROGMEM = R"rawhtml(
 )rawhtml";
 
 // ---------------------------------------------------------------------------
-void WifiManager::SetApCredentials(const std::string& ssid,
-                                   const std::string& password) {
+void WifiManager::SetApCredentials(const std::string &ssid, const std::string &password) {
   ap_ssid_ = ssid;
   ap_password_ = password;
 }
@@ -117,8 +117,8 @@ void WifiManager::Begin() {
   if (TryConnect(saved_ssid_, saved_pass_)) {
     current_ssid_ = saved_ssid_;
     SetState(State::kConnected, WiFi.localIP().toString().c_str());
-    Serial.printf("[wifi] connected to %s — %s\n",
-                  current_ssid_.c_str(), WiFi.localIP().toString().c_str());
+    Serial.printf("[wifi] connected to %s — %s\n", current_ssid_.c_str(),
+                  WiFi.localIP().toString().c_str());
   } else {
     Serial.println("[wifi] connection failed → AP mode");
     StartApMode();
@@ -149,12 +149,11 @@ void WifiManager::StartApMode() {
   WiFi.disconnect(true);
   delay(100);
 
-  WiFi.mode(WIFI_AP_STA);  // AP + STA for scanning.
+  WiFi.mode(WIFI_AP_STA); // AP + STA for scanning.
   WiFi.softAP(ap_ssid_.c_str(), ap_password_.c_str());
   delay(200);
 
-  Serial.printf("[wifi] AP started: %s / %s — http://%s\n",
-                ap_ssid_.c_str(), ap_password_.c_str(),
+  Serial.printf("[wifi] AP started: %s / %s — http://%s\n", ap_ssid_.c_str(), ap_password_.c_str(),
                 WiFi.softAPIP().toString().c_str());
 
   SetupApWebServer();
@@ -163,12 +162,14 @@ void WifiManager::StartApMode() {
 
 // ---------------------------------------------------------------------------
 std::string WifiManager::ip() const {
-  if (state_ != State::kConnected) return "";
+  if (state_ != State::kConnected)
+    return "";
   return WiFi.localIP().toString().c_str();
 }
 
 int WifiManager::rssi() const {
-  if (state_ != State::kConnected) return 0;
+  if (state_ != State::kConnected)
+    return 0;
   return WiFi.RSSI();
 }
 
@@ -192,26 +193,23 @@ std::vector<WifiManager::ScanResult> WifiManager::Scan() {
   WiFi.scanDelete();
   // Sort by signal strength.
   std::sort(results.begin(), results.end(),
-            [](const ScanResult& a, const ScanResult& b) {
-              return a.rssi > b.rssi;
-            });
+            [](const ScanResult &a, const ScanResult &b) { return a.rssi > b.rssi; });
   return results;
 }
 
 // ---------------------------------------------------------------------------
 void WifiManager::LoadCredentials() {
   prefs.begin(kNvsNamespace, true);
-  saved_ssid_  = prefs.getString("wifi_ssid", "").c_str();
-  saved_pass_  = prefs.getString("wifi_pass", "").c_str();
+  saved_ssid_ = prefs.getString("wifi_ssid", "").c_str();
+  saved_pass_ = prefs.getString("wifi_pass", "").c_str();
   backend_url_ = prefs.getString("backend_url", "http://192.168.1.42:8000").c_str();
   prefs.end();
-  Serial.printf("[wifi] loaded: ssid='%s' backend='%s'\n",
-                saved_ssid_.c_str(), backend_url_.c_str());
+  Serial.printf("[wifi] loaded: ssid='%s' backend='%s'\n", saved_ssid_.c_str(),
+                backend_url_.c_str());
 }
 
-void WifiManager::SaveCredentials(const std::string& ssid,
-                                  const std::string& pass,
-                                  const std::string& backend) {
+void WifiManager::SaveCredentials(const std::string &ssid, const std::string &pass,
+                                  const std::string &backend) {
   prefs.begin(kNvsNamespace, false);
   prefs.putString("wifi_ssid", ssid.c_str());
   prefs.putString("wifi_pass", pass.c_str());
@@ -220,12 +218,11 @@ void WifiManager::SaveCredentials(const std::string& ssid,
   saved_ssid_ = ssid;
   saved_pass_ = pass;
   backend_url_ = backend;
-  Serial.printf("[wifi] saved: ssid='%s' backend='%s'\n",
-                ssid.c_str(), backend.c_str());
+  Serial.printf("[wifi] saved: ssid='%s' backend='%s'\n", ssid.c_str(), backend.c_str());
 }
 
 // ---------------------------------------------------------------------------
-bool WifiManager::TryConnect(const std::string& ssid, const std::string& pass,
+bool WifiManager::TryConnect(const std::string &ssid, const std::string &pass,
                              uint32_t timeout_ms) {
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid.c_str(), pass.c_str());
@@ -242,9 +239,10 @@ bool WifiManager::TryConnect(const std::string& ssid, const std::string& pass,
 }
 
 // ---------------------------------------------------------------------------
-void WifiManager::SetState(State s, const std::string& info) {
+void WifiManager::SetState(State s, const std::string &info) {
   state_ = s;
-  if (on_state_change_) on_state_change_(s, info);
+  if (on_state_change_)
+    on_state_change_(s, info);
 }
 
 // ---------------------------------------------------------------------------
@@ -269,7 +267,8 @@ void WifiManager::SetupApWebServer() {
     auto nets = g_mgr->Scan();
     String json = "[";
     for (size_t i = 0; i < nets.size(); i++) {
-      if (i > 0) json += ",";
+      if (i > 0)
+        json += ",";
       json += "{\"ssid\":\"";
       // Escape quotes in SSID.
       String escaped = nets[i].ssid.c_str();
@@ -287,8 +286,8 @@ void WifiManager::SetupApWebServer() {
 
   // Save credentials.
   web_server->on("/save", HTTP_POST, []() {
-    String ssid    = web_server->arg("ssid");
-    String pass    = web_server->arg("pass");
+    String ssid = web_server->arg("ssid");
+    String pass = web_server->arg("pass");
     String backend = web_server->arg("backend");
 
     if (ssid.isEmpty()) {

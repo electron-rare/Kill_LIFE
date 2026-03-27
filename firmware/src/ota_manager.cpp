@@ -1,15 +1,16 @@
 #include "ota_manager.h"
-#include "firmware_utils.h"
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
+
 #include <HTTPClient.h>
 #include <Update.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 
-OtaManager::OtaManager(const std::string& current_version)
-    : current_version_(current_version) {}
+#include "firmware_utils.h"
+
+OtaManager::OtaManager(const std::string &current_version) : current_version_(current_version) {}
 
 OtaCheckResult OtaManager::CheckOnly() {
   return FetchLatestInfo();
@@ -75,8 +76,8 @@ OtaCheckResult OtaManager::FetchLatestInfo() {
   }
 
   result.latest_version = resp_doc["latest"].as<std::string>();
-  result.url            = resp_doc["url"].as<std::string>();
-  result.notes          = resp_doc["notes"].as<std::string>();
+  result.url = resp_doc["url"].as<std::string>();
+  result.notes = resp_doc["notes"].as<std::string>();
 
   if (FwCompareVersions(current_version_, result.latest_version) >= 0) {
     result.status = OtaCheckResult::Status::kUpToDate;
@@ -87,8 +88,9 @@ OtaCheckResult OtaManager::FetchLatestInfo() {
   return result;
 }
 
-bool OtaManager::FlashFromUrl(const std::string& url) {
-  if (url.empty()) return false;
+bool OtaManager::FlashFromUrl(const std::string &url) {
+  if (url.empty())
+    return false;
 
   HTTPClient http;
   http.begin(url.c_str());
@@ -100,12 +102,11 @@ bool OtaManager::FlashFromUrl(const std::string& url) {
   }
 
   const int content_len = http.getSize();
-  WiFiClient* stream = http.getStreamPtr();
+  WiFiClient *stream = http.getStreamPtr();
 
   if (!Update.begin(content_len > 0 ? content_len : UPDATE_SIZE_UNKNOWN)) {
     http.end();
-    Serial.printf("[OTA] Update.begin failed: %s\n",
-                  Update.errorString());
+    Serial.printf("[OTA] Update.begin failed: %s\n", Update.errorString());
     return false;
   }
 

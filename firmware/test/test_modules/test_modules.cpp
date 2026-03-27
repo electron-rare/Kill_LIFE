@@ -3,9 +3,9 @@
 /// checking.  Compiles on the native (Linux x86_64) target with -D UNIT_TEST=1.
 /// No Arduino/ESP32 headers are used.
 
-#include <unity.h>
 #include <cstring>
 #include <string>
+#include <unity.h>
 #include <utility>
 #include <vector>
 
@@ -16,29 +16,23 @@
 inline void yield() {}
 
 // Include the pure-C++ headers (no Arduino deps).
-#include "../../include/voice_controller.h"
 #include "../../include/firmware_utils.h"
 #include "../../include/ota_manager.h"
+#include "../../include/voice_controller.h"
 
 // ===========================================================================
 // VoiceController implementation (copied from voice_controller.cpp to avoid
 // pulling in Arduino.h which is not available on native).
 // ===========================================================================
 
-VoiceController::VoiceController(std::string device_id,
-                                 BackendClient& backend,
-                                 MediaController& media,
-                                 UiRenderer& ui)
-    : device_id_(std::move(device_id)),
-      backend_(backend),
-      media_(media),
-      ui_(ui) {}
+VoiceController::VoiceController(std::string device_id, BackendClient &backend,
+                                 MediaController &media, UiRenderer &ui)
+    : device_id_(std::move(device_id)), backend_(backend), media_(media), ui_(ui) {}
 
 void VoiceController::Boot() {
   phase_ = VoicePhase::kIdle;
   RenderState("pret", IdleSummary(media_.Snapshot()), false);
-  backend_.SendPlayerEvent(device_id_, "boot", media_.Snapshot(),
-                           "voice-controller-ready");
+  backend_.SendPlayerEvent(device_id_, "boot", media_.Snapshot(), "voice-controller-ready");
 }
 
 bool VoiceController::BeginPushToTalk() {
@@ -50,7 +44,7 @@ bool VoiceController::BeginPushToTalk() {
   return true;
 }
 
-bool VoiceController::CompletePushToTalk(const std::vector<uint8_t>& wav_data) {
+bool VoiceController::CompletePushToTalk(const std::vector<uint8_t> &wav_data) {
   if (phase_ != VoicePhase::kRecording) {
     return false;
   }
@@ -61,14 +55,12 @@ bool VoiceController::CompletePushToTalk(const std::vector<uint8_t>& wav_data) {
   phase_ = VoicePhase::kThinking;
   RenderState("je reflechis", "Envoi de la requete a Mascarade.", true);
 
-  last_response_ = backend_.SubmitVoiceSession(device_id_, media_.Snapshot(),
-                                               wav_data);
+  last_response_ = backend_.SubmitVoiceSession(device_id_, media_.Snapshot(), wav_data);
   yield();
 
   if (!last_response_.ok) {
     const std::string error_text =
-        last_response_.error.empty() ? "session vocale en echec"
-                                     : last_response_.error;
+        last_response_.error.empty() ? "session vocale en echec" : last_response_.error;
     return Fail(error_text);
   }
 
@@ -77,8 +69,7 @@ bool VoiceController::CompletePushToTalk(const std::vector<uint8_t>& wav_data) {
   const MediaSnapshot after = media_.Snapshot();
 
   if (ShouldPublishPlaybackStarted(before, after, last_response_.intent)) {
-    const std::string detail =
-        !after.station.empty() ? after.station : after.track;
+    const std::string detail = !after.station.empty() ? after.station : after.track;
     backend_.SendPlayerEvent(device_id_, "playback_started", after, detail);
   }
 
@@ -86,19 +77,16 @@ bool VoiceController::CompletePushToTalk(const std::vector<uint8_t>& wav_data) {
 
   phase_ = VoicePhase::kSpeaking;
   RenderState("je reponds",
-              last_response_.reply_text.empty()
-                  ? "Reponse audio en preparation."
-                  : last_response_.reply_text,
+              last_response_.reply_text.empty() ? "Reponse audio en preparation."
+                                                : last_response_.reply_text,
               true);
 
   if (!last_response_.reply_audio_url.empty()) {
     std::vector<uint8_t> reply_audio;
-    if (backend_.DownloadReplyAudio(last_response_.reply_audio_url,
-                                    &reply_audio)) {
+    if (backend_.DownloadReplyAudio(last_response_.reply_audio_url, &reply_audio)) {
       yield();
       if (!media_.PlayReplyAudio(reply_audio)) {
-        backend_.SendPlayerEvent(device_id_, "playback_failed",
-                                 media_.Snapshot(),
+        backend_.SendPlayerEvent(device_id_, "playback_failed", media_.Snapshot(),
                                  "tts reply playback failed");
       }
     } else {
@@ -114,32 +102,30 @@ bool VoiceController::CompletePushToTalk(const std::vector<uint8_t>& wav_data) {
   return true;
 }
 
-bool VoiceController::Fail(const std::string& error_text) {
+bool VoiceController::Fail(const std::string &error_text) {
   phase_ = VoicePhase::kError;
   last_response_.ok = false;
   last_response_.error = error_text;
   RenderState("erreur reseau", error_text, false);
-  backend_.SendPlayerEvent(device_id_, "voice_error", media_.Snapshot(),
-                           error_text);
+  backend_.SendPlayerEvent(device_id_, "voice_error", media_.Snapshot(), error_text);
   media_.RestoreAfterReply(true);
   phase_ = VoicePhase::kIdle;
   RenderState("pret", IdleSummary(media_.Snapshot()), false);
   return false;
 }
 
-void VoiceController::RenderState(const std::string& headline,
-                                  const std::string& summary,
+void VoiceController::RenderState(const std::string &headline, const std::string &summary,
                                   bool show_ring) {
   ui_.Render(media_.Snapshot(), phase_, headline, summary, show_ring);
 }
 
-std::string VoiceController::IdleSummary(const MediaSnapshot& media) {
+std::string VoiceController::IdleSummary(const MediaSnapshot &media) {
   return FwIdleSummary(media);
 }
 
-bool VoiceController::ShouldPublishPlaybackStarted(
-    const MediaSnapshot& before, const MediaSnapshot& after,
-    const VoiceIntent& intent) {
+bool VoiceController::ShouldPublishPlaybackStarted(const MediaSnapshot &before,
+                                                   const MediaSnapshot &after,
+                                                   const VoiceIntent &intent) {
   return FwShouldPublishPlaybackStarted(before, after, intent);
 }
 
@@ -148,8 +134,7 @@ bool VoiceController::ShouldPublishPlaybackStarted(
 // We only need the constructor and simple accessors for testing.
 // ===========================================================================
 
-OtaManager::OtaManager(const std::string& current_version)
-    : current_version_(current_version) {}
+OtaManager::OtaManager(const std::string &current_version) : current_version_(current_version) {}
 
 // Stubs for methods that depend on Arduino/HTTP — not called in our tests
 // but needed to satisfy the linker (non-pure-virtual members).
@@ -159,8 +144,10 @@ OtaCheckResult OtaManager::CheckOnly() {
 
 OtaCheckResult OtaManager::CheckAndUpdate() {
   OtaCheckResult info = FetchLatestInfo();
-  if (info.status == OtaCheckResult::Status::kCheckFailed) return info;
-  if (info.status == OtaCheckResult::Status::kUpToDate) return info;
+  if (info.status == OtaCheckResult::Status::kCheckFailed)
+    return info;
+  if (info.status == OtaCheckResult::Status::kUpToDate)
+    return info;
   if (FlashFromUrl(info.url)) {
     info.status = OtaCheckResult::Status::kFlashOk;
   } else {
@@ -177,7 +164,7 @@ OtaCheckResult OtaManager::FetchLatestInfo() {
   return result;
 }
 
-bool OtaManager::FlashFromUrl(const std::string& /*url*/) {
+bool OtaManager::FlashFromUrl(const std::string & /*url*/) {
   return false;
 }
 
@@ -186,7 +173,7 @@ bool OtaManager::FlashFromUrl(const std::string& /*url*/) {
 // ===========================================================================
 
 class MockBackend : public BackendClient {
- public:
+public:
   VoiceSessionResponse next_voice_response;
   bool download_succeeds = true;
   std::vector<uint8_t> download_audio;
@@ -197,26 +184,23 @@ class MockBackend : public BackendClient {
   int submit_voice_count = 0;
   int download_count = 0;
 
-  bool SendPlayerEvent(const std::string& /*device_id*/,
-                       const std::string& event_name,
-                       const MediaSnapshot& /*media*/,
-                       const std::string& detail) override {
+  bool SendPlayerEvent(const std::string & /*device_id*/, const std::string &event_name,
+                       const MediaSnapshot & /*media*/, const std::string &detail) override {
     ++send_event_count;
     last_event_name = event_name;
     last_event_detail = detail;
     return true;
   }
 
-  VoiceSessionResponse SubmitVoiceSession(
-      const std::string& /*device_id*/,
-      const MediaSnapshot& /*media*/,
-      const std::vector<uint8_t>& /*wav_data*/) override {
+  VoiceSessionResponse SubmitVoiceSession(const std::string & /*device_id*/,
+                                          const MediaSnapshot & /*media*/,
+                                          const std::vector<uint8_t> & /*wav_data*/) override {
     ++submit_voice_count;
     return next_voice_response;
   }
 
-  bool DownloadReplyAudio(const std::string& /*audio_url*/,
-                          std::vector<uint8_t>* wav_data) override {
+  bool DownloadReplyAudio(const std::string & /*audio_url*/,
+                          std::vector<uint8_t> *wav_data) override {
     ++download_count;
     if (download_succeeds && wav_data) {
       *wav_data = download_audio;
@@ -226,7 +210,7 @@ class MockBackend : public BackendClient {
 };
 
 class MockMedia : public MediaController {
- public:
+public:
   MediaSnapshot snapshot;
   int apply_intent_count = 0;
   int prepare_count = 0;
@@ -239,7 +223,7 @@ class MockMedia : public MediaController {
 
   MediaSnapshot Snapshot() const override { return snapshot; }
 
-  void ApplyIntent(const VoiceIntent& intent) override {
+  void ApplyIntent(const VoiceIntent &intent) override {
     ++apply_intent_count;
     last_intent = intent;
   }
@@ -254,25 +238,22 @@ class MockMedia : public MediaController {
     last_restore_resume = resume_media_after_tts;
   }
 
-  bool PlayReplyAudio(const std::vector<uint8_t>& /*wav_data*/) override {
+  bool PlayReplyAudio(const std::vector<uint8_t> & /*wav_data*/) override {
     ++play_reply_count;
     return play_reply_result;
   }
 };
 
 class MockUi : public UiRenderer {
- public:
+public:
   int render_count = 0;
   VoicePhase last_phase = VoicePhase::kIdle;
   std::string last_headline;
   std::string last_summary;
   bool last_show_ring = false;
 
-  void Render(const MediaSnapshot& /*media*/,
-              VoicePhase phase,
-              const std::string& headline,
-              const std::string& summary,
-              bool show_ring) override {
+  void Render(const MediaSnapshot & /*media*/, VoicePhase phase, const std::string &headline,
+              const std::string &summary, bool show_ring) override {
     ++render_count;
     last_phase = phase;
     last_headline = headline;
@@ -297,8 +278,7 @@ void test_vc_initial_phase_is_idle() {
   MockMedia media;
   MockUi ui;
   VoiceController vc("dev-001", backend, media, ui);
-  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle),
-                    static_cast<int>(vc.phase()));
+  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle), static_cast<int>(vc.phase()));
 }
 
 void test_vc_boot_sends_event_and_stays_idle() {
@@ -309,8 +289,7 @@ void test_vc_boot_sends_event_and_stays_idle() {
 
   vc.Boot();
 
-  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle),
-                    static_cast<int>(vc.phase()));
+  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle), static_cast<int>(vc.phase()));
   TEST_ASSERT_EQUAL_INT(1, backend.send_event_count);
   TEST_ASSERT_EQUAL_STRING("boot", backend.last_event_name.c_str());
   TEST_ASSERT_TRUE(ui.render_count > 0);
@@ -326,8 +305,7 @@ void test_vc_begin_ptt_transitions_to_recording() {
   bool ok = vc.BeginPushToTalk();
 
   TEST_ASSERT_TRUE(ok);
-  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kRecording),
-                    static_cast<int>(vc.phase()));
+  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kRecording), static_cast<int>(vc.phase()));
 }
 
 void test_vc_begin_ptt_fails_when_not_idle() {
@@ -341,8 +319,7 @@ void test_vc_begin_ptt_fails_when_not_idle() {
   bool ok = vc.BeginPushToTalk();
 
   TEST_ASSERT_FALSE(ok);
-  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kRecording),
-                    static_cast<int>(vc.phase()));
+  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kRecording), static_cast<int>(vc.phase()));
 }
 
 void test_vc_complete_ptt_fails_when_not_recording() {
@@ -370,10 +347,8 @@ void test_vc_complete_ptt_empty_audio_fails() {
   bool ok = vc.CompletePushToTalk(empty);
 
   TEST_ASSERT_FALSE(ok);
-  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle),
-                    static_cast<int>(vc.phase()));
-  TEST_ASSERT_EQUAL_STRING("capture audio vide",
-                           vc.last_response().error.c_str());
+  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle), static_cast<int>(vc.phase()));
+  TEST_ASSERT_EQUAL_STRING("capture audio vide", vc.last_response().error.c_str());
 }
 
 void test_vc_full_successful_flow_idle_to_idle() {
@@ -391,14 +366,12 @@ void test_vc_full_successful_flow_idle_to_idle() {
   vc.Boot();
 
   TEST_ASSERT_TRUE(vc.BeginPushToTalk());
-  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kRecording),
-                    static_cast<int>(vc.phase()));
+  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kRecording), static_cast<int>(vc.phase()));
 
   bool ok = vc.CompletePushToTalk(DummyWav());
 
   TEST_ASSERT_TRUE(ok);
-  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle),
-                    static_cast<int>(vc.phase()));
+  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle), static_cast<int>(vc.phase()));
   TEST_ASSERT_EQUAL_INT(1, backend.submit_voice_count);
   TEST_ASSERT_EQUAL_INT(1, media.apply_intent_count);
   TEST_ASSERT_EQUAL_INT(1, media.prepare_count);
@@ -424,8 +397,7 @@ void test_vc_successful_flow_with_audio_download() {
   bool ok = vc.CompletePushToTalk(DummyWav());
 
   TEST_ASSERT_TRUE(ok);
-  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle),
-                    static_cast<int>(vc.phase()));
+  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle), static_cast<int>(vc.phase()));
   TEST_ASSERT_EQUAL_INT(1, backend.download_count);
   TEST_ASSERT_EQUAL_INT(1, media.play_reply_count);
 }
@@ -445,10 +417,8 @@ void test_vc_backend_error_returns_to_idle() {
   bool ok = vc.CompletePushToTalk(DummyWav());
 
   TEST_ASSERT_FALSE(ok);
-  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle),
-                    static_cast<int>(vc.phase()));
-  TEST_ASSERT_EQUAL_STRING("server timeout",
-                           vc.last_response().error.c_str());
+  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle), static_cast<int>(vc.phase()));
+  TEST_ASSERT_EQUAL_STRING("server timeout", vc.last_response().error.c_str());
   TEST_ASSERT_EQUAL_STRING("voice_error", backend.last_event_name.c_str());
 }
 
@@ -465,8 +435,7 @@ void test_vc_backend_error_empty_message_uses_default() {
   vc.BeginPushToTalk();
   vc.CompletePushToTalk(DummyWav());
 
-  TEST_ASSERT_EQUAL_STRING("session vocale en echec",
-                           vc.last_response().error.c_str());
+  TEST_ASSERT_EQUAL_STRING("session vocale en echec", vc.last_response().error.c_str());
 }
 
 void test_vc_audio_download_failure_sends_event() {
@@ -486,8 +455,7 @@ void test_vc_audio_download_failure_sends_event() {
 
   TEST_ASSERT_TRUE(ok);
   TEST_ASSERT_EQUAL_STRING("playback_failed", backend.last_event_name.c_str());
-  TEST_ASSERT_EQUAL_STRING("tts reply download failed",
-                           backend.last_event_detail.c_str());
+  TEST_ASSERT_EQUAL_STRING("tts reply download failed", backend.last_event_detail.c_str());
 }
 
 void test_vc_audio_playback_failure_sends_event() {
@@ -509,8 +477,7 @@ void test_vc_audio_playback_failure_sends_event() {
 
   TEST_ASSERT_TRUE(ok);
   TEST_ASSERT_EQUAL_STRING("playback_failed", backend.last_event_name.c_str());
-  TEST_ASSERT_EQUAL_STRING("tts reply playback failed",
-                           backend.last_event_detail.c_str());
+  TEST_ASSERT_EQUAL_STRING("tts reply playback failed", backend.last_event_detail.c_str());
 }
 
 void test_vc_restore_called_with_resume_flag() {
@@ -561,12 +528,10 @@ void test_vc_can_start_new_session_after_success() {
 
   vc.BeginPushToTalk();
   vc.CompletePushToTalk(DummyWav());
-  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle),
-                    static_cast<int>(vc.phase()));
+  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle), static_cast<int>(vc.phase()));
 
   TEST_ASSERT_TRUE(vc.BeginPushToTalk());
-  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kRecording),
-                    static_cast<int>(vc.phase()));
+  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kRecording), static_cast<int>(vc.phase()));
 }
 
 void test_vc_can_start_new_session_after_error() {
@@ -582,8 +547,7 @@ void test_vc_can_start_new_session_after_error() {
 
   vc.BeginPushToTalk();
   vc.CompletePushToTalk(DummyWav());
-  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle),
-                    static_cast<int>(vc.phase()));
+  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle), static_cast<int>(vc.phase()));
 
   TEST_ASSERT_TRUE(vc.BeginPushToTalk());
 }
@@ -594,21 +558,21 @@ void test_vc_can_start_new_session_after_error() {
 
 void test_ota_version_equal_means_up_to_date() {
   std::string current = "1.2.3";
-  std::string latest  = "1.2.3";
+  std::string latest = "1.2.3";
   int cmp = FwCompareVersions(current, latest);
   TEST_ASSERT_TRUE(cmp >= 0);
 }
 
 void test_ota_version_newer_means_update_available() {
   std::string current = "1.0.0";
-  std::string latest  = "1.0.1";
+  std::string latest = "1.0.1";
   int cmp = FwCompareVersions(current, latest);
   TEST_ASSERT_TRUE(cmp < 0);
 }
 
 void test_ota_version_current_ahead_means_up_to_date() {
   std::string current = "2.0.0";
-  std::string latest  = "1.9.9";
+  std::string latest = "1.9.9";
   int cmp = FwCompareVersions(current, latest);
   TEST_ASSERT_TRUE(cmp >= 0);
 }
@@ -732,8 +696,7 @@ void test_vc_boot_renders_idle_state() {
 
   TEST_ASSERT_EQUAL_STRING("pret", ui.last_headline.c_str());
   TEST_ASSERT_FALSE(ui.last_show_ring);
-  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle),
-                    static_cast<int>(ui.last_phase));
+  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kIdle), static_cast<int>(ui.last_phase));
 }
 
 void test_vc_begin_ptt_renders_recording_state() {
@@ -747,15 +710,14 @@ void test_vc_begin_ptt_renders_recording_state() {
 
   TEST_ASSERT_EQUAL_STRING("j'ecoute", ui.last_headline.c_str());
   TEST_ASSERT_TRUE(ui.last_show_ring);
-  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kRecording),
-                    static_cast<int>(ui.last_phase));
+  TEST_ASSERT_EQUAL(static_cast<int>(VoicePhase::kRecording), static_cast<int>(ui.last_phase));
 }
 
 // ---------------------------------------------------------------------------
 // Entry point
 // ---------------------------------------------------------------------------
 
-int main(int, char**) {
+int main(int, char **) {
   UNITY_BEGIN();
 
   // VoiceController state transitions

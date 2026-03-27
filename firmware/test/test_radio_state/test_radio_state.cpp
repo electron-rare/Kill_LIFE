@@ -5,28 +5,30 @@
 /// No real Audio/I2S/LittleFS hardware used — audio_ pointer stays null;
 /// every method that calls audio_ is already guarded by null / initialized_ checks.
 
-#include <unity.h>
+#include <algorithm>
 #include <cstdarg>
 #include <cstdio>
 #include <string>
+#include <unity.h>
 #include <utility>
 #include <vector>
-#include <algorithm>
 
 // ---------------------------------------------------------------------------
 // Minimal Arduino stubs
 // ---------------------------------------------------------------------------
 inline void yield() {}
 inline void delay(unsigned long) {}
-inline unsigned long millis() { return 0; }
-template<typename T> inline T constrain(T v, T lo, T hi) {
+inline unsigned long millis() {
+  return 0;
+}
+template <typename T> inline T constrain(T v, T lo, T hi) {
   return v < lo ? lo : (v > hi ? hi : v);
 }
 
 struct _SerialStub {
-  void printf(const char*, ...) {}
-  void println(const char*) {}
-  void print(const char*) {}
+  void printf(const char *, ...) {}
+  void println(const char *) {}
+  void print(const char *) {}
 } Serial;
 
 // ---------------------------------------------------------------------------
@@ -35,28 +37,31 @@ struct _SerialStub {
 class Audio {
 public:
   int last_volume = 0;
-  const char* last_fs_path = nullptr;
+  const char *last_fs_path = nullptr;
   void setPinout(int, int, int) {}
   void setVolume(int v) { last_volume = v; }
-  bool connecttohost(const char*) { return true; }
+  bool connecttohost(const char *) { return true; }
   // connecttoFS used for both SD MP3 and LittleFS TTS
-  template<typename FS>
-  bool connecttoFS(FS&, const char* path) { last_fs_path = path; return true; }
+  template <typename FS> bool connecttoFS(FS &, const char *path) {
+    last_fs_path = path;
+    return true;
+  }
   void stopSong() {}
   bool isRunning() { return false; }
   void loop() {}
 };
 
 // Minimal SD stub so radio_player.h compiles (SD not used in native tests).
-struct _SDStub {} SD;
+struct _SDStub {
+} SD;
 
 // ---------------------------------------------------------------------------
 // Pure-C++ headers (no Arduino deps)
 // Open private members for white-box state testing.
 // ---------------------------------------------------------------------------
 #define private public
-#include "../../include/voice_controller.h"
 #include "../../include/radio_player.h"
+#include "../../include/voice_controller.h"
 #undef private
 
 // ---------------------------------------------------------------------------
@@ -66,7 +71,9 @@ struct _SDStub {} SD;
 // ---------------------------------------------------------------------------
 
 RadioPlayer::RadioPlayer() {}
-RadioPlayer::~RadioPlayer() { delete audio_; }
+RadioPlayer::~RadioPlayer() {
+  delete audio_;
+}
 
 bool RadioPlayer::Begin(int bck, int ws, int dout) {
   audio_ = new Audio();
@@ -77,7 +84,8 @@ bool RadioPlayer::Begin(int bck, int ws, int dout) {
 }
 
 void RadioPlayer::Loop() {
-  if (initialized_ && audio_) audio_->loop();
+  if (initialized_ && audio_)
+    audio_->loop();
 }
 
 MediaSnapshot RadioPlayer::Snapshot() const {
@@ -88,31 +96,37 @@ MediaSnapshot RadioPlayer::Snapshot() const {
   snap.wifi_ssid = wifi_ssid_;
   snap.wifi_rssi = wifi_rssi_;
   snap.battery_pct = battery_pct_;
-  if (!stations_.empty() && current_station_ >= 0 &&
-      current_station_ < (int)stations_.size()) {
+  if (!stations_.empty() && current_station_ >= 0 && current_station_ < (int)stations_.size()) {
     snap.station = stations_[current_station_].first;
   }
   snap.track = current_title_;
-  for (const auto& s : stations_) snap.available_stations.push_back(s.first);
+  for (const auto &s : stations_)
+    snap.available_stations.push_back(s.first);
   return snap;
 }
 
-void RadioPlayer::ApplyIntent(const VoiceIntent& intent) {
+void RadioPlayer::ApplyIntent(const VoiceIntent &intent) {
   if (intent.type == "set_volume") {
     SetVolume(atoi(intent.value.c_str()));
   } else if (intent.type == "play") {
     if (!playing_) {
-      if (mode_ == MediaMode::kMp3) StartCurrentMp3();
-      else StartCurrentStation();
+      if (mode_ == MediaMode::kMp3)
+        StartCurrentMp3();
+      else
+        StartCurrentStation();
     }
   } else if (intent.type == "pause") {
     Stop();
   } else if (intent.type == "next") {
-    if (mode_ == MediaMode::kMp3) NextMp3();
-    else Next();
+    if (mode_ == MediaMode::kMp3)
+      NextMp3();
+    else
+      Next();
   } else if (intent.type == "previous") {
-    if (mode_ == MediaMode::kMp3) PreviousMp3();
-    else Previous();
+    if (mode_ == MediaMode::kMp3)
+      PreviousMp3();
+    else
+      Previous();
   } else if (intent.type == "next_mp3") {
     NextMp3();
   } else if (intent.type == "previous_mp3") {
@@ -135,104 +149,125 @@ void RadioPlayer::PrepareForReply(PlayerAction action) {
   was_playing_ = playing_;
   saved_volume_ = volume_;
   if (action == PlayerAction::kDuck) {
-    if (audio_) audio_->setVolume((volume_ / 2) * 21 / 100);
+    if (audio_)
+      audio_->setVolume((volume_ / 2) * 21 / 100);
   } else if (action == PlayerAction::kStopResume) {
-    if (playing_ && audio_) { audio_->stopSong(); playing_ = false; }
+    if (playing_ && audio_) {
+      audio_->stopSong();
+      playing_ = false;
+    }
   }
 }
 
 void RadioPlayer::RestoreAfterReply(bool resume) {
   if (saved_volume_ >= 0) {
-    if (audio_) audio_->setVolume(saved_volume_ * 21 / 100);
+    if (audio_)
+      audio_->setVolume(saved_volume_ * 21 / 100);
     saved_volume_ = -1;
   }
-  if (resume && was_playing_ && !playing_) StartCurrentStation();
+  if (resume && was_playing_ && !playing_)
+    StartCurrentStation();
   was_playing_ = false;
 }
 
-bool RadioPlayer::PlayReplyAudio(const std::vector<uint8_t>&) {
-  return false;  // stub — not tested
+bool RadioPlayer::PlayReplyAudio(const std::vector<uint8_t> &) {
+  return false; // stub — not tested
 }
 
-void RadioPlayer::SetStations(
-    const std::vector<std::pair<std::string, std::string>>& list) {
+void RadioPlayer::SetStations(const std::vector<std::pair<std::string, std::string>> &list) {
   stations_ = list;
-  if (current_station_ >= (int)stations_.size()) current_station_ = 0;
+  if (current_station_ >= (int)stations_.size())
+    current_station_ = 0;
 }
 
 void RadioPlayer::PlayStation(int index) {
-  if (stations_.empty()) return;
+  if (stations_.empty())
+    return;
   current_station_ = index % (int)stations_.size();
   StartCurrentStation();
 }
 
-void RadioPlayer::PlayStation(const std::string& name) {
+void RadioPlayer::PlayStation(const std::string &name) {
   for (int i = 0; i < (int)stations_.size(); i++) {
-    if (stations_[i].first == name) { PlayStation(i); return; }
+    if (stations_[i].first == name) {
+      PlayStation(i);
+      return;
+    }
   }
 }
 
 void RadioPlayer::Next() {
-  if (stations_.empty()) return;
+  if (stations_.empty())
+    return;
   current_station_ = (current_station_ + 1) % (int)stations_.size();
   StartCurrentStation();
 }
 
 void RadioPlayer::Previous() {
-  if (stations_.empty()) return;
-  current_station_ = (current_station_ - 1 + (int)stations_.size()) %
-                     (int)stations_.size();
+  if (stations_.empty())
+    return;
+  current_station_ = (current_station_ - 1 + (int)stations_.size()) % (int)stations_.size();
   StartCurrentStation();
 }
 
 void RadioPlayer::Stop() {
-  if (audio_) audio_->stopSong();
+  if (audio_)
+    audio_->stopSong();
   playing_ = false;
 }
 
 void RadioPlayer::SetVolume(int vol) {
   volume_ = constrain(vol, 0, 100);
-  if (audio_) audio_->setVolume(volume_ * 21 / 100);
+  if (audio_)
+    audio_->setVolume(volume_ * 21 / 100);
 }
 
-bool RadioPlayer::IsPlaying() const { return playing_; }
+bool RadioPlayer::IsPlaying() const {
+  return playing_;
+}
 
-void RadioPlayer::SetMp3Files(const std::vector<std::string>& files) {
+void RadioPlayer::SetMp3Files(const std::vector<std::string> &files) {
   mp3_files_ = files;
-  if (current_mp3_ >= (int)mp3_files_.size()) current_mp3_ = 0;
+  if (current_mp3_ >= (int)mp3_files_.size())
+    current_mp3_ = 0;
 }
 
 void RadioPlayer::NextMp3() {
-  if (mp3_files_.empty()) return;
+  if (mp3_files_.empty())
+    return;
   current_mp3_ = (current_mp3_ + 1) % (int)mp3_files_.size();
   StartCurrentMp3();
 }
 
 void RadioPlayer::PreviousMp3() {
-  if (mp3_files_.empty()) return;
-  current_mp3_ = (current_mp3_ - 1 + (int)mp3_files_.size()) %
-                 (int)mp3_files_.size();
+  if (mp3_files_.empty())
+    return;
+  current_mp3_ = (current_mp3_ - 1 + (int)mp3_files_.size()) % (int)mp3_files_.size();
   StartCurrentMp3();
 }
 
 void RadioPlayer::StartCurrentMp3() {
-  if (!initialized_ || !audio_ || mp3_files_.empty()) return;
-  const std::string& path = mp3_files_[current_mp3_];
+  if (!initialized_ || !audio_ || mp3_files_.empty())
+    return;
+  const std::string &path = mp3_files_[current_mp3_];
   audio_->stopSong();
   playing_ = audio_->connecttoFS(SD, path.c_str());
 }
 
 void RadioPlayer::StartCurrentStation() {
-  if (!initialized_ || !audio_ || stations_.empty()) return;
-  const auto& [name, url] = stations_[current_station_];
+  if (!initialized_ || !audio_ || stations_.empty())
+    return;
+  const auto &[name, url] = stations_[current_station_];
   audio_->stopSong();
   playing_ = audio_->connecttohost(url.c_str());
 }
 
-void RadioPlayer::OnInfo(const char*) {}
-void RadioPlayer::OnTitle(const char* title) { current_title_ = title ? title : ""; }
+void RadioPlayer::OnInfo(const char *) {}
+void RadioPlayer::OnTitle(const char *title) {
+  current_title_ = title ? title : "";
+}
 
-void updatePlayerWifi(RadioPlayer& p, const std::string& ssid, int rssi) {
+void updatePlayerWifi(RadioPlayer &p, const std::string &ssid, int rssi) {
   p.wifi_ssid_ = ssid;
   p.wifi_rssi_ = rssi;
 }
@@ -241,8 +276,9 @@ void updatePlayerWifi(RadioPlayer& p, const std::string& ssid, int rssi) {
 // Helpers
 // ===========================================================================
 
-static std::vector<std::pair<std::string,std::string>> three_stations() {
-  return {{"FIP", "http://fip.fr/stream"}, {"NovaPlanet", "http://nova.fr/stream"},
+static std::vector<std::pair<std::string, std::string>> three_stations() {
+  return {{"FIP", "http://fip.fr/stream"},
+          {"NovaPlanet", "http://nova.fr/stream"},
           {"France Inter", "http://inter.fr/stream"}};
 }
 
@@ -260,7 +296,7 @@ void test_snapshot_defaults() {
   auto s = p.Snapshot();
   TEST_ASSERT_EQUAL(MediaMode::kRadio, s.mode);
   TEST_ASSERT_FALSE(s.playing);
-  TEST_ASSERT_EQUAL_INT(40, s.volume);  // default volume
+  TEST_ASSERT_EQUAL_INT(40, s.volume); // default volume
   TEST_ASSERT_TRUE(s.station.empty());
   TEST_ASSERT_EQUAL_INT(-1, s.battery_pct);
 }
@@ -301,7 +337,7 @@ void test_playstation_int_sets_index() {
 void test_playstation_int_wraps() {
   RadioPlayer p;
   p.SetStations(three_stations());
-  p.PlayStation(5);  // 5 % 3 == 2
+  p.PlayStation(5); // 5 % 3 == 2
   TEST_ASSERT_EQUAL_STRING("France Inter", p.Snapshot().station.c_str());
 }
 
@@ -322,15 +358,15 @@ void test_playstation_unknown_name_no_change() {
 void test_next_advances() {
   RadioPlayer p;
   p.SetStations(three_stations());
-  p.Next();  // 0 → 1
+  p.Next(); // 0 → 1
   TEST_ASSERT_EQUAL_STRING("NovaPlanet", p.Snapshot().station.c_str());
 }
 
 void test_next_wraps_at_end() {
   RadioPlayer p;
   p.SetStations(three_stations());
-  p.PlayStation(2);  // France Inter (last)
-  p.Next();          // wraps → 0 (FIP)
+  p.PlayStation(2); // France Inter (last)
+  p.Next();         // wraps → 0 (FIP)
   TEST_ASSERT_EQUAL_STRING("FIP", p.Snapshot().station.c_str());
 }
 
@@ -375,7 +411,7 @@ void test_intent_set_volume() {
 
 void test_intent_pause_clears_playing() {
   RadioPlayer p;
-  p.playing_ = true;  // simulate playing state
+  p.playing_ = true; // simulate playing state
   VoiceIntent intent;
   intent.type = "pause";
   p.ApplyIntent(intent);
@@ -431,8 +467,8 @@ void test_prepare_saves_state() {
   // saved_volume_ = 80, was_playing_ = true
   // After restore with resume=false, saved_volume_ reset
   p.RestoreAfterReply(false);
-  TEST_ASSERT_EQUAL_INT(80, p.Snapshot().volume);  // volume restored
-  TEST_ASSERT_TRUE(p.IsPlaying());  // kDuck never stops playback
+  TEST_ASSERT_EQUAL_INT(80, p.Snapshot().volume); // volume restored
+  TEST_ASSERT_TRUE(p.IsPlaying());                // kDuck never stops playback
 }
 
 void test_prepare_stop_resume_action() {
@@ -441,11 +477,11 @@ void test_prepare_stop_resume_action() {
   // (guard: if (playing_ && audio_) — audio is null, so no-op)
   p.playing_ = true;
   p.PrepareForReply(PlayerAction::kStopResume);
-  TEST_ASSERT_TRUE(p.IsPlaying());  // audio_ is null → no change
+  TEST_ASSERT_TRUE(p.IsPlaying()); // audio_ is null → no change
   // resume=true, was_playing_=true, but !playing_=false → StartCurrentStation not called.
   // playing_ never stopped (no audio_) → remains true.
   p.RestoreAfterReply(true);
-  TEST_ASSERT_TRUE(p.IsPlaying());  // never stopped; was_playing_ reset internally
+  TEST_ASSERT_TRUE(p.IsPlaying()); // never stopped; was_playing_ reset internally
 }
 
 void test_restore_resets_saved_volume() {
@@ -512,14 +548,16 @@ void test_nextmp3_advances() {
 void test_nextmp3_wraps() {
   RadioPlayer p;
   p.SetMp3Files(three_mp3s());
-  p.NextMp3(); p.NextMp3(); p.NextMp3();  // 0→1→2→0
+  p.NextMp3();
+  p.NextMp3();
+  p.NextMp3(); // 0→1→2→0
   TEST_ASSERT_EQUAL_INT(0, p.CurrentMp3Index());
 }
 
 void test_previousmp3_wraps_at_start() {
   RadioPlayer p;
   p.SetMp3Files(three_mp3s());
-  p.PreviousMp3();  // (0-1+3)%3 == 2
+  p.PreviousMp3(); // (0-1+3)%3 == 2
   TEST_ASSERT_EQUAL_INT(2, p.CurrentMp3Index());
 }
 

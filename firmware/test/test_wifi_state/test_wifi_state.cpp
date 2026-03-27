@@ -5,10 +5,10 @@
 /// No WiFi/Arduino/Preferences hardware used — only the inline header methods
 /// and the two pure state methods inlined below.
 
-#include <unity.h>
-#include <string>
-#include <vector>
 #include <functional>
+#include <string>
+#include <unity.h>
+#include <vector>
 
 // ---------------------------------------------------------------------------
 // Include the pure-C++ header (no Arduino deps)
@@ -25,15 +25,15 @@
 //  apPassword(), backendUrl() are already inline in the header.)
 // ---------------------------------------------------------------------------
 
-void WifiManager::SetApCredentials(const std::string& ssid,
-                                   const std::string& password) {
+void WifiManager::SetApCredentials(const std::string &ssid, const std::string &password) {
   ap_ssid_ = ssid;
   ap_password_ = password;
 }
 
-void WifiManager::SetState(State s, const std::string& info) {
+void WifiManager::SetState(State s, const std::string &info) {
   state_ = s;
-  if (on_state_change_) on_state_change_(s, info);
+  if (on_state_change_)
+    on_state_change_(s, info);
 }
 
 // Hardware-dependent methods — not called in these tests; provide empty stubs
@@ -41,15 +41,23 @@ void WifiManager::SetState(State s, const std::string& info) {
 void WifiManager::Begin() {}
 void WifiManager::Loop() {}
 void WifiManager::StartApMode() {}
-std::string WifiManager::ip() const { return ""; }
-int WifiManager::rssi() const { return 0; }
-std::string WifiManager::apIp() const { return ""; }
-std::vector<WifiManager::ScanResult> WifiManager::Scan() { return {}; }
+std::string WifiManager::ip() const {
+  return "";
+}
+int WifiManager::rssi() const {
+  return 0;
+}
+std::string WifiManager::apIp() const {
+  return "";
+}
+std::vector<WifiManager::ScanResult> WifiManager::Scan() {
+  return {};
+}
 void WifiManager::LoadCredentials() {}
-void WifiManager::SaveCredentials(const std::string&, const std::string&,
-                                  const std::string&) {}
-bool WifiManager::TryConnect(const std::string&, const std::string&,
-                              uint32_t) { return false; }
+void WifiManager::SaveCredentials(const std::string &, const std::string &, const std::string &) {}
+bool WifiManager::TryConnect(const std::string &, const std::string &, uint32_t) {
+  return false;
+}
 void WifiManager::SetupApWebServer() {}
 void WifiManager::StopApWebServer() {}
 
@@ -119,7 +127,7 @@ void test_callback_fires_on_state_change() {
   WifiManager::State last_state = WifiManager::State::kIdle;
   std::string last_info;
 
-  mgr.SetOnStateChange([&](WifiManager::State s, const std::string& info) {
+  mgr.SetOnStateChange([&](WifiManager::State s, const std::string &info) {
     ++call_count;
     last_state = s;
     last_info = info;
@@ -164,7 +172,7 @@ void test_callback_not_called_without_registration() {
 void test_multiple_state_transitions() {
   WifiManager mgr;
   int count = 0;
-  mgr.SetOnStateChange([&](WifiManager::State, const std::string&) { ++count; });
+  mgr.SetOnStateChange([&](WifiManager::State, const std::string &) { ++count; });
 
   mgr.SetState(WifiManager::State::kConnecting, "");
   mgr.SetState(WifiManager::State::kFailed, "");

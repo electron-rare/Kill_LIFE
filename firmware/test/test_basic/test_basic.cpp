@@ -3,9 +3,10 @@
 /// Covers: IdleSummary, ShouldPublishPlaybackStarted, version comparison,
 ///         WAV header validation, backend URL validation.
 
-#include <unity.h>
 #include <algorithm>
 #include <cstring>
+#include <unity.h>
+
 #include "../../include/firmware_utils.h"
 
 // ---------------------------------------------------------------------------
@@ -16,7 +17,7 @@ void test_idle_summary_idle_mode() {
   MediaSnapshot m;
   m.mode = MediaMode::kIdle;
   m.volume = 40;
-  m.playing = true;  // playing flag ignored in Idle mode
+  m.playing = true; // playing flag ignored in Idle mode
   std::string s = FwIdleSummary(m);
   TEST_ASSERT_EQUAL_STRING("Idle | volume 40", s.c_str());
 }
@@ -166,23 +167,21 @@ void test_version_patch_downgrade() {
 void test_wav_valid_header() {
   // Minimal 12-byte RIFF/WAVE header
   const uint8_t data[] = {
-    'R', 'I', 'F', 'F',  // chunk id
-    0x24, 0x00, 0x00, 0x00,  // chunk size (36 bytes data)
-    'W', 'A', 'V', 'E',  // format
+      'R',  'I',  'F',  'F',  // chunk id
+      0x24, 0x00, 0x00, 0x00, // chunk size (36 bytes data)
+      'W',  'A',  'V',  'E',  // format
   };
   TEST_ASSERT_TRUE(FwIsValidWavHeader(data, sizeof(data)));
 }
 
 void test_wav_too_short() {
-  const uint8_t data[] = { 'R', 'I', 'F', 'F', 0x00 };
+  const uint8_t data[] = {'R', 'I', 'F', 'F', 0x00};
   TEST_ASSERT_FALSE(FwIsValidWavHeader(data, sizeof(data)));
 }
 
 void test_wav_wrong_magic() {
   const uint8_t data[] = {
-    0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   };
   TEST_ASSERT_FALSE(FwIsValidWavHeader(data, sizeof(data)));
 }
@@ -278,13 +277,19 @@ void test_wifi_json_escapes_quotes() {
 }
 
 void test_wifi_sort_by_rssi() {
-  WifiNetwork a; a.ssid = "weak";  a.rssi = -80;
-  WifiNetwork b; b.ssid = "good";  b.rssi = -55;
-  WifiNetwork c; c.ssid = "ok";    c.rssi = -70;
+  WifiNetwork a;
+  a.ssid = "weak";
+  a.rssi = -80;
+  WifiNetwork b;
+  b.ssid = "good";
+  b.rssi = -55;
+  WifiNetwork c;
+  c.ssid = "ok";
+  c.rssi = -70;
   std::vector<WifiNetwork> nets = {a, b, c};
   std::sort(nets.begin(), nets.end(), FwNetworkBetterSignal);
   TEST_ASSERT_EQUAL_STRING("good", nets[0].ssid.c_str());
-  TEST_ASSERT_EQUAL_STRING("ok",   nets[1].ssid.c_str());
+  TEST_ASSERT_EQUAL_STRING("ok", nets[1].ssid.c_str());
   TEST_ASSERT_EQUAL_STRING("weak", nets[2].ssid.c_str());
 }
 
@@ -305,8 +310,7 @@ void test_wifi_json_open_network() {
 
 void test_media_snapshot_defaults() {
   MediaSnapshot m;
-  TEST_ASSERT_EQUAL(static_cast<int>(MediaMode::kIdle),
-                    static_cast<int>(m.mode));
+  TEST_ASSERT_EQUAL(static_cast<int>(MediaMode::kIdle), static_cast<int>(m.mode));
   TEST_ASSERT_FALSE(m.playing);
   TEST_ASSERT_EQUAL_INT(40, m.volume);
   TEST_ASSERT_EQUAL_INT(-1, m.battery_pct);
@@ -320,7 +324,7 @@ void test_voice_intent_defaults() {
 
 // ---------------------------------------------------------------------------
 
-int main(int, char**) {
+int main(int, char **) {
   UNITY_BEGIN();
 
   // IdleSummary

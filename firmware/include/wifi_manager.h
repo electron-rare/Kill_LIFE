@@ -1,8 +1,8 @@
 #pragma once
 
+#include <functional>
 #include <string>
 #include <vector>
-#include <functional>
 
 /// WiFi connection manager with AP fallback and captive portal.
 ///
@@ -14,7 +14,7 @@
 ///
 /// NVS keys: "wifi_ssid", "wifi_pass", "backend_url"
 class WifiManager {
- public:
+public:
   enum class State {
     kIdle,
     kConnecting,
@@ -26,13 +26,13 @@ class WifiManager {
   struct ScanResult {
     std::string ssid;
     int rssi;
-    bool open;  // no encryption
+    bool open; // no encryption
   };
 
-  using OnStateChange = std::function<void(State state, const std::string& info)>;
+  using OnStateChange = std::function<void(State state, const std::string &info)>;
 
   /// AP mode settings.
-  void SetApCredentials(const std::string& ssid, const std::string& password);
+  void SetApCredentials(const std::string &ssid, const std::string &password);
 
   /// Register callback for state changes (for LCD updates).
   void SetOnStateChange(OnStateChange cb) { on_state_change_ = cb; }
@@ -68,15 +68,14 @@ class WifiManager {
   /// Scan available networks (blocking, ~2s).
   std::vector<ScanResult> Scan();
 
- private:
+private:
   void LoadCredentials();
-  void SaveCredentials(const std::string& ssid, const std::string& pass,
-                       const std::string& backend);
-  bool TryConnect(const std::string& ssid, const std::string& pass,
-                  uint32_t timeout_ms = 12000);
+  void SaveCredentials(const std::string &ssid, const std::string &pass,
+                       const std::string &backend);
+  bool TryConnect(const std::string &ssid, const std::string &pass, uint32_t timeout_ms = 12000);
   void SetupApWebServer();
   void StopApWebServer();
-  void SetState(State s, const std::string& info = "");
+  void SetState(State s, const std::string &info = "");
 
   State state_ = State::kIdle;
   OnStateChange on_state_change_;

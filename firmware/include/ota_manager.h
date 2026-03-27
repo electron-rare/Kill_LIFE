@@ -5,11 +5,11 @@
 /// Result of an OTA check.
 struct OtaCheckResult {
   enum class Status {
-    kUpToDate,    ///< Already on latest version.
+    kUpToDate,        ///< Already on latest version.
     kUpdateAvailable, ///< Newer firmware found.
-    kCheckFailed, ///< Could not reach backend.
-    kFlashFailed, ///< Download or flash error.
-    kFlashOk,     ///< Flash successful — pending reboot.
+    kCheckFailed,     ///< Could not reach backend.
+    kFlashFailed,     ///< Download or flash error.
+    kFlashOk,         ///< Flash successful — pending reboot.
   };
 
   Status status = Status::kCheckFailed;
@@ -33,11 +33,11 @@ struct OtaCheckResult {
 ///   Response: {"latest": "1.0.1", "url": "http://...", "notes": "..."}
 ///             or {"latest": "1.0.0"} when up-to-date
 class OtaManager {
- public:
-  explicit OtaManager(const std::string& current_version);
+public:
+  explicit OtaManager(const std::string &current_version);
 
-  void SetBackendUrl(const std::string& url) { backend_url_ = url; }
-  void SetDeviceId(const std::string& id) { device_id_ = id; }
+  void SetBackendUrl(const std::string &url) { backend_url_ = url; }
+  void SetDeviceId(const std::string &id) { device_id_ = id; }
 
   /// Check the backend for a newer version and flash if found.
   /// Blocks during download (typically 30–120s on good WiFi).
@@ -46,11 +46,11 @@ class OtaManager {
   /// Convenience: just check version without flashing.
   OtaCheckResult CheckOnly();
 
-  const std::string& current_version() const { return current_version_; }
+  const std::string &current_version() const { return current_version_; }
 
- private:
+private:
   OtaCheckResult FetchLatestInfo();
-  bool FlashFromUrl(const std::string& url);
+  bool FlashFromUrl(const std::string &url);
 
   std::string current_version_;
   std::string backend_url_ = "http://192.168.1.42:8000";
