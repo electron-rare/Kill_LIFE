@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <Audio.h>   // ESP32-audioI2S
 #include <LittleFS.h>
+#include <SD.h>
 
 // ---------------------------------------------------------------------------
 RadioPlayer::RadioPlayer() {}
@@ -53,13 +54,22 @@ void RadioPlayer::ApplyIntent(const VoiceIntent& intent) {
     int v = atoi(intent.value.c_str());
     SetVolume(v);
   } else if (intent.type == "play") {
-    if (!playing_) StartCurrentStation();
+    if (!playing_) {
+      if (mode_ == MediaMode::kMp3) StartCurrentMp3();
+      else StartCurrentStation();
+    }
   } else if (intent.type == "pause") {
     Stop();
   } else if (intent.type == "next") {
-    Next();
+    if (mode_ == MediaMode::kMp3) NextMp3();
+    else Next();
   } else if (intent.type == "previous") {
-    Previous();
+    if (mode_ == MediaMode::kMp3) PreviousMp3();
+    else Previous();
+  } else if (intent.type == "next_mp3") {
+    NextMp3();
+  } else if (intent.type == "previous_mp3") {
+    PreviousMp3();
   } else if (intent.type == "select_station") {
     PlayStation(intent.value);
   } else if (intent.type == "switch_mode") {
@@ -69,7 +79,7 @@ void RadioPlayer::ApplyIntent(const VoiceIntent& intent) {
     } else if (intent.value == "mp3") {
       mode_ = MediaMode::kMp3;
       Stop();
-      // TODO: SD card MP3 playback
+      StartCurrentMp3();
     }
   }
 }
@@ -99,7 +109,8 @@ void RadioPlayer::RestoreAfterReply(bool resume) {
   }
   // Resume playback if needed.
   if (resume && was_playing_ && !playing_) {
-    StartCurrentStation();
+    if (mode_ == MediaMode::kMp3) StartCurrentMp3();
+    else StartCurrentStation();
   }
   was_playing_ = false;
 }
@@ -116,16 +127,6 @@ bool RadioPlayer::PlayReplyAudio(const std::vector<uint8_t>& wav) {
   }
 
   Serial.printf("[radio] playing TTS WAV (%u bytes)\n", (unsigned)wav.size());
-
-  // ESP32-audioI2S doesn't have a direct "play from buffer" for WAV.
-  // Write to SPIFFS temp file, then play it.
-  // Alternative: use our raw I2S driver for TTS. For now, write to /tmp.
-  //
-  // Simpler approach: use PROGMEM-style buffer playback if available,
-  // or fall back to the I2S driver directly.
-  //
-  // The Audio library doesn't support buffer playback natively,
-  // so we write a temp file to SPIFFS/LittleFS.
 
   // Use LittleFS for temp file.
   static bool fs_init = false;
@@ -212,6 +213,37 @@ void RadioPlayer::SetVolume(int vol) {
 }
 
 bool RadioPlayer::IsPlaying() const { return playing_; }
+
+// ---------------------------------------------------------------------------
+void RadioPlayer::SetMp3Files(const std::vector<std::string>& files) {
+  mp3_files_ = files;
+  if (current_mp3_ >= (int)mp3_files_.size()) current_mp3_ = 0;
+  Serial.printf("[radio] %d MP3 files loaded\n", (int)mp3_files_.size());
+}
+
+void RadioPlayer::NextMp3() {
+  if (mp3_files_.empty()) return;
+  current_mp3_ = (current_mp3_ + 1) % (int)mp3_files_.size();
+  StartCurrentMp3();
+}
+
+void RadioPlayer::PreviousMp3() {
+  if (mp3_files_.empty()) return;
+  current_mp3_ = (current_mp3_ - 1 + (int)mp3_files_.size()) %
+                 (int)mp3_files_.size();
+  StartCurrentMp3();
+}
+
+void RadioPlayer::StartCurrentMp3() {
+  if (!initialized_ || !audio_ || mp3_files_.empty()) return;
+  const std::string& path = mp3_files_[current_mp3_];
+  Serial.printf("[radio] MP3 → %s\n", path.c_str());
+  audio_->stopSong();
+  playing_ = audio_->connecttoFS(SD, path.c_str());
+  if (!playing_) {
+    Serial.printf("[radio] MP3 failed: %s\n", path.c_str());
+  }
+}
 
 // ---------------------------------------------------------------------------
 void RadioPlayer::StartCurrentStation() {

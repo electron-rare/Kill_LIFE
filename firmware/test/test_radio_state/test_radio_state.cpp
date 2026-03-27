@@ -35,13 +35,20 @@ struct _SerialStub {
 class Audio {
 public:
   int last_volume = 0;
+  const char* last_fs_path = nullptr;
   void setPinout(int, int, int) {}
   void setVolume(int v) { last_volume = v; }
   bool connecttohost(const char*) { return true; }
+  // connecttoFS used for both SD MP3 and LittleFS TTS
+  template<typename FS>
+  bool connecttoFS(FS&, const char* path) { last_fs_path = path; return true; }
   void stopSong() {}
   bool isRunning() { return false; }
   void loop() {}
 };
+
+// Minimal SD stub so radio_player.h compiles (SD not used in native tests).
+struct _SDStub {} SD;
 
 // ---------------------------------------------------------------------------
 // Pure-C++ headers (no Arduino deps)
@@ -94,13 +101,22 @@ void RadioPlayer::ApplyIntent(const VoiceIntent& intent) {
   if (intent.type == "set_volume") {
     SetVolume(atoi(intent.value.c_str()));
   } else if (intent.type == "play") {
-    if (!playing_) StartCurrentStation();
+    if (!playing_) {
+      if (mode_ == MediaMode::kMp3) StartCurrentMp3();
+      else StartCurrentStation();
+    }
   } else if (intent.type == "pause") {
     Stop();
   } else if (intent.type == "next") {
-    Next();
+    if (mode_ == MediaMode::kMp3) NextMp3();
+    else Next();
   } else if (intent.type == "previous") {
-    Previous();
+    if (mode_ == MediaMode::kMp3) PreviousMp3();
+    else Previous();
+  } else if (intent.type == "next_mp3") {
+    NextMp3();
+  } else if (intent.type == "previous_mp3") {
+    PreviousMp3();
   } else if (intent.type == "select_station") {
     PlayStation(intent.value);
   } else if (intent.type == "switch_mode") {
@@ -110,6 +126,7 @@ void RadioPlayer::ApplyIntent(const VoiceIntent& intent) {
     } else if (intent.value == "mp3") {
       mode_ = MediaMode::kMp3;
       Stop();
+      StartCurrentMp3();
     }
   }
 }
@@ -179,6 +196,31 @@ void RadioPlayer::SetVolume(int vol) {
 }
 
 bool RadioPlayer::IsPlaying() const { return playing_; }
+
+void RadioPlayer::SetMp3Files(const std::vector<std::string>& files) {
+  mp3_files_ = files;
+  if (current_mp3_ >= (int)mp3_files_.size()) current_mp3_ = 0;
+}
+
+void RadioPlayer::NextMp3() {
+  if (mp3_files_.empty()) return;
+  current_mp3_ = (current_mp3_ + 1) % (int)mp3_files_.size();
+  StartCurrentMp3();
+}
+
+void RadioPlayer::PreviousMp3() {
+  if (mp3_files_.empty()) return;
+  current_mp3_ = (current_mp3_ - 1 + (int)mp3_files_.size()) %
+                 (int)mp3_files_.size();
+  StartCurrentMp3();
+}
+
+void RadioPlayer::StartCurrentMp3() {
+  if (!initialized_ || !audio_ || mp3_files_.empty()) return;
+  const std::string& path = mp3_files_[current_mp3_];
+  audio_->stopSong();
+  playing_ = audio_->connecttoFS(SD, path.c_str());
+}
 
 void RadioPlayer::StartCurrentStation() {
   if (!initialized_ || !audio_ || stations_.empty()) return;
@@ -441,6 +483,93 @@ void test_ontitle_null_clears() {
 }
 
 // ===========================================================================
+// SD MP3 tests
+// ===========================================================================
+
+static std::vector<std::string> three_mp3s() {
+  return {"/music/track1.mp3", "/music/track2.mp3", "/music/track3.mp3"};
+}
+
+void test_setmp3files_count() {
+  RadioPlayer p;
+  p.SetMp3Files(three_mp3s());
+  TEST_ASSERT_EQUAL_INT(3, p.Mp3Count());
+}
+
+void test_mp3_initial_index_zero() {
+  RadioPlayer p;
+  p.SetMp3Files(three_mp3s());
+  TEST_ASSERT_EQUAL_INT(0, p.CurrentMp3Index());
+}
+
+void test_nextmp3_advances() {
+  RadioPlayer p;
+  p.SetMp3Files(three_mp3s());
+  p.NextMp3();
+  TEST_ASSERT_EQUAL_INT(1, p.CurrentMp3Index());
+}
+
+void test_nextmp3_wraps() {
+  RadioPlayer p;
+  p.SetMp3Files(three_mp3s());
+  p.NextMp3(); p.NextMp3(); p.NextMp3();  // 0→1→2→0
+  TEST_ASSERT_EQUAL_INT(0, p.CurrentMp3Index());
+}
+
+void test_previousmp3_wraps_at_start() {
+  RadioPlayer p;
+  p.SetMp3Files(three_mp3s());
+  p.PreviousMp3();  // (0-1+3)%3 == 2
+  TEST_ASSERT_EQUAL_INT(2, p.CurrentMp3Index());
+}
+
+void test_switch_mode_mp3_sets_mode() {
+  RadioPlayer p;
+  VoiceIntent intent;
+  intent.type = "switch_mode";
+  intent.value = "mp3";
+  p.ApplyIntent(intent);
+  TEST_ASSERT_EQUAL(MediaMode::kMp3, p.Snapshot().mode);
+}
+
+void test_intent_next_in_mp3_mode_advances_mp3() {
+  RadioPlayer p;
+  p.SetMp3Files(three_mp3s());
+  p.mode_ = MediaMode::kMp3;
+  VoiceIntent intent;
+  intent.type = "next";
+  p.ApplyIntent(intent);
+  TEST_ASSERT_EQUAL_INT(1, p.CurrentMp3Index());
+}
+
+void test_intent_previous_in_mp3_mode_wraps() {
+  RadioPlayer p;
+  p.SetMp3Files(three_mp3s());
+  p.mode_ = MediaMode::kMp3;
+  VoiceIntent intent;
+  intent.type = "previous";
+  p.ApplyIntent(intent);
+  TEST_ASSERT_EQUAL_INT(2, p.CurrentMp3Index());
+}
+
+void test_intent_next_in_radio_mode_advances_station() {
+  RadioPlayer p;
+  p.SetStations(three_stations());
+  p.mode_ = MediaMode::kRadio;
+  VoiceIntent intent;
+  intent.type = "next";
+  p.ApplyIntent(intent);
+  TEST_ASSERT_EQUAL_STRING("NovaPlanet", p.Snapshot().station.c_str());
+}
+
+void test_mp3_no_files_safe() {
+  RadioPlayer p;
+  p.NextMp3();     // must not crash
+  p.PreviousMp3(); // must not crash
+  TEST_ASSERT_EQUAL_INT(0, p.Mp3Count());
+}
+
+// ===========================================================================
 // Main
 // ===========================================================================
 
@@ -473,6 +602,17 @@ int main() {
   RUN_TEST(test_update_wifi_reflected_in_snapshot);
   RUN_TEST(test_ontitle_updates_track);
   RUN_TEST(test_ontitle_null_clears);
+  // SD MP3 tests
+  RUN_TEST(test_setmp3files_count);
+  RUN_TEST(test_mp3_initial_index_zero);
+  RUN_TEST(test_nextmp3_advances);
+  RUN_TEST(test_nextmp3_wraps);
+  RUN_TEST(test_previousmp3_wraps_at_start);
+  RUN_TEST(test_switch_mode_mp3_sets_mode);
+  RUN_TEST(test_intent_next_in_mp3_mode_advances_mp3);
+  RUN_TEST(test_intent_previous_in_mp3_mode_wraps);
+  RUN_TEST(test_intent_next_in_radio_mode_advances_station);
+  RUN_TEST(test_mp3_no_files_safe);
 
   return UNITY_END();
 }
