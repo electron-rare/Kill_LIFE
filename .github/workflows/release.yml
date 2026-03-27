@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate tag matches VERSION file
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          FILE_VERSION="$(cat VERSION | tr -d '[:space:]')"
+          if [ "$TAG_VERSION" != "$FILE_VERSION" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match VERSION file ($FILE_VERSION)"
+            exit 1
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Run tests
+        run: pytest --tb=short -q
+
+      - name: Build Python package
+        run: |
+          pip install build
+          python -m build
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      - name: Build firmware
+        run: |
+          cd firmware
+          pio run
+          mkdir -p ../release-artifacts
+          cp /tmp/kl_pio_build/esp32s3_waveshare/.pio/build/esp32s3_waveshare/firmware.bin ../release-artifacts/ 2>/dev/null || \
+          cp /tmp/kl_pio_build/esp32s3_waveshare/firmware.bin ../release-artifacts/ 2>/dev/null || \
+          echo "::warning::Firmware binary not found at expected path, skipping artifact"
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p release-artifacts
+          cp dist/*.whl release-artifacts/ 2>/dev/null || true
+          cp dist/*.tar.gz release-artifacts/ 2>/dev/null || true
+          ls -la release-artifacts/
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Find the previous tag
+          PREV_TAG=$(git tag --sort=-v:refname | grep '^v' | head -2 | tail -1)
+          if [ "$PREV_TAG" = "$GITHUB_REF_NAME" ] || [ -z "$PREV_TAG" ]; then
+            # First release — show all commits
+            echo "## What's Changed" > changelog.md
+            git log --pretty=format:"- %s (%h)" >> changelog.md
+          else
+            echo "## What's Changed since $PREV_TAG" > changelog.md
+            git log --pretty=format:"- %s (%h)" "$PREV_TAG".."$GITHUB_REF_NAME" >> changelog.md
+          fi
+          echo "" >> changelog.md
+          echo "" >> changelog.md
+          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG:-initial}...${{ github.ref_name }}" >> changelog.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: changelog.md
+          files: release-artifacts/*
+          generate_release_notes: false
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') }}
