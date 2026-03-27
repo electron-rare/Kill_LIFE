@@ -5,14 +5,12 @@ WORKDIR /app
 # Install uv for fast dependency management
 RUN pip install --no-cache-dir uv
 
-# Copy dependency definition first (cache layer)
-COPY pyproject.toml .
+# Copy source
+COPY pyproject.toml kill_life/ ./
+COPY kill_life/ ./kill_life/
 
 # Install dependencies
-RUN uv pip install --system -e "."
-
-# Copy source
-COPY . .
+RUN uv pip install --system .
 
 EXPOSE 8200
 
