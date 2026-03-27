@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "label": "Conformit\u00e9 RFC2119",
+  "counts": {
+    "MUST": 38,
+    "SHOULD": 12,
+    "MAY": 1
+  },
+  "forbidden": [],
+  "timestamp": "2026-03-27T12:14:08.676968Z",
+  "files": {
+    "specs/00_intake.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/01_spec.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/02_arch.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/03_plan.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/04_tasks.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/README.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/README_FR.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/agentic_intelligence_integration_spec.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/cad_modeling_tasks.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/ci_cd_spec.md": {
+      "MUST": 7,
+      "SHOULD": 2,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/github_mcp_conversion_spec.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/kicad_mcp_scope_spec.md": {
+      "MUST": 31,
+      "SHOULD": 10,
+      "MAY": 1,
+      "forbidden": []
+    },
+    "specs/knowledge_base_mcp_spec.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/mcp_agentics_target_backlog.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/mcp_tasks.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/mesh_contracts.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/yiacad_backend_architecture_spec.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/yiacad_git_eda_platform_spec.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/yiacad_global_refonte_spec.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/yiacad_tux004_orchestration_spec.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/yiacad_uiux_apple_native_spec.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/zeroclaw_dual_hw_orchestration_spec.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    },
+    "specs/zeroclaw_dual_hw_todo.md": {
+      "MUST": 0,
+      "SHOULD": 0,
+      "MAY": 0,
+      "forbidden": []
+    }
+  }
+}
