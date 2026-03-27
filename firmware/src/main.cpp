@@ -3,7 +3,7 @@
 
 #include <WiFi.h>
 
-#include "wifi_scanner.h"
+#include "wifi_helpers.h"
 
 static const uint32_t SCAN_INTERVAL_MS = 30000;
 
