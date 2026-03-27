@@ -113,7 +113,7 @@ jobs:
           cp /tmp/kl_pio_build/esp32s3_waveshare/firmware.elf .pio/build/esp32s3_waveshare/
 
       - name: Wokwi CI simulation
-          continue-on-error: true
+        continue-on-error: true
         uses: wokwi/wokwi-ci-action@v1
         with:
           token: ${{ vars.WOKWI_CLI_TOKEN }}
