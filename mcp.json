@@ -64,6 +64,21 @@
         "Authorization": "Bearer ${HUGGINGFACE_API_KEY}"
       },
       "note": "Use https://huggingface.co/mcp?login for OAuth browser login instead of token auth"
+    },
+    "mascarade-bridge": {
+      "type": "url",
+      "url": "http://192.168.0.119:8100/mcp",
+      "headers": {
+        "Authorization": "Bearer ${MASCARADE_API_KEY}"
+      },
+      "tools": ["llm-chat", "llm-complete", "p2p-status", "agent-run"],
+      "note": "Bridge to mascarade-core for LLM execution of Kill_LIFE agents"
+    },
+    "kill-life-api": {
+      "type": "url",
+      "url": "http://localhost:8200",
+      "tools": ["agents", "specs", "mcp-servers"],
+      "note": "Local Kill_LIFE API (docker-compose up)"
     }
   }
 }

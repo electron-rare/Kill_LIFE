@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  kill-life-api:
+    build: .
+    container_name: kill-life-api
+    ports:
+      - "8200:8200"
+    volumes:
+      - .:/app
+    environment:
+      - MASCARADE_CORE_URL=http://mascarade-core:8100
+      - MASCARADE_API_KEY=${MASCARADE_API_KEY:-}
+      - KILL_LIFE_ENV=production
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; r=httpx.get('http://localhost:8200/health'); r.raise_for_status()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - kill-life-net
+
+  kill-life-worker:
+    build: .
+    container_name: kill-life-worker
+    command: ["python", "-m", "kill_life.worker"]
+    volumes:
+      - .:/app
+    environment:
+      - MASCARADE_CORE_URL=http://mascarade-core:8100
+      - MASCARADE_API_KEY=${MASCARADE_API_KEY:-}
+      - KILL_LIFE_ENV=production
+    depends_on:
+      kill-life-api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - kill-life-net
+
+networks:
+  kill-life-net:
+    driver: bridge
+    name: kill-life-net
