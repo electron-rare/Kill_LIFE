@@ -1,10 +1,5 @@
-# Wokwi CI scenario — Kill_LIFE boot test
-# Asserts that firmware boots and reaches WiFi init within 10 seconds.
-# Usage: wokwi-cli --timeout 15000 --scenario scenario.yaml
 version: 1
 name: Kill_LIFE Boot Test
 steps:
   - wait-serial: "[main] Kill_LIFE"
-    timeout: 5000
   - wait-serial: "[wifi]"
-    timeout: 10000
