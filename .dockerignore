@@ -1,0 +1,17 @@
+__pycache__
+*.pyc
+.git
+.ops
+node_modules
+*.egg-info
+agents
+specs
+tools
+hardware
+firmware
+docs
+web
+zeroclaw
+KIKIFOU
+.github
+tests
