@@ -107,6 +107,10 @@ jobs:
         run: |
           pip install platformio
           cd firmware && pio run -e esp32s3_waveshare
+          # pio uses build_dir=/tmp/kl_pio_build; copy artifacts to where wokwi.toml expects them
+          mkdir -p .pio/build/esp32s3_waveshare
+          cp /tmp/kl_pio_build/esp32s3_waveshare/firmware.bin .pio/build/esp32s3_waveshare/
+          cp /tmp/kl_pio_build/esp32s3_waveshare/firmware.elf .pio/build/esp32s3_waveshare/
 
       - name: Wokwi CI simulation
         uses: wokwi/wokwi-ci-action@v1
