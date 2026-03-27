@@ -3,13 +3,17 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Any
 
+import httpx
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from kill_life import __version__
+
+MASCARADE_CORE_URL = os.environ.get("MASCARADE_CORE_URL", "http://localhost:8100")
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -108,21 +112,52 @@ async def run_agent(name: str, req: AgentRunRequest):
 
     agent = BMAD_AGENTS[name]
 
-    # Load agent definition
+    # Load agent definition as system prompt
     agent_file = REPO_ROOT / agent["file"]
-    definition = ""
+    system_prompt = ""
     if agent_file.exists():
-        definition = agent_file.read_text()
+        system_prompt = agent_file.read_text()
+    else:
+        system_prompt = f"You are the {agent['name']}. Your role: {agent['role']}."
 
-    # Stub response — real execution would route through mascarade LLM
+    # Build messages
+    messages = [{"role": "user", "content": req.input}]
+    if req.context:
+        context_str = json.dumps(req.context, indent=2)
+        messages[0]["content"] = f"Context:\n```json\n{context_str}\n```\n\n{req.input}"
+
+    # POST to mascarade-core /v1/send
+    payload = {
+        "messages": messages,
+        "system": system_prompt,
+        "routing_policy": "auto",
+        "max_tokens": 4096,
+        "temperature": 0.7,
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.post(f"{MASCARADE_CORE_URL}/v1/send", json=payload)
+            resp.raise_for_status()
+            result = resp.json()
+    except httpx.ConnectError:
+        raise HTTPException(
+            status_code=502,
+            detail=f"mascarade-core unreachable at {MASCARADE_CORE_URL}. Set MASCARADE_CORE_URL env var.",
+        )
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"mascarade-core returned {exc.response.status_code}: {exc.response.text[:500]}",
+        )
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=504, detail="mascarade-core request timed out (60s)")
+
     return {
         "agent": name,
         "role": agent["role"],
-        "input": req.input,
-        "status": "stub",
-        "message": f"Agent '{name}' received input. Connect mascarade-core for LLM execution.",
-        "definition_loaded": bool(definition),
-        "mascarade_endpoint": "http://mascarade-core:8100/v1/chat/completions",
+        "status": "ok",
+        "response": result,
     }
 
 

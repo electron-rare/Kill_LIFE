@@ -1597,3 +1597,10 @@ Last updated: 2026-03-22
     - `tools/cockpit/pcb_ai_fab_tui.sh`
   - resultat:
     - la priorite produit reste `BOM/sourcing/fab package` avant `Quilter` et avant `fine-tune VM`
+
+- P0 — Repo hygiene et visibilite publique (2026-03-27)
+  - [x] T-RE-303 — Corriger la licence : LICENSE.md reference MIT, aligner les headers et le badge README.
+  - [x] T-RE-304 — Mettre a jour le compteur de workflows CI/CD dans README.md (21 workflows valides).
+  - [x] T-RE-305 — Ajouter les GitHub topics au repo (embedded-systems, ai-agents, kicad, mcp, firmware, esp32, stm32, platformio, bmad, open-hardware).
+  - resultat:
+    - repo public coherent : licence, badge, workflows, topics alignes pour la soumission NLNet du 01/04
