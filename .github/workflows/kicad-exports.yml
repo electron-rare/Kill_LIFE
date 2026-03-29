@@ -59,7 +59,8 @@ jobs:
           # Find all .kicad_pro files (each is a project root)
           SCHEMATICS=$(find hardware -name "*.kicad_sch" \
             -not -path "*/.kicad_blocks/*" \
-            -not -path "*/kicad_blocks/*" \
+            -not -path "*.kicad_blocks/*" \
+            -not -path "*.kicad_block/*" \
             -not -path "*backup*" | sort)
           PCBS=$(find hardware -name "*.kicad_pcb" | sort)
 
