@@ -7,12 +7,10 @@ on:
     paths:
       - "hardware/**"
       - "tools/hw/**"
-      - ".github/workflows/kicad-exports.yml"
   pull_request:
     paths:
       - "hardware/**"
       - "tools/hw/**"
-      - ".github/workflows/kicad-exports.yml"
   workflow_dispatch:
 
 permissions:
@@ -61,7 +59,8 @@ jobs:
           # Find all .kicad_pro files (each is a project root)
           SCHEMATICS=$(find hardware -name "*.kicad_sch" \
             -not -path "*/.kicad_blocks/*" \
-            -not -path "*/kicad_blocks/*" \
+            -not -path "*.kicad_blocks/*" \
+            -not -path "*.kicad_block/*" \
             -not -path "*backup*" | sort)
           PCBS=$(find hardware -name "*.kicad_pcb" | sort)
 
@@ -70,15 +69,6 @@ jobs:
           echo ""
           echo "Found PCBs:"
           echo "${PCBS:-<none>}"
-
-          # Also check tools/cad proof fixtures
-          PROOF_PCBS=$(find tools/cad -name "*.kicad_pcb" 2>/dev/null | sort || true)
-          if [[ -n "$PROOF_PCBS" ]]; then
-            echo ""
-            echo "Found proof-fixture PCBs:"
-            echo "$PROOF_PCBS"
-            PCBS=$(printf "%s\n%s" "$PCBS" "$PROOF_PCBS" | sed '/^$/d')
-          fi
 
           # Export for later steps
           {
@@ -294,6 +284,47 @@ jobs:
           path: |
             artifacts/hw_exports/bom/
             artifacts/hw_exports/netlist/
+
+      - name: Build normalized YiACAD evidence pack
+        if: always()
+        run: |
+          mkdir -p artifacts/ci
+          STATUS="success"
+          SUMMARY="KiCad export lanes passed with ERC/DRC green."
+
+          if [[ "${{ steps.erc.outputs.erc_exit }}" != "0" ]] || [[ "${{ steps.drc.outputs.drc_exit }}" != "0" ]]; then
+            STATUS="failure"
+            SUMMARY="KiCad export lane failed: ERC=${{ steps.erc.outputs.erc_exit }}, DRC=${{ steps.drc.outputs.drc_exit }}."
+          fi
+
+          python3 tools/ci/write_yiacad_evidence_pack.py \
+            --output artifacts/ci/kicad_exports_evidence.json \
+            --workflow "KiCad Exports" \
+            --lane "kicad-exports" \
+            --status "${STATUS}" \
+            --summary "${SUMMARY}" \
+            --repository "${GITHUB_REPOSITORY}" \
+            --server-url "${GITHUB_SERVER_URL}" \
+            --run-id "${GITHUB_RUN_ID}" \
+            --run-attempt "${GITHUB_RUN_ATTEMPT}" \
+            --ref "${GITHUB_REF}" \
+            --sha "${GITHUB_SHA}" \
+            --event "${GITHUB_EVENT_NAME}" \
+            --engine "kicad" \
+            --artifact-path "artifacts/hw_exports/erc/" \
+            --artifact-path "artifacts/hw_exports/drc/" \
+            --artifact-path "artifacts/hw_exports/pdf/" \
+            --artifact-path "artifacts/hw_exports/svg/" \
+            --artifact-path "artifacts/hw_exports/bom/" \
+            --artifact-path "artifacts/hw_exports/netlist/"
+
+      - name: Upload YiACAD evidence pack
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yiacad-evidence-pack-kicad-exports
+          if-no-files-found: error
+          path: artifacts/ci/kicad_exports_evidence.json
 
       # ── Fail if ERC or DRC had errors ────────────────────────────
       - name: Check ERC/DRC results

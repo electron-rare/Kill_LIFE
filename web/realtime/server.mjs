@@ -1,4 +1,4 @@
-import { mkdirSync } from "node:fs";
+import { existsSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
@@ -6,7 +6,15 @@ import { spawn } from "node:child_process";
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "..");
 const persistenceDir = resolve(root, "realtime", "data");
-const serverEntry = resolve(root, "node_modules", "y-websocket", "bin", "server.js");
+const serverEntryCandidates = [
+  resolve(root, "node_modules", "@y", "websocket-server", "src", "server.js"),
+  resolve(root, "node_modules", "y-websocket", "bin", "server.js")
+];
+
+const serverEntry = serverEntryCandidates.find((candidate) => {
+  // Prefer the modern @y/websocket-server entrypoint when available.
+  return existsSync(candidate);
+}) ?? serverEntryCandidates[0];
 
 mkdirSync(persistenceDir, { recursive: true });
 

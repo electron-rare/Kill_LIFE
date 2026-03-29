@@ -15,13 +15,15 @@
     {
       "id": "PLM",
       "name": "Product Lifecycle Management",
-      "owner_agent": "PLM-Archivist",
+      "owner_agent": "Docs-Research",
+      "owner_subagent": "PLM-Archivist",
       "purpose": "Specifications, plans, contracts, diagrams, design memory"
     },
     {
       "id": "ERP",
       "name": "L'electronrare Ops",
-      "owner_agent": "Ops-Governor",
+      "owner_agent": "PM-Mesh",
+      "owner_subagent": "Ops-Governor",
       "purpose": "Resource governance, machine allocation, ownership, secret scopes, priorities"
     },
     {
@@ -33,13 +35,15 @@
     {
       "id": "WMS",
       "name": "Artifacts and Operational Memory",
-      "owner_agent": "Artifact-Curator",
+      "owner_agent": "KillLife-Bridge",
+      "owner_subagent": "Artifact-Curator",
       "purpose": "Artifacts, logs, datasets, handoff outputs, retention"
     },
     {
       "id": "DCS",
       "name": "Runtime and Mesh Control",
-      "owner_agent": "Runtime-Guard",
+      "owner_agent": "Runtime-Companion",
+      "owner_subagent": "Runtime-Guard",
       "purpose": "Runtimes, SSH mesh, dispatch P2P, health checks, load balancing"
     }
   ],
@@ -51,7 +55,8 @@
       "runtime_roots": ["/home/clems/mascarade", "/home/clems/mascarade-main"],
       "role": "primary-heavy",
       "criticality": "high",
-      "owner_agent": "Runtime-Guard",
+      "owner_agent": "Runtime-Companion",
+      "owner_subagent": "Runtime-Guard",
       "priority_order": 1,
       "load_policy": "prefer-heavy",
       "secret_scope": ["router", "governance"],
@@ -64,7 +69,8 @@
       "runtime_roots": ["/root/mascarade-main"],
       "role": "vm-governance-reserve",
       "criticality": "medium",
-      "owner_agent": "Ops-Governor",
+      "owner_agent": "PM-Mesh",
+      "owner_subagent": "Ops-Governor",
       "priority_order": 5,
       "load_policy": "avoid-heavy",
       "secret_scope": ["router", "governance"],
@@ -77,7 +83,8 @@
       "runtime_roots": ["/home/kxkm/mascarade", "/home/kxkm/mascarade-main"],
       "role": "interactive-ai",
       "criticality": "high",
-      "owner_agent": "Ops-Governor",
+      "owner_agent": "PM-Mesh",
+      "owner_subagent": "Ops-Governor",
       "priority_order": 2,
       "load_policy": "secondary-heavy",
       "secret_scope": ["router", "governance"],
@@ -90,7 +97,8 @@
       "runtime_roots": ["/Users/cils/mascarade-main", "/Users/cils/mascarade"],
       "role": "non-essential-burst",
       "criticality": "medium",
-      "owner_agent": "Runtime-Guard",
+      "owner_agent": "Runtime-Companion",
+      "owner_subagent": "Runtime-Guard",
       "priority_order": 3,
       "load_policy": "burst-only",
       "secret_scope": ["router", "governance"],
@@ -114,7 +122,8 @@
     {
       "name": "router",
       "env_var": "MISTRAL_API_KEY",
-      "owner_agent": "Ops-Governor",
+      "owner_agent": "PM-Mesh",
+      "owner_subagent": "Ops-Governor",
       "consumer_scope": "Mascarade router and Studio integrations",
       "storage": [
         "/Users/electron/Documents/Projets/mascarade/.env",
@@ -125,6 +134,7 @@
       "name": "governance",
       "env_var": "MISTRAL_GOVERNANCE_API_KEY",
       "owner_agent": "KillLife-Bridge",
+      "owner_subagent": "Schema-Consumer",
       "consumer_scope": "Kill_LIFE governance scripts and Mistral operator tooling",
       "storage": [
         "~/.kill-life/mistral.env",
@@ -136,13 +146,15 @@
     {
       "path": "docs/",
       "layer": "PLM",
-      "owner_agent": "PLM-Archivist",
+      "owner_agent": "Docs-Research",
+      "owner_subagent": "PLM-Archivist",
       "purpose": "Plans, contracts, diagrams, research"
     },
     {
       "path": "specs/",
       "layer": "PLM",
-      "owner_agent": "PLM-Archivist",
+      "owner_agent": "Docs-Research",
+      "owner_subagent": "PLM-Archivist",
       "purpose": "Task backlog, contracts, structured specifications"
     },
     {
@@ -166,43 +178,50 @@
     {
       "path": "tools/cockpit/machine_registry.sh",
       "layer": "ERP",
-      "owner_agent": "Ops-Governor",
+      "owner_agent": "PM-Mesh",
+      "owner_subagent": "Ops-Governor",
       "purpose": "Machine and capacity registry"
     },
     {
       "path": "tools/cockpit/mascarade_mesh_env_sync.sh",
       "layer": "ERP",
-      "owner_agent": "Ops-Governor",
+      "owner_agent": "PM-Mesh",
+      "owner_subagent": "Ops-Governor",
       "purpose": "Router secret propagation"
     },
     {
       "path": "tools/cockpit/kill_life_mistral_governance_sync.sh",
       "layer": "ERP",
       "owner_agent": "KillLife-Bridge",
+      "owner_subagent": "Schema-Consumer",
       "purpose": "Governance secret propagation"
     },
     {
       "path": "artifacts/",
       "layer": "WMS",
-      "owner_agent": "Artifact-Curator",
+      "owner_agent": "KillLife-Bridge",
+      "owner_subagent": "Artifact-Curator",
       "purpose": "Artifacts, logs, reports, watchboards"
     },
     {
       "path": "tools/cockpit/dataset_audit_tui.sh",
       "layer": "WMS",
-      "owner_agent": "Dataset-Curator",
+      "owner_agent": "KillLife-Bridge",
+      "owner_subagent": "Dataset-Curator",
       "purpose": "Dataset audit and preflight"
     },
     {
       "path": "tools/cockpit/mesh_sync_preflight.sh",
       "layer": "DCS",
-      "owner_agent": "Runtime-Guard",
+      "owner_agent": "Runtime-Companion",
+      "owner_subagent": "Runtime-Guard",
       "purpose": "Mesh preflight and dispatch readiness"
     },
     {
       "path": "tools/cockpit/mascarade_runtime_health.sh",
       "layer": "DCS",
-      "owner_agent": "Runtime-Guard",
+      "owner_agent": "Runtime-Companion",
+      "owner_subagent": "Runtime-Guard",
       "purpose": "Mascarade and Ollama runtime health"
     }
   ]

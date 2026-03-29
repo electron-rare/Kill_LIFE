@@ -6,15 +6,41 @@ on:
     paths:
       - "specs/contracts/**"
       - "tools/specs/mesh_contract_check.py"
+      - "tools/specs/validate_agent_catalog.py"
       - ".github/workflows/mesh_contracts.yml"
       - "tools/autonomous_next_lots.py"
+      - "tools/cad/yiacad_fusion_lot.sh"
+      - "tools/cockpit/intelligence_tui.sh"
+      - "tools/cockpit/runtime_ai_gateway.sh"
+      - "kill_life/server.py"
+      - "kill_life/agent_catalog.py"
+      - "agents/**"
+      - ".github/agents/**"
+      - ".github/prompts/**"
+      - "README.md"
+      - "README_FR.md"
+      - "docs/plans/12_plan_gestion_des_agents.md"
+      - "docs/AGENT_SPEC_MODULE_MATRIX_2026-03-20.md"
   pull_request:
     branches: [main]
     paths:
       - "specs/contracts/**"
       - "tools/specs/mesh_contract_check.py"
+      - "tools/specs/validate_agent_catalog.py"
       - ".github/workflows/mesh_contracts.yml"
       - "tools/autonomous_next_lots.py"
+      - "tools/cad/yiacad_fusion_lot.sh"
+      - "tools/cockpit/intelligence_tui.sh"
+      - "tools/cockpit/runtime_ai_gateway.sh"
+      - "kill_life/server.py"
+      - "kill_life/agent_catalog.py"
+      - "agents/**"
+      - ".github/agents/**"
+      - ".github/prompts/**"
+      - "README.md"
+      - "README_FR.md"
+      - "docs/plans/12_plan_gestion_des_agents.md"
+      - "docs/AGENT_SPEC_MODULE_MATRIX_2026-03-20.md"
 
 permissions:
   contents: read
@@ -44,6 +70,8 @@ jobs:
             --schema specs/contracts/workflow_handshake.schema.json \
             --instance specs/contracts/examples/workflow_handshake.mesh.json \
             | tee artifacts/ci/workflow_handshake_contract.json
+          python3 tools/specs/validate_agent_catalog.py --json \
+            | tee artifacts/ci/agent_catalog_contract.json
 
       - name: Upload mesh contract reports
         uses: actions/upload-artifact@v4

@@ -1,0 +1,232 @@
+{
+  "contract_version": "yiacad-action-registry/v1",
+  "component": "yiacad-action-registry",
+  "description": "Canonical internal registry for YiACAD transport commands, normalized action identifiers, supported surfaces, and engine boundaries.",
+  "actions": [
+    {
+      "transport_command": "status",
+      "action_id": "status.surface",
+      "display_name": "YiACAD Status",
+      "description": "Expose YiACAD runtime, engine, and artifact status for the current surface.",
+      "supported_surfaces": [
+        "yiacad-api",
+        "yiacad-web",
+        "yiacad-desktop",
+        "yiacad-kicad",
+        "yiacad-freecad",
+        "tui"
+      ],
+      "required_inputs": [],
+      "accepted_inputs": [
+        "source_path"
+      ],
+      "engine_families": [
+        "kicad",
+        "freecad",
+        "kibot",
+        "kiauto"
+      ],
+      "produced_artifacts": [
+        "context.json",
+        "uiux_output.json"
+      ],
+      "default_next_steps": [
+        "open artifacts",
+        "inspect engine status"
+      ],
+      "intent_aliases": [
+        "status",
+        "surface-status"
+      ],
+      "native_handler": "command_status"
+    },
+    {
+      "transport_command": "kicad-erc-drc",
+      "action_id": "review.erc_drc",
+      "display_name": "YiACAD ERC/DRC",
+      "description": "Run KiCad ERC and DRC through the YiACAD backend boundary.",
+      "supported_surfaces": [
+        "yiacad-api",
+        "yiacad-web",
+        "yiacad-desktop",
+        "yiacad-kicad",
+        "tui"
+      ],
+      "required_inputs": [],
+      "accepted_inputs": [
+        "source_path",
+        "board",
+        "schematic"
+      ],
+      "engine_families": [
+        "kicad"
+      ],
+      "produced_artifacts": [
+        "context.json",
+        "uiux_output.json",
+        "erc.json",
+        "drc.json",
+        "summary.md"
+      ],
+      "default_next_steps": [
+        "open review artifacts",
+        "rerun review with a loaded KiCad project"
+      ],
+      "intent_aliases": [
+        "board-review",
+        "erc-drc-assist"
+      ],
+      "native_handler": "command_kicad_erc_drc"
+    },
+    {
+      "transport_command": "bom-review",
+      "action_id": "review.bom",
+      "display_name": "YiACAD BOM Review",
+      "description": "Export and summarize a BOM through the YiACAD backend boundary.",
+      "supported_surfaces": [
+        "yiacad-api",
+        "yiacad-web",
+        "yiacad-desktop",
+        "yiacad-kicad",
+        "tui"
+      ],
+      "required_inputs": [],
+      "accepted_inputs": [
+        "source_path",
+        "schematic"
+      ],
+      "engine_families": [
+        "kicad"
+      ],
+      "produced_artifacts": [
+        "context.json",
+        "uiux_output.json",
+        "bom.csv",
+        "summary.md"
+      ],
+      "default_next_steps": [
+        "open BOM artifacts",
+        "rerun review with a schematic"
+      ],
+      "intent_aliases": [
+        "bom-footprint-audit"
+      ],
+      "native_handler": "command_bom_review"
+    },
+    {
+      "transport_command": "ecad-mcad-sync",
+      "action_id": "sync.ecad_mcad",
+      "display_name": "YiACAD ECAD/MCAD Sync",
+      "description": "Export KiCad and FreeCAD sync artifacts through the YiACAD backend boundary.",
+      "supported_surfaces": [
+        "yiacad-api",
+        "yiacad-web",
+        "yiacad-desktop",
+        "yiacad-kicad",
+        "yiacad-freecad",
+        "tui"
+      ],
+      "required_inputs": [],
+      "accepted_inputs": [
+        "source_path",
+        "board",
+        "schematic",
+        "freecad_document"
+      ],
+      "engine_families": [
+        "kicad",
+        "freecad"
+      ],
+      "produced_artifacts": [
+        "context.json",
+        "uiux_output.json",
+        "summary.md",
+        "step"
+      ],
+      "default_next_steps": [
+        "open sync artifacts",
+        "rerun with both ECAD and MCAD files present"
+      ],
+      "intent_aliases": [
+        "ecad-mcad-sync",
+        "step-export-review"
+      ],
+      "native_handler": "command_ecad_mcad_sync"
+    },
+    {
+      "transport_command": "manufacturing-package",
+      "action_id": "manufacturing.export",
+      "display_name": "YiACAD Manufacturing Package",
+      "description": "Build a manufacturing package behind the YiACAD backend boundary.",
+      "supported_surfaces": [
+        "yiacad-api",
+        "yiacad-web",
+        "yiacad-desktop",
+        "yiacad-freecad",
+        "tui"
+      ],
+      "required_inputs": [],
+      "accepted_inputs": [
+        "source_path",
+        "board",
+        "schematic",
+        "kibot_config"
+      ],
+      "engine_families": [
+        "kicad",
+        "kibot"
+      ],
+      "produced_artifacts": [
+        "context.json",
+        "uiux_output.json",
+        "summary.md",
+        "fabrication_outputs"
+      ],
+      "default_next_steps": [
+        "inspect fabrication artifacts",
+        "rerun with a valid KiBot recipe"
+      ],
+      "intent_aliases": [
+        "manufacturing-package"
+      ],
+      "native_handler": "command_manufacturing_package"
+    },
+    {
+      "transport_command": "kiauto-checks",
+      "action_id": "manufacturing.validate",
+      "display_name": "YiACAD KiAuto Checks",
+      "description": "Run KiAuto validation behind the YiACAD backend boundary.",
+      "supported_surfaces": [
+        "yiacad-api",
+        "yiacad-web",
+        "yiacad-desktop",
+        "yiacad-freecad",
+        "tui"
+      ],
+      "required_inputs": [],
+      "accepted_inputs": [
+        "source_path",
+        "board",
+        "schematic"
+      ],
+      "engine_families": [
+        "kicad",
+        "kiauto"
+      ],
+      "produced_artifacts": [
+        "context.json",
+        "uiux_output.json",
+        "summary.md",
+        "validation_logs"
+      ],
+      "default_next_steps": [
+        "inspect validation logs",
+        "rerun with a resolved board and schematic"
+      ],
+      "intent_aliases": [
+        "kiauto-checks"
+      ],
+      "native_handler": "command_kiauto_checks"
+    }
+  ]
+}

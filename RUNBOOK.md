@@ -7,6 +7,7 @@ Voir la version détaillée : `docs/RUNBOOK.md`.
 Séquences de référence :
 - `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`
 - `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
+- `docs/INFRA_VPS_RUNBOOK_2026.md`
 
 ## Flux standard (Issue → PR)
 1. Créer une issue (idéalement via un template)
@@ -25,3 +26,7 @@ Séquences de référence :
 
 ## Workflows métiers
 Voir `docs/workflows/README.md`.
+
+## Infra VPS lane
+
+Runbook dédié : `docs/INFRA_VPS_RUNBOOK_2026.md`.

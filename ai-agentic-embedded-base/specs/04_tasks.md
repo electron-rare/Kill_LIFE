@@ -1,6 +1,6 @@
 # Tasks enchainement autonome des lots utiles
 
-Last updated: 2026-03-22
+Last updated: 2026-03-29
 
 ## Cadre
 
@@ -10,6 +10,31 @@ Last updated: 2026-03-22
 - Question operateur si besoin reel: `artifacts/cockpit/next_question.md`
 
 ## Execution
+
+- P0 - YiACAD SOT 2026 (2026-03-29)
+  - [x] T-YI-401 - Publier le stack cible YiACAD 2026 avec versions, boundaries et references officielles.
+    - Preuves:
+      - `specs/yiacad_2026_stack_target_spec.md`
+      - `specs/yiacad_tux004_orchestration_spec.md`
+      - `specs/yiacad_backend_architecture_spec.md`
+  - [x] T-YI-402 - Publier un ADR canonique fixant le SOT YiACAD `desktop-first authoring`, `web-first review`, `Linux-first manufacturing`, `AI-first orchestration`.
+    - Preuves:
+      - `specs/yiacad_adr_20260329_sot.md`
+      - `specs/yiacad_global_refonte_spec.md`
+  - [x] T-YI-403 - Publier une roadmap 90 jours alignee sur le stack 2026 et l'etat reel du backend YiACAD.
+    - Preuves:
+      - `specs/yiacad_90_day_delivery_plan.md`
+      - `specs/03_plan.md`
+  - [x] T-YI-404 - Publier le plan plugin KiCad, workbench FreeCAD, QA et CI/CD associe.
+    - Preuves:
+      - `specs/yiacad_plugin_workbench_ci_plan.md`
+      - `specs/ci_cd_spec.md`
+      - `specs/yiacad_git_eda_platform_spec.md`
+      - `specs/yiacad_uiux_apple_native_spec.md`
+  - [ ] T-YI-405 - Implementer le registre d'actions partage desktop/web aligne sur le SOT 2026.
+  - [ ] T-YI-406 - Stabiliser le plugin KiCad YiACAD sur `IPC API` et `kicad-python`.
+  - [ ] T-YI-407 - Stabiliser le workbench FreeCAD YiACAD sur Python API et packaging addon.
+  - [ ] T-YI-408 - Scinder les workflows CI YiACAD en lanes `macOS desktop` et `Linux manufacturing`.
 
 - P0 — Refonte des spécifications et du plan (2026-03-20)
   - [x] T-RE-001 — Actualiser `specs/00_intake.md` en vrai besoin de refonte.
@@ -1597,3 +1622,29 @@ Last updated: 2026-03-22
     - `tools/cockpit/pcb_ai_fab_tui.sh`
   - resultat:
     - la priorite produit reste `BOM/sourcing/fab package` avant `Quilter` et avant `fine-tune VM`
+
+- P0 — Repo hygiene et visibilite publique (2026-03-27)
+  - [x] T-RE-303 — Corriger la licence : LICENSE.md reference MIT, aligner les headers et le badge README.
+  - [x] T-RE-304 — Mettre a jour le compteur de workflows CI/CD dans README.md (21 workflows valides).
+  - [x] T-RE-305 — Ajouter les GitHub topics au repo (embedded-systems, ai-agents, kicad, mcp, firmware, esp32, stm32, platformio, bmad, open-hardware).
+  - resultat:
+    - repo public coherent : licence, badge, workflows, topics alignes pour la soumission NLNet du 01/04
+
+## Delta 2026-03-29 - YiACAD independent app normalization
+
+- [x] T-RE-306 — Requalifier les specs YiACAD pour decrire une app independante au lieu d'une integration produit via forks KiCad/FreeCAD.
+  - Resultat:
+    - les specs produit, UI et backend disent explicitement que `YiACAD` est une app autonome
+    - `KiCad`, `FreeCAD`, `KiBot`, `KiAuto` et les outils CAD sont recadres comme moteurs integres a YiACAD
+    - les references historiques `kicad-ki`, `freecad-ki`, plugin/workbench sont archivees et non normatives
+  - Preuves:
+    - `specs/yiacad_tux004_orchestration_spec.md`
+    - `specs/yiacad_uiux_apple_native_spec.md`
+    - `specs/yiacad_backend_architecture_spec.md`
+    - `specs/yiacad_git_eda_platform_spec.md`
+    - `specs/yiacad_global_refonte_spec.md`
+    - `specs/contracts/yiacad_uiux_output.schema.json`
+    - `specs/contracts/examples/yiacad_uiux_output.example.json`
+    - `specs/contracts/yiacad_context_broker.schema.json`
+    - `specs/contracts/examples/yiacad_context_broker.example.json`
+    - `specs/03_plan.md`

@@ -13,6 +13,7 @@ export interface QueueHealth {
   active: number;
   failed: number;
   latencyMs?: number;
+  reason?: string;
 }
 
 export interface WorkerHealth {
@@ -20,6 +21,7 @@ export interface WorkerHealth {
   running: boolean;
   lastJobId?: string;
   lastJobMs?: number;
+  reason?: string;
 }
 
 export interface RealtimeHealth {
@@ -54,12 +56,20 @@ async function fetchJson<T>(url: string, timeoutMs = 1500): Promise<T | null> {
 async function getQueueHealth(): Promise<QueueHealth> {
   const data = await fetchJson<Record<string, unknown>>(QUEUE_API);
   if (!data) return { status: "unavailable", waiting: 0, active: 0, failed: 0 };
-  const waiting = typeof data.waiting === "number" ? data.waiting : 0;
+  const waiting =
+    typeof data.waiting === "number"
+      ? data.waiting
+      : typeof data.depth === "number"
+        ? data.depth
+        : 0;
   const active = typeof data.active === "number" ? data.active : 0;
   const failed = typeof data.failed === "number" ? data.failed : 0;
   const latencyMs = typeof data.latencyMs === "number" ? data.latencyMs : undefined;
-  const status: ServiceStatus = failed > 10 ? "degraded" : "ok";
-  return { status, waiting, active, failed, latencyMs };
+  const reason = typeof data.reason === "string" ? data.reason : undefined;
+  const statusValue = typeof data.status === "string" ? data.status : "";
+  const status: ServiceStatus =
+    statusValue === "down" ? "unavailable" : statusValue === "degraded" || failed > 10 ? "degraded" : "ok";
+  return { status, waiting, active, failed, latencyMs, reason };
 }
 
 async function getWorkerHealth(): Promise<WorkerHealth> {
@@ -68,7 +78,11 @@ async function getWorkerHealth(): Promise<WorkerHealth> {
   const running = data.running === true;
   const lastJobId = typeof data.lastJobId === "string" ? data.lastJobId : undefined;
   const lastJobMs = typeof data.lastJobMs === "number" ? data.lastJobMs : undefined;
-  return { status: running ? "ok" : "degraded", running, lastJobId, lastJobMs };
+  const reason = typeof data.reason === "string" ? data.reason : undefined;
+  const statusValue = typeof data.status === "string" ? data.status : "";
+  const status: ServiceStatus =
+    statusValue === "down" ? "unavailable" : statusValue === "degraded" || !running ? "degraded" : "ok";
+  return { status, running, lastJobId, lastJobMs, reason };
 }
 
 async function getRealtimeHealth(): Promise<RealtimeHealth> {

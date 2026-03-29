@@ -1,7 +1,7 @@
 {
   "component": "yiacad-context",
   "generated_at": "2026-03-20T23:30:00Z",
-  "surface": "kicad-pcb",
+  "surface": "yiacad-desktop",
   "context_ref": "project:demo-board/main",
   "paths": {
     "source_path": "/abs/path/to/demo-board",
@@ -13,6 +13,54 @@
   "runtime": {
     "root": "/abs/path/to/Kill_LIFE",
     "artifacts_root": "/abs/path/to/Kill_LIFE/artifacts/cad-ai-native",
-    "fusion_status_path": "/abs/path/to/Kill_LIFE/artifacts/cad-fusion/yiacad-fusion-last-status.md"
+    "fusion_status_path": "/abs/path/to/Kill_LIFE/artifacts/cad-fusion/yiacad-fusion-last-status.md",
+    "engine_baseline": {
+      "kicad": ">=10.0",
+      "freecad": ">=1.1",
+      "kibot": "installed",
+      "kiauto": "installed"
+    },
+    "integrated_engines": {
+      "kicad": {
+        "name": "KiCad",
+        "integrated": true,
+        "binary": "/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli",
+        "required_version": ">=10.0",
+        "detected_version": "10.0.2",
+        "available": true,
+        "status": "done",
+        "reason": "ready"
+      },
+      "freecad": {
+        "name": "FreeCAD",
+        "integrated": true,
+        "binary": "/Applications/FreeCAD.app/Contents/MacOS/FreeCADCmd",
+        "required_version": ">=1.1",
+        "detected_version": "1.1.0",
+        "available": true,
+        "status": "done",
+        "reason": "ready"
+      },
+      "kibot": {
+        "name": "KiBot",
+        "integrated": true,
+        "binary": "/opt/homebrew/bin/kibot",
+        "required_version": "installed",
+        "detected_version": "1.8.2",
+        "available": true,
+        "status": "done",
+        "reason": "ready"
+      },
+      "kiauto": {
+        "name": "KiAuto",
+        "integrated": true,
+        "binary": "/opt/homebrew/bin/kiauto",
+        "required_version": "installed",
+        "detected_version": "2.3.1",
+        "available": true,
+        "status": "done",
+        "reason": "ready"
+      }
+    }
   }
 }

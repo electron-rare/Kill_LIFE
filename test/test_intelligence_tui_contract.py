@@ -7,9 +7,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from kill_life.agent_catalog import canonical_agent_ids
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "tools" / "cockpit" / "intelligence_tui.sh"
 LEGACY_SCRIPT = REPO_ROOT / "tools" / "cockpit" / "intelligence_program_tui.sh"
+CANONICAL_AGENT_IDS = set(canonical_agent_ids())
 
 
 class IntelligenceTuiContractTests(unittest.TestCase):
@@ -79,6 +82,10 @@ class IntelligenceTuiContractTests(unittest.TestCase):
             set(persisted["intelligence_views"].keys()),
             {"scorecard", "comparison", "recommendations"},
         )
+        probes = persisted["web_platform_health"]["probes"]
+        self.assertIn("worker", probes)
+        self.assertIn("queue", probes)
+        self.assertIn(probes["worker"]["status"], {"up", "degraded", "down", "unknown"})
 
     def test_status_is_repo_root_stable_outside_repo_cwd(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -109,6 +116,8 @@ class IntelligenceTuiContractTests(unittest.TestCase):
         self.assertIn("overall_maturity_score", payload)
         self.assertIn("lane_maturity", payload)
         self.assertGreaterEqual(len(payload["lane_maturity"]), 4)
+        for lane in payload["lane_maturity"]:
+            self.assertIn(lane["owner_agent"], CANONICAL_AGENT_IDS)
         lane_names = {lane["lane"] for lane in payload["lane_maturity"]}
         self.assertIn("Program-Governance", lane_names)
         self.assertIn("Contracts", lane_names)
@@ -142,6 +151,8 @@ class IntelligenceTuiContractTests(unittest.TestCase):
         self.assertEqual(payload["action"], "recommendations")
         queue = payload["queue"]
         self.assertGreaterEqual(len(queue), 5)
+        for item in queue:
+            self.assertIn(item["owner_agent"], CANONICAL_AGENT_IDS)
         self.assertEqual(queue[0]["id"], "AI-RQ-101")
         priorities = [item["priority"] for item in queue]
         self.assertEqual(priorities, sorted(priorities, key=lambda value: {"P0": 0, "P1": 1, "P2": 2}[value]))
@@ -174,6 +185,7 @@ class IntelligenceTuiContractTests(unittest.TestCase):
         self.assertEqual(payload["action"], "summary-short")
         self.assertEqual(payload["owner_repo"], "Kill_LIFE")
         self.assertEqual(payload["owner_agent"], "PM-Mesh")
+        self.assertIn(payload["owner_agent"], CANONICAL_AGENT_IDS)
         self.assertEqual(payload["owner_subagent"], "Plan-Orchestrator")
         self.assertIn(payload["status"], {"ready", "degraded", "blocked"})
         self.assertIsInstance(payload["write_set"], list)

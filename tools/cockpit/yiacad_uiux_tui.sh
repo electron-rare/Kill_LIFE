@@ -111,7 +111,7 @@ run_backend_status() {
   local -a native_cmd=()
 
   if [[ -x "${ROOT_DIR}/tools/cad/yiacad_backend_client.py" ]]; then
-    backend_cmd=(python3 "${ROOT_DIR}/tools/cad/yiacad_backend_client.py" --json-output status)
+    backend_cmd=(python3 "${ROOT_DIR}/tools/cad/yiacad_backend_client.py" --surface tui --json-output status)
     log_cmd "${backend_cmd[@]}"
     if payload="$("${backend_cmd[@]}" 2>/dev/null)"; then
       if [[ "${JSON_MODE}" -eq 1 ]]; then
@@ -592,7 +592,12 @@ fi
 
 STAMP="$(date +%Y%m%d_%H%M%S)"
 LOG_FILE="${ARTIFACTS_DIR}/yiacad_uiux_tui_${STAMP}.log"
-exec > >(tee -a "${LOG_FILE}") 2>&1
+
+if [[ "${JSON_MODE}" -eq 1 ]]; then
+  : > "${LOG_FILE}"
+else
+  exec > >(tee -a "${LOG_FILE}") 2>&1
+fi
 
 if [[ "${JSON_MODE}" -ne 1 ]]; then
   printf '[yiacad-uiux-tui] action=%s timestamp=%s\n' "${ACTION}" "${STAMP}"

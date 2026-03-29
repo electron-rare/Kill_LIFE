@@ -99,3 +99,33 @@ Delta d'execution machine-readable:
 - `Schema-Guard` publie des schemas JSON versionnes pour `agent_handoff`, `repo_snapshot`, `workflow_handshake`.
 - `Runtime-Smoke` et `Schema-Consumer` consomment ces contrats depuis la lane soeur `Kill_LIFE-main` au moment des preflights compagnons.
 - La validation CI visible du handshake passe desormais par `.github/workflows/mesh_contracts.yml`.
+
+## Delta agentics 2026-03-29
+
+Mise a jour de la lane PR review automation (branche feat/yiacad-pr-review-automation, PR #18).
+
+### Nouveautes
+
+- Gate S2 (bmad/gates/gate_s2.md) -- couvre la lane Web & PR review : Playwright, BullMQ worker, evidence intelligence_program/, validation summary_short.schema.json.
+- Subagent PR-Review-Orchestrator -- ajoute a Web-CAD-Platform, write set : web/project/.ci/.
+- Schema-Guard -- reference specs/contracts/yiacad_uiux_output.schema.json comme contrat evidence de la lane review.
+- QA-Compliance -- gate S2 ajoutee aux gates de validation release.
+- bmad/templates/handoff.md -- enrichi : sections Gate passed + Consumer contracts.
+- bmad/rituals/kickoff.md -- identification dynamique des gates (S0/S1/S2/...) selon le domaine du lot.
+
+### Table agents canoniques (2026-03-29)
+
+| Agent | owner_agent | Handoff contract | Gates |
+| --- | --- | --- | --- |
+| PM-Mesh | Kill_LIFE | agent_handoff.schema.json | S0 |
+| Arch-Mesh | Kill_LIFE | agent_handoff.schema.json | S0 |
+| Schema-Guard | Kill_LIFE | workflow_handshake.schema.json | S0 |
+| QA-Compliance | transversal | operator_lane_evidence.schema.json | S0, S1, S2 |
+| KillLife-Bridge | Kill_LIFE | agent_handoff.schema.json | S0 |
+| Runtime-Companion | Kill_LIFE | agent_handoff.schema.json | S0 |
+| SyncOps | Kill_LIFE | operator_lane_evidence.schema.json | S0 |
+| Web-CAD-Platform | Kill_LIFE | summary_short.schema.json | S0, S2 |
+| Docs-Research | transversal | agent_handoff.schema.json | S0 |
+| Embedded-CAD | Kill_LIFE | agent_handoff.schema.json | S0, S1 |
+| Firmware | Kill_LIFE | operator_lane_evidence.schema.json | S1 |
+| UX-Lead | Kill_LIFE | agent_handoff.schema.json | S0 |

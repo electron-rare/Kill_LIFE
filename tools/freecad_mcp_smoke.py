@@ -23,7 +23,7 @@ SERVER = ROOT / "tools" / "run_freecad_mcp.sh"
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--timeout", type=float, default=30.0)
+    parser.add_argument("--timeout", type=float, default=90.0)
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--quick", action="store_true")
     return parser.parse_args()

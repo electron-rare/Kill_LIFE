@@ -42,7 +42,7 @@ RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)"
 OUT_MD="$COCKPIT_DIR/mascarade_incident_brief_${RUN_ID}.md"
 OUT_JSON="$COCKPIT_DIR/mascarade_incident_brief_${RUN_ID}.json"
 
-python3 - "$RUNTIME_DIR" "$OPERATOR_DIR" "$OUT_MD" "$OUT_JSON" <<'PY'
+python3 - "$RUNTIME_DIR" "$OPERATOR_DIR" "$OUT_MD" "$OUT_JSON" "$COCKPIT_DIR" <<'PY'
 import json
 import os
 import shutil
@@ -54,6 +54,7 @@ runtime_dir = Path(sys.argv[1])
 operator_dir = Path(sys.argv[2])
 out_md = Path(sys.argv[3])
 out_json = Path(sys.argv[4])
+cockpit_dir = Path(sys.argv[5])
 
 
 def read_json(path: Path):

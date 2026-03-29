@@ -1,6 +1,6 @@
 # Plan d'enchainement autonome des lots utiles
 
-Last updated: 2026-03-21
+Last updated: 2026-03-29
 
 ## Objectif
 Dans le cadre de la refonte complète, ce lot-chain sert à verrouiller la cohérence docs/plans/specs, sans casser la cadence CI.
@@ -89,6 +89,11 @@ Faire tourner une boucle locale simple:
 
 - `specs/` reste la source de verite.
 - `ai-agentic-embedded-base/specs/` reste un miroir exporte.
+- bundle canonique YiACAD `2026-03-29`:
+  - `specs/yiacad_2026_stack_target_spec.md`
+  - `specs/yiacad_adr_20260329_sot.md`
+  - `specs/yiacad_90_day_delivery_plan.md`
+  - `specs/yiacad_plugin_workbench_ci_plan.md`
 - `docs/plans/18_*` capture la lane runtime/MCP/CAD synchronisee par la boucle locale.
 - Les choix manuels restants doivent etre surfaces via `artifacts/cockpit/next_question.md`.
 - `tools/cockpit/refonte_tui.sh` est la surface opératoire recommandée pour lire/analyser/purger les logs de refonte.
@@ -110,6 +115,7 @@ Faire tourner une boucle locale simple:
 - K-RE-006: Générer une synthèse hebdomadaire et une checklist de sortie de lot.
 - K-RE-007: Affecter chaque spec et module à un agent dédié avec write-set, TUI et preuves.
 - K-RE-008: Préparer la montée UI/UX Apple-native des hooks Python vers les shells natifs KiCad/FreeCAD.
+- K-RE-009: Fixer le SOT YiACAD 2026 autour de `KiCad 10`, `FreeCAD 1.1`, `desktop-first authoring`, `web-first review`, et `Linux-first manufacturing`.
 
 ```mermaid
 flowchart LR
@@ -260,3 +266,14 @@ Deliverables:
 - `T-UX-003` est maintenant ferme comme lot parent: KiCad Manager, `pcbnew`, `eeschema`, `YiACADWorkbench` et l'ancrage `MainWindow.cpp` sont livres et verrouilles par `test/test_yiacad_native_surface_contract.py`.
 - `T-UX-004` est maintenant ferme comme lot parent: plugin KiCad et workbench FreeCAD exposent palette, review center, session persistante et contexte compact comme surface produit canonique.
 - le prochain front shell profond n'est plus `T-UX-003` ou `T-UX-004`, mais `T-UX-007`, tandis que le blocage runtime hote KiCad reste trace dans `T-RE-209`.
+
+## Delta 2026-03-29 - YiACAD product boundary normalization
+- Mise a jour normative: `YiACAD` est maintenant defini comme une app independante.
+- `KiCad`, `FreeCAD`, `KiBot`, `KiAuto`, `MCP` et les runtimes associes restent des moteurs et lanes techniques integres a YiACAD.
+- Les references historiques aux forks `kicad-ki` / `freecad-ki`, plugins, workbenches, `pcbnew`, `eeschema` ou `YiACADWorkbench` restent des traces de migration et ne doivent plus etre lues comme la cible produit canonique.
+- Les sources de verite produit a relire en priorite deviennent:
+  - `specs/yiacad_tux004_orchestration_spec.md`
+  - `specs/yiacad_uiux_apple_native_spec.md`
+  - `specs/yiacad_backend_architecture_spec.md`
+  - `specs/yiacad_git_eda_platform_spec.md`
+  - `specs/yiacad_global_refonte_spec.md`

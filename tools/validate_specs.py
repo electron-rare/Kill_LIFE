@@ -120,6 +120,19 @@ def compare_spec_mirror() -> Dict[str, Any]:
     }
 
 
+def validate_agent_catalog_contract() -> Dict[str, Any]:
+    module_path = ROOT / "tools" / "specs" / "validate_agent_catalog.py"
+    spec = importlib.util.spec_from_file_location("validate_agent_catalog", module_path)
+    if spec is None or spec.loader is None:
+        return {
+            "ok": False,
+            "errors": ["agent-catalog-validator-load-failed"],
+        }
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.validate_agent_catalog(repo_root=ROOT)
+
+
 def validate_specs(
     strict: bool = False, require_mirror_sync: bool = False
 ) -> Dict[str, Any]:
@@ -149,12 +162,14 @@ def validate_specs(
 
     rfc2119 = scan_rfc2119()
     mirror_sync = compare_spec_mirror()
+    agent_catalog = validate_agent_catalog_contract()
 
     ok = (
         not missing_files
         and compliance["ok"]
         and rfc2119["ok"]
         and (mirror_sync["ok"] or not require_mirror_sync)
+        and agent_catalog["ok"]
     )
     return {
         "ok": ok,
@@ -165,6 +180,7 @@ def validate_specs(
         "dependencies": dependencies,
         "rfc2119": rfc2119,
         "mirror_sync": mirror_sync,
+        "agent_catalog": agent_catalog,
     }
 
 
@@ -191,6 +207,13 @@ def format_cli_summary(result: Dict[str, Any]) -> str:
             f"extra={len(mirror_sync['extra_in_mirror'])} "
             f"mismatch={len(mirror_sync['content_mismatch'])}"
         ),
+        (
+            "- agent catalog: "
+            f"ok={result['agent_catalog']['ok']} "
+            f"agents={result['agent_catalog']['agent_count']} "
+            f"missing_files={len(result['agent_catalog']['missing_files'])} "
+            f"invalid_owner_refs={len(result['agent_catalog']['invalid_owner_refs'])}"
+        ),
     ]
 
     if result["missing_files"]:
@@ -205,6 +228,8 @@ def format_cli_summary(result: Dict[str, Any]) -> str:
         lines.append("- compliance stdout: " + compliance["stdout"])
     if compliance["stderr"]:
         lines.append("- compliance stderr: " + compliance["stderr"])
+    if result["agent_catalog"]["errors"]:
+        lines.append("- agent catalog errors: " + ", ".join(result["agent_catalog"]["errors"]))
 
     return "\n".join(lines)
 

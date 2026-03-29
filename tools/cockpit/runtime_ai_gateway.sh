@@ -22,11 +22,15 @@ INTELLIGENCE_SCRIPT="${RUNTIME_GATEWAY_INTELLIGENCE_SCRIPT:-${ROOT_DIR}/tools/co
 MESH_SCRIPT="${RUNTIME_GATEWAY_MESH_SCRIPT:-${ROOT_DIR}/tools/cockpit/mesh_health_check.sh}"
 MASCARADE_SCRIPT="${RUNTIME_GATEWAY_MASCARADE_SCRIPT:-${ROOT_DIR}/tools/cockpit/mascarade_runtime_health.sh}"
 LANGFUSE_SCRIPT="${RUNTIME_GATEWAY_LANGFUSE_SCRIPT:-${ROOT_DIR}/tools/cockpit/langfuse_health.sh}"
+INFRA_VPS_SCRIPT="${RUNTIME_GATEWAY_INFRA_VPS_SCRIPT:-${ROOT_DIR}/tools/cockpit/infra_vps_healthcheck.sh}"
 LANGFUSE_REPORT="${ROOT_DIR}/artifacts/ops/langfuse_health/latest.json"
+INFRA_VPS_REPORT="${ROOT_DIR}/artifacts/cockpit/infra_vps_healthcheck_latest.json"
 INTELLIGENCE_TIMEOUT_SEC="${RUNTIME_GATEWAY_INTELLIGENCE_TIMEOUT_SEC:-15}"
 MESH_TIMEOUT_SEC="${RUNTIME_GATEWAY_MESH_TIMEOUT_SEC:-15}"
 MASCARADE_TIMEOUT_SEC="${RUNTIME_GATEWAY_MASCARADE_TIMEOUT_SEC:-15}"
 LANGFUSE_TIMEOUT_SEC="${RUNTIME_GATEWAY_LANGFUSE_TIMEOUT_SEC:-10}"
+INFRA_VPS_TIMEOUT_SEC="${RUNTIME_GATEWAY_INFRA_VPS_TIMEOUT_SEC:-20}"
+INFRA_VPS_MAX_AGE_SEC="${RUNTIME_GATEWAY_INFRA_VPS_MAX_AGE_SEC:-1800}"
 
 usage() {
   cat <<'EOF'
@@ -40,6 +44,8 @@ Options:
   --intelligence-report <path>
   --mesh-report <path>
   --mascarade-report <path>
+  --langfuse-report <path>
+  --infra-vps-report <path>
   -h, --help
 EOF
 }
@@ -129,6 +135,13 @@ def fallback(reason: str, detail: str) -> dict[str, object]:
                 "langfuse_url": "unknown",
             }
         )
+    elif label == "infra_vps":
+        payload.update(
+            {
+                "component": "infra-vps-healthcheck",
+                "services": [],
+            }
+        )
     return payload
 
 
@@ -202,8 +215,39 @@ refresh_sources() {
   LANGFUSE_REPORT="${langfuse_out}"
 }
 
+ensure_infra_vps_live_report() {
+  local refresh_needed=0
+  if [[ ! -f "${INFRA_VPS_REPORT}" ]]; then
+    refresh_needed=1
+  else
+    local age
+    age="$(python3 - "${INFRA_VPS_REPORT}" <<'PY'
+from __future__ import annotations
+
+import os
+import sys
+import time
+
+path = sys.argv[1]
+print(int(time.time() - os.path.getmtime(path)))
+PY
+)"
+    if [[ "${age}" -gt "${INFRA_VPS_MAX_AGE_SEC}" ]]; then
+      refresh_needed=1
+    fi
+  fi
+
+  if [[ "${refresh_needed}" -eq 1 ]]; then
+    local infra_out="${ARTIFACT_DIR}/infra_vps-${STAMP}.json"
+    log_line "INFO" "refreshing infra VPS health"
+    run_refresh_probe infra_vps "${INFRA_VPS_TIMEOUT_SEC}" "${infra_out}" "${LOAD_PROFILE}" \
+      bash "${INFRA_VPS_SCRIPT}" --json
+    INFRA_VPS_REPORT="${infra_out}"
+  fi
+}
+
 emit_status_json() {
-  python3 - "${ROOT_DIR}" "${INTELLIGENCE_REPORT}" "${MESH_REPORT}" "${MASCARADE_REPORT}" "${LANGFUSE_REPORT}" "${RUN_LOG}" <<'PY'
+  python3 - "${ROOT_DIR}" "${INTELLIGENCE_REPORT}" "${MESH_REPORT}" "${MASCARADE_REPORT}" "${LANGFUSE_REPORT}" "${RUN_LOG}" "${INFRA_VPS_REPORT:-}" <<'PY'
 from __future__ import annotations
 
 import json
@@ -217,6 +261,11 @@ mesh_path = Path(sys.argv[3]) if sys.argv[3] else None
 mascarade_path = Path(sys.argv[4]) if sys.argv[4] else None
 langfuse_path = Path(sys.argv[5]) if sys.argv[5] else None
 run_log = Path(sys.argv[6])
+infra_vps_path = Path(sys.argv[7]) if len(sys.argv) > 7 and sys.argv[7] else None
+# Fallback to static inventory if no live healthcheck
+_inventory_fallback = Path(sys.argv[1]) / "artifacts" / "cockpit" / "infra_vps_inventory.json"
+if infra_vps_path is None or not infra_vps_path.exists():
+    infra_vps_path = _inventory_fallback if _inventory_fallback.exists() else None
 
 
 def read_json(path: Path | None) -> dict[str, object] | None:
@@ -407,16 +456,24 @@ def build_web_platform_surface(ia_payload: dict[str, object] | None) -> tuple[di
     next_steps: list[str] = []
     for probe_name, probe_data in probes.items():
         if probe_data.get("status") != "up":
-            degraded.append(f"web-{probe_name}-down")
+            reason = str(probe_data.get("reason") or "").strip().lower().replace("_", "-")
+            degraded.append(f"web-{probe_name}-{reason or 'down'}")
     if not probes:
         degraded.append("web-platform-no-probes")
         next_steps.append("Run intelligence_tui.sh --action memory --json to populate web platform health probes.")
     if any(p.get("status") != "up" for p in probes.values()):
-        next_steps.append("Check that Next.js (port 3000), Yjs realtime (port 1234), and Redis (port 6379) are running.")
+        next_steps.append("Check that Next.js (port 3000), Yjs realtime (port 1234), Redis (port 6379), and the EDA worker are running.")
     queue_depth = None
     queue_probe = probes.get("queue") or {}
     if "depth" in queue_probe:
         queue_depth = queue_probe["depth"]
+    if queue_probe.get("reason") == "redis-env-missing":
+        next_steps.append("Set REDIS_URL in web/.env or web/.env.local before starting Next.js and the EDA worker.")
+    elif queue_probe.get("reason") == "redis-unreachable":
+        next_steps.append("Start Redis with `docker compose -f web/compose.dev.yml up -d redis` or point REDIS_URL to a live instance.")
+    worker_probe = probes.get("worker") or {}
+    if worker_probe.get("reason") == "worker-absent":
+        next_steps.append("Start the EDA worker with `cd web && npm run worker:eda` once Redis is available.")
     surface = {
         "status": status,
         "summary_short": compact(
@@ -457,6 +514,55 @@ def build_langfuse_surface(payload: dict[str, object] | None, path: Path | None)
         "langfuse_status": langfuse_status,
         "langfuse_version": langfuse_version,
         "langfuse_url": langfuse_url,
+        "path": relative_path(path),
+    }
+    return surface, next_steps
+
+
+def build_infra_vps_surface(payload: dict[str, object] | None, path: Path | None) -> tuple[dict[str, object], list[str]]:
+    """Build the infra VPS surface from healthcheck output or static inventory."""
+    if payload is None:
+        return {
+            "status": "degraded",
+            "summary_short": "infra-vps: no healthcheck data; run tools/cockpit/infra_vps_healthcheck.sh --json",
+            "evidence": ["artifacts/cockpit/infra_vps_inventory.json"],
+            "degraded_reasons": ["infra-vps-no-data"],
+            "upstreams": ["tools/cockpit/infra_vps_healthcheck.sh"],
+            "services": [],
+            "path": relative_path(path),
+        }, ["Run: bash tools/cockpit/infra_vps_healthcheck.sh --json to populate infra VPS status."]
+    component = payload.get("component", "")
+    # Static inventory: derive status from service statuses
+    services = payload.get("services", [])
+    if component == "infra-vps-inventory":
+        # Static — all unknown, treat as degraded (no live data)
+        status = "degraded"
+        degraded = ["infra-vps-no-live-check"]
+        summary = f"infra-vps: static inventory only; {len(services)} services; run healthcheck for live status"
+        next_steps = ["Run: bash tools/cockpit/infra_vps_healthcheck.sh --json to get live status."]
+    else:
+        # Live healthcheck output
+        status = normalize(payload.get("status", "degraded"))
+        degraded = listify(payload.get("degraded_reasons"))
+        if status != "ready" and not degraded:
+            degraded = ["infra-vps-degraded"]
+        ok_count = sum(1 for s in services if s.get("status") == "ok")
+        total = len([s for s in services if s.get("status") != "skipped"])
+        summary = compact(
+            f"infra-vps {status}; {ok_count}/{total} services up; "
+            f"sec_pending={sum(1 for s in services if s.get('sec_audit') == 'pending')}",
+            220,
+        )
+        next_steps = []
+        if status != "ready":
+            next_steps = ["Check infra VPS services: re-run bash tools/cockpit/infra_vps_healthcheck.sh"]
+    surface = {
+        "status": status,
+        "summary_short": summary,
+        "evidence": path_evidence("infra_vps", path),
+        "degraded_reasons": degraded,
+        "upstreams": ["tools/cockpit/infra_vps_healthcheck.sh", "artifacts/cockpit/infra_vps_inventory.json"],
+        "services": services,
         "path": relative_path(path),
     }
     return surface, next_steps
@@ -627,6 +733,7 @@ intelligence = read_json(intelligence_path)
 mesh = read_json(mesh_path)
 mascarade = read_json(mascarade_path)
 langfuse = read_json(langfuse_path)
+infra_vps = read_json(infra_vps_path)
 
 runtime_surface, runtime_next = build_runtime_surface(mascarade, mascarade_path)
 mcp_surface, mcp_next = build_mcp_surface(mesh, mesh_path)
@@ -634,6 +741,7 @@ ia_surface, ia_next = build_ia_surface(intelligence, intelligence_path)
 firmware_cad_surface, firmware_cad_summary, firmware_cad_next = build_firmware_cad_surface(root)
 web_platform_surface, web_platform_next = build_web_platform_surface(intelligence)
 langfuse_surface, langfuse_next = build_langfuse_surface(langfuse, langfuse_path)
+infra_vps_surface, infra_vps_next = build_infra_vps_surface(infra_vps, infra_vps_path)
 mascarade_capabilities = build_mascarade_capabilities(mascarade)
 
 source_states = [runtime_surface["status"], mcp_surface["status"], ia_surface["status"], web_platform_surface["status"]]
@@ -685,13 +793,24 @@ for step in web_platform_next:
     if step not in next_steps:
         next_steps.append(step)
 
+for reason in listify(infra_vps_surface.get("degraded_reasons")):
+    if reason not in degraded_reasons:
+        degraded_reasons.append(reason)
+for step in infra_vps_next:
+    if step not in next_steps:
+        next_steps.append(step)
+for item in listify(infra_vps_surface.get("evidence")):
+    if item not in evidence:
+        evidence.append(item)
+
 summary_short = compact(
     f"runtime={runtime_surface['status']} ({runtime_surface['summary_short']}) | "
     f"mcp={mcp_surface['status']} ({mcp_surface['summary_short']}) | "
     f"ia={ia_surface['status']} ({ia_surface['summary_short']}) | "
     f"firmware_cad={firmware_cad_surface['status']} ({firmware_cad_surface['summary_short']}) | "
     f"web_platform={web_platform_surface['status']} ({web_platform_surface['summary_short']}) | "
-    f"langfuse={langfuse_surface['status']} ({langfuse_surface['summary_short']})",
+    f"langfuse={langfuse_surface['status']} ({langfuse_surface['summary_short']}) | "
+    f"infra_vps={infra_vps_surface['status']} ({infra_vps_surface['summary_short']})",
     500,
 )
 
@@ -717,7 +836,7 @@ payload = {
     "degraded_reasons": degraded_reasons,
     "next_steps": next_steps[:5],
     "goal": "Publier une sante canonique runtime/MCP/IA exploitable par cockpit, docs et extensions.",
-    "state": f"runtime={runtime_surface['status']} mcp={mcp_surface['status']} ia={ia_surface['status']} web_platform={web_platform_surface['status']} langfuse={langfuse_surface['status']}",
+    "state": f"runtime={runtime_surface['status']} mcp={mcp_surface['status']} ia={ia_surface['status']} web_platform={web_platform_surface['status']} langfuse={langfuse_surface['status']} infra_vps={infra_vps_surface['status']}",
     "blockers": degraded_reasons,
     "next": next_steps[:3],
     "owner": "Runtime-Companion/MCP-Health",
@@ -731,6 +850,7 @@ payload = {
         "firmware_cad": firmware_cad_surface,
         "web_platform": web_platform_surface,
         "langfuse": langfuse_surface,
+        "infra_vps": infra_vps_surface,
     },
     "mascarade_capabilities": mascarade_capabilities,
     "sources": {
@@ -773,6 +893,11 @@ payload = {
             "langfuse_status": langfuse_surface.get("langfuse_status", "unknown"),
             "langfuse_version": langfuse_surface.get("langfuse_version", "unknown"),
             "langfuse_url": langfuse_surface.get("langfuse_url", "unknown"),
+        },
+        "infra_vps": {
+            "path": relative_path(infra_vps_path),
+            "status": infra_vps_surface["status"],
+            "service_count": len(infra_vps_surface.get("services", [])),
         },
     },
     "summary_short_artifacts": {
@@ -915,6 +1040,10 @@ while [ "$#" -gt 0 ]; do
       LANGFUSE_REPORT="${2:-}"
       shift 2
       ;;
+    --infra-vps-report)
+      INFRA_VPS_REPORT="${2:-}"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -934,6 +1063,8 @@ fi
 if [ "${REFRESH}" -eq 1 ]; then
   refresh_sources
 fi
+
+ensure_infra_vps_live_report
 
 case "${ACTION}" in
   status)

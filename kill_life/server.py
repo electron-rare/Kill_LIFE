@@ -12,6 +12,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from kill_life import __version__
+from kill_life.agent_catalog import canonical_agents_by_id, canonical_agents_for_api, legacy_runtime_mapping
 
 MASCARADE_CORE_URL = os.environ.get("MASCARADE_CORE_URL", "http://localhost:8100")
 
@@ -22,44 +23,6 @@ app = FastAPI(
     version=__version__,
     description="Control plane API for Kill_LIFE embedded systems framework",
 )
-
-# ---------------------------------------------------------------------------
-# Agent definitions (from agents/*.md)
-# ---------------------------------------------------------------------------
-
-BMAD_AGENTS: dict[str, dict[str, str]] = {
-    "pm": {
-        "name": "PM Agent",
-        "file": "agents/pm_agent.md",
-        "role": "Project management, intake, prioritization",
-    },
-    "architect": {
-        "name": "Architect Agent",
-        "file": "agents/architect_agent.md",
-        "role": "System architecture, component design, tech decisions",
-    },
-    "firmware": {
-        "name": "Firmware Agent",
-        "file": "agents/firmware_agent.md",
-        "role": "Embedded firmware development, HAL, drivers",
-    },
-    "hw_schematic": {
-        "name": "HW Schematic Agent",
-        "file": "agents/hw_schematic_agent.md",
-        "role": "Hardware schematics, KiCad, PCB layout, BOM",
-    },
-    "qa": {
-        "name": "QA Agent",
-        "file": "agents/qa_agent.md",
-        "role": "Testing, compliance, evidence collection",
-    },
-    "doc": {
-        "name": "Doc Agent",
-        "file": "agents/doc_agent.md",
-        "role": "Documentation, runbooks, operator guides",
-    },
-}
-
 
 def _list_specs() -> list[dict[str, str]]:
     """Scan specs/ directory for markdown files."""
@@ -92,7 +55,11 @@ async def health():
 
 @app.get("/agents")
 async def list_agents():
-    return {"agents": BMAD_AGENTS}
+    agents = canonical_agents_for_api()
+    return {
+        "agents": agents,
+        "count": len(agents),
+    }
 
 
 @app.get("/specs")
@@ -107,18 +74,33 @@ class AgentRunRequest(BaseModel):
 
 @app.post("/agents/{name}/run")
 async def run_agent(name: str, req: AgentRunRequest):
-    if name not in BMAD_AGENTS:
-        raise HTTPException(status_code=404, detail=f"Agent '{name}' not found. Available: {list(BMAD_AGENTS.keys())}")
+    legacy_target = legacy_runtime_mapping(name)
+    if legacy_target is not None:
+        raise HTTPException(
+            status_code=410,
+            detail={
+                "message": f"Legacy agent '{name}' has been removed from the runtime API.",
+                "legacy_agent": name,
+                "canonical_agent": legacy_target,
+            },
+        )
 
-    agent = BMAD_AGENTS[name]
+    agents = canonical_agents_by_id()
+    if name not in agents:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Agent '{name}' not found. Available: {list(agents.keys())}",
+        )
+
+    agent = agents[name]
 
     # Load agent definition as system prompt
-    agent_file = REPO_ROOT / agent["file"]
+    agent_file = REPO_ROOT / agent["agent_doc"]
     system_prompt = ""
     if agent_file.exists():
-        system_prompt = agent_file.read_text()
+        system_prompt = agent_file.read_text(encoding="utf-8")
     else:
-        system_prompt = f"You are the {agent['name']}. Your role: {agent['role']}."
+        system_prompt = f"You are {agent['display_name']}. Your role: {agent['purpose']}."
 
     # Build messages
     messages = [{"role": "user", "content": req.input}]
@@ -155,7 +137,7 @@ async def run_agent(name: str, req: AgentRunRequest):
 
     return {
         "agent": name,
-        "role": agent["role"],
+        "role": agent["purpose"],
         "status": "ok",
         "response": result,
     }
@@ -186,6 +168,6 @@ async def mascarade_bridge_info():
         "integration": {
             "specs_as_datasets": "mascarade finetune/ reads Kill_LIFE specs/",
             "mcp_tools": "mascarade mcp/client.py loads Kill_LIFE MCP servers",
-            "agent_execution": "POST /agents/{name}/run routes through mascarade-core LLM",
+            "agent_execution": "POST /agents/{name}/run routes canonical 2026 agent IDs through mascarade-core LLM",
         },
     }

@@ -58,6 +58,21 @@ latest_summary_md() {
   find "${ARTIFACTS_DIR}" -type f -name 'summary.md' 2>/dev/null | sort | tail -n 1
 }
 
+setup_log_stream() {
+  : > "${LOG_FILE}"
+  if [[ "${JSON_MODE}" -eq 1 ]]; then
+    return 0
+  fi
+
+  set +e
+  exec > >(tee -a "${LOG_FILE}") 2>&1
+  local rc="$?"
+  set -e
+  if [[ "${rc}" -ne 0 ]]; then
+    exec >> "${LOG_FILE}" 2>&1
+  fi
+}
+
 run_proof() {
   local stamp run_dir proof_status
   stamp="$(date +%Y%m%d_%H%M%S)"
@@ -70,6 +85,9 @@ run_proof() {
   log_cmd python3 "${ROOT_DIR}/tools/cad/yiacad_backend_client.py" --json-output status
   python3 "${ROOT_DIR}/tools/cad/yiacad_backend_client.py" --json-output status > "${run_dir}/backend_invoke_status.json"
 
+  log_cmd python3 "${ROOT_DIR}/tools/hw/kicad_seeed_mcp_smoke.py" --json --quick
+  python3 "${ROOT_DIR}/tools/hw/kicad_seeed_mcp_smoke.py" --json --quick > "${run_dir}/kicad_mcp_smoke.json"
+
   log_cmd python3 kicad transport proof
   ROOT_DIR="${ROOT_DIR}" python3 - <<'PY' > "${run_dir}/kicad_transport.json"
 import importlib.util
@@ -79,6 +97,18 @@ from pathlib import Path
 
 root = Path(os.environ["ROOT_DIR"])
 mod_path = root / ".runtime-home" / "cad-ai-native-forks" / "kicad-ki" / "scripting" / "plugins" / "yiacad_kicad_plugin" / "_native_common.py"
+if not mod_path.exists():
+    print(json.dumps({
+        "transport": "kicad-shell",
+        "status": "blocked",
+        "returncode": 127,
+        "payload_status": None,
+        "contract_ok": False,
+        "missing_fields": ["plugin_entrypoint"],
+        "error": f"missing plugin entrypoint: {mod_path}",
+        "payload": {},
+    }, indent=2, ensure_ascii=False))
+    raise SystemExit(0)
 spec = importlib.util.spec_from_file_location("yiacad_kicad_native_common_proof", mod_path)
 module = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
@@ -113,6 +143,16 @@ from pathlib import Path
 
 root = Path(os.environ["ROOT_DIR"])
 mod_path = root / ".runtime-home" / "cad-ai-native-forks" / "freecad-ki" / "src" / "Mod" / "YiACADWorkbench" / "yiacad_freecad_gui.py"
+if not mod_path.exists():
+    print(json.dumps({
+        "transport": "freecad-workbench",
+        "status": "blocked",
+        "contract_ok": False,
+        "missing_fields": ["workbench_entrypoint"],
+        "error": f"missing workbench entrypoint: {mod_path}",
+        "payload": {},
+    }, indent=2, ensure_ascii=False))
+    raise SystemExit(0)
 
 freecad = types.ModuleType("FreeCAD")
 freecad.ActiveDocument = None
@@ -158,20 +198,24 @@ from pathlib import Path
 run_dir = Path(os.environ["RUN_DIR"])
 backend_status = json.loads((run_dir / "backend_status.json").read_text(encoding="utf-8"))
 backend_invoke = json.loads((run_dir / "backend_invoke_status.json").read_text(encoding="utf-8"))
+kicad_mcp = json.loads((run_dir / "kicad_mcp_smoke.json").read_text(encoding="utf-8"))
 kicad = json.loads((run_dir / "kicad_transport.json").read_text(encoding="utf-8"))
 freecad = json.loads((run_dir / "freecad_transport.json").read_text(encoding="utf-8"))
 
 backend_ok = backend_status.get("status") in {"done", "degraded"}
 invoke_ok = backend_invoke.get("status") in {"done", "degraded"}
+kicad_mcp_ok = kicad_mcp.get("status") == "ready"
 kicad_ok = bool(kicad.get("contract_ok")) and kicad.get("status") == "done"
 freecad_ok = bool(freecad.get("contract_ok")) and freecad.get("status") == "done"
-overall_status = "done" if backend_ok and invoke_ok and kicad_ok and freecad_ok else "blocked"
+overall_status = "done" if backend_ok and invoke_ok and kicad_mcp_ok and kicad_ok and freecad_ok else "blocked"
 
 degraded_reasons = []
 if backend_status.get("status") == "degraded":
     degraded_reasons.append("backend-facade-no-recent-runs")
 if backend_invoke.get("status") == "degraded":
     degraded_reasons.append("backend-invoke-status-degraded")
+if kicad_mcp.get("status") != "ready":
+    degraded_reasons.append("kicad-mcp-smoke-not-ready")
 
 summary = {
     "component": "yiacad-backend-proof",
@@ -180,13 +224,15 @@ summary = {
     "transport": "local-facade",
     "backend_status": backend_status.get("status"),
     "backend_invoke_status": backend_invoke.get("status"),
+    "kicad_mcp_status": kicad_mcp.get("status"),
     "kicad_transport_status": kicad.get("status"),
     "freecad_transport_status": freecad.get("status"),
-    "contract_ok": bool(kicad.get("contract_ok")) and bool(freecad.get("contract_ok")),
+    "contract_ok": bool(kicad_mcp_ok) and bool(kicad.get("contract_ok")) and bool(freecad.get("contract_ok")),
     "degraded_reasons": degraded_reasons,
     "artifacts": [
         {"kind": "report", "path": str(run_dir / "backend_status.json"), "label": "Backend facade status"},
         {"kind": "report", "path": str(run_dir / "backend_invoke_status.json"), "label": "Backend facade invoke status"},
+        {"kind": "evidence", "path": str(run_dir / "kicad_mcp_smoke.json"), "label": "KiCad MCP Seeed smoke"},
         {"kind": "evidence", "path": str(run_dir / "kicad_transport.json"), "label": "KiCad shell transport proof"},
         {"kind": "evidence", "path": str(run_dir / "freecad_transport.json"), "label": "FreeCAD workbench transport proof"},
         {"kind": "report", "path": str(run_dir / "summary.md"), "label": "Unified operator proof summary"},
@@ -194,7 +240,7 @@ summary = {
     "next_steps": [
         "promote the proof runbook via yiacad_operator_index.sh",
         "bind review center and inspector to uiux_output.json everywhere",
-        "keep yiacad-fusion blocked until the KiCad host entrypoint exists or container fallback is accepted",
+        "keep yiacad-fusion aligned with the KiCad MCP Seeed smoke and isolate pcbnew API limits separately from MCP startup",
     ],
 }
 
@@ -208,6 +254,7 @@ md = [
     f"- transport: {summary['transport']}",
     f"- backend_status: {summary['backend_status']}",
     f"- backend_invoke_status: {summary['backend_invoke_status']}",
+    f"- kicad_mcp_status: {summary['kicad_mcp_status']}",
     f"- kicad_transport_status: {summary['kicad_transport_status']}",
     f"- freecad_transport_status: {summary['freecad_transport_status']}",
     f"- contract_ok: {'yes' if summary['contract_ok'] else 'no'}",
@@ -416,7 +463,7 @@ fi
 
 STAMP="$(date +%Y%m%d_%H%M%S)"
 LOG_FILE="${ARTIFACTS_DIR}/yiacad_backend_proof_${STAMP}.log"
-exec > >(tee -a "${LOG_FILE}") 2>&1
+setup_log_stream
 
 if [[ "${JSON_MODE}" -ne 1 ]]; then
   printf '[yiacad-backend-proof] action=%s timestamp=%s\n' "${ACTION}" "${STAMP}"

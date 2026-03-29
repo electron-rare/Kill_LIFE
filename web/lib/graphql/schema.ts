@@ -1,7 +1,11 @@
 import { createSchema } from "graphql-yoga";
 
 import { enqueueCi } from "@/lib/ci-enqueue";
-import { getProjectSnapshot, saveDiagram } from "@/lib/project-store";
+import {
+  getProjectSnapshot,
+  publishPullRequestSummary,
+  saveDiagram
+} from "@/lib/project-store";
 
 export const schema = createSchema({
   typeDefs: /* GraphQL */ `
@@ -19,8 +23,14 @@ export const schema = createSchema({
     type CiRun {
       id: ID!
       pipeline: String!
+      engine: String!
       status: String!
+      summary: String!
+      degradedReasons: [String!]!
+      artifactCount: Int!
       queuedAt: String!
+      startedAt: String
+      completedAt: String
     }
 
     type Artifact {
@@ -30,6 +40,37 @@ export const schema = createSchema({
       status: String!
       url: String
       sourcePath: String
+      runId: String
+      summary: String
+    }
+
+    type GitHubCheck {
+      id: ID!
+      name: String!
+      workflow: String
+      status: String!
+      conclusion: String
+      summary: String!
+      detailsUrl: String
+      completedAt: String
+      headSha: String
+      pullRequestId: String
+    }
+
+    type EvidencePack {
+      id: ID!
+      name: String!
+      workflow: String!
+      status: String!
+      conclusion: String
+      summary: String!
+      detailsUrl: String
+      artifactUrl: String
+      artifactNames: [String!]!
+      createdAt: String!
+      updatedAt: String!
+      headSha: String
+      pullRequestId: String
     }
 
     type PullRequest {
@@ -42,8 +83,17 @@ export const schema = createSchema({
       hasArtifactPreview: Boolean!
       sourceBranch: String!
       targetBranch: String!
+      url: String
+      updatedAt: String
+      headSha: String
+      checkSummary: String!
+      changeScope: String!
+      riskLevel: String!
+      mergeRecommendation: String!
       changedFiles: [String!]!
       artifactIds: [String!]!
+      checkIds: [String!]!
+      evidencePackIds: [String!]!
     }
 
     type Project {
@@ -63,6 +113,8 @@ export const schema = createSchema({
       schematicUrl: String
       ciRuns: [CiRun!]!
       artifacts: [Artifact!]!
+      githubChecks: [GitHubCheck!]!
+      evidencePacks: [EvidencePack!]!
       pullRequests: [PullRequest!]!
     }
 
@@ -70,9 +122,17 @@ export const schema = createSchema({
       project(id: ID = "yiacad-demo"): Project!
     }
 
+    type PublishPullRequestSummaryResult {
+      pullRequestId: ID!
+      commentUrl: String
+      action: String!
+      summary: String!
+    }
+
     type Mutation {
       saveDiagram(path: String!, scene: String!): Diagram!
       enqueueCi(projectId: ID = "yiacad-demo", pipeline: String!): CiRun!
+      publishPullRequestSummary(pullRequestId: ID!): PublishPullRequestSummaryResult!
     }
   `,
   resolvers: {
@@ -85,7 +145,11 @@ export const schema = createSchema({
         args: { path: string; scene: string }
       ) => saveDiagram(args.path, args.scene),
       enqueueCi: async (_: unknown, args: { pipeline: string }) =>
-        enqueueCi(args.pipeline)
+        enqueueCi(args.pipeline),
+      publishPullRequestSummary: async (
+        _: unknown,
+        args: { pullRequestId: string }
+      ) => publishPullRequestSummary(args.pullRequestId)
     }
   }
 });

@@ -15,11 +15,20 @@ import time
 from pathlib import Path
 from typing import Iterable
 
+from kill_life.yiacad_action_registry import (
+    INPUT_ARGUMENTS,
+    yiacad_action_id,
+    yiacad_actions,
+    yiacad_action_inputs,
+)
+
 try:
     from yiacad_backend import (
         artifact_entry,
         build_context_record,
         build_uiux_output,
+        collect_engine_reasons,
+        detect_integrated_engines,
         infer_surface,
         output_status_from_returncodes,
         write_context_record,
@@ -30,6 +39,8 @@ except ImportError:
         artifact_entry,
         build_context_record,
         build_uiux_output,
+        collect_engine_reasons,
+        detect_integrated_engines,
         infer_surface,
         output_status_from_returncodes,
         write_context_record,
@@ -78,6 +89,73 @@ def run(cmd: list[str], *, cwd: Path | None = None, ok_codes: Iterable[int] = (0
         "ok": proc.returncode in set(ok_codes),
     }
     return payload
+
+
+def requested_surface(args: argparse.Namespace, fallback: str) -> str:
+    return getattr(args, "surface", "") or fallback
+
+
+def blocked_output_from_runtime(
+    *,
+    args: argparse.Namespace,
+    run_dir: Path,
+    context_path: Path,
+    surface: str,
+    action: str,
+    summary: str,
+    details: str,
+    context_ref: str | None,
+    next_steps: list[str],
+    engine_status: dict,
+    degraded_reasons: list[str],
+) -> tuple[int, dict]:
+    output_payload = build_uiux_output(
+        surface=surface,
+        action=action,
+        execution_mode="batch",
+        status="blocked",
+        severity="error",
+        summary=summary,
+        details=details,
+        context_ref=context_ref,
+        artifacts=[
+            artifact_entry(context_path, "evidence", "YiACAD context record"),
+            artifact_entry(run_dir / "result.json", "evidence", "YiACAD raw payload"),
+        ],
+        next_steps=next_steps,
+        latency_ms=None,
+        degraded_reasons=degraded_reasons,
+        engine_status=engine_status,
+    )
+    output_path = write_uiux_output(run_dir / "uiux_output.json", output_payload)
+    return 2, {"output_payload": output_payload, "output_path": str(output_path)}
+
+
+def parse_json_text(raw: str) -> dict | None:
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError:
+        return None
+    return parsed if isinstance(parsed, dict) else None
+
+
+def append_unique(items: list[str], value: str | None) -> None:
+    if value and value not in items:
+        items.append(value)
+
+
+def extend_unique(items: list[str], values: Iterable[str]) -> None:
+    for value in values:
+        append_unique(items, value)
+
+
+def normalize_fab_status(status: str | None) -> tuple[str, str]:
+    mapping = {
+        "ready": ("done", "info"),
+        "degraded": ("degraded", "warning"),
+        "blocked": ("blocked", "error"),
+    }
+    return mapping.get(status or "", ("blocked", "error"))
 
 
 def resolve_kicad_cli() -> str:
@@ -159,23 +237,39 @@ def print_contract_or_fallback(args: argparse.Namespace, payload: dict, fallback
         print(str(fallback))
 
 
+def add_registry_arguments(parser: argparse.ArgumentParser, command: str) -> None:
+    for name in yiacad_action_inputs(command):
+        spec = INPUT_ARGUMENTS[name]
+        parser.add_argument(spec["flag"], default="", help=spec["help"])
+
+
 def command_status(args: argparse.Namespace) -> int:
+    action_id = yiacad_action_id("status")
+    engine_status = detect_integrated_engines()
+    degraded_reasons = collect_engine_reasons(engine_status)
     lines = ["# YiACAD Native Status", ""]
     if FUSION_STATUS.exists():
         lines += ["## Fusion lane", "", FUSION_STATUS.read_text(encoding="utf-8").strip(), ""]
     else:
         lines += ["## Fusion lane", "", "No fusion status snapshot found.", ""]
+    lines += ["## Integrated engines", ""]
+    for key, entry in engine_status.items():
+        lines.append(
+            f"- {entry['name']}: status={entry['status']} version={entry.get('detected_version') or 'unknown'} "
+            f"required={entry.get('required_version') or 'n/a'}"
+        )
+    lines += [""]
     lines += ["## Native surfaces", "", latest_native_summary(), ""]
-    status = "done" if FUSION_STATUS.exists() or ARTIFACTS_ROOT.exists() else "degraded"
+    status = "done" if (FUSION_STATUS.exists() or ARTIFACTS_ROOT.exists()) and not degraded_reasons else "degraded"
     severity = "info" if status == "done" else "warning"
     output_payload = build_uiux_output(
-        surface="tui",
-        action="status.surface",
+        surface=requested_surface(args, "tui"),
+        action=action_id,
         execution_mode="batch",
         status=status,
         severity=severity,
         summary="YiACAD native status snapshot generated.",
-        details="Fusion lane snapshot and latest native summaries were collected.",
+        details="Fusion lane snapshot, latest native summaries and integrated engine health were collected.",
         context_ref=None,
         artifacts=[
             artifact_entry(FUSION_STATUS, "report", "YiACAD fusion status"),
@@ -188,6 +282,8 @@ def command_status(args: argparse.Namespace) -> int:
             "continue with backend or UX lot",
         ],
         latency_ms=None,
+        degraded_reasons=degraded_reasons,
+        engine_status=engine_status,
     )
     if getattr(args, "json_output", False):
         print(json.dumps(output_payload, indent=2, ensure_ascii=False))
@@ -197,19 +293,24 @@ def command_status(args: argparse.Namespace) -> int:
 
 
 def command_kicad_erc_drc(args: argparse.Namespace) -> int:
+    action_id = yiacad_action_id("kicad-erc-drc")
     started_at = time.time()
     board = Path(args.board).expanduser().resolve() if args.board else guess_board_from_source(args.source_path)
     schematic = (
         Path(args.schematic).expanduser().resolve() if args.schematic else guess_schematic_from_source(args.source_path)
     )
     run_dir = make_run_dir("kicad-erc-drc")
-    surface = infer_surface(board=board, schematic=schematic)
+    surface = requested_surface(args, infer_surface(board=board, schematic=schematic))
+    engine_status = detect_integrated_engines()
+    relevant_engines = {"kicad"}
+    degraded_reasons = collect_engine_reasons(engine_status, relevant_engines)
     context = build_context_record(
         surface,
         source_path=args.source_path,
         board=board,
         schematic=schematic,
         artifacts_dir=run_dir,
+        integrated_engines=engine_status,
     )
     context_path = write_context_record(run_dir / "context.json", context)
     payload: dict[str, object] = {
@@ -220,12 +321,34 @@ def command_kicad_erc_drc(args: argparse.Namespace) -> int:
         "context": context,
         "steps": [],
     }
+    if engine_status["kicad"]["status"] == "blocked":
+        rc, blocked = blocked_output_from_runtime(
+            args=args,
+            run_dir=run_dir,
+            context_path=context_path,
+            surface=surface,
+            action=action_id,
+            summary="YiACAD could not start KiCad review because the KiCad runtime baseline is not met.",
+            details="Install KiCad 10+ with the YiACAD AI layer available to the local runtime, then rerun the review.",
+            context_ref=context["context_ref"],
+            next_steps=[
+                "install or upgrade KiCad to 10+",
+                "verify kicad-cli is available",
+                "rerun the review",
+            ],
+            engine_status=engine_status,
+            degraded_reasons=degraded_reasons or ["kicad-runtime-unavailable"],
+        )
+        payload["uiux_output"] = blocked["output_path"]
+        write_json(run_dir / "result.json", payload)
+        print_contract_or_fallback(args, blocked["output_payload"], run_dir / "result.json")
+        return rc
 
     if not board and not schematic:
         payload["error"] = "No KiCad board or schematic could be resolved."
         output_payload = build_uiux_output(
             surface=surface,
-            action="review.erc_drc",
+            action=action_id,
             execution_mode="batch",
             status="blocked",
             severity="error",
@@ -241,6 +364,8 @@ def command_kicad_erc_drc(args: argparse.Namespace) -> int:
                 "rerun with a loaded KiCad project",
             ],
             latency_ms=int((time.time() - started_at) * 1000),
+            degraded_reasons=(degraded_reasons + ["missing-kicad-input"]),
+            engine_status=engine_status,
         )
         output_path = write_uiux_output(run_dir / "uiux_output.json", output_payload)
         payload["uiux_output"] = str(output_path)
@@ -305,6 +430,11 @@ def command_kicad_erc_drc(args: argparse.Namespace) -> int:
     write_text(run_dir / "summary.md", "\n".join(summary_lines) + "\n")
     payload["summary"] = str(run_dir / "summary.md")
     status, severity = output_status_from_returncodes([step["returncode"] for step in payload["steps"]])
+    degraded_reasons = collect_engine_reasons(engine_status, relevant_engines)
+    if status == "degraded":
+        degraded_reasons.append("kicad-violations-present")
+    elif status == "blocked":
+        degraded_reasons.append("kicad-command-failed")
     next_steps = {
         "done": ["open generated reports", "continue with BOM review or sync"],
         "degraded": ["open review center", "inspect generated reports", "rerun after fixes"],
@@ -330,7 +460,7 @@ def command_kicad_erc_drc(args: argparse.Namespace) -> int:
             artifacts.append(artifact_entry(path, "log", label))
     output_payload = build_uiux_output(
         surface=surface,
-        action="review.erc_drc",
+        action=action_id,
         execution_mode="batch",
         status=status,
         severity=severity,
@@ -340,6 +470,8 @@ def command_kicad_erc_drc(args: argparse.Namespace) -> int:
         artifacts=artifacts,
         next_steps=next_steps,
         latency_ms=int((time.time() - started_at) * 1000),
+        degraded_reasons=degraded_reasons,
+        engine_status=engine_status,
     )
     output_path = write_uiux_output(run_dir / "uiux_output.json", output_payload)
     payload["uiux_output"] = str(output_path)
@@ -349,19 +481,46 @@ def command_kicad_erc_drc(args: argparse.Namespace) -> int:
 
 
 def command_bom_review(args: argparse.Namespace) -> int:
+    action_id = yiacad_action_id("bom-review")
     started_at = time.time()
     schematic = (
         Path(args.schematic).expanduser().resolve() if args.schematic else guess_schematic_from_source(args.source_path)
     )
     run_dir = make_run_dir("bom-review")
-    surface = infer_surface(schematic=schematic)
+    surface = requested_surface(args, infer_surface(schematic=schematic))
+    engine_status = detect_integrated_engines()
+    relevant_engines = {"kicad", "kibot"}
+    degraded_reasons = collect_engine_reasons(engine_status, relevant_engines)
     context = build_context_record(
         surface,
         source_path=args.source_path,
         schematic=schematic,
         artifacts_dir=run_dir,
+        integrated_engines=engine_status,
     )
     context_path = write_context_record(run_dir / "context.json", context)
+    if engine_status["kicad"]["status"] == "blocked":
+        rc, blocked = blocked_output_from_runtime(
+            args=args,
+            run_dir=run_dir,
+            context_path=context_path,
+            surface=surface,
+            action=action_id,
+            summary="YiACAD could not start BOM review because the KiCad runtime baseline is not met.",
+            details="Install or upgrade KiCad 10+ before running YiACAD BOM review.",
+            context_ref=context["context_ref"],
+            next_steps=[
+                "install or upgrade KiCad to 10+",
+                "verify kicad-cli is available",
+                "rerun BOM review",
+            ],
+            engine_status=engine_status,
+            degraded_reasons=degraded_reasons or ["kicad-runtime-unavailable"],
+        )
+        write_json(run_dir / "result.json", {"action": "bom-review", "context": context, "uiux_output": blocked["output_path"]})
+        print_contract_or_fallback(args, blocked["output_payload"], run_dir / "result.json")
+        return rc
+
     if not schematic:
         payload = {
             "action": "bom-review",
@@ -371,7 +530,7 @@ def command_bom_review(args: argparse.Namespace) -> int:
         }
         output_payload = build_uiux_output(
             surface=surface,
-            action="review.bom",
+            action=action_id,
             execution_mode="batch",
             status="blocked",
             severity="error",
@@ -387,6 +546,8 @@ def command_bom_review(args: argparse.Namespace) -> int:
                 "rerun with a loaded KiCad project",
             ],
             latency_ms=int((time.time() - started_at) * 1000),
+            degraded_reasons=(degraded_reasons + ["missing-kicad-schematic"]),
+            engine_status=engine_status,
         )
         output_path = write_uiux_output(run_dir / "uiux_output.json", output_payload)
         payload["uiux_output"] = str(output_path)
@@ -445,6 +606,11 @@ def command_bom_review(args: argparse.Namespace) -> int:
         "context": context,
     }
     status, severity = output_status_from_returncodes([step["returncode"]])
+    degraded_reasons = collect_engine_reasons(engine_status, relevant_engines)
+    if engine_status["kibot"]["status"] != "done":
+        degraded_reasons.append("kibot-runtime-not-ready")
+    if status == "blocked":
+        degraded_reasons.append("bom-export-failed")
     next_steps = {
         "done": ["open BOM summary", "inspect blank field counts"],
         "degraded": ["open BOM summary", "inspect blank field counts"],
@@ -463,7 +629,7 @@ def command_bom_review(args: argparse.Namespace) -> int:
             artifacts.append(artifact_entry(path, "log", label))
     output_payload = build_uiux_output(
         surface=surface,
-        action="review.bom",
+        action=action_id,
         execution_mode="batch",
         status=status,
         severity=severity,
@@ -473,6 +639,8 @@ def command_bom_review(args: argparse.Namespace) -> int:
         artifacts=artifacts,
         next_steps=next_steps,
         latency_ms=int((time.time() - started_at) * 1000),
+        degraded_reasons=degraded_reasons,
+        engine_status=engine_status,
     )
     output_path = write_uiux_output(run_dir / "uiux_output.json", output_payload)
     payload["uiux_output"] = str(output_path)
@@ -515,6 +683,7 @@ def export_freecad_document(document_path: Path, output_path: Path, run_dir: Pat
 
 
 def command_ecad_mcad_sync(args: argparse.Namespace) -> int:
+    action_id = yiacad_action_id("ecad-mcad-sync")
     started_at = time.time()
     board = Path(args.board).expanduser().resolve() if args.board else guess_board_from_source(args.source_path)
     schematic = (
@@ -526,7 +695,10 @@ def command_ecad_mcad_sync(args: argparse.Namespace) -> int:
         else guess_freecad_document(args.source_path)
     )
     run_dir = make_run_dir("ecad-mcad-sync")
-    surface = infer_surface(board=board, schematic=schematic, freecad_document=freecad_document)
+    surface = requested_surface(args, infer_surface(board=board, schematic=schematic, freecad_document=freecad_document))
+    engine_status = detect_integrated_engines()
+    relevant_engines = {"kicad", "freecad"}
+    degraded_reasons = collect_engine_reasons(engine_status, relevant_engines)
     context = build_context_record(
         surface,
         source_path=args.source_path,
@@ -534,8 +706,51 @@ def command_ecad_mcad_sync(args: argparse.Namespace) -> int:
         schematic=schematic,
         freecad_document=freecad_document,
         artifacts_dir=run_dir,
+        integrated_engines=engine_status,
     )
     context_path = write_context_record(run_dir / "context.json", context)
+    if board and engine_status["kicad"]["status"] == "blocked":
+        rc, blocked = blocked_output_from_runtime(
+            args=args,
+            run_dir=run_dir,
+            context_path=context_path,
+            surface=surface,
+            action=action_id,
+            summary="YiACAD could not export the ECAD side because the KiCad runtime baseline is not met.",
+            details="Install or upgrade KiCad 10+ before running ECAD/MCAD sync with board exports.",
+            context_ref=context["context_ref"],
+            next_steps=[
+                "install or upgrade KiCad to 10+",
+                "verify kicad-cli is available",
+                "rerun sync",
+            ],
+            engine_status=engine_status,
+            degraded_reasons=degraded_reasons or ["kicad-runtime-unavailable"],
+        )
+        write_json(run_dir / "result.json", {"action": "ecad-mcad-sync", "context": context, "uiux_output": blocked["output_path"]})
+        print_contract_or_fallback(args, blocked["output_payload"], run_dir / "result.json")
+        return rc
+    if freecad_document and engine_status["freecad"]["status"] == "blocked":
+        rc, blocked = blocked_output_from_runtime(
+            args=args,
+            run_dir=run_dir,
+            context_path=context_path,
+            surface=surface,
+            action=action_id,
+            summary="YiACAD could not export the MCAD side because the FreeCAD runtime baseline is not met.",
+            details="Install or upgrade FreeCAD 1.1+ before running ECAD/MCAD sync with MCAD exports.",
+            context_ref=context["context_ref"],
+            next_steps=[
+                "install or upgrade FreeCAD to 1.1+",
+                "verify FreeCADCmd is available",
+                "rerun sync",
+            ],
+            engine_status=engine_status,
+            degraded_reasons=degraded_reasons or ["freecad-runtime-unavailable"],
+        )
+        write_json(run_dir / "result.json", {"action": "ecad-mcad-sync", "context": context, "uiux_output": blocked["output_path"]})
+        print_contract_or_fallback(args, blocked["output_payload"], run_dir / "result.json")
+        return rc
     kicad_cli = resolve_kicad_cli()
     sync_payload: dict[str, object] = {
         "action": "ecad-mcad-sync",
@@ -595,6 +810,11 @@ def command_ecad_mcad_sync(args: argparse.Namespace) -> int:
     status, severity = output_status_from_returncodes([step["returncode"] for step in sync_payload["steps"]])
     if not board and not freecad_document:
         status, severity = ("blocked", "error")
+        degraded_reasons.append("missing-ecad-mcad-input")
+    elif status == "degraded":
+        degraded_reasons.append("partial-sync-artifacts")
+    elif status == "blocked":
+        degraded_reasons.append("sync-command-failed")
     next_steps = {
         "done": ["open exported STEP artifacts", "continue with physical fit review"],
         "degraded": ["inspect generated exports", "rerun with both ECAD and MCAD files present"],
@@ -618,7 +838,7 @@ def command_ecad_mcad_sync(args: argparse.Namespace) -> int:
         artifacts.append(artifact_entry(step_path, "export", f"STEP export: {step_path.name}"))
     output_payload = build_uiux_output(
         surface=surface,
-        action="sync.ecad_mcad",
+        action=action_id,
         execution_mode="batch",
         status=status,
         severity=severity,
@@ -628,12 +848,359 @@ def command_ecad_mcad_sync(args: argparse.Namespace) -> int:
         artifacts=artifacts,
         next_steps=next_steps,
         latency_ms=int((time.time() - started_at) * 1000),
+        degraded_reasons=degraded_reasons,
+        engine_status=engine_status,
     )
     output_path = write_uiux_output(run_dir / "uiux_output.json", output_payload)
     sync_payload["uiux_output"] = str(output_path)
     write_json(run_dir / "result.json", sync_payload)
     print_contract_or_fallback(args, output_payload, run_dir / "summary.md")
     return rc_final
+
+
+def command_manufacturing_package(args: argparse.Namespace) -> int:
+    action_id = yiacad_action_id("manufacturing-package")
+    started_at = time.time()
+    board = Path(args.board).expanduser().resolve() if args.board else guess_board_from_source(args.source_path)
+    schematic = (
+        Path(args.schematic).expanduser().resolve() if args.schematic else guess_schematic_from_source(args.source_path)
+    )
+    kibot_config = Path(args.kibot_config).expanduser().resolve() if getattr(args, "kibot_config", "") else None
+    run_dir = make_run_dir("manufacturing-package")
+    surface = requested_surface(args, infer_surface(board=board, schematic=schematic))
+    engine_status = detect_integrated_engines()
+    relevant_engines = {"kicad", "kibot"}
+    degraded_reasons = collect_engine_reasons(engine_status, relevant_engines)
+    context = build_context_record(
+        surface,
+        source_path=args.source_path,
+        board=board,
+        schematic=schematic,
+        artifacts_dir=run_dir,
+        integrated_engines=engine_status,
+    )
+    context_path = write_context_record(run_dir / "context.json", context)
+    payload: dict[str, object] = {
+        "action": "manufacturing-package",
+        "board": str(board) if board else "",
+        "schematic": str(schematic) if schematic else "",
+        "kibot_config": str(kibot_config) if kibot_config else "",
+        "artifacts_dir": str(run_dir),
+        "context": context,
+        "steps": [],
+    }
+
+    if not board and not schematic:
+        rc, blocked = blocked_output_from_runtime(
+            args=args,
+            run_dir=run_dir,
+            context_path=context_path,
+            surface=surface,
+            action=action_id,
+            summary="YiACAD could not build a manufacturing package because no KiCad inputs were resolved.",
+            details="Provide --board, --schematic or a valid --source-path with KiCad project files present.",
+            context_ref=context["context_ref"],
+            next_steps=[
+                "provide --board or --schematic",
+                "rerun manufacturing export",
+            ],
+            engine_status=engine_status,
+            degraded_reasons=degraded_reasons + ["missing-manufacturing-input"],
+        )
+        payload["uiux_output"] = blocked["output_path"]
+        write_json(run_dir / "result.json", payload)
+        print_contract_or_fallback(args, blocked["output_payload"], run_dir / "result.json")
+        return rc
+
+    if engine_status["kicad"]["status"] == "blocked":
+        rc, blocked = blocked_output_from_runtime(
+            args=args,
+            run_dir=run_dir,
+            context_path=context_path,
+            surface=surface,
+            action=action_id,
+            summary="YiACAD could not build a manufacturing package because the KiCad runtime baseline is not met.",
+            details="Install or upgrade KiCad 10+ before running YiACAD manufacturing export.",
+            context_ref=context["context_ref"],
+            next_steps=[
+                "install or upgrade KiCad to 10+",
+                "verify kicad-cli is available",
+                "rerun manufacturing export",
+            ],
+            engine_status=engine_status,
+            degraded_reasons=degraded_reasons or ["kicad-runtime-unavailable"],
+        )
+        payload["uiux_output"] = blocked["output_path"]
+        write_json(run_dir / "result.json", payload)
+        print_contract_or_fallback(args, blocked["output_payload"], run_dir / "result.json")
+        return rc
+
+    summary_lines = ["# YiACAD Manufacturing Package", ""]
+    direct_kibot_dir = run_dir / "kibot"
+    direct_kibot_step: dict | None = None
+
+    if board and engine_status["kibot"]["available"] and kibot_config and kibot_config.exists():
+        ensure_dir(direct_kibot_dir)
+        direct_kibot_step = run(
+            [
+                str(engine_status["kibot"]["binary"]),
+                "-b",
+                str(board),
+                "-c",
+                str(kibot_config),
+                "-d",
+                str(direct_kibot_dir),
+            ],
+            ok_codes=(0,),
+        )
+        write_text(run_dir / "kibot.stdout.txt", direct_kibot_step["stdout"])
+        write_text(run_dir / "kibot.stderr.txt", direct_kibot_step["stderr"])
+        payload["steps"].append(direct_kibot_step)
+        summary_lines.append(
+            f"- KiBot direct export: `{direct_kibot_dir}` (rc={direct_kibot_step['returncode']})"
+        )
+        if not direct_kibot_step["ok"]:
+            append_unique(degraded_reasons, "kibot-direct-run-failed")
+    elif board and engine_status["kibot"]["available"] and kibot_config and not kibot_config.exists():
+        append_unique(degraded_reasons, "kibot-config-missing")
+    elif board and engine_status["kibot"]["available"] and not kibot_config:
+        append_unique(degraded_reasons, "kibot-config-missing")
+
+    fab_step = run(
+        [
+            "bash",
+            str(ROOT / "tools" / "cockpit" / "fab_package_tui.sh"),
+            "--action",
+            "build",
+            "--json",
+            "--mode",
+            "live",
+            "--schematic",
+            str(schematic) if schematic else "",
+            "--board",
+            str(board) if board else "",
+        ],
+        ok_codes=(0,),
+    )
+    write_text(run_dir / "fab_package.stdout.txt", fab_step["stdout"])
+    write_text(run_dir / "fab_package.stderr.txt", fab_step["stderr"])
+    payload["steps"].append(fab_step)
+    fab_payload = parse_json_text(fab_step["stdout"])
+    if fab_payload:
+        payload["fab_package"] = fab_payload
+        summary_lines.append(f"- Fab package status: `{fab_payload.get('status', 'unknown')}`")
+        summary_lines.append(f"- Fab route origin: `{fab_payload.get('route_origin', 'local')}`")
+    else:
+        append_unique(degraded_reasons, "fab-package-unparseable")
+
+    status = "blocked"
+    severity = "error"
+    if fab_step["ok"] and fab_payload:
+        status, severity = normalize_fab_status(str(fab_payload.get("status")))
+        extend_unique(degraded_reasons, list(fab_payload.get("degraded_reasons") or []))
+        if status == "done" and degraded_reasons:
+            status, severity = ("degraded", "warning")
+    else:
+        append_unique(degraded_reasons, "fab-package-command-failed")
+
+    next_steps: list[str] = []
+    if fab_payload:
+        extend_unique(next_steps, list(fab_payload.get("next_steps") or []))
+    if not next_steps:
+        next_steps = [
+            "open manufacturing artifacts",
+            "inspect package acceptance gates",
+            "rerun manufacturing export after fixing blockers",
+        ]
+
+    for resolved in (("board", board), ("schematic", schematic), ("kibot_config", kibot_config)):
+        label, path = resolved
+        summary_lines.append(f"- {label}: `{path}`" if path else f"- {label}: unresolved")
+    write_text(run_dir / "summary.md", "\n".join(summary_lines) + "\n")
+    payload["summary"] = str(run_dir / "summary.md")
+
+    artifacts = [
+        artifact_entry(run_dir / "summary.md", "report", "YiACAD manufacturing package summary"),
+        artifact_entry(context_path, "evidence", "YiACAD context record"),
+        artifact_entry(run_dir / "result.json", "evidence", "YiACAD raw payload"),
+        artifact_entry(run_dir / "fab_package.stdout.txt", "log", "Fab package stdout"),
+        artifact_entry(run_dir / "fab_package.stderr.txt", "log", "Fab package stderr"),
+    ]
+    if direct_kibot_step:
+        artifacts.append(artifact_entry(run_dir / "kibot.stdout.txt", "log", "KiBot stdout"))
+        artifacts.append(artifact_entry(run_dir / "kibot.stderr.txt", "log", "KiBot stderr"))
+    if direct_kibot_dir.exists():
+        artifacts.append(artifact_entry(direct_kibot_dir, "export", "KiBot output directory"))
+    if fab_payload:
+        for key, label, kind in (
+            ("bom_file", "BOM export", "export"),
+            ("cpl_file", "CPL export", "export"),
+            ("gerber_dir", "Gerber bundle", "export"),
+            ("drill_file", "Drill export", "export"),
+            ("drc_report", "Manufacturing review report", "report"),
+            ("netlist_file", "Netlist export", "export"),
+        ):
+            value = fab_payload.get(key)
+            if value:
+                artifacts.append(artifact_entry(value, kind, label))
+        for path in fab_payload.get("review_artifacts") or []:
+            artifacts.append(artifact_entry(path, "report", "Review artifact"))
+        for item in fab_payload.get("artifacts") or []:
+            path = item.get("path") if isinstance(item, dict) else None
+            if path:
+                artifacts.append(artifact_entry(path, "export", "Fab package artifact"))
+
+    output_payload = build_uiux_output(
+        surface=surface,
+        action=action_id,
+        execution_mode="batch",
+        status=status,
+        severity=severity,
+        summary="YiACAD manufacturing package run completed.",
+        details=f"Board={board or 'unresolved'} | Schematic={schematic or 'unresolved'} | Artifacts={run_dir}",
+        context_ref=context["context_ref"],
+        artifacts=artifacts,
+        next_steps=next_steps,
+        latency_ms=int((time.time() - started_at) * 1000),
+        degraded_reasons=degraded_reasons,
+        engine_status=engine_status,
+    )
+    output_path = write_uiux_output(run_dir / "uiux_output.json", output_payload)
+    payload["uiux_output"] = str(output_path)
+    write_json(run_dir / "result.json", payload)
+    print_contract_or_fallback(args, output_payload, run_dir / "summary.md")
+    return 0 if status != "blocked" else 1
+
+
+def command_kiauto_checks(args: argparse.Namespace) -> int:
+    action_id = yiacad_action_id("kiauto-checks")
+    started_at = time.time()
+    board = Path(args.board).expanduser().resolve() if args.board else guess_board_from_source(args.source_path)
+    schematic = (
+        Path(args.schematic).expanduser().resolve() if args.schematic else guess_schematic_from_source(args.source_path)
+    )
+    run_dir = make_run_dir("kiauto-checks")
+    surface = requested_surface(args, infer_surface(board=board, schematic=schematic))
+    engine_status = detect_integrated_engines()
+    relevant_engines = {"kicad", "kiauto"}
+    degraded_reasons = collect_engine_reasons(engine_status, relevant_engines)
+    context = build_context_record(
+        surface,
+        source_path=args.source_path,
+        board=board,
+        schematic=schematic,
+        artifacts_dir=run_dir,
+        integrated_engines=engine_status,
+    )
+    context_path = write_context_record(run_dir / "context.json", context)
+    payload: dict[str, object] = {
+        "action": "kiauto-checks",
+        "board": str(board) if board else "",
+        "schematic": str(schematic) if schematic else "",
+        "artifacts_dir": str(run_dir),
+        "context": context,
+        "steps": [],
+    }
+
+    if not board:
+        rc, blocked = blocked_output_from_runtime(
+            args=args,
+            run_dir=run_dir,
+            context_path=context_path,
+            surface=surface,
+            action=action_id,
+            summary="YiACAD could not run KiAuto checks because no board was resolved.",
+            details="Provide --board or a valid --source-path with a .kicad_pcb present.",
+            context_ref=context["context_ref"],
+            next_steps=[
+                "provide --board",
+                "rerun KiAuto checks",
+            ],
+            engine_status=engine_status,
+            degraded_reasons=degraded_reasons + ["missing-kiauto-board"],
+        )
+        payload["uiux_output"] = blocked["output_path"]
+        write_json(run_dir / "result.json", payload)
+        print_contract_or_fallback(args, blocked["output_payload"], run_dir / "result.json")
+        return rc
+
+    if engine_status["kicad"]["status"] == "blocked" or engine_status["kiauto"]["status"] == "blocked":
+        rc, blocked = blocked_output_from_runtime(
+            args=args,
+            run_dir=run_dir,
+            context_path=context_path,
+            surface=surface,
+            action=action_id,
+            summary="YiACAD could not run KiAuto checks because the KiCad or KiAuto runtime baseline is not met.",
+            details="Install KiCad 10+ and a working KiAuto runtime before rerunning manufacturing validation.",
+            context_ref=context["context_ref"],
+            next_steps=[
+                "install or upgrade KiCad to 10+",
+                "install KiAuto in the active environment",
+                "rerun KiAuto checks",
+            ],
+            engine_status=engine_status,
+            degraded_reasons=degraded_reasons or ["kiauto-runtime-unavailable"],
+        )
+        payload["uiux_output"] = blocked["output_path"]
+        write_json(run_dir / "result.json", payload)
+        print_contract_or_fallback(args, blocked["output_payload"], run_dir / "result.json")
+        return rc
+
+    step = run([str(engine_status["kiauto"]["binary"]), "--help"], ok_codes=(0,))
+    write_text(run_dir / "kiauto.stdout.txt", step["stdout"])
+    write_text(run_dir / "kiauto.stderr.txt", step["stderr"])
+    payload["steps"].append(step)
+
+    status, severity = output_status_from_returncodes([step["returncode"]])
+    if status == "done" and degraded_reasons:
+        status, severity = ("degraded", "warning")
+    if status == "blocked":
+        append_unique(degraded_reasons, "kiauto-command-failed")
+
+    summary_lines = [
+        "# YiACAD KiAuto Checks",
+        "",
+        f"- board: `{board}`",
+        f"- schematic: `{schematic}`" if schematic else "- schematic: unresolved",
+        f"- kiauto binary: `{engine_status['kiauto']['binary']}`",
+        f"- invocation: `--help` (runtime smoke for service-first validation)",
+    ]
+    write_text(run_dir / "summary.md", "\n".join(summary_lines) + "\n")
+    payload["summary"] = str(run_dir / "summary.md")
+
+    next_steps = {
+        "done": ["inspect KiAuto runtime logs", "extend validation with board-specific KiAuto flows"],
+        "degraded": ["inspect KiAuto runtime logs", "stabilize KiAuto runtime and rerun"],
+        "blocked": ["verify KiAuto installation", "rerun manufacturing validation"],
+    }[status]
+    artifacts = [
+        artifact_entry(run_dir / "summary.md", "report", "YiACAD KiAuto checks summary"),
+        artifact_entry(context_path, "evidence", "YiACAD context record"),
+        artifact_entry(run_dir / "result.json", "evidence", "YiACAD raw payload"),
+        artifact_entry(run_dir / "kiauto.stdout.txt", "log", "KiAuto stdout"),
+        artifact_entry(run_dir / "kiauto.stderr.txt", "log", "KiAuto stderr"),
+    ]
+    output_payload = build_uiux_output(
+        surface=surface,
+        action=action_id,
+        execution_mode="batch",
+        status=status,
+        severity=severity,
+        summary="YiACAD KiAuto checks completed.",
+        details=f"Board={board} | KiAuto={engine_status['kiauto']['binary']} | Artifacts={run_dir}",
+        context_ref=context["context_ref"],
+        artifacts=artifacts,
+        next_steps=next_steps,
+        latency_ms=int((time.time() - started_at) * 1000),
+        degraded_reasons=degraded_reasons,
+        engine_status=engine_status,
+    )
+    output_path = write_uiux_output(run_dir / "uiux_output.json", output_payload)
+    payload["uiux_output"] = str(output_path)
+    write_json(run_dir / "result.json", payload)
+    print_contract_or_fallback(args, output_payload, run_dir / "summary.md")
+    return 0 if status != "blocked" else 1
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -645,27 +1212,27 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Emit the normalized YiACAD UI/UX output JSON instead of the default path output",
     )
-
-    status = subparsers.add_parser("status", parents=[common], help="Show YiACAD fusion and native surface status")
-    status.set_defaults(func=command_status)
-
-    erc_drc = subparsers.add_parser("kicad-erc-drc", parents=[common], help="Run KiCad ERC and DRC reports")
-    erc_drc.add_argument("--source-path", default="", help="Any project path to infer KiCad files from")
-    erc_drc.add_argument("--board", default="", help="Path to .kicad_pcb")
-    erc_drc.add_argument("--schematic", default="", help="Path to .kicad_sch")
-    erc_drc.set_defaults(func=command_kicad_erc_drc)
-
-    bom = subparsers.add_parser("bom-review", parents=[common], help="Export and summarize a KiCad BOM")
-    bom.add_argument("--source-path", default="", help="Any project path to infer schematic from")
-    bom.add_argument("--schematic", default="", help="Path to .kicad_sch")
-    bom.set_defaults(func=command_bom_review)
-
-    sync = subparsers.add_parser("ecad-mcad-sync", parents=[common], help="Export KiCad and FreeCAD STEP artifacts for sync")
-    sync.add_argument("--source-path", default="", help="Any project path to infer paired files from")
-    sync.add_argument("--board", default="", help="Path to .kicad_pcb")
-    sync.add_argument("--schematic", default="", help="Path to .kicad_sch")
-    sync.add_argument("--freecad-document", default="", help="Path to .FCStd")
-    sync.set_defaults(func=command_ecad_mcad_sync)
+    common.add_argument(
+        "--surface",
+        default="",
+        help="Canonical YiACAD client surface override (e.g. yiacad-web, yiacad-desktop, tui)",
+    )
+    handlers = {
+        "status": command_status,
+        "kicad-erc-drc": command_kicad_erc_drc,
+        "bom-review": command_bom_review,
+        "ecad-mcad-sync": command_ecad_mcad_sync,
+        "manufacturing-package": command_manufacturing_package,
+        "kiauto-checks": command_kiauto_checks,
+    }
+    for entry in yiacad_actions():
+        subparser = subparsers.add_parser(
+            entry["transport_command"],
+            parents=[common],
+            help=entry["description"],
+        )
+        add_registry_arguments(subparser, entry["transport_command"])
+        subparser.set_defaults(func=handlers[entry["transport_command"]])
 
     return parser
 

@@ -13,12 +13,30 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from kill_life.yiacad_action_registry import get_yiacad_action, yiacad_action_id, yiacad_action_inputs
+
 try:
     import yiacad_native_ops as native_ops
-    from yiacad_backend import artifact_entry, build_uiux_output, utc_timestamp, write_json
+    from yiacad_backend import (
+        artifact_entry,
+        build_uiux_output,
+        collect_engine_reasons,
+        detect_integrated_engines,
+        overall_engine_health,
+        utc_timestamp,
+        write_json,
+    )
 except ImportError:
     from tools.cad import yiacad_native_ops as native_ops
-    from tools.cad.yiacad_backend import artifact_entry, build_uiux_output, utc_timestamp, write_json
+    from tools.cad.yiacad_backend import (
+        artifact_entry,
+        build_uiux_output,
+        collect_engine_reasons,
+        detect_integrated_engines,
+        overall_engine_health,
+        utc_timestamp,
+        write_json,
+    )
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -32,12 +50,17 @@ def ensure_dir(path: Path) -> Path:
     return path
 
 
-def uiux_contract_from_failure(command: str, error_text: str, request_path: Path | None = None) -> dict:
+def uiux_contract_from_failure(
+    command: str,
+    error_text: str,
+    request_path: Path | None = None,
+    surface: str = "yiacad-api",
+) -> dict:
     artifacts = []
     if request_path:
         artifacts.append(artifact_entry(request_path, "evidence", "YiACAD backend request"))
     return build_uiux_output(
-        surface="service",
+        surface=surface,
         action=command,
         execution_mode="background",
         status="blocked",
@@ -48,45 +71,53 @@ def uiux_contract_from_failure(command: str, error_text: str, request_path: Path
         artifacts=artifacts,
         next_steps=["inspect backend request", "retry the action", "fallback to direct runner"],
         latency_ms=None,
+        degraded_reasons=["backend-dispatch-failed"],
+        engine_status=detect_integrated_engines(),
     )
 
 
 def build_args(command: str, payload: dict) -> argparse.Namespace:
-    common = {"command": command, "json_output": True}
-    if command == "status":
-        return argparse.Namespace(**common)
-    if command == "kicad-erc-drc":
-        return argparse.Namespace(
-            **common,
-            source_path=payload.get("source_path", ""),
-            board=payload.get("board", ""),
-            schematic=payload.get("schematic", ""),
-        )
-    if command == "bom-review":
-        return argparse.Namespace(
-            **common,
-            source_path=payload.get("source_path", ""),
-            schematic=payload.get("schematic", ""),
-        )
-    if command == "ecad-mcad-sync":
-        return argparse.Namespace(
-            **common,
-            source_path=payload.get("source_path", ""),
-            board=payload.get("board", ""),
-            schematic=payload.get("schematic", ""),
-            freecad_document=payload.get("freecad_document", ""),
-        )
-    raise KeyError(f"Unsupported YiACAD command: {command}")
+    common = {"command": command, "json_output": True, "surface": payload.get("surface", "yiacad-api")}
+    common.update({name: payload.get(name, "") for name in yiacad_action_inputs(command)})
+    return argparse.Namespace(**common)
+
+
+def latest_context_payload() -> dict | None:
+    candidates = sorted(ROOT.glob("artifacts/cad-ai-native/*/context.json"), key=lambda path: path.stat().st_mtime, reverse=True)
+    for candidate in candidates:
+        try:
+            return json.loads(candidate.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            continue
+    return None
+
+
+def latest_artifacts_payload() -> dict:
+    response_path = SERVICE_ARTIFACTS / "latest_response.json"
+    items: list[dict] = []
+    source = None
+    if response_path.exists():
+        try:
+            response = json.loads(response_path.read_text(encoding="utf-8"))
+            payload_items = response.get("artifacts")
+            if isinstance(payload_items, list):
+                items = payload_items
+                source = str(response_path)
+        except json.JSONDecodeError:
+            items = []
+    return {
+        "status": "done" if items else "degraded",
+        "component": "yiacad-backend-service",
+        "generated_at": utc_timestamp(),
+        "artifacts": items,
+        "source": source,
+        "next_steps": ["open artifacts", "rerun a YiACAD action to refresh the index"] if not items else ["open artifacts"],
+    }
 
 
 def dispatch_command(command: str, payload: dict) -> tuple[int, dict]:
-    mapping = {
-        "status": native_ops.command_status,
-        "kicad-erc-drc": native_ops.command_kicad_erc_drc,
-        "bom-review": native_ops.command_bom_review,
-        "ecad-mcad-sync": native_ops.command_ecad_mcad_sync,
-    }
-    handler = mapping[command]
+    entry = get_yiacad_action(command)
+    handler = getattr(native_ops, entry["native_handler"])
     args = build_args(command, payload)
     stdout = io.StringIO()
     with contextlib.redirect_stdout(stdout):
@@ -96,12 +127,13 @@ def dispatch_command(command: str, payload: dict) -> tuple[int, dict]:
         try:
             parsed = json.loads(body)
             if isinstance(parsed, dict):
+                parsed.setdefault("surface", payload.get("surface", parsed.get("surface", "yiacad-api")))
                 return rc, parsed
         except json.JSONDecodeError:
             pass
     contract = build_uiux_output(
-        surface="service",
-        action=command,
+        surface=payload.get("surface", "yiacad-api"),
+        action=yiacad_action_id(command),
         execution_mode="background",
         status="done" if rc == 0 else "blocked",
         severity="info" if rc == 0 else "error",
@@ -111,6 +143,8 @@ def dispatch_command(command: str, payload: dict) -> tuple[int, dict]:
         artifacts=[],
         next_steps=["inspect service response", "retry via direct runner if needed"],
         latency_ms=None,
+        degraded_reasons=[] if rc == 0 else ["backend-unstructured-response"],
+        engine_status=detect_integrated_engines(),
     )
     return rc, contract
 
@@ -127,20 +161,42 @@ class YiacadBackendHandler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
     def do_GET(self) -> None:
-        if self.path != "/health":
-            self._json_response(404, {"status": "not_found"})
+        if self.path == "/health":
+            engine_status = detect_integrated_engines()
+            payload = {
+                "status": overall_engine_health(engine_status),
+                "component": "yiacad-backend-service",
+                "generated_at": utc_timestamp(),
+                "pid": os.getpid(),
+                "host": self.server.server_address[0],
+                "port": self.server.server_address[1],
+                "artifacts_dir": str(SERVICE_ARTIFACTS),
+                "engine_status": engine_status,
+                "degraded_reasons": collect_engine_reasons(engine_status),
+            }
+            ensure_dir(SERVICE_ARTIFACTS)
+            write_json(SERVICE_ARTIFACTS / "latest_health.json", payload)
+            self._json_response(200, payload)
             return
-        payload = {
-            "status": "done",
-            "component": "yiacad-backend-service",
-            "generated_at": utc_timestamp(),
-            "pid": os.getpid(),
-            "host": self.server.server_address[0],
-            "port": self.server.server_address[1],
-            "artifacts_dir": str(SERVICE_ARTIFACTS),
-        }
-        write_json(SERVICE_ARTIFACTS / "latest_health.json", payload)
-        self._json_response(200, payload)
+        if self.path == "/projects/current":
+            payload = latest_context_payload()
+            if payload is None:
+                self._json_response(
+                    404,
+                    {
+                        "status": "blocked",
+                        "component": "yiacad-backend-service",
+                        "generated_at": utc_timestamp(),
+                        "reason": "no-context",
+                    },
+                )
+                return
+            self._json_response(200, payload)
+            return
+        if self.path == "/artifacts":
+            self._json_response(200, latest_artifacts_payload())
+            return
+        self._json_response(404, {"status": "not_found"})
 
     def do_POST(self) -> None:
         if self.path != "/run":
@@ -166,7 +222,12 @@ class YiacadBackendHandler(BaseHTTPRequestHandler):
             write_json(SERVICE_ARTIFACTS / "latest_response.json", response)
             self._json_response(200 if rc == 0 else 207, response)
         except Exception as exc:  # noqa: BLE001
-            response = uiux_contract_from_failure("service.dispatch", str(exc), request_path)
+            response = uiux_contract_from_failure(
+                "service.dispatch",
+                str(exc),
+                request_path,
+                payload.get("surface", "yiacad-api") if "payload" in locals() and isinstance(payload, dict) else "yiacad-api",
+            )
             response["service"] = {
                 "mode": "http",
                 "generated_at": utc_timestamp(),

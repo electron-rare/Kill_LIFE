@@ -11,6 +11,8 @@
     "status",
     "severity",
     "summary",
+    "degraded_reasons",
+    "engine_status",
     "artifacts",
     "next_steps"
   ],
@@ -20,7 +22,8 @@
       "const": "yiacad"
     },
     "surface": {
-      "type": "string"
+      "type": "string",
+      "description": "YiACAD client surface identifier, e.g. yiacad-desktop, yiacad-web, yiacad-api, tui"
     },
     "action": {
       "type": "string"
@@ -88,6 +91,30 @@
         "null"
       ]
     },
+    "degraded_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "engine_status": {
+      "type": "object",
+      "properties": {
+        "kicad": {
+          "$ref": "#/$defs/engineEntry"
+        },
+        "freecad": {
+          "$ref": "#/$defs/engineEntry"
+        },
+        "kibot": {
+          "$ref": "#/$defs/engineEntry"
+        },
+        "kiauto": {
+          "$ref": "#/$defs/engineEntry"
+        }
+      },
+      "additionalProperties": true
+    },
     "artifacts": {
       "type": "array",
       "items": {
@@ -124,6 +151,62 @@
       "items": {
         "type": "string"
       }
+    }
+  },
+  "$defs": {
+    "engineEntry": {
+      "type": "object",
+      "required": [
+        "name",
+        "integrated",
+        "binary",
+        "required_version",
+        "detected_version",
+        "available",
+        "status",
+        "reason"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "integrated": {
+          "type": "boolean"
+        },
+        "binary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "required_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "detected_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "done",
+            "degraded",
+            "blocked"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
     }
   },
   "additionalProperties": true

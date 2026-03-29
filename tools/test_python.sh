@@ -15,7 +15,7 @@ Usage: bash tools/test_python.sh [options]
 Run the supported Kill_LIFE repo-local Python suites through the repo-local venv.
 
 Options:
-  --suite NAME       stable | mcp | all (default: stable)
+  --suite NAME       stable | yiacad-desktop | yiacad-manufacturing | mcp | all (default: stable)
   --bootstrap        Create/install the venv first if missing
   --python BIN       Python interpreter forwarded to bootstrap if needed
   --venv-dir PATH    Virtualenv directory to use (default: ./.venv)
@@ -23,9 +23,11 @@ Options:
   -h, --help         Show this help
 
 Suites:
-  stable  Repo-local unittest suite without companion runtimes.
-  mcp     MCP integration tests that exercise local launchers.
-  all     stable + mcp.
+  stable                Repo-local unittest suite without companion runtimes.
+  yiacad-desktop        YiACAD desktop/service-first contract and adapter coverage.
+  yiacad-manufacturing  YiACAD manufacturing/backend proof contract coverage.
+  mcp                   MCP integration tests that exercise local launchers.
+  all                   stable + mcp.
 EOF
 }
 
@@ -51,13 +53,45 @@ stable:
   test/test_log_ops_contract.py
   test/test_intelligence_tui_contract.py
   test/test_runtime_ai_gateway_contract.py
+  test/test_yiacad_action_registry_contract.py
+  test/test_yiacad_ai_bridge_contract.py
+  test/test_yiacad_backend_contract.py
+  test/test_yiacad_backend_service_contract.py
+  test/test_yiacad_freecad_workbench_contract.py
+  test/test_yiacad_native_ops_contract.py
   test/test_yiacad_uiux_tui_contract.py
+  test/test_yiacad_kicad_plugin_contract.py
   test/test_yiacad_native_surface_contract.py
+  test/test_yiacad_project_shell_contract.py
+  test/test_yiacad_pr_summary_contract.py
+  test/test_yiacad_ci_pr_comment_contract.py
+  test/test_yiacad_web_worker_contract.py
+  test/test_yiacad_web_review_contract.py
+  test/test_yiacad_evidence_pack_contract.py
   test/test_zeroclaw_n8n_workflow_contract.py
   test/test_auto_check_ci_cd.py
   test/test_firmware_evidence.py
   test/test_validate_specs.py
   tools/hw/schops/tests/test_*.py
+EOF
+      ;;
+    yiacad-desktop)
+      cat <<'EOF'
+yiacad-desktop:
+  test/test_yiacad_action_registry_contract.py
+  test/test_yiacad_ai_bridge_contract.py
+  test/test_yiacad_backend_contract.py
+  test/test_yiacad_backend_service_contract.py
+  test/test_yiacad_freecad_workbench_contract.py
+  test/test_yiacad_kicad_plugin_contract.py
+EOF
+      ;;
+    yiacad-manufacturing)
+      cat <<'EOF'
+yiacad-manufacturing:
+  test/test_yiacad_native_ops_contract.py
+  test/test_yiacad_web_worker_contract.py
+  test/test_runtime_ai_gateway_contract.py
 EOF
       ;;
     mcp)
@@ -70,6 +104,8 @@ EOF
       ;;
     all)
       print_suite stable
+      print_suite yiacad-desktop
+      print_suite yiacad-manufacturing
       print_suite mcp
       ;;
     *)
@@ -116,7 +152,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "${SUITE}" in
-  stable|mcp|all)
+  stable|yiacad-desktop|yiacad-manufacturing|mcp|all)
     ;;
   *)
     echo "Unknown suite: ${SUITE}" >&2
@@ -148,13 +184,41 @@ if [[ "${SUITE}" == "stable" || "${SUITE}" == "all" ]]; then
   run_discover test 'test_log_ops_contract.py'
   run_discover test 'test_intelligence_tui_contract.py'
   run_discover test 'test_runtime_ai_gateway_contract.py'
+  run_discover test 'test_yiacad_action_registry_contract.py'
+  run_discover test 'test_yiacad_ai_bridge_contract.py'
+  run_discover test 'test_yiacad_backend_contract.py'
+  run_discover test 'test_yiacad_backend_service_contract.py'
+  run_discover test 'test_yiacad_freecad_workbench_contract.py'
+  run_discover test 'test_yiacad_kicad_plugin_contract.py'
+  run_discover test 'test_yiacad_native_ops_contract.py'
   run_discover test 'test_yiacad_uiux_tui_contract.py'
   run_discover test 'test_yiacad_native_surface_contract.py'
+  run_discover test 'test_yiacad_project_shell_contract.py'
+  run_discover test 'test_yiacad_pr_summary_contract.py'
+  run_discover test 'test_yiacad_ci_pr_comment_contract.py'
+  run_discover test 'test_yiacad_web_worker_contract.py'
+  run_discover test 'test_yiacad_web_review_contract.py'
+  run_discover test 'test_yiacad_evidence_pack_contract.py'
   run_discover test 'test_zeroclaw_n8n_workflow_contract.py'
   run_discover test 'test_auto_check_ci_cd.py'
   run_discover test 'test_firmware_evidence.py'
   run_discover test 'test_validate_specs.py'
   run_discover tools/hw/schops/tests 'test_*.py'
+fi
+
+if [[ "${SUITE}" == "yiacad-desktop" ]]; then
+  run_discover test 'test_yiacad_action_registry_contract.py'
+  run_discover test 'test_yiacad_ai_bridge_contract.py'
+  run_discover test 'test_yiacad_backend_contract.py'
+  run_discover test 'test_yiacad_backend_service_contract.py'
+  run_discover test 'test_yiacad_freecad_workbench_contract.py'
+  run_discover test 'test_yiacad_kicad_plugin_contract.py'
+fi
+
+if [[ "${SUITE}" == "yiacad-manufacturing" ]]; then
+  run_discover test 'test_yiacad_native_ops_contract.py'
+  run_discover test 'test_yiacad_web_worker_contract.py'
+  run_discover test 'test_runtime_ai_gateway_contract.py'
 fi
 
 if [[ "${SUITE}" == "mcp" || "${SUITE}" == "all" ]]; then
