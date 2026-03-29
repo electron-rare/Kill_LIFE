@@ -36,9 +36,9 @@ Queue and workers:
 
 - GraphQL enqueues EDA jobs through Redis-backed `BullMQ`
 - `npm run worker:eda` consumes the queue and calls existing repo tools
-- `kicad-headless` uses `tools/cad/yiacad_native_ops.py`
-- `kibot` prefers a real `kibot` binary when configured, then falls back to `tools/cockpit/fab_package_tui.sh`
-- `kiauto-checks` is wired as a real queue pipeline and requires `KIAUTO_BIN`
+- `kicad-headless` utilise `tools/cad/yiacad_backend_client.py` en mode `service-first`
+- `kibot` passe maintenant par `tools/cad/yiacad_backend_client.py` et publie un package manufacturing YiACAD normalise
+- `kiauto-checks` passe maintenant par `tools/cad/yiacad_backend_client.py` et publie une sortie de validation YiACAD normalisee
 
 Environment:
 

@@ -1,11 +1,11 @@
 <!-- REPO_STATE:v1 -->
 Repo: Kill_LIFE
 Branch: main
-HEAD: bd3f7b99154f86057ba18b9948d940df55722b12
-HeadDate: 2026-03-15T21:56:51+01:00
-HeadSubject: feat(tools): align mcp runtime status and cad tooling
-RepoURL: https://github.com/electron-rare/Kill_LIFE.git
+HEAD: 21831e1c88ec5d22dc8736d9394e61c7cab27b59
+HeadDate: 2026-03-27T13:13:52+01:00
+HeadSubject: feat: wire agent execution to mascarade-core + update task specs
+RepoURL: git@github.com:electron-rare/Kill_LIFE.git
 ProjectKind: general
-PivotChanges: [{"path": ".github/ISSUE_TEMPLATE/compliance-release.yml", "tags": ["general_change"]}, {"path": ".github/ISSUE_TEMPLATE/config.yml", "tags": ["general_change"]}, {"path": ".github/ISSUE_TEMPLATE/consulting-intake.yml", "tags": ["general_change"]}, {"path": ".github/ISSUE_TEMPLATE/creative-content.yml", "tags": ["general_change"]}, {"path": ".github/ISSUE_TEMPLATE/design-product.yml", "tags": ["general_change"]}]
-ImpactGates: general_change
-GeneratedAtUTC: 2026-03-20T09:09:09Z
+PivotChanges: [{"path": "kill_life/server.py", "tags": ["general_change"]}, {"path": "specs/04_tasks.md", "tags": ["docs_specs_sync"]}]
+ImpactGates: docs_specs_sync, general_change
+GeneratedAtUTC: 2026-03-29T00:56:54Z

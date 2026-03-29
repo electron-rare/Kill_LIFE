@@ -105,6 +105,45 @@
         },
         "ia": {
           "$ref": "#/$defs/surfaceStatus"
+        },
+        "firmware_cad": {
+          "$ref": "#/$defs/surfaceStatus"
+        },
+        "web_platform": {
+          "$ref": "#/$defs/surfaceStatus"
+        },
+        "langfuse": {
+          "$ref": "#/$defs/surfaceStatus"
+        },
+        "infra_vps": {
+          "$ref": "#/$defs/surfaceStatus"
+        }
+      },
+      "additionalProperties": true
+    },
+    "sources": {
+      "type": "object",
+      "properties": {
+        "intelligence": {
+          "$ref": "#/$defs/sourceStatus"
+        },
+        "mesh": {
+          "$ref": "#/$defs/sourceStatus"
+        },
+        "mascarade": {
+          "$ref": "#/$defs/sourceStatus"
+        },
+        "firmware_cad": {
+          "$ref": "#/$defs/sourceStatus"
+        },
+        "web_platform": {
+          "$ref": "#/$defs/sourceStatus"
+        },
+        "langfuse": {
+          "$ref": "#/$defs/sourceStatus"
+        },
+        "infra_vps": {
+          "$ref": "#/$defs/sourceStatus"
         }
       },
       "additionalProperties": true
@@ -153,6 +192,29 @@
             "type": "string",
             "minLength": 1
           }
+        }
+      },
+      "additionalProperties": true
+    },
+    "sourceStatus": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "ready",
+            "degraded",
+            "blocked"
+          ]
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "additionalProperties": true

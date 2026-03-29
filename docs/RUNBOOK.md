@@ -5,6 +5,7 @@
 - Carte fonctionnelle canonique : `docs/KILL_LIFE_FEATURE_MAP_2026-03-11.md`
 - Séquence locale : `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`
 - Séquence GitHub : `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
+- Monitoring VPS : `docs/INFRA_VPS_RUNBOOK_2026.md`
 - Audit UI/UX YiACAD : `docs/YIACAD_APPLE_UI_UX_AUDIT_2026-03-20.md`
 - Points d’insertion natifs YiACAD : `docs/YIACAD_NATIVE_UI_INSERTION_POINTS_2026-03-20.md`
 
@@ -140,3 +141,8 @@ Points d’appui:
 - Surface de preuves: `bash tools/cockpit/yiacad_proofs_tui.sh --action status`.
 - Surface de logs: `bash tools/cockpit/yiacad_logs_tui.sh --action status`.
 - Les routes directes historiques restent compatibles, mais ne sont plus l'entree publique recommandee.
+
+## 2026-03-29 - Infra VPS lane
+- Inventaire et healthcheck: `bash tools/cockpit/infra_vps_healthcheck.sh --json`.
+- Surface runtime gateway: `bash tools/cockpit/runtime_ai_gateway.sh --action status --json`.
+- Guide operateur complet: `docs/INFRA_VPS_RUNBOOK_2026.md`.

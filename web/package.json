@@ -9,13 +9,16 @@
     "start": "next start",
     "dev:realtime": "node ./realtime/server.mjs",
     "worker:eda": "node ./workers/eda-worker.mjs",
-    "vendor:kicanvas": "node ./scripts/vendor-kicanvas.mjs"
+    "vendor:kicanvas": "node ./scripts/vendor-kicanvas.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test e2e/smoke.spec.ts"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "0.18.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/ws": "^8.18.1",
+    "@y/websocket-server": "^0.1.5",
     "bullmq": "5.71.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
@@ -29,6 +32,7 @@
     "yjs": "13.6.30"
   },
   "devDependencies": {
+    "@playwright/test": "1.41.2",
     "@types/node": "^20.17.0",
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.1",

@@ -90,10 +90,13 @@ class RuntimeAiGatewayContractTests(unittest.TestCase):
             self.assertEqual(payload["surfaces"]["runtime"]["status"], "ready")
             self.assertIn("firmware_cad", payload["surfaces"])
             self.assertIn(payload["surfaces"]["firmware_cad"]["status"], {"ready", "degraded", "blocked"})
+            self.assertIn("infra_vps", payload["surfaces"])
+            self.assertIn(payload["surfaces"]["infra_vps"]["status"], {"ready", "degraded", "blocked"})
             self.assertIn("firmware_cad", payload["summary_short_artifacts"])
             firmware_cad_summary_path = REPO_ROOT / payload["summary_short_artifacts"]["firmware_cad"]["json"]
             self.assertTrue(firmware_cad_summary_path.exists())
             self.assertEqual(payload["sources"]["mascarade"]["provider"], "ollama")
+            self.assertIn("infra_vps", payload["sources"])
             self.assertGreaterEqual(len(payload["evidence"]), 1)
             self.assertIn("Do intelligence thing", payload["next_steps"])
 
