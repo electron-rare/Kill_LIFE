@@ -1,17 +1,62 @@
 {
   "component": "yiacad",
-  "surface": "kicad-pcb",
+  "surface": "yiacad-desktop",
   "action": "review.erc_drc",
   "execution_mode": "interactive",
   "status": "degraded",
   "severity": "warning",
-  "summary": "ERC/DRC completed with 3 warnings and no blocking errors.",
-  "details": "Three footprint clearance warnings were found. The review card can open the generated report and the artifact folder directly.",
+  "summary": "ERC/DRC completed with 3 warnings and no blocking errors in the YiACAD review center.",
+  "details": "Three footprint clearance warnings were found. The YiACAD app can open the generated report and the artifact folder directly.",
   "generated_at": "2026-03-20T22:49:00Z",
   "context_ref": "project:kill-life-main/demo-board",
   "provider": null,
   "model": null,
   "latency_ms": 842,
+  "degraded_reasons": [
+    "kicad-violations-present"
+  ],
+  "engine_status": {
+    "kicad": {
+      "name": "KiCad",
+      "integrated": true,
+      "binary": "/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli",
+      "required_version": ">=10.0",
+      "detected_version": "10.0.2",
+      "available": true,
+      "status": "done",
+      "reason": "ready"
+    },
+    "freecad": {
+      "name": "FreeCAD",
+      "integrated": true,
+      "binary": "/Applications/FreeCAD.app/Contents/MacOS/FreeCADCmd",
+      "required_version": ">=1.1",
+      "detected_version": "1.1.0",
+      "available": true,
+      "status": "done",
+      "reason": "ready"
+    },
+    "kibot": {
+      "name": "KiBot",
+      "integrated": true,
+      "binary": "/opt/homebrew/bin/kibot",
+      "required_version": "installed",
+      "detected_version": "1.8.2",
+      "available": true,
+      "status": "done",
+      "reason": "ready"
+    },
+    "kiauto": {
+      "name": "KiAuto",
+      "integrated": true,
+      "binary": "/opt/homebrew/bin/kiauto",
+      "required_version": "installed",
+      "detected_version": "2.3.1",
+      "available": true,
+      "status": "done",
+      "reason": "ready"
+    }
+  },
   "artifacts": [
     {
       "kind": "report",

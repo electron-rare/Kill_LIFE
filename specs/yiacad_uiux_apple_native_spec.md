@@ -2,11 +2,17 @@
 
 ## Contexte
 
-`YiACAD` est la base `KiCad + FreeCAD` pilotée par la lane IA-native de `Kill_LIFE`. La présente spec cadre la refonte UI/UX Apple-native au `2026-03-20`.
+`YiACAD` est une app independante pilotee par la lane IA-native de `Kill_LIFE`. `KiCad`, `FreeCAD` et les runtimes CAD restent des moteurs integres de la plateforme YiACAD. La presente spec cadre la refonte UI/UX Apple-native du shell YiACAD.
+
+Ancrages canoniques `2026-03-29`:
+
+- `specs/yiacad_2026_stack_target_spec.md`
+- `specs/yiacad_adr_20260329_sot.md`
+- `specs/yiacad_90_day_delivery_plan.md`
 
 ## Objectifs
 
-- unifier l’expérience KiCad, FreeCAD et cockpit autour d’une architecture cohérente;
+- unifier l'experience YiACAD desktop, web et cockpit autour d'une architecture coherente;
 - rendre les actions `review`, `sync`, `inspect` et `artifacts` immédiatement accessibles;
 - intégrer l’IA comme assistance contextualisée, traçable et révocable;
 - aligner la hiérarchie visuelle sur les patterns Apple/macOS actuels.
@@ -14,7 +20,7 @@
 ## Non-objectifs
 
 - ne pas réécrire immédiatement les noyaux ECAD/MCAD;
-- ne pas masquer les fonctions natives de KiCad ou FreeCAD;
+- ne pas faire de `KiCad` ou `FreeCAD` le shell produit principal;
 - ne pas auto-appliquer des correctifs IA sur les modèles CAD.
 
 ## Principes UX
@@ -29,7 +35,7 @@
 
 ```mermaid
 flowchart LR
-  Sidebar["Sidebar tâches"] --> Canvas["Canvas ECAD / MCAD"]
+  Sidebar["Sidebar taches"] --> Canvas["YiACAD project view"]
   Toolbar["Toolbar"] --> Canvas
   Palette["Palette commandes"] --> Canvas
   Canvas --> Inspector["Inspector contextuel"]
@@ -56,8 +62,9 @@ flowchart LR
 
 ## Instrumentation
 
-- surfaces utilisateur: répertoires KiCad et FreeCAD liés aux forks natifs;
+- surfaces utilisateur: shell YiACAD, TUI cockpit et futurs clients web;
 - utilitaires concrets: `tools/cad/yiacad_native_ops.py`;
+- backend partage: `tools/cad/yiacad_backend_service.py` et `tools/cad/yiacad_backend_client.py`;
 - TUI de pilotage: `tools/cockpit/yiacad_uiux_tui.sh`;
 - documentation de référence: `docs/YIACAD_APPLE_UI_UX_*`.
 
@@ -66,15 +73,16 @@ flowchart LR
 - temps moyen pour lancer une review réduit;
 - nombre d’étapes manuelles entre CAD et artefacts réduit;
 - état et provenance compréhensibles sans lire les scripts;
-- convergence visuelle entre KiCad, FreeCAD et cockpit.
+- convergence visuelle entre le shell YiACAD, le web et le cockpit.
 
 ## Plan de livraison
 
 ### Phase 1
 
 - audit, spec, feature map, recherche, plan et TODO;
-- hooks directs dans les forks;
+- shell app autonome + contrats de sortie;
 - TUI dédiée UI/UX.
+- socle `desktop-first authoring` sur `KiCad >= 10.0` et `FreeCAD >= 1.1`.
 
 ### Phase 2
 
@@ -84,5 +92,6 @@ flowchart LR
 
 ### Phase 3
 
-- intégration compilée native dans les forks;
-- extension vers App Intents / automatisation locale lorsque la pile est prête.
+- stabilisation des moteurs integres CAD et des imports/exports;
+- extension vers App Intents / automatisation locale lorsque la pile est prete;
+- raccord complet plugin `KiCad`, workbench `FreeCAD`, et lanes Linux `KiBot` / `KiAuto`.

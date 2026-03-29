@@ -1,3 +1,5 @@
 from .yiacad_action import YiACADActionPlugin
 
-YiACADActionPlugin().register()
+plugin = YiACADActionPlugin()
+if hasattr(plugin, "register"):
+    plugin.register()

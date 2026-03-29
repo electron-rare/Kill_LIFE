@@ -20,7 +20,11 @@ const QUEUE_NAME = process.env.EDA_QUEUE_NAME ?? "yiacad-eda";
 let queue: Queue<EdaJobPayload> | null = null;
 
 function redisConnection() {
-  const url = new URL(process.env.REDIS_URL ?? "redis://127.0.0.1:6379");
+  const rawUrl = process.env.REDIS_URL;
+  if (!rawUrl) {
+    throw new Error("REDIS_URL is not configured.");
+  }
+  const url = new URL(rawUrl);
   const db = url.pathname && url.pathname !== "/" ? Number(url.pathname.slice(1)) : 0;
 
   return {

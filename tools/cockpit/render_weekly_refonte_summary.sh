@@ -174,13 +174,18 @@ cad_lane_status() {
     return 0
   fi
 
-  if rg -q "host entrypoint missing" "$file"; then
-    printf 'blocked:kicad-host-entrypoint'
+  if rg -q "FAIL KiCad MCP Seeed doctor" "$file"; then
+    printf 'blocked:kicad-seeed-doctor'
     return 0
   fi
 
-  if rg -q "FAIL KiCad MCP host smoke" "$file"; then
-    printf 'blocked:kicad-host-smoke'
+  if rg -q "FAIL KiCad MCP Seeed smoke" "$file"; then
+    printf 'blocked:kicad-seeed-smoke'
+    return 0
+  fi
+
+  if rg -q "host entrypoint missing|FAIL KiCad MCP host smoke" "$file"; then
+    printf 'blocked:kicad-mcp-legacy'
     return 0
   fi
 
@@ -209,19 +214,25 @@ render_routing() {
   local cad_status="$1"
 
   case "$cad_status" in
-    blocked:kicad-host-entrypoint)
+    blocked:kicad-seeed-doctor)
       cat <<'EOF_ROUTING'
-- Exec lot prioritaire: `yiacad-fusion` tant que l’entrypoint hôte KiCad manque dans `mascarade-main`.
+- Exec lot prioritaire: `yiacad-fusion` tant que le launcher `KiCad MCP Seeed doctor` ne sort pas proprement.
 - Lane parallèle: `mesh-governance` reste en maintien documentaire/TUI sans propagation risquée.
-- Revue attendue: matérialiser `finetune/kicad_mcp_server/dist/index.js` ou décider explicitement que le fallback conteneur est un état supporté.
-- Etat repo-local: scripts, TUI, snapshots et rollback sont alignés; le blocage restant n'est pas dans `Kill_LIFE`.
+- Revue attendue: valider `uvx`, le wrapper `tools/hw/run_kicad_seeed_mcp.sh` et le runtime home généré sous `.cad-home/kicad-seeed-mcp`.
 EOF_ROUTING
       ;;
-    blocked:kicad-host-smoke)
+    blocked:kicad-seeed-smoke)
       cat <<'EOF_ROUTING'
-- Exec lot prioritaire: `yiacad-fusion` tant que `KiCad MCP host smoke` clôt sa sortie avant handshake.
+- Exec lot prioritaire: `yiacad-fusion` tant que `KiCad MCP Seeed smoke` ne passe pas `initialize` + `tools/list`.
 - Lane parallèle: `mesh-governance` reste en maintien documentaire/TUI sans propagation risquée.
-- Revue attendue: confirmer la lane `mascarade-main` du launcher KiCad puis rejouer `yiacad-fusion --action smoke`.
+- Revue attendue: inspecter le bridge `tools/hw/kicad_seeed_mcp_bridge.py`, puis rejouer `yiacad-fusion --action smoke`.
+EOF_ROUTING
+      ;;
+    blocked:kicad-mcp-legacy)
+      cat <<'EOF_ROUTING'
+- Exec lot prioritaire: `yiacad-fusion` pour régénérer une preuve CAD sur le launcher KiCad MCP courant.
+- Lane parallèle: `mesh-governance` reste en maintien documentaire/TUI sans propagation risquée.
+- Revue attendue: rejouer `bash tools/cad/yiacad_fusion_lot.sh --action smoke` afin de sortir d’un ancien état `kicad-host`.
 EOF_ROUTING
       ;;
     degraded)

@@ -20,7 +20,8 @@
       "type": "string"
     },
     "surface": {
-      "type": "string"
+      "type": "string",
+      "description": "YiACAD client surface identifier, e.g. yiacad-desktop, yiacad-web, yiacad-api, tui"
     },
     "context_ref": {
       "type": [
@@ -76,7 +77,9 @@
       "required": [
         "root",
         "artifacts_root",
-        "fusion_status_path"
+        "fusion_status_path",
+        "engine_baseline",
+        "integrated_engines"
       ],
       "properties": {
         "root": {
@@ -90,9 +93,101 @@
             "string",
             "null"
           ]
+        },
+        "engine_baseline": {
+          "type": "object",
+          "properties": {
+            "kicad": {
+              "type": "string"
+            },
+            "freecad": {
+              "type": "string"
+            },
+            "kibot": {
+              "type": "string"
+            },
+            "kiauto": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "integrated_engines": {
+          "type": "object",
+          "properties": {
+            "kicad": {
+              "$ref": "#/$defs/engineEntry"
+            },
+            "freecad": {
+              "$ref": "#/$defs/engineEntry"
+            },
+            "kibot": {
+              "$ref": "#/$defs/engineEntry"
+            },
+            "kiauto": {
+              "$ref": "#/$defs/engineEntry"
+            }
+          },
+          "additionalProperties": true
         }
       },
       "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "engineEntry": {
+      "type": "object",
+      "required": [
+        "name",
+        "integrated",
+        "binary",
+        "required_version",
+        "detected_version",
+        "available",
+        "status",
+        "reason"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "integrated": {
+          "type": "boolean"
+        },
+        "binary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "required_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "detected_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "done",
+            "degraded",
+            "blocked"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
     }
   },
   "additionalProperties": false

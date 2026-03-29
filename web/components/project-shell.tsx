@@ -12,7 +12,66 @@ import {
   requestGraphQL,
   type ProjectQueryResult
 } from "@/lib/graphql/client";
-import type { CiRun, Diagram, ProjectSnapshot } from "@/lib/types";
+import type {
+  CiRun,
+  Diagram,
+  EvidencePackRecord,
+  GitHubCheckRecord,
+  ProjectSnapshot,
+  PullRequestRecord
+} from "@/lib/types";
+
+function statusColor(status: string): string {
+  switch (status) {
+    case "done":
+    case "passed":
+    case "success":
+      return "#77f2c9";
+    case "blocked":
+    case "failed":
+    case "error":
+    case "failure":
+      return "#f27777";
+    case "degraded":
+      return "#f2c777";
+    case "running":
+    case "pending":
+    case "in_progress":
+      return "#77b8f2";
+    case "queued":
+      return "#8da6c8";
+    default:
+      return "#8da6c8";
+  }
+}
+
+function formatTimestamp(value: string | null): string {
+  if (!value) {
+    return "pending";
+  }
+
+  return new Date(value).toLocaleString();
+}
+
+function isFailingCheck(check: GitHubCheckRecord): boolean {
+  return ["failure", "failed", "cancelled", "timed_out", "action_required"].includes(
+    check.conclusion ?? check.status
+  );
+}
+
+function linkedChecks(
+  pullRequest: PullRequestRecord,
+  checks: GitHubCheckRecord[]
+): GitHubCheckRecord[] {
+  return checks.filter((check) => pullRequest.checkIds.includes(check.id));
+}
+
+function linkedEvidencePacks(
+  pullRequest: PullRequestRecord,
+  evidencePacks: EvidencePackRecord[]
+): EvidencePackRecord[] {
+  return evidencePacks.filter((pack) => pullRequest.evidencePackIds.includes(pack.id));
+}
 
 export function ProjectShell() {
   const [project, setProject] = useState<ProjectSnapshot | null>(null);
@@ -67,6 +126,12 @@ export function ProjectShell() {
     project?.diagrams.find((diagram) => diagram.path === selectedDiagramPath) ??
     project?.diagrams[0] ??
     null;
+  const pullRequests = project?.pullRequests ?? [];
+  const githubChecks = project?.githubChecks ?? [];
+  const evidencePacks = project?.evidencePacks ?? [];
+  const failingChecks = githubChecks.filter(isFailingCheck);
+  const latestPullRequests = pullRequests.slice(0, 3);
+  const latestEvidencePacks = evidencePacks.slice(0, 3);
 
   async function saveDiagram(scene: string) {
     if (!selectedDiagram) {
@@ -107,29 +172,29 @@ export function ProjectShell() {
     setMessage(`Queueing ${pipeline} via the CI orchestrator...`);
 
     try {
-      const data = await requestGraphQL<{ enqueueCi: CiRun }>(
+      await requestGraphQL<{ enqueueCi: CiRun }>(
         `
           mutation EnqueueCi($pipeline: String!) {
             enqueueCi(pipeline: $pipeline) {
               id
               pipeline
+              engine
               status
+              summary
+              degradedReasons
+              artifactCount
               queuedAt
+              startedAt
+              completedAt
             }
           }
         `,
         { pipeline }
       );
 
-      setProject((current) =>
-        current
-          ? {
-              ...current,
-              ciRuns: [data.enqueueCi, ...current.ciRuns]
-            }
-          : current
+      await loadProjectSnapshot(
+        `${pipeline} queued in the worker lane for ${project?.repoBranch ?? "the current branch"}.`
       );
-      setMessage(`${pipeline} queued in the worker lane for ${project?.repoBranch ?? "the current branch"}.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Queue failed");
     }
@@ -173,6 +238,21 @@ export function ProjectShell() {
               <span>{project?.repoAuthor ?? "local-worktree"}</span>
               <span>{project?.repoHead ?? "no-head"}</span>
             </div>
+            <div style={styles.gitMetaChips}>
+              <span style={styles.metaChip}>{pullRequests.length} PR</span>
+              <span style={styles.metaChip}>
+                {githubChecks.length} checks
+              </span>
+              <span
+                style={{
+                  ...styles.metaChip,
+                  color: failingChecks.length > 0 ? "#f27777" : "#77f2c9"
+                }}
+              >
+                {failingChecks.length} failed
+              </span>
+              <span style={styles.metaChip}>{evidencePacks.length} evidence packs</span>
+            </div>
             <div style={styles.changedList}>
               {(project?.changedFiles ?? []).slice(0, 6).map((filePath) => (
                 <code key={filePath} style={styles.changedItem}>
@@ -181,6 +261,51 @@ export function ProjectShell() {
               ))}
               {(project?.changedFiles?.length ?? 0) === 0 ? (
                 <span style={styles.cleanState}>No tracked changes under `web/project`.</span>
+              ) : null}
+            </div>
+          </article>
+          <article style={styles.gitPanel}>
+            <div style={styles.panelHeaderCompact}>
+              <strong style={styles.gitTitle}>Open PRs</strong>
+              <a href="/review" style={styles.inlineLink}>
+                Open review
+              </a>
+            </div>
+            <div style={styles.runListCompact}>
+              {latestPullRequests.map((pullRequest) => {
+                const prChecks = linkedChecks(pullRequest, githubChecks);
+                const prEvidence = linkedEvidencePacks(pullRequest, evidencePacks);
+
+                return (
+                  <article key={pullRequest.id} style={styles.githubCard}>
+                    <div style={styles.statusRow}>
+                      <strong>{pullRequest.title}</strong>
+                      <span
+                        style={{
+                          ...styles.badge,
+                          color: statusColor(pullRequest.status),
+                          borderColor: `${statusColor(pullRequest.status)}55`
+                        }}
+                      >
+                        {pullRequest.status}
+                      </span>
+                    </div>
+                    <span style={styles.gitCaption}>
+                      {pullRequest.sourceBranch} → {pullRequest.targetBranch}
+                    </span>
+                    <span style={styles.gitSummary}>{pullRequest.checkSummary}</span>
+                    <span style={styles.gitCaption}>
+                      {pullRequest.changeScope} · risk {pullRequest.riskLevel} · {pullRequest.mergeRecommendation}
+                    </span>
+                    <div style={styles.gitMeta}>
+                      <span>{prChecks.length} checks</span>
+                      <span>{prEvidence.length} evidence</span>
+                    </div>
+                  </article>
+                );
+              })}
+              {latestPullRequests.length === 0 ? (
+                <span style={styles.cleanState}>No open PR metadata loaded.</span>
               ) : null}
             </div>
           </article>
@@ -249,9 +374,66 @@ export function ProjectShell() {
                 <article key={run.id} style={styles.runCard}>
                   <strong>{run.pipeline}</strong>
                   <span>{run.status}</span>
-                  <code>{run.queuedAt}</code>
+                  <span>{run.summary}</span>
+                  <code>{run.completedAt ?? run.startedAt ?? run.queuedAt}</code>
+                  <span>{run.artifactCount} artifact(s)</span>
                 </article>
               ))}
+            </div>
+          </section>
+          <section style={styles.ciPanel}>
+            <div style={styles.panelHeader}>
+              <h2 style={styles.panelTitle}>GitHub QA lane</h2>
+              <span style={styles.panelCaption}>Checks + evidence packs</span>
+            </div>
+            <div style={styles.runList}>
+              {githubChecks.slice(0, 4).map((check) => (
+                <article key={check.id} style={styles.runCard}>
+                  <div style={styles.statusRow}>
+                    <strong>{check.name}</strong>
+                    <span
+                      style={{
+                        ...styles.badge,
+                        color: statusColor(check.conclusion ?? check.status),
+                        borderColor: `${statusColor(check.conclusion ?? check.status)}55`
+                      }}
+                    >
+                      {check.status}
+                    </span>
+                  </div>
+                  <span>{check.summary}</span>
+                  <code>{formatTimestamp(check.completedAt)}</code>
+                </article>
+              ))}
+              {githubChecks.length === 0 ? (
+                <span style={styles.cleanState}>
+                  No GitHub checks loaded. Export `GITHUB_TOKEN` for live PR QA.
+                </span>
+              ) : null}
+            </div>
+            <div style={styles.runList}>
+              {latestEvidencePacks.map((pack) => (
+                <article key={pack.id} style={styles.runCard}>
+                  <div style={styles.statusRow}>
+                    <strong>{pack.workflow}</strong>
+                    <span
+                      style={{
+                        ...styles.badge,
+                        color: statusColor(pack.conclusion ?? pack.status),
+                        borderColor: `${statusColor(pack.conclusion ?? pack.status)}55`
+                      }}
+                    >
+                      {pack.status}
+                    </span>
+                  </div>
+                  <span>{pack.summary}</span>
+                  <code>{formatTimestamp(pack.updatedAt)}</code>
+                  <span>{pack.artifactNames.length} artifact(s)</span>
+                </article>
+              ))}
+              {latestEvidencePacks.length === 0 ? (
+                <span style={styles.cleanState}>No evidence pack published yet.</span>
+              ) : null}
             </div>
           </section>
         </aside>
@@ -366,6 +548,56 @@ const styles: Record<string, React.CSSProperties> = {
     gap: "12px",
     color: "#8da6c8",
     fontSize: "0.82rem"
+  },
+  gitMetaChips: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "8px"
+  },
+  metaChip: {
+    padding: "6px 10px",
+    borderRadius: "999px",
+    background: "rgba(149, 188, 255, 0.08)",
+    color: "#d9ebff",
+    fontSize: "0.8rem"
+  },
+  panelHeaderCompact: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "12px"
+  },
+  inlineLink: {
+    color: "#77f2c9",
+    textDecoration: "none",
+    fontSize: "0.85rem"
+  },
+  runListCompact: {
+    display: "grid",
+    gap: "10px"
+  },
+  githubCard: {
+    display: "grid",
+    gap: "6px",
+    padding: "12px 14px",
+    borderRadius: "16px",
+    background: "rgba(149, 188, 255, 0.08)"
+  },
+  statusRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "12px"
+  },
+  badge: {
+    padding: "6px 10px",
+    borderRadius: "999px",
+    border: "1px solid rgba(149, 188, 255, 0.18)",
+    fontSize: "0.78rem"
+  },
+  gitCaption: {
+    color: "#8da6c8",
+    fontSize: "0.8rem"
   },
   changedList: {
     display: "grid",

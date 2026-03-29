@@ -80,15 +80,30 @@ resolve_host_kicad_cli() {
 }
 
 resolve_host_freecad_cmd() {
+  local -a candidates=()
+  local candidate=""
+
   if [ -n "${FREECAD_CMD:-}" ] && [ -x "${FREECAD_CMD}" ]; then
-    printf '%s' "$FREECAD_CMD"
-    return 0
+    candidates+=("${FREECAD_CMD}")
   fi
   if [ -x /Applications/FreeCAD.app/Contents/Resources/bin/freecadcmd ]; then
-    printf '%s' /Applications/FreeCAD.app/Contents/Resources/bin/freecadcmd
-    return 0
+    candidates+=(/Applications/FreeCAD.app/Contents/Resources/bin/freecadcmd)
   fi
-  command -v freecadcmd 2>/dev/null || command -v FreeCADCmd 2>/dev/null || true
+  if command -v freecadcmd >/dev/null 2>&1; then
+    candidates+=("$(command -v freecadcmd)")
+  fi
+  if command -v FreeCADCmd >/dev/null 2>&1; then
+    candidates+=("$(command -v FreeCADCmd)")
+  fi
+
+  for candidate in "${candidates[@]}"; do
+    if ( "$candidate" -c 'import FreeCAD; print(".".join(FreeCAD.Version()[:3]))' >/dev/null 2>&1 ) 2>/dev/null; then
+      printf '%s' "$candidate"
+      return 0
+    fi
+  done
+
+  return 0
 }
 
 resolve_host_openscad() {

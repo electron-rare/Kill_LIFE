@@ -1,0 +1,239 @@
+name: YiACAD Product
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "hardware/**"
+      - "tools/cad/**"
+      - "tools/ci/**"
+      - "tools/hw/**"
+      - "tools/cockpit/yiacad_*.sh"
+      - "web/**"
+      - "docs/**"
+      - "specs/**"
+      - "*.md"
+      - "**/*.md"
+      - "specs/contracts/yiacad_*.json"
+      - "test/test_yiacad_*.py"
+      - ".github/workflows/yiacad_product.yml"
+  pull_request:
+    paths:
+      - "hardware/**"
+      - "tools/cad/**"
+      - "tools/ci/**"
+      - "tools/hw/**"
+      - "tools/cockpit/yiacad_*.sh"
+      - "web/**"
+      - "docs/**"
+      - "specs/**"
+      - "*.md"
+      - "**/*.md"
+      - "specs/contracts/yiacad_*.json"
+      - "test/test_yiacad_*.py"
+      - ".github/workflows/yiacad_product.yml"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  checks: read
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  yiacad-backend-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bootstrap repo-local venv
+        run: bash tools/bootstrap_python_env.sh
+
+      - name: Validate YiACAD schemas
+        run: ./.venv/bin/python tools/validate_specs.py --json
+
+      - name: Run YiACAD contract tests
+        run: |
+          ./.venv/bin/python -m unittest discover -s test -p 'test_yiacad_backend_contract.py'
+          ./.venv/bin/python -m unittest discover -s test -p 'test_yiacad_backend_service_contract.py'
+          ./.venv/bin/python -m unittest discover -s test -p 'test_yiacad_native_ops_contract.py'
+          ./.venv/bin/python -m unittest discover -s test -p 'test_yiacad_uiux_tui_contract.py'
+          ./.venv/bin/python -m unittest discover -s test -p 'test_yiacad_project_shell_contract.py'
+          ./.venv/bin/python -m unittest discover -s test -p 'test_yiacad_pr_summary_contract.py'
+          ./.venv/bin/python -m unittest discover -s test -p 'test_yiacad_ci_pr_comment_contract.py'
+          ./.venv/bin/python -m unittest discover -s test -p 'test_yiacad_web_worker_contract.py'
+          ./.venv/bin/python -m unittest discover -s test -p 'test_yiacad_web_review_contract.py'
+          ./.venv/bin/python -m unittest discover -s test -p 'test_yiacad_evidence_pack_contract.py'
+
+  yiacad-web-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install web dependencies
+        run: npm ci
+
+      - name: Build YiACAD web client
+        run: npm run build
+
+  yiacad-evidence-pack:
+    if: always()
+    needs:
+      - yiacad-backend-contracts
+      - yiacad-web-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build normalized YiACAD evidence pack
+        run: |
+          mkdir -p artifacts/ci
+          STATUS="success"
+          SUMMARY="YiACAD product contracts and web build passed."
+
+          if [[ "${{ needs.yiacad-backend-contracts.result }}" != "success" ]] || [[ "${{ needs.yiacad-web-build.result }}" != "success" ]]; then
+            STATUS="failure"
+            SUMMARY="YiACAD product gate failed: backend=${{ needs.yiacad-backend-contracts.result }}, web=${{ needs.yiacad-web-build.result }}."
+          fi
+
+          python3 tools/ci/write_yiacad_evidence_pack.py \
+            --output artifacts/ci/yiacad_product_evidence.json \
+            --workflow "YiACAD Product" \
+            --lane "product" \
+            --status "${STATUS}" \
+            --summary "${SUMMARY}" \
+            --repository "${GITHUB_REPOSITORY}" \
+            --server-url "${GITHUB_SERVER_URL}" \
+            --run-id "${GITHUB_RUN_ID}" \
+            --run-attempt "${GITHUB_RUN_ATTEMPT}" \
+            --ref "${GITHUB_REF}" \
+            --sha "${GITHUB_SHA}" \
+            --event "${GITHUB_EVENT_NAME}" \
+            --engine "yiacad" \
+            --engine "kicad" \
+            --engine "freecad" \
+            --engine "kibot" \
+            --engine "kiauto" \
+            --artifact-path ".github/workflows/yiacad_product.yml" \
+            --artifact-path "web/" \
+            --artifact-path "tools/cad/"
+
+      - name: Upload YiACAD evidence pack
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yiacad-evidence-pack-product
+          if-no-files-found: error
+          path: artifacts/ci/yiacad_product_evidence.json
+
+  yiacad-pr-review:
+    if: always() && github.event_name == 'pull_request'
+    needs:
+      - yiacad-backend-contracts
+      - yiacad-web-build
+      - yiacad-evidence-pack
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Collect PR review inputs
+        run: |
+          mkdir -p artifacts/ci
+          gh api "/repos/${GITHUB_REPOSITORY}/commits/${{ github.event.pull_request.head.sha }}/check-runs?per_page=100" > artifacts/ci/github_check_runs.json
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${{ github.event.pull_request.head.sha }}&event=pull_request&per_page=50" > artifacts/ci/github_workflow_runs.json
+          gh api "/repos/${GITHUB_REPOSITORY}/pulls/${{ github.event.pull_request.number }}/files?per_page=100" > artifacts/ci/github_pr_files.json
+
+      - name: Build YiACAD PR summary
+        run: |
+          python3 tools/ci/write_yiacad_pr_summary.py \
+            --output-json artifacts/ci/yiacad_pr_summary.json \
+            --output-md artifacts/ci/yiacad_pr_summary.md \
+            --pr-number "${{ github.event.pull_request.number }}" \
+            --pr-title "${{ github.event.pull_request.title }}" \
+            --pr-url "${{ github.event.pull_request.html_url }}" \
+            --source-branch "${{ github.event.pull_request.head.ref }}" \
+            --target-branch "${{ github.event.pull_request.base.ref }}" \
+            --head-sha "${{ github.event.pull_request.head.sha }}" \
+            --checks-json artifacts/ci/github_check_runs.json \
+            --workflow-runs-json artifacts/ci/github_workflow_runs.json \
+            --changed-files-json artifacts/ci/github_pr_files.json
+
+      - name: Publish sticky YiACAD PR comment
+        run: |
+          python3 tools/ci/publish_yiacad_pr_comment.py \
+            --repository "${GITHUB_REPOSITORY}" \
+            --pull-request-number "${{ github.event.pull_request.number }}" \
+            --body-file artifacts/ci/yiacad_pr_summary.md \
+            --output-json artifacts/ci/yiacad_pr_comment_publish.json
+
+      - name: Upload YiACAD PR review bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yiacad-pr-review
+          if-no-files-found: error
+          path: |
+            artifacts/ci/github_check_runs.json
+            artifacts/ci/github_workflow_runs.json
+            artifacts/ci/github_pr_files.json
+            artifacts/ci/yiacad_pr_summary.json
+            artifacts/ci/yiacad_pr_summary.md
+            artifacts/ci/yiacad_pr_comment_publish.json
+
+      - name: Enforce YiACAD PR merge recommendation
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          payload = json.loads(Path("artifacts/ci/yiacad_pr_summary.json").read_text(encoding="utf-8"))
+          recommendation = payload.get("merge_recommendation")
+          if recommendation == "blocking":
+              raise SystemExit("YiACAD PR review marked this pull request as blocking.")
+          print(f"YiACAD PR review recommendation: {recommendation}")
+          PY

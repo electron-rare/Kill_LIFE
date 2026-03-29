@@ -27,8 +27,14 @@ export const PROJECT_SNAPSHOT_QUERY = `
       ciRuns {
         id
         pipeline
+        engine
         status
+        summary
+        degradedReasons
+        artifactCount
         queuedAt
+        startedAt
+        completedAt
       }
       artifacts {
         id
@@ -37,6 +43,35 @@ export const PROJECT_SNAPSHOT_QUERY = `
         status
         url
         sourcePath
+        runId
+        summary
+      }
+      githubChecks {
+        id
+        name
+        workflow
+        status
+        conclusion
+        summary
+        detailsUrl
+        completedAt
+        headSha
+        pullRequestId
+      }
+      evidencePacks {
+        id
+        name
+        workflow
+        status
+        conclusion
+        summary
+        detailsUrl
+        artifactUrl
+        artifactNames
+        createdAt
+        updatedAt
+        headSha
+        pullRequestId
       }
       pullRequests {
         id
@@ -48,9 +83,29 @@ export const PROJECT_SNAPSHOT_QUERY = `
         hasArtifactPreview
         sourceBranch
         targetBranch
+        url
+        updatedAt
+        headSha
+        checkSummary
+        changeScope
+        riskLevel
+        mergeRecommendation
         changedFiles
         artifactIds
+        checkIds
+        evidencePackIds
       }
+    }
+  }
+`;
+
+export const PUBLISH_PULL_REQUEST_SUMMARY_MUTATION = `
+  mutation PublishPullRequestSummary($pullRequestId: ID!) {
+    publishPullRequestSummary(pullRequestId: $pullRequestId) {
+      pullRequestId
+      commentUrl
+      action
+      summary
     }
   }
 `;

@@ -88,9 +88,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--host", default=DEFAULT_HOST, help="Service host")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT, help="Service port")
     parser.add_argument("--json-output", action="store_true", help="Emit JSON output")
+    parser.add_argument(
+        "--surface",
+        default="yiacad-api",
+        help="Canonical YiACAD client surface (e.g. yiacad-api, yiacad-web, yiacad-desktop, tui)",
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     subparsers.add_parser("health", help="Check YiACAD backend service health")
+    subparsers.add_parser("projects-current", help="Read the latest YiACAD context snapshot")
+    subparsers.add_parser("artifacts", help="Read the latest YiACAD artifact index")
 
     status = subparsers.add_parser("status", help="YiACAD status")
     status.add_argument("--source-path", default="")
@@ -109,12 +116,23 @@ def parse_args() -> argparse.Namespace:
     sync.add_argument("--board", default="")
     sync.add_argument("--schematic", default="")
     sync.add_argument("--freecad-document", default="")
+
+    package = subparsers.add_parser("manufacturing-package", help="Build YiACAD manufacturing package through service")
+    package.add_argument("--source-path", default="")
+    package.add_argument("--board", default="")
+    package.add_argument("--schematic", default="")
+    package.add_argument("--kibot-config", default="")
+
+    kiauto = subparsers.add_parser("kiauto-checks", help="Run KiAuto checks through service")
+    kiauto.add_argument("--source-path", default="")
+    kiauto.add_argument("--board", default="")
+    kiauto.add_argument("--schematic", default="")
     return parser.parse_args()
 
 
 def payload_from_args(args: argparse.Namespace) -> dict:
-    payload = {"command": args.command}
-    for key in ("source_path", "board", "schematic", "freecad_document"):
+    payload = {"command": args.command, "surface": args.surface}
+    for key in ("source_path", "board", "schematic", "freecad_document", "kibot_config"):
         if hasattr(args, key):
             payload[key] = getattr(args, key)
     return payload
@@ -128,10 +146,26 @@ def main() -> int:
             print(json.dumps(payload, indent=2, ensure_ascii=False))
             return 0
         return 1
+    if args.command == "projects-current":
+        payload = service_health(args.host, args.port)
+        if not payload and not ensure_service(args.host, args.port):
+            return 1
+        response = http_json(service_url(args.host, args.port, "/projects/current"))
+        print(json.dumps(response, indent=2, ensure_ascii=False))
+        return 0 if response.get("status") != "blocked" else 1
+    if args.command == "artifacts":
+        payload = service_health(args.host, args.port)
+        if not payload and not ensure_service(args.host, args.port):
+            return 1
+        response = http_json(service_url(args.host, args.port, "/artifacts"))
+        print(json.dumps(response, indent=2, ensure_ascii=False))
+        return 0 if response.get("status") != "blocked" else 1
 
     payload = payload_from_args(args)
     direct_argv = [args.command]
-    for key in ("source_path", "board", "schematic", "freecad_document"):
+    if args.surface:
+        direct_argv.extend(["--surface", args.surface])
+    for key in ("source_path", "board", "schematic", "freecad_document", "kibot_config"):
         if key in payload and payload[key]:
             direct_argv.extend([f"--{key.replace('_', '-')}", payload[key]])
     if args.json_output:

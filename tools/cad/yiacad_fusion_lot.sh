@@ -19,6 +19,9 @@ YES=0
 DAYS_KEEP=14
 OWNER="$DEFAULT_OWNER"
 BRANCH="$DEFAULT_BRANCH"
+KICAD_MCP_VARIANT="seeed"
+KICAD_MCP_LAUNCHER="${ROOT_DIR}/tools/hw/run_kicad_seeed_mcp.sh"
+KICAD_MCP_SMOKE="${ROOT_DIR}/tools/hw/kicad_seeed_mcp_smoke.py"
 
 usage() {
   cat <<'EOF_USAGE'
@@ -100,7 +103,7 @@ write_repo_snapshot() {
       return
     fi
 
-    printf '- status: missing\n'
+    printf -- '- status: missing\n'
   } >>"$sf"
 }
 
@@ -118,6 +121,9 @@ write_status_snapshot() {
     printf -- '- base_dir: %s\n' "$BASE_DIR"
     printf -- '- owner: %s\n' "$OWNER"
     printf -- '- branch: %s\n' "$BRANCH"
+    printf -- '- kicad_mcp_variant: %s\n' "$KICAD_MCP_VARIANT"
+    printf -- '- kicad_mcp_launcher: %s\n' "$KICAD_MCP_LAUNCHER"
+    printf -- '- kicad_mcp_smoke: %s\n' "$KICAD_MCP_SMOKE"
     printf -- '- manifest: %s\n' "$manifest_path"
     if [[ -f "$manifest_path" ]]; then
       printf -- '- manifest_state: present\n'
@@ -153,8 +159,8 @@ run_smoke() {
   local -a smoke_failures=()
 
   run_and_log "CAD stack doctor" bash "$ROOT_DIR/tools/hw/cad_stack.sh" doctor-mcp || smoke_failures+=("CAD stack doctor")
-  run_and_log "KiCad MCP host doctor" bash "$ROOT_DIR/tools/hw/run_kicad_mcp.sh" --doctor || smoke_failures+=("KiCad MCP host doctor")
-  run_and_log "KiCad MCP host smoke" python3 "$ROOT_DIR/tools/hw/kicad_host_mcp_smoke.py" --json --quick || smoke_failures+=("KiCad MCP host smoke")
+  run_and_log "KiCad MCP Seeed doctor" bash "$KICAD_MCP_LAUNCHER" --doctor || smoke_failures+=("KiCad MCP Seeed doctor")
+  run_and_log "KiCad MCP Seeed smoke" python3 "$KICAD_MCP_SMOKE" --json --quick || smoke_failures+=("KiCad MCP Seeed smoke")
   run_and_log "FreeCAD MCP smoke" python3 "$ROOT_DIR/tools/freecad_mcp_smoke.py" --json --quick || smoke_failures+=("FreeCAD MCP smoke")
   run_and_log "OpenSCAD MCP smoke" python3 "$ROOT_DIR/tools/openscad_mcp_smoke.py" --json --quick || smoke_failures+=("OpenSCAD MCP smoke")
   run_and_log "FreeCAD MCP doctor" bash "$ROOT_DIR/tools/run_freecad_mcp.sh" --doctor || smoke_failures+=("FreeCAD MCP doctor")

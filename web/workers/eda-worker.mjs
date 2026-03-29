@@ -14,6 +14,24 @@ const artifactsFile = join(ciRoot, "artifacts.json");
 const logsRoot = join(ciRoot, "logs");
 const queueName = process.env.EDA_QUEUE_NAME ?? "yiacad-eda";
 
+function pipelineEngine(pipeline) {
+  switch (pipeline) {
+    case "kicad-headless":
+    case "step-export":
+      return "kicad";
+    case "kibot":
+      return "kibot";
+    case "kiauto-checks":
+      return "kiauto";
+    default:
+      return "yiacad";
+  }
+}
+
+function uniqueStrings(values) {
+  return [...new Set(values.filter((value) => typeof value === "string" && value.length > 0))];
+}
+
 function redisConnection() {
   const url = new URL(process.env.REDIS_URL ?? "redis://127.0.0.1:6379");
   const db = url.pathname && url.pathname !== "/" ? Number(url.pathname.slice(1)) : 0;
@@ -75,15 +93,6 @@ async function appendArtifacts(records) {
   );
 }
 
-function commandExists(command) {
-  return new Promise((resolveExists) => {
-    const child = spawn("sh", ["-lc", `command -v ${command}`], {
-      stdio: "ignore"
-    });
-    child.on("close", (code) => resolveExists(code === 0));
-  });
-}
-
 function runCommand(command, args, logPrefix) {
   return new Promise((resolveRun) => {
     const child = spawn(command, args, {
@@ -124,30 +133,64 @@ function mapYiacadArtifacts(runId, payload) {
     id: `${runId}-${index}-${artifact.label ?? artifact.path ?? "artifact"}`,
     label: artifact.label ?? artifact.path ?? "artifact",
     kind: artifact.kind ?? "report",
-    status: "ready",
+    status: payload?.status ?? "ready",
     url: artifact.path ?? null,
-    sourcePath: artifact.path ?? null
+    sourcePath: artifact.path ?? null,
+    runId,
+    summary: payload?.summary ?? null
   }));
 }
 
-function mapFabArtifacts(runId, payload) {
-  const items = [
-    ["gerber", "Gerber bundle", payload?.gerber_dir],
-    ["bom", "BOM export", payload?.bom_file],
-    ["drill", "Drill file", payload?.drill_file],
-    ["drc", "DRC report", payload?.drc_report]
-  ];
+function parsePayloadOrThrow(result, failureMessage) {
+  const payload = parseJsonOutput(result.stdout);
+  if (payload) {
+    return payload;
+  }
 
-  return items
-    .filter(([, , path]) => Boolean(path))
-    .map(([kind, label, path]) => ({
-      id: `${runId}-${kind}`,
-      label,
-      kind,
-      status: "ready",
-      url: path,
-      sourcePath: path
-    }));
+  if (result.code !== 0) {
+    throw new Error(result.stderr || result.stdout || failureMessage);
+  }
+
+  return {
+    status: "success",
+    summary: failureMessage,
+    degraded_reasons: [],
+    artifacts: []
+  };
+}
+
+function finalizeRunResult(pipeline, payloads, artifacts) {
+  const statuses = payloads
+    .map((payload) => payload?.status)
+    .filter((status) => typeof status === "string");
+
+  let status = "success";
+  if (statuses.includes("blocked")) {
+    status = "blocked";
+  } else if (statuses.includes("degraded")) {
+    status = "degraded";
+  } else if (statuses.includes("failed")) {
+    status = "failed";
+  }
+
+  const summaries = payloads
+    .map((payload) => (typeof payload?.summary === "string" ? payload.summary.trim() : ""))
+    .filter(Boolean);
+
+  const degradedReasons = uniqueStrings(
+    payloads.flatMap((payload) =>
+      Array.isArray(payload?.degraded_reasons) ? payload.degraded_reasons : []
+    )
+  );
+
+  return {
+    status,
+    engine: pipelineEngine(pipeline),
+    summary: summaries.join(" | ") || `${pipeline} completed through YiACAD.`,
+    degradedReasons,
+    artifactCount: artifacts.length,
+    artifacts
+  };
 }
 
 async function processKicadHeadless(job, logPrefix) {
@@ -156,7 +199,9 @@ async function processKicadHeadless(job, logPrefix) {
   const ercDrc = await runCommand(
     "python3",
     [
-      resolve(repoRoot, "tools/cad/yiacad_native_ops.py"),
+      resolve(repoRoot, "tools/cad/yiacad_backend_client.py"),
+      "--surface",
+      "yiacad-web",
       "kicad-erc-drc",
       "--source-path",
       sourcePath,
@@ -165,18 +210,17 @@ async function processKicadHeadless(job, logPrefix) {
     `${logPrefix}-ercdrc`
   );
 
-  if (ercDrc.code !== 0) {
-    throw new Error(ercDrc.stderr || "kicad-headless ERC/DRC failed");
-  }
-
-  const ercDrcPayload = parseJsonOutput(ercDrc.stdout);
+  const ercDrcPayload = parsePayloadOrThrow(ercDrc, "kicad-headless ERC/DRC failed");
   const artifacts = mapYiacadArtifacts(job.id, ercDrcPayload);
+  const payloads = [ercDrcPayload];
 
   if (job.data.boardPath || job.data.freecadDocumentPath) {
     const sync = await runCommand(
       "python3",
       [
-        resolve(repoRoot, "tools/cad/yiacad_native_ops.py"),
+        resolve(repoRoot, "tools/cad/yiacad_backend_client.py"),
+        "--surface",
+        "yiacad-web",
         "ecad-mcad-sync",
         "--source-path",
         sourcePath,
@@ -185,98 +229,61 @@ async function processKicadHeadless(job, logPrefix) {
       `${logPrefix}-sync`
     );
 
-    if (sync.code === 0) {
-      artifacts.push(...mapYiacadArtifacts(`${job.id}-sync`, parseJsonOutput(sync.stdout)));
+    const syncPayload = parseJsonOutput(sync.stdout);
+    if (syncPayload) {
+      payloads.push(syncPayload);
+      artifacts.push(...mapYiacadArtifacts(`${job.id}-sync`, syncPayload));
+    } else if (sync.code !== 0) {
+      throw new Error(sync.stderr || "kicad-headless ECAD/MCAD sync failed");
     }
   }
 
-  return artifacts;
+  return finalizeRunResult(job.name, payloads, artifacts);
 }
 
 async function processKibot(job, logPrefix) {
   const localConfig = resolve(webRoot, "project/pcb/kibot.yaml");
-  const hasKibot = await commandExists(process.env.KIBOT_BIN || "kibot");
-
-  if (hasKibot && job.data.boardPath) {
-    const kibot = await runCommand(
-      process.env.KIBOT_BIN || "kibot",
-      [
-        "-b",
-        job.data.boardPath,
-        "-c",
-        process.env.KIBOT_CONFIG || localConfig,
-        "-d",
-        resolve(repoRoot, "artifacts", "web-kibot", String(job.id))
-      ],
-      `${logPrefix}-kibot`
-    );
-
-    if (kibot.code === 0) {
-      return [
-        {
-          id: `${job.id}-kibot`,
-      label: "KiBot output directory",
-      kind: "kibot",
-      status: "ready",
-      url: resolve(repoRoot, "artifacts", "web-kibot", String(job.id)),
-      sourcePath: resolve(repoRoot, "artifacts", "web-kibot", String(job.id))
-    }
-  ];
-    }
-  }
-
-  const fab = await runCommand(
-    "bash",
+  const sourcePath =
+    job.data.boardPath ?? job.data.schematicPath ?? job.data.projectRoot;
+  const kibot = await runCommand(
+    "python3",
     [
-      resolve(repoRoot, "tools/cockpit/fab_package_tui.sh"),
-      "--action",
-      "build",
-      "--json",
-      "--mode",
-      "live",
-      "--schematic",
-      job.data.schematicPath || "",
-      "--board",
-      job.data.boardPath || ""
+      resolve(repoRoot, "tools/cad/yiacad_backend_client.py"),
+      "--surface",
+      "yiacad-web",
+      "manufacturing-package",
+      "--source-path",
+      sourcePath,
+      "--kibot-config",
+      process.env.KIBOT_CONFIG || localConfig,
+      "--json-output"
     ],
-    `${logPrefix}-fab`
+    `${logPrefix}-kibot`
   );
 
-  if (fab.code !== 0) {
-    throw new Error(fab.stderr || "kibot/fab package worker failed");
-  }
-
-  return mapFabArtifacts(job.id, parseJsonOutput(fab.stdout));
+  const payload = parsePayloadOrThrow(kibot, "YiACAD manufacturing package worker failed");
+  const artifacts = mapYiacadArtifacts(job.id, payload);
+  return finalizeRunResult(job.name, [payload], artifacts);
 }
 
 async function processKiauto(job, logPrefix) {
-  const kiautoBin = process.env.KIAUTO_BIN || "kiauto";
-  const hasKiAuto = await commandExists(kiautoBin);
-
-  if (!hasKiAuto || !job.data.boardPath) {
-    throw new Error("KiAuto is not configured. Set KIAUTO_BIN and provide a board.");
-  }
-
   const result = await runCommand(
-    kiautoBin,
-    ["--help"],
+    "python3",
+    [
+      resolve(repoRoot, "tools/cad/yiacad_backend_client.py"),
+      "--surface",
+      "yiacad-web",
+      "kiauto-checks",
+      "--source-path",
+      job.data.boardPath ?? job.data.schematicPath ?? job.data.projectRoot,
+      "--json-output"
+    ],
     `${logPrefix}-kiauto`
   );
 
-  if (result.code !== 0) {
-    throw new Error(result.stderr || "KiAuto invocation failed");
-  }
-
-  return [
-    {
-      id: `${job.id}-kiauto`,
-      label: "KiAuto checks",
-      kind: "kiauto",
-      status: "ready",
-      url: `${logPrefix}-kiauto.stdout.log`,
-      sourcePath: `${logPrefix}-kiauto.stdout.log`
-    }
-  ];
+  const payload = parsePayloadOrThrow(result, "YiACAD KiAuto worker failed");
+  const artifacts = mapYiacadArtifacts(job.id, payload);
+  return finalizeRunResult(job.name, [payload], artifacts);
 }
 
 async function processStepExport(job, logPrefix) {
@@ -285,7 +292,9 @@ async function processStepExport(job, logPrefix) {
   const sync = await runCommand(
     "python3",
     [
-      resolve(repoRoot, "tools/cad/yiacad_native_ops.py"),
+      resolve(repoRoot, "tools/cad/yiacad_backend_client.py"),
+      "--surface",
+      "yiacad-web",
       "ecad-mcad-sync",
       "--source-path",
       sourcePath,
@@ -294,11 +303,9 @@ async function processStepExport(job, logPrefix) {
     `${logPrefix}-step`
   );
 
-  if (sync.code !== 0) {
-    throw new Error(sync.stderr || "STEP export failed");
-  }
-
-  return mapYiacadArtifacts(job.id, parseJsonOutput(sync.stdout));
+  const payload = parsePayloadOrThrow(sync, "STEP export failed");
+  const artifacts = mapYiacadArtifacts(job.id, payload);
+  return finalizeRunResult(job.name, [payload], artifacts);
 }
 
 await ensureCiFiles();
@@ -307,25 +314,37 @@ const worker = new Worker(
   queueName,
   async (job) => {
     const logPrefix = resolve(logsRoot, `${job.id}-${job.name}`);
-    await updateRun(job.id, { status: "running" });
+    await updateRun(job.id, {
+      status: "running",
+      engine: pipelineEngine(job.name),
+      summary: `Running ${job.name} through the YiACAD backend.`,
+      startedAt: new Date().toISOString()
+    });
 
-    let artifacts = [];
+    let result;
 
     if (job.name === "kicad-headless") {
-      artifacts = await processKicadHeadless(job, logPrefix);
+      result = await processKicadHeadless(job, logPrefix);
     } else if (job.name === "kibot") {
-      artifacts = await processKibot(job, logPrefix);
+      result = await processKibot(job, logPrefix);
     } else if (job.name === "kiauto-checks") {
-      artifacts = await processKiauto(job, logPrefix);
+      result = await processKiauto(job, logPrefix);
     } else if (job.name === "step-export") {
-      artifacts = await processStepExport(job, logPrefix);
+      result = await processStepExport(job, logPrefix);
     } else {
       throw new Error(`Unknown EDA pipeline: ${job.name}`);
     }
 
-    await appendArtifacts(artifacts);
-    await updateRun(job.id, { status: "completed" });
-    return { artifacts };
+    await appendArtifacts(result.artifacts);
+    await updateRun(job.id, {
+      status: result.status,
+      engine: result.engine,
+      summary: result.summary,
+      degradedReasons: result.degradedReasons,
+      artifactCount: result.artifactCount,
+      completedAt: new Date().toISOString()
+    });
+    return result;
   },
   {
     connection: redisConnection()
@@ -338,7 +357,9 @@ worker.on("failed", async (job, error) => {
   }
 
   await updateRun(job.id, {
-    status: "failed"
+    status: "failed",
+    summary: error?.message || "worker failed",
+    completedAt: new Date().toISOString()
   });
   await writeFile(
     resolve(logsRoot, `${job.id}-${job.name}.error.log`),

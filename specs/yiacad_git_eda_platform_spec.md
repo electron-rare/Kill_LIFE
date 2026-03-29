@@ -2,12 +2,19 @@
 
 ## Intent
 
-Build the web-facing YiACAD product as a Git-first EDA platform:
+Build YiACAD as an independent Git-first EDA application, with web-facing surfaces as one client lane:
 
 - each project maps to a Git repository
-- KiCad files remain the source of truth
+- KiCad and FreeCAD design files remain the authoritative design documents inside the repository
 - Excalidraw diagrams live as versioned JSON beside the EDA project
 - the web product adds dashboard, review, artifacts, realtime collaboration, and CI orchestration
+
+## Product boundary
+
+- YiACAD is not defined as a fork of `KiCad` or `FreeCAD`
+- `KiCad`, `KiBot`, `KiAuto`, `FreeCAD` and related runtimes are integrated engines and worker lanes inside the YiACAD platform boundary
+- the product shell, review model, collaboration model, and operator surfaces belong to YiACAD itself
+- this spec follows the SOT fixed in `specs/yiacad_2026_stack_target_spec.md` and `specs/yiacad_adr_20260329_sot.md`
 
 ## Core decisions
 
@@ -26,9 +33,11 @@ Build the web-facing YiACAD product as a Git-first EDA platform:
 
 ### 3. Frontend
 
-- `Next.js` + `React`
+- `Next.js` + `React` for the first web client
+- desktop shell remains a valid client lane for the same product boundary
 - `Excalidraw` for system and wiring diagrams
 - `KiCanvas` for PCB and schematic viewing
+- `KiCanvas` stays review-only in the 2026 baseline
 - `Three.js` and `WASM` are phase-2/phase-3 concerns, not MVP blockers
 
 ### 4. Realtime
@@ -51,7 +60,7 @@ Build the web-facing YiACAD product as a Git-first EDA platform:
 ### 7. Hardware CI/CD
 
 - Git push triggers CI
-- workers run KiBot and KiCad CLI
+- workers run KiBot, KiAuto, and KiCad CLI
 - outputs include Gerber, BOM, STEP, PDF
 
 ### 8. Infra
@@ -131,10 +140,11 @@ flowchart TD
 
 ## Current implementation delta
 
-- `web/` now hosts the first Next.js scaffold.
+- `web/` now hosts the first Next.js scaffold as the first YiACAD client.
 - GraphQL currently exposes project state, diagrams, CI queue, artifacts, and PR review placeholders.
 - Realtime transport is present as a dedicated Yjs websocket lane, but Excalidraw scene binding to CRDT is not done yet.
 - KiCanvas support is vendored from the official bundle path into `web/public/vendor/kicanvas.js`.
 - Queueing is now Redis-backed through `BullMQ`, with a dedicated worker entry at `web/workers/eda-worker.mjs`.
 - The worker already routes into existing repo tools for `kicad-headless`, `step-export`, KiBot-compatible output generation, and KiAuto hooks.
 - The remaining gaps are explicit: no real Git/PR read model yet, no live artifact serving surface, no Excalidraw-to-Yjs scene binding, and no read-only review assist/ops summary inside the product.
+- The 2026 SOT keeps this lane review-first; browser-side authoring stays out of the baseline until a stronger CAD authoring surface is intentionally chosen and validated.

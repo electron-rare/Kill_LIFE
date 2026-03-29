@@ -51,8 +51,17 @@ stable:
   test/test_log_ops_contract.py
   test/test_intelligence_tui_contract.py
   test/test_runtime_ai_gateway_contract.py
+  test/test_yiacad_backend_contract.py
+  test/test_yiacad_backend_service_contract.py
+  test/test_yiacad_native_ops_contract.py
   test/test_yiacad_uiux_tui_contract.py
   test/test_yiacad_native_surface_contract.py
+  test/test_yiacad_project_shell_contract.py
+  test/test_yiacad_pr_summary_contract.py
+  test/test_yiacad_ci_pr_comment_contract.py
+  test/test_yiacad_web_worker_contract.py
+  test/test_yiacad_web_review_contract.py
+  test/test_yiacad_evidence_pack_contract.py
   test/test_zeroclaw_n8n_workflow_contract.py
   test/test_auto_check_ci_cd.py
   test/test_firmware_evidence.py
@@ -148,8 +157,17 @@ if [[ "${SUITE}" == "stable" || "${SUITE}" == "all" ]]; then
   run_discover test 'test_log_ops_contract.py'
   run_discover test 'test_intelligence_tui_contract.py'
   run_discover test 'test_runtime_ai_gateway_contract.py'
+  run_discover test 'test_yiacad_backend_contract.py'
+  run_discover test 'test_yiacad_backend_service_contract.py'
+  run_discover test 'test_yiacad_native_ops_contract.py'
   run_discover test 'test_yiacad_uiux_tui_contract.py'
   run_discover test 'test_yiacad_native_surface_contract.py'
+  run_discover test 'test_yiacad_project_shell_contract.py'
+  run_discover test 'test_yiacad_pr_summary_contract.py'
+  run_discover test 'test_yiacad_ci_pr_comment_contract.py'
+  run_discover test 'test_yiacad_web_worker_contract.py'
+  run_discover test 'test_yiacad_web_review_contract.py'
+  run_discover test 'test_yiacad_evidence_pack_contract.py'
   run_discover test 'test_zeroclaw_n8n_workflow_contract.py'
   run_discover test 'test_auto_check_ci_cd.py'
   run_discover test 'test_firmware_evidence.py'
