@@ -37,6 +37,7 @@ Cette page est l'entrée opérateur recommandée pour `Kill_LIFE`. Elle sert de 
 - Manifeste refonte: `docs/REFACTOR_MANIFEST_2026-03-20.md`
 - Contrat tri-repo: `docs/TRI_REPO_MESH_CONTRACT_2026-03-20.md`
 - Gestion des agents: `docs/plans/12_plan_gestion_des_agents.md`
+- Checklist multi-agent: `docs/GLOBAL_MULTI_AGENT_CHECKLIST.md`
 - Plan integration intelligence: `docs/plans/22_plan_integration_intelligence_agentique.md`
 - TODO integration intelligence: `docs/plans/22_todo_integration_intelligence_agentique.md`
 - Plan YiACAD Git EDA: `docs/plans/23_plan_yiacad_git_eda_platform.md`

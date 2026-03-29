@@ -37,6 +37,19 @@
         "type": "string",
         "minLength": 1
       }
+    },
+    "write_set_conflict_resolution": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["paths", "agents", "rule"],
+        "properties": {
+          "paths": { "type": "array", "items": { "type": "string" } },
+          "agents": { "type": "array", "items": { "type": "string" } },
+          "rule": { "type": "string" },
+          "owner_by_path": { "type": "object", "additionalProperties": { "type": "string" } }
+        }
+      }
     }
   },
   "$defs": {
@@ -58,7 +71,8 @@
         "handoff_contracts",
         "evidence_paths",
         "subagents",
-        "public_api_enabled"
+        "public_api_enabled",
+        "status"
       ],
       "properties": {
         "id": {
@@ -80,6 +94,10 @@
         "owner_repo": {
           "type": "string",
           "const": "Kill_LIFE"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["ready", "degraded", "blocked"]
         },
         "agent_doc": {
           "type": "string",

@@ -10,6 +10,7 @@
       "display_name": "PM Mesh",
       "purpose": "Pilot intake, planning, prioritization, and mesh governance handoffs.",
       "owner_repo": "Kill_LIFE",
+      "status": "ready",
       "agent_doc": "agents/pm_mesh.md",
       "github_agent_doc": ".github/agents/pm_mesh.md",
       "start_prompt": ".github/prompts/start_pm_mesh.prompt.md",
@@ -55,6 +56,7 @@
       "display_name": "Arch Mesh",
       "purpose": "Own architecture, ADRs, and cross-surface contract design.",
       "owner_repo": "Kill_LIFE",
+      "status": "ready",
       "agent_doc": "agents/arch_mesh.md",
       "github_agent_doc": ".github/agents/arch_mesh.md",
       "start_prompt": ".github/prompts/start_arch_mesh.prompt.md",
@@ -95,6 +97,7 @@
       "display_name": "Docs Research",
       "purpose": "Maintain canonical documentation, navigation, research summaries, and the agent catalog narrative.",
       "owner_repo": "Kill_LIFE",
+      "status": "ready",
       "agent_doc": "agents/docs_research.md",
       "github_agent_doc": ".github/agents/docs_research.md",
       "start_prompt": ".github/prompts/start_docs_research.prompt.md",
@@ -141,6 +144,7 @@
       "display_name": "Runtime Companion",
       "purpose": "Own runtime AI, MCP alignment, provider bridges, and degraded-safe execution surfaces.",
       "owner_repo": "Kill_LIFE",
+      "status": "ready",
       "agent_doc": "agents/runtime_companion.md",
       "github_agent_doc": ".github/agents/runtime_companion.md",
       "start_prompt": ".github/prompts/start_runtime_companion.prompt.md",
@@ -187,6 +191,7 @@
       "display_name": "QA Compliance",
       "purpose": "Own tests, compliance gates, schema checks, and release-ready evidence.",
       "owner_repo": "Kill_LIFE",
+      "status": "ready",
       "agent_doc": "agents/qa_compliance.md",
       "github_agent_doc": ".github/agents/qa_compliance.md",
       "start_prompt": ".github/prompts/start_qa_compliance.prompt.md",
@@ -234,6 +239,7 @@
       "display_name": "Embedded CAD",
       "purpose": "Own KiCad, FreeCAD, OpenSCAD, hardware assets, and fabrication-facing CAD lanes.",
       "owner_repo": "Kill_LIFE",
+      "status": "ready",
       "agent_doc": "agents/embedded_cad.md",
       "github_agent_doc": ".github/agents/embedded_cad.md",
       "start_prompt": ".github/prompts/start_embedded_cad.prompt.md",
@@ -282,6 +288,7 @@
       "display_name": "Web CAD Platform",
       "purpose": "Own the YiACAD web product, project read models, queue/workers, realtime, and review surfaces.",
       "owner_repo": "Kill_LIFE",
+      "status": "ready",
       "agent_doc": "agents/web_cad_platform.md",
       "github_agent_doc": ".github/agents/web_cad_platform.md",
       "start_prompt": ".github/prompts/start_web_cad_platform.prompt.md",
@@ -329,6 +336,7 @@
       "display_name": "UX Lead",
       "purpose": "Own UI/UX direction for YiACAD and user-facing design systems.",
       "owner_repo": "Kill_LIFE",
+      "status": "ready",
       "agent_doc": "agents/ux_lead.md",
       "github_agent_doc": ".github/agents/ux_lead.md",
       "start_prompt": ".github/prompts/start_ux_lead.prompt.md",
@@ -369,6 +377,7 @@
       "display_name": "Firmware",
       "purpose": "Own embedded firmware, PlatformIO flows, and firmware evidence.",
       "owner_repo": "Kill_LIFE",
+      "status": "ready",
       "agent_doc": "agents/firmware.md",
       "github_agent_doc": ".github/agents/firmware.md",
       "start_prompt": ".github/prompts/start_firmware.prompt.md",
@@ -404,6 +413,7 @@
       "display_name": "Sync Ops",
       "purpose": "Own cockpit scripts, operator lanes, SSH convergence, logs, and runbook execution.",
       "owner_repo": "Kill_LIFE",
+      "status": "ready",
       "agent_doc": "agents/sync_ops.md",
       "github_agent_doc": ".github/agents/sync_ops.md",
       "start_prompt": ".github/prompts/start_sync_ops.prompt.md",
@@ -449,6 +459,7 @@
       "display_name": "Schema Guard",
       "purpose": "Own machine-readable contracts, schema versioning, and strict validation.",
       "owner_repo": "Kill_LIFE",
+      "status": "ready",
       "agent_doc": "agents/schema_guard.md",
       "github_agent_doc": ".github/agents/schema_guard.md",
       "start_prompt": ".github/prompts/start_schema_guard.prompt.md",
@@ -490,6 +501,7 @@
       "display_name": "Kill Life Bridge",
       "purpose": "Own cross-repo bridge contracts, continuity memory, and consumer-facing bridge lanes.",
       "owner_repo": "Kill_LIFE",
+      "status": "ready",
       "agent_doc": "agents/kill_life_bridge.md",
       "github_agent_doc": ".github/agents/kill_life_bridge.md",
       "start_prompt": ".github/prompts/start_kill_life_bridge.prompt.md",
@@ -524,6 +536,57 @@
         }
       ],
       "public_api_enabled": true
+    }
+  ],
+  "write_set_conflict_resolution": [
+    {
+      "paths": [
+        "specs/00_intake.md",
+        "specs/01_spec.md",
+        "specs/02_arch.md",
+        "specs/03_plan.md",
+        "specs/04_tasks.md"
+      ],
+      "agents": [
+        "PM-Mesh",
+        "Arch-Mesh"
+      ],
+      "rule": "PM-Mesh owns intake/plan files (00, 01, 03, 04). Arch-Mesh owns 02_arch.md exclusively. All others read-only.",
+      "owner_by_path": {
+        "specs/02_arch.md": "Arch-Mesh",
+        "default": "PM-Mesh"
+      }
+    },
+    {
+      "paths": [
+        "docs/"
+      ],
+      "agents": [
+        "Docs-Research",
+        "Arch-Mesh",
+        "KillLife-Bridge",
+        "SyncOps",
+        "UX-Lead",
+        "QA-Compliance",
+        "Firmware"
+      ],
+      "rule": "Each agent owns a specific docs/ subtree via write_set_roots. Docs-Research owns narrative root, README, and agents/. Others are read-only outside their roots.",
+      "owner_by_path": {
+        "default": "Docs-Research"
+      }
+    },
+    {
+      "paths": [
+        "artifacts/cockpit/intelligence_program/"
+      ],
+      "agents": [
+        "PM-Mesh",
+        "Web-CAD-Platform"
+      ],
+      "rule": "PM-Mesh is owner when the lot is an intelligence/governance plan. Web-CAD-Platform is owner when the lot is a YiACAD platform release.",
+      "owner_by_path": {
+        "default": "PM-Mesh"
+      }
     }
   ],
   "legacy_runtime_aliases": {
