@@ -2,7 +2,7 @@
 
 > **Owner**: PM-Mesh + Architect
 > **Date création**: 2026-03-21
-> **Statut**: 🟢 Phase 0 DONE — Phase 1/2 en cours (13/20 tâches)
+> **Statut**: 🟢 Phase 0 DONE — Phase 1/2 en cours
 > **Dépendances**: Lot 22 (intelligence agentique), Mascarade providers
 
 ---
@@ -53,7 +53,7 @@ Mascarade Router ──→ Mistral Agents API
 |---|-------|-----------|----------|------|
 | 11 | Intégrer Devstral dans workflow CI/CD | Architect + Devstral | PR automation | [x] |
 | 12 | Benchmark fine-tune: base vs KiCad-tuned (100 prompts) | QA + Forge | Rapport benchmark | [ ] |
-| 13 | Documentation complète dans Outline wiki | Doc | 4 pages wiki | [ ] |
+| 13 | Documentation complète dans Outline wiki | Doc | 4 pages wiki | [x] |
 | 14 | Cron health-check Sentinelle (06:00 daily) | Ops | Cron configuré | [x] |
 
 ## Critères de succès
