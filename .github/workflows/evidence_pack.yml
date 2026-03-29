@@ -4,7 +4,21 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "docs/evidence/**"
+      - "firmware/**"
+      - "hardware/**"
+      - "tools/auto_check_ci_cd.py"
+      - "tools/bootstrap_python_env.sh"
+      - "tools/compliance/**"
   pull_request:
+    paths:
+      - "docs/evidence/**"
+      - "firmware/**"
+      - "hardware/**"
+      - "tools/auto_check_ci_cd.py"
+      - "tools/bootstrap_python_env.sh"
+      - "tools/compliance/**"
   workflow_dispatch:
 
 permissions:

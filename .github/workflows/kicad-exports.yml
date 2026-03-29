@@ -6,15 +6,11 @@ on:
       - main
     paths:
       - "hardware/**"
-      - "tools/ci/**"
       - "tools/hw/**"
-      - ".github/workflows/kicad-exports.yml"
   pull_request:
     paths:
       - "hardware/**"
-      - "tools/ci/**"
       - "tools/hw/**"
-      - ".github/workflows/kicad-exports.yml"
   workflow_dispatch:
 
 permissions:

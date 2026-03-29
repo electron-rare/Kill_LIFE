@@ -87,6 +87,12 @@ class YiacadCiPrCommentContractTests(unittest.TestCase):
         self.assertEqual(calls[1][0], "PATCH")
         self.assertIn("/issues/comments/42", calls[1][1])
 
+    def test_publish_script_accepts_gh_token_fallback(self) -> None:
+        module = self.publish_module
+
+        with patch.dict(module.os.environ, {"GH_TOKEN": "fallback-token"}, clear=True):
+            self.assertEqual(module.resolve_token("GITHUB_TOKEN"), "fallback-token")
+
     def test_workflow_wires_pr_review_job_and_permissions(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("pull-requests: write", workflow)
@@ -95,6 +101,7 @@ class YiacadCiPrCommentContractTests(unittest.TestCase):
         self.assertIn("yiacad-pr-review:", workflow)
         self.assertIn("write_yiacad_pr_summary.py", workflow)
         self.assertIn("publish_yiacad_pr_comment.py", workflow)
+        self.assertIn("GITHUB_TOKEN: ${{ github.token }}", workflow)
         self.assertIn("/commits/${{ github.event.pull_request.head.sha }}/check-runs", workflow)
         self.assertIn("/pulls/${{ github.event.pull_request.number }}/files", workflow)
 

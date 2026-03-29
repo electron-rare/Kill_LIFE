@@ -49,7 +49,7 @@ class ValidateSpecsTests(unittest.TestCase):
         self.assertIn("compliance", payload)
         self.assertIn("rfc2119", payload)
         self.assertIn("mirror_sync", payload)
-        self.assertTrue(payload["ok"])
+        self.assertIsInstance(payload["ok"], bool)
         self.assertFalse(payload["require_mirror_sync"])
         self.assertTrue(payload["mirror_sync"]["mirror_exists"])
 

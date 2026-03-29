@@ -105,10 +105,21 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def resolve_token(token_env: str) -> str | None:
+    token = os.environ.get(token_env)
+    if token:
+        return token
+    if token_env == "GITHUB_TOKEN":
+        return os.environ.get("GH_TOKEN")
+    return None
+
+
 def main() -> int:
     args = parse_args()
-    token = os.environ.get(args.token_env)
+    token = resolve_token(args.token_env)
     if not token:
+        if args.token_env == "GITHUB_TOKEN":
+            raise SystemExit("GITHUB_TOKEN is not configured. GH_TOKEN fallback was also empty.")
         raise SystemExit(f"{args.token_env} is not configured.")
 
     body = Path(args.body_file).read_text(encoding="utf-8")
