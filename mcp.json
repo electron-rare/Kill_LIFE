@@ -67,7 +67,7 @@
     },
     "mascarade-bridge": {
       "type": "url",
-      "url": "http://192.168.0.119:8100/mcp",
+      "url": "http://localhost:8100/mcp",
       "headers": {
         "Authorization": "Bearer ${MASCARADE_API_KEY}"
       },

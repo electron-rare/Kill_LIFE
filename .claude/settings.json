@@ -8,19 +8,9 @@
       "Bash(make aperant-install:*)",
       "Bash(make aperant-build:*)",
       "Bash(make aperant-test:*)",
-      "Bash(/Users/electron/Documents/Lelectron_rare/Kill_LIFE/tools/run_knowledge_base_mcp.sh --doctor)",
-      "Bash(/Users/electron/Documents/Lelectron_rare/Kill_LIFE/tools/run_github_dispatch_mcp.sh --doctor)",
-      "Bash(/Users/electron/Documents/Lelectron_rare/Kill_LIFE/tools/hw/run_kicad_mcp.sh --doctor)",
-      "Bash(ssh -o ConnectTimeout=5 -o BatchMode=yes clems@192.168.0.120 'echo OK')",
-      "Bash(ssh -o ConnectTimeout=5 -o BatchMode=yes root@192.168.0.119 'echo OK')",
-      "Bash(ssh -o ConnectTimeout=5 -o BatchMode=yes kxkm@kxkm-ai 'echo OK')",
-      "Bash(ssh -o ConnectTimeout=5 -o BatchMode=yes cils@192.168.0.210 'echo OK')"
-    ],
-    "additionalDirectories": [
-      "/Users/electron/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings",
-      "/Volumes/root/mascarade-main/api/src/routes",
-      "/Volumes/root/mascarade-main/api/src",
-      "/Volumes/root/mascarade-main/core/tests"
+      "Bash(./tools/run_knowledge_base_mcp.sh --doctor)",
+      "Bash(./tools/run_github_dispatch_mcp.sh --doctor)",
+      "Bash(./tools/hw/run_kicad_mcp.sh --doctor)"
     ]
   }
 }

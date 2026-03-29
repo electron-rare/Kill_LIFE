@@ -15,6 +15,8 @@ from kill_life import __version__
 from kill_life.agent_catalog import canonical_agents_by_id, canonical_agents_for_api, legacy_runtime_mapping
 
 MASCARADE_CORE_URL = os.environ.get("MASCARADE_CORE_URL", "http://localhost:8100")
+MASCARADE_API_URL = os.environ.get("MASCARADE_API_URL", "http://localhost:8000")
+P2P_BOOTSTRAP = os.environ.get("P2P_BOOTSTRAP", "localhost:4002")
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -161,9 +163,9 @@ async def list_mcp_servers():
 @app.get("/bridge/mascarade")
 async def mascarade_bridge_info():
     return {
-        "mascarade_api": "http://192.168.0.119:8000",
-        "mascarade_core": "http://192.168.0.119:8100",
-        "p2p_bootstrap": "192.168.0.119:4002",
+        "mascarade_api": MASCARADE_API_URL,
+        "mascarade_core": MASCARADE_CORE_URL,
+        "p2p_bootstrap": P2P_BOOTSTRAP,
         "mcp_servers_count": len(_load_mcp_json().get("mcpServers", {})),
         "integration": {
             "specs_as_datasets": "mascarade finetune/ reads Kill_LIFE specs/",

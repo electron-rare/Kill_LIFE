@@ -26,6 +26,9 @@ ENV/
 .vscode/
 .history/
 
+# Claude Code (machine-specific paths)
+.claude/settings.json
+
 # MacOS
 .DS_Store
 .AppleDouble

@@ -97,6 +97,6 @@ KiCad 10 schematics. KiBot for exports (BOM, SVG, PDF, netlist). ERC validation 
 
 ## External Services
 
-- **Mascarade** (`MASCARADE_CORE_URL`, default `http://192.168.0.119:8100`) — LLM router with agentic RAG
+- **Mascarade** (`MASCARADE_CORE_URL`, default `http://localhost:8100`) — LLM router with agentic RAG
 - **MCP servers** (10 configured in `mcp.json`) — kicad, freecad, openscad, platformio, github-dispatch, knowledge-base, validate-specs, apify, huggingface, mascarade-bridge
 - **n8n** — workflow automation (ZeroClaw integration)

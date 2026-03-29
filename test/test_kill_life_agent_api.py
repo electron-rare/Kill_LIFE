@@ -81,5 +81,27 @@ class KillLifeAgentApiTests(unittest.TestCase):
         self.assertIn('"lot_id": "T-123"', DummyAsyncClient.last_payload["messages"][0]["content"])
 
 
+    def test_bridge_mascarade_uses_env_vars(self) -> None:
+        """Ensure /bridge/mascarade returns env-based URLs, not hardcoded IPs."""
+        with patch.dict("os.environ", {
+            "MASCARADE_API_URL": "http://test-api:8000",
+            "MASCARADE_CORE_URL": "http://test-core:8100",
+            "P2P_BOOTSTRAP": "test-node:4002",
+        }):
+            # Re-import to pick up env vars
+            import importlib
+            import kill_life.server as srv
+            importlib.reload(srv)
+            client = TestClient(srv.app)
+            response = client.get("/bridge/mascarade")
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            self.assertEqual(data["mascarade_api"], "http://test-api:8000")
+            self.assertEqual(data["mascarade_core"], "http://test-core:8100")
+            self.assertEqual(data["p2p_bootstrap"], "test-node:4002")
+            # No hardcoded IPs
+            self.assertNotIn("192.168.0.119", str(data))
+
+
 if __name__ == "__main__":
     unittest.main()
