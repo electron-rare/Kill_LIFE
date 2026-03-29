@@ -17,7 +17,7 @@ Intégrer 4 agents Mistral spécialisés dans l'écosystème saillant.cc :
 
 ## Architecture cible
 
-```
+```raw
 Mascarade Router ──→ Mistral Agents API
                        ├── Sentinelle (mistral-medium) ──→ Langfuse, Grafana, Docker
                        ├── Tower (mistral-large) ──→ Outline, CRM/PostgreSQL
