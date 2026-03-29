@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getEdaQueue } from "@/lib/eda-queue";
+
+import { probeQueue, probeWorker } from "@/lib/intelligence/ops-health";
 
 export const runtime = "nodejs";
 
@@ -19,36 +20,24 @@ async function probeUrl(url: string, timeoutMs = 1500): Promise<ProbeResult> {
   }
 }
 
-async function probeQueue(): Promise<ProbeResult> {
-  try {
-    const queue = getEdaQueue();
-    const counts = await queue.getJobCounts("wait", "active", "failed");
-    const depth = counts.wait ?? 0;
-    const active = counts.active ?? 0;
-    const failed = counts.failed ?? 0;
-    const status = failed > 10 ? "degraded" : "up";
-    return { status, detail: depth, ...(active ? { active } : {}), ...(failed ? { failed } : {}) } as ProbeResult & Record<string, unknown>;
-  } catch (err) {
-    return { status: "down", detail: String(err) };
-  }
-}
-
 export async function GET() {
   const yjsUrl =
     process.env.YJS_WS_HTTP_URL ??
     `http://localhost:${process.env.YJS_WS_PORT ?? "1234"}/`;
   const nextUrl = `http://localhost:${process.env.PORT ?? "3000"}/`;
 
-  const [nextProbe, yjsProbe, queueProbe] = await Promise.all([
+  const [nextProbe, yjsProbe, queueProbe, workerProbe] = await Promise.all([
     probeUrl(nextUrl),
     probeUrl(yjsUrl),
     probeQueue(),
+    probeWorker(),
   ]);
 
   const probes = {
     "next-js": nextProbe,
     "yjs-realtime": yjsProbe,
     "eda-queue": queueProbe,
+    "eda-worker": workerProbe,
   };
 
   const upCount = Object.values(probes).filter((p) => p.status === "up").length;

@@ -12,6 +12,12 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+from kill_life.yiacad_action_registry import (
+    INPUT_ARGUMENTS,
+    yiacad_action_inputs,
+    yiacad_actions,
+)
+
 
 ROOT = Path(__file__).resolve().parents[2]
 SERVICE_SCRIPT = ROOT / "tools" / "cad" / "yiacad_backend_service.py"
@@ -83,6 +89,12 @@ def direct_fallback(argv: list[str]) -> int:
     return proc.returncode
 
 
+def add_registry_arguments(parser: argparse.ArgumentParser, command: str) -> None:
+    for name in yiacad_action_inputs(command):
+        spec = INPUT_ARGUMENTS[name]
+        parser.add_argument(spec["flag"], default="", help=spec["help"])
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="YiACAD backend client")
     parser.add_argument("--host", default=DEFAULT_HOST, help="Service host")
@@ -98,41 +110,18 @@ def parse_args() -> argparse.Namespace:
     subparsers.add_parser("health", help="Check YiACAD backend service health")
     subparsers.add_parser("projects-current", help="Read the latest YiACAD context snapshot")
     subparsers.add_parser("artifacts", help="Read the latest YiACAD artifact index")
-
-    status = subparsers.add_parser("status", help="YiACAD status")
-    status.add_argument("--source-path", default="")
-
-    erc = subparsers.add_parser("kicad-erc-drc", help="Run ERC/DRC through service")
-    erc.add_argument("--source-path", default="")
-    erc.add_argument("--board", default="")
-    erc.add_argument("--schematic", default="")
-
-    bom = subparsers.add_parser("bom-review", help="Run BOM review through service")
-    bom.add_argument("--source-path", default="")
-    bom.add_argument("--schematic", default="")
-
-    sync = subparsers.add_parser("ecad-mcad-sync", help="Run ECAD/MCAD sync through service")
-    sync.add_argument("--source-path", default="")
-    sync.add_argument("--board", default="")
-    sync.add_argument("--schematic", default="")
-    sync.add_argument("--freecad-document", default="")
-
-    package = subparsers.add_parser("manufacturing-package", help="Build YiACAD manufacturing package through service")
-    package.add_argument("--source-path", default="")
-    package.add_argument("--board", default="")
-    package.add_argument("--schematic", default="")
-    package.add_argument("--kibot-config", default="")
-
-    kiauto = subparsers.add_parser("kiauto-checks", help="Run KiAuto checks through service")
-    kiauto.add_argument("--source-path", default="")
-    kiauto.add_argument("--board", default="")
-    kiauto.add_argument("--schematic", default="")
+    for entry in yiacad_actions():
+        subparser = subparsers.add_parser(
+            entry["transport_command"],
+            help=entry["description"],
+        )
+        add_registry_arguments(subparser, entry["transport_command"])
     return parser.parse_args()
 
 
 def payload_from_args(args: argparse.Namespace) -> dict:
     payload = {"command": args.command, "surface": args.surface}
-    for key in ("source_path", "board", "schematic", "freecad_document", "kibot_config"):
+    for key in yiacad_action_inputs(args.command):
         if hasattr(args, key):
             payload[key] = getattr(args, key)
     return payload
@@ -165,7 +154,7 @@ def main() -> int:
     direct_argv = [args.command]
     if args.surface:
         direct_argv.extend(["--surface", args.surface])
-    for key in ("source_path", "board", "schematic", "freecad_document", "kibot_config"):
+    for key in yiacad_action_inputs(args.command):
         if key in payload and payload[key]:
             direct_argv.extend([f"--{key.replace('_', '-')}", payload[key]])
     if args.json_output:

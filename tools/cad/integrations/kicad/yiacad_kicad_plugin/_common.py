@@ -1,10 +1,17 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
+
+from kill_life.yiacad_action_registry import (
+    yiacad_action_inputs,
+    yiacad_actions_for_surface,
+    yiacad_command_for_alias,
+)
 
 SESSION_VERSION = 1
 MAX_SESSION_MESSAGES = 50
@@ -66,6 +73,38 @@ def _project_inputs(source_path: str) -> dict[str, str]:
     return {"source_path": str(path), "board": "", "schematic": ""}
 
 
+def available_actions(surface: str = "yiacad-kicad") -> list[dict]:
+    return list(yiacad_actions_for_surface(surface))
+
+
+def resolve_kicad_source_path(pcbnew_module=None, env: dict[str, str] | None = None) -> tuple[str, str]:
+    env = env or os.environ
+    ipc_path = env.get("KICAD_IPC_PROJECT_PATH", "").strip()
+    if ipc_path:
+        return ipc_path, "ipc-api-env"
+
+    board_path = env.get("KICAD_CURRENT_BOARD", "").strip()
+    if board_path:
+        return board_path, "board-env"
+
+    if pcbnew_module is not None:
+        try:
+            board = pcbnew_module.GetBoard()
+            if board is not None:
+                file_name = board.GetFileName() or ""
+                if file_name:
+                    backend = "kicad-python-runtime" if importlib.util.find_spec("kicad") else "pcbnew-runtime"
+                    return str(file_name), backend
+        except Exception:
+            pass
+
+    return "", "unresolved"
+
+
+def selection_summary(source_path: str) -> list[str]:
+    return [source_path] if source_path else []
+
+
 def _now_iso() -> str:
     return datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
 
@@ -74,7 +113,7 @@ def _default_session() -> dict:
     return {
         "version": SESSION_VERSION,
         "updated_at": "",
-        "last_intent": "board-review",
+        "last_intent": "kicad-erc-drc",
         "last_prompt": "",
         "last_source_path": "",
         "messages": [],
@@ -159,20 +198,13 @@ def run_intent(surface: str, intent: str, prompt: str, source_path: str, selecti
     del prompt
     del selection
     inputs = _project_inputs(source_path)
-    command = {
-        "board-review": "kicad-erc-drc",
-        "erc-drc-assist": "kicad-erc-drc",
-        "bom-footprint-audit": "bom-review",
-        "ecad-mcad-sync": "ecad-mcad-sync",
-    }.get(intent, "status")
+    command = yiacad_command_for_alias("yiacad-kicad", intent) or "status"
 
     args = ["--surface", surface, "--json-output", command]
-    if inputs["source_path"]:
-        args.extend(["--source-path", inputs["source_path"]])
-    if inputs["board"]:
-        args.extend(["--board", inputs["board"]])
-    if inputs["schematic"] and command in {"kicad-erc-drc", "bom-review", "ecad-mcad-sync"}:
-        args.extend(["--schematic", inputs["schematic"]])
+    for key in yiacad_action_inputs(command):
+        value = inputs.get(key, "")
+        if value:
+            args.extend([f"--{key.replace('_', '-')}", value])
     return _run_json_command(args)
 
 

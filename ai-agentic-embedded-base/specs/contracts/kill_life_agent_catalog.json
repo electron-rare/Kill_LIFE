@@ -1,0 +1,537 @@
+{
+  "$schema": "specs/contracts/agent_catalog.schema.json",
+  "contract_version": "kill-life-agent-catalog/v1",
+  "updated_at": "2026-03-29",
+  "repo": "Kill_LIFE",
+  "agents": [
+    {
+      "id": "PM-Mesh",
+      "slug": "pm_mesh",
+      "display_name": "PM Mesh",
+      "purpose": "Pilot intake, planning, prioritization, and mesh governance handoffs.",
+      "owner_repo": "Kill_LIFE",
+      "agent_doc": "agents/pm_mesh.md",
+      "github_agent_doc": ".github/agents/pm_mesh.md",
+      "start_prompt": ".github/prompts/start_pm_mesh.prompt.md",
+      "plan_wizard_prompt": ".github/prompts/plan_wizard_pm_mesh.prompt.md",
+      "write_set_roots": [
+        "specs/",
+        "docs/plans/",
+        ".github/prompts/"
+      ],
+      "rituals": [
+        "bmad/rituals/kickoff.md"
+      ],
+      "gates": [
+        "bmad/gates/gate_s0.md"
+      ],
+      "handoff_contracts": [
+        "specs/contracts/agent_handoff.schema.json",
+        "specs/contracts/summary_short.schema.json"
+      ],
+      "evidence_paths": [
+        "docs/plans/",
+        "artifacts/cockpit/intelligence_program/"
+      ],
+      "subagents": [
+        {
+          "id": "Plan-Orchestrator",
+          "purpose": "Sequence lots and canonical plans."
+        },
+        {
+          "id": "Intake-Guard",
+          "purpose": "Triage intake and capture goals."
+        },
+        {
+          "id": "Todo-Tracker",
+          "purpose": "Maintain execution-ready task lists."
+        }
+      ],
+      "public_api_enabled": true
+    },
+    {
+      "id": "Arch-Mesh",
+      "slug": "arch_mesh",
+      "display_name": "Arch Mesh",
+      "purpose": "Own architecture, ADRs, and cross-surface contract design.",
+      "owner_repo": "Kill_LIFE",
+      "agent_doc": "agents/arch_mesh.md",
+      "github_agent_doc": ".github/agents/arch_mesh.md",
+      "start_prompt": ".github/prompts/start_arch_mesh.prompt.md",
+      "plan_wizard_prompt": ".github/prompts/plan_wizard_arch_mesh.prompt.md",
+      "write_set_roots": [
+        "specs/",
+        "docs/",
+        "kill_life/"
+      ],
+      "rituals": [
+        "bmad/rituals/kickoff.md"
+      ],
+      "gates": [
+        "bmad/gates/gate_s0.md"
+      ],
+      "handoff_contracts": [
+        "specs/contracts/agent_handoff.schema.json"
+      ],
+      "evidence_paths": [
+        "artifacts/arch/",
+        "docs/"
+      ],
+      "subagents": [
+        {
+          "id": "Contract-Guard",
+          "purpose": "Keep public interfaces versioned and coherent."
+        },
+        {
+          "id": "Mesh-Contracts",
+          "purpose": "Align tri-repo contract boundaries."
+        }
+      ],
+      "public_api_enabled": true
+    },
+    {
+      "id": "Docs-Research",
+      "slug": "docs_research",
+      "display_name": "Docs Research",
+      "purpose": "Maintain canonical documentation, navigation, research summaries, and the agent catalog narrative.",
+      "owner_repo": "Kill_LIFE",
+      "agent_doc": "agents/docs_research.md",
+      "github_agent_doc": ".github/agents/docs_research.md",
+      "start_prompt": ".github/prompts/start_docs_research.prompt.md",
+      "plan_wizard_prompt": ".github/prompts/plan_wizard_docs_research.prompt.md",
+      "write_set_roots": [
+        "docs/",
+        "README.md",
+        "README_FR.md",
+        "agents/",
+        ".github/agents/"
+      ],
+      "rituals": [
+        "bmad/rituals/kickoff.md"
+      ],
+      "gates": [
+        "bmad/gates/gate_s0.md"
+      ],
+      "handoff_contracts": [
+        "specs/contracts/agent_handoff.schema.json"
+      ],
+      "evidence_paths": [
+        "docs/",
+        "artifacts/cockpit/"
+      ],
+      "subagents": [
+        {
+          "id": "Doc-Entry",
+          "purpose": "Maintain canonical entry points and onboarding."
+        },
+        {
+          "id": "Plan-Recorder",
+          "purpose": "Capture plan memory and governance deltas."
+        },
+        {
+          "id": "Agent-Catalog",
+          "purpose": "Own agent-facing docs and references."
+        }
+      ],
+      "public_api_enabled": true
+    },
+    {
+      "id": "Runtime-Companion",
+      "slug": "runtime_companion",
+      "display_name": "Runtime Companion",
+      "purpose": "Own runtime AI, MCP alignment, provider bridges, and degraded-safe execution surfaces.",
+      "owner_repo": "Kill_LIFE",
+      "agent_doc": "agents/runtime_companion.md",
+      "github_agent_doc": ".github/agents/runtime_companion.md",
+      "start_prompt": ".github/prompts/start_runtime_companion.prompt.md",
+      "plan_wizard_prompt": ".github/prompts/plan_wizard_runtime_companion.prompt.md",
+      "write_set_roots": [
+        "tools/ai/",
+        "tools/ops/",
+        "mcp.json",
+        "specs/mcp_agentics_target_backlog.md"
+      ],
+      "rituals": [
+        "bmad/rituals/kickoff.md"
+      ],
+      "gates": [
+        "bmad/gates/gate_s0.md"
+      ],
+      "handoff_contracts": [
+        "specs/contracts/agent_handoff.schema.json",
+        "specs/contracts/runtime_mcp_ia_gateway.schema.json"
+      ],
+      "evidence_paths": [
+        "artifacts/cockpit/runtime_ai_gateway/",
+        "artifacts/ops/"
+      ],
+      "subagents": [
+        {
+          "id": "MCP-Health",
+          "purpose": "Maintain runtime and MCP summary surfaces."
+        },
+        {
+          "id": "Provider-Bridge",
+          "purpose": "Stabilize provider routing and live smokes."
+        },
+        {
+          "id": "Runtime-Guard",
+          "purpose": "Track runtime health and recovery paths."
+        }
+      ],
+      "public_api_enabled": true
+    },
+    {
+      "id": "QA-Compliance",
+      "slug": "qa_compliance",
+      "display_name": "QA Compliance",
+      "purpose": "Own tests, compliance gates, schema checks, and release-ready evidence.",
+      "owner_repo": "Kill_LIFE",
+      "agent_doc": "agents/qa_compliance.md",
+      "github_agent_doc": ".github/agents/qa_compliance.md",
+      "start_prompt": ".github/prompts/start_qa_compliance.prompt.md",
+      "plan_wizard_prompt": ".github/prompts/plan_wizard_qa_compliance.prompt.md",
+      "write_set_roots": [
+        "test/",
+        "compliance/",
+        ".github/workflows/",
+        "tools/specs/"
+      ],
+      "rituals": [
+        "bmad/rituals/kickoff.md"
+      ],
+      "gates": [
+        "bmad/gates/gate_s0.md",
+        "bmad/gates/gate_s1.md"
+      ],
+      "handoff_contracts": [
+        "specs/contracts/operator_lane_evidence.schema.json"
+      ],
+      "evidence_paths": [
+        "docs/evidence/",
+        "compliance/evidence/",
+        "artifacts/ci/"
+      ],
+      "subagents": [
+        {
+          "id": "Constraint-Gate",
+          "purpose": "Enforce invariants and compliance rules."
+        },
+        {
+          "id": "Contract-Tests",
+          "purpose": "Keep JSON and CLI contracts stable."
+        },
+        {
+          "id": "Release-Gates",
+          "purpose": "Guard CI, build, and release checks."
+        }
+      ],
+      "public_api_enabled": true
+    },
+    {
+      "id": "Embedded-CAD",
+      "slug": "embedded_cad",
+      "display_name": "Embedded CAD",
+      "purpose": "Own KiCad, FreeCAD, OpenSCAD, hardware assets, and fabrication-facing CAD lanes.",
+      "owner_repo": "Kill_LIFE",
+      "agent_doc": "agents/embedded_cad.md",
+      "github_agent_doc": ".github/agents/embedded_cad.md",
+      "start_prompt": ".github/prompts/start_embedded_cad.prompt.md",
+      "plan_wizard_prompt": ".github/prompts/plan_wizard_embedded_cad.prompt.md",
+      "write_set_roots": [
+        "tools/cad/",
+        "tools/hw/",
+        "hardware/",
+        "specs/kicad_mcp_scope_spec.md"
+      ],
+      "rituals": [
+        "bmad/rituals/kickoff.md"
+      ],
+      "gates": [
+        "bmad/gates/gate_s0.md",
+        "bmad/gates/gate_s1.md"
+      ],
+      "handoff_contracts": [
+        "specs/contracts/agent_handoff.schema.json",
+        "specs/contracts/fab_package.schema.json"
+      ],
+      "evidence_paths": [
+        "artifacts/cad-fusion/",
+        "artifacts/cad-ai-native/",
+        "docs/evidence/"
+      ],
+      "subagents": [
+        {
+          "id": "CAD-Bridge",
+          "purpose": "Bridge KiCad, FreeCAD, and MCP lanes."
+        },
+        {
+          "id": "HW-BOM",
+          "purpose": "Own fabrication and BOM-oriented outputs."
+        },
+        {
+          "id": "CAD-Fusion",
+          "purpose": "Run the YiACAD AI-native fusion lot."
+        }
+      ],
+      "public_api_enabled": true
+    },
+    {
+      "id": "Web-CAD-Platform",
+      "slug": "web_cad_platform",
+      "display_name": "Web CAD Platform",
+      "purpose": "Own the YiACAD web product, project read models, queue/workers, realtime, and review surfaces.",
+      "owner_repo": "Kill_LIFE",
+      "agent_doc": "agents/web_cad_platform.md",
+      "github_agent_doc": ".github/agents/web_cad_platform.md",
+      "start_prompt": ".github/prompts/start_web_cad_platform.prompt.md",
+      "plan_wizard_prompt": ".github/prompts/plan_wizard_web_cad_platform.prompt.md",
+      "write_set_roots": [
+        "web/app/",
+        "web/components/",
+        "web/lib/",
+        "web/realtime/",
+        "web/workers/"
+      ],
+      "rituals": [
+        "bmad/rituals/kickoff.md"
+      ],
+      "gates": [
+        "bmad/gates/gate_s0.md"
+      ],
+      "handoff_contracts": [
+        "specs/contracts/summary_short.schema.json",
+        "specs/contracts/yiacad_uiux_output.schema.json"
+      ],
+      "evidence_paths": [
+        "web/project/.ci/",
+        "artifacts/cockpit/intelligence_program/"
+      ],
+      "subagents": [
+        {
+          "id": "Project-Service",
+          "purpose": "Own GraphQL and project metadata."
+        },
+        {
+          "id": "EDA-CI-Orchestrator",
+          "purpose": "Own queue, workers, and EDA job orchestration."
+        },
+        {
+          "id": "Realtime-Collab",
+          "purpose": "Own Yjs transport and persistence."
+        }
+      ],
+      "public_api_enabled": true
+    },
+    {
+      "id": "UX-Lead",
+      "slug": "ux_lead",
+      "display_name": "UX Lead",
+      "purpose": "Own UI/UX direction for YiACAD and user-facing design systems.",
+      "owner_repo": "Kill_LIFE",
+      "agent_doc": "agents/ux_lead.md",
+      "github_agent_doc": ".github/agents/ux_lead.md",
+      "start_prompt": ".github/prompts/start_ux_lead.prompt.md",
+      "plan_wizard_prompt": ".github/prompts/plan_wizard_ux_lead.prompt.md",
+      "write_set_roots": [
+        "docs/YIACAD_",
+        "docs/CAD_AI_NATIVE_",
+        "specs/yiacad_uiux_apple_native_spec.md"
+      ],
+      "rituals": [
+        "bmad/rituals/kickoff.md"
+      ],
+      "gates": [
+        "bmad/gates/gate_s0.md"
+      ],
+      "handoff_contracts": [
+        "specs/contracts/agent_handoff.schema.json"
+      ],
+      "evidence_paths": [
+        "artifacts/uiux_tui/",
+        "docs/"
+      ],
+      "subagents": [
+        {
+          "id": "Apple-HIG",
+          "purpose": "Carry Apple-native design constraints."
+        },
+        {
+          "id": "CAD-UX",
+          "purpose": "Design CAD-specific interaction flows."
+        }
+      ],
+      "public_api_enabled": true
+    },
+    {
+      "id": "Firmware",
+      "slug": "firmware",
+      "display_name": "Firmware",
+      "purpose": "Own embedded firmware, PlatformIO flows, and firmware evidence.",
+      "owner_repo": "Kill_LIFE",
+      "agent_doc": "agents/firmware.md",
+      "github_agent_doc": ".github/agents/firmware.md",
+      "start_prompt": ".github/prompts/start_firmware.prompt.md",
+      "plan_wizard_prompt": ".github/prompts/plan_wizard_firmware.prompt.md",
+      "write_set_roots": [
+        "firmware/",
+        "specs/zeroclaw_dual_hw_todo.md"
+      ],
+      "rituals": [
+        "bmad/rituals/kickoff.md"
+      ],
+      "gates": [
+        "bmad/gates/gate_s1.md"
+      ],
+      "handoff_contracts": [
+        "specs/contracts/operator_lane_evidence.schema.json"
+      ],
+      "evidence_paths": [
+        "docs/evidence/esp/",
+        "docs/evidence/linux/"
+      ],
+      "subagents": [
+        {
+          "id": "FW-Build",
+          "purpose": "Drive builds, tests, and firmware-ready outputs."
+        }
+      ],
+      "public_api_enabled": true
+    },
+    {
+      "id": "SyncOps",
+      "slug": "sync_ops",
+      "display_name": "Sync Ops",
+      "purpose": "Own cockpit scripts, operator lanes, SSH convergence, logs, and runbook execution.",
+      "owner_repo": "Kill_LIFE",
+      "agent_doc": "agents/sync_ops.md",
+      "github_agent_doc": ".github/agents/sync_ops.md",
+      "start_prompt": ".github/prompts/start_sync_ops.prompt.md",
+      "plan_wizard_prompt": ".github/prompts/plan_wizard_sync_ops.prompt.md",
+      "write_set_roots": [
+        "tools/cockpit/",
+        "artifacts/cockpit/",
+        "docs/FULL_OPERATOR_LANE_"
+      ],
+      "rituals": [
+        "bmad/rituals/kickoff.md"
+      ],
+      "gates": [
+        "bmad/gates/gate_s0.md"
+      ],
+      "handoff_contracts": [
+        "specs/contracts/operator_lane_evidence.schema.json",
+        "specs/contracts/agent_handoff.schema.json"
+      ],
+      "evidence_paths": [
+        "artifacts/cockpit/",
+        "docs/evidence/"
+      ],
+      "subagents": [
+        {
+          "id": "TUI-Ops",
+          "purpose": "Maintain shell/TUI operator entry points."
+        },
+        {
+          "id": "Log-Ops",
+          "purpose": "Own log summaries, purges, and incident outputs."
+        },
+        {
+          "id": "Ops-Governor",
+          "purpose": "Track operator governance and capacity views."
+        }
+      ],
+      "public_api_enabled": true
+    },
+    {
+      "id": "Schema-Guard",
+      "slug": "schema_guard",
+      "display_name": "Schema Guard",
+      "purpose": "Own machine-readable contracts, schema versioning, and strict validation.",
+      "owner_repo": "Kill_LIFE",
+      "agent_doc": "agents/schema_guard.md",
+      "github_agent_doc": ".github/agents/schema_guard.md",
+      "start_prompt": ".github/prompts/start_schema_guard.prompt.md",
+      "plan_wizard_prompt": ".github/prompts/plan_wizard_schema_guard.prompt.md",
+      "write_set_roots": [
+        "specs/contracts/",
+        "tools/specs/",
+        "tools/validate_specs.py"
+      ],
+      "rituals": [
+        "bmad/rituals/kickoff.md"
+      ],
+      "gates": [
+        "bmad/gates/gate_s0.md"
+      ],
+      "handoff_contracts": [
+        "specs/contracts/agent_handoff.schema.json",
+        "specs/contracts/workflow_handshake.schema.json"
+      ],
+      "evidence_paths": [
+        "artifacts/ci/",
+        "specs/contracts/examples/"
+      ],
+      "subagents": [
+        {
+          "id": "Handoff-Schema",
+          "purpose": "Maintain handoff schema compatibility."
+        },
+        {
+          "id": "Evidence-Schema",
+          "purpose": "Guard evidence contracts and summaries."
+        }
+      ],
+      "public_api_enabled": true
+    },
+    {
+      "id": "KillLife-Bridge",
+      "slug": "kill_life_bridge",
+      "display_name": "Kill Life Bridge",
+      "purpose": "Own cross-repo bridge contracts, continuity memory, and consumer-facing bridge lanes.",
+      "owner_repo": "Kill_LIFE",
+      "agent_doc": "agents/kill_life_bridge.md",
+      "github_agent_doc": ".github/agents/kill_life_bridge.md",
+      "start_prompt": ".github/prompts/start_kill_life_bridge.prompt.md",
+      "plan_wizard_prompt": ".github/prompts/plan_wizard_kill_life_bridge.prompt.md",
+      "write_set_roots": [
+        "docs/TRI_REPO_MESH_CONTRACT_",
+        "specs/mesh_contracts.md",
+        "artifacts/cockpit/kill_life_memory/"
+      ],
+      "rituals": [
+        "bmad/rituals/kickoff.md"
+      ],
+      "gates": [
+        "bmad/gates/gate_s0.md"
+      ],
+      "handoff_contracts": [
+        "specs/contracts/agent_handoff.schema.json",
+        "specs/contracts/workflow_handshake.schema.json"
+      ],
+      "evidence_paths": [
+        "artifacts/cockpit/kill_life_memory/",
+        "artifacts/cockpit/product_contract_handoff/"
+      ],
+      "subagents": [
+        {
+          "id": "Schema-Consumer",
+          "purpose": "Translate shared contracts into consumer-facing surfaces."
+        },
+        {
+          "id": "Artifact-Curator",
+          "purpose": "Maintain continuity memory and artifact-facing bridge rules."
+        }
+      ],
+      "public_api_enabled": true
+    }
+  ],
+  "legacy_runtime_aliases": {
+    "pm": "PM-Mesh",
+    "architect": "Arch-Mesh",
+    "firmware": "Firmware",
+    "hw_schematic": "Embedded-CAD",
+    "qa": "QA-Compliance",
+    "doc": "Docs-Research"
+  }
+}

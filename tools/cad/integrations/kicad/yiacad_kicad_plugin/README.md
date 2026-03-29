@@ -11,12 +11,13 @@ KiCad action plugin for the YiACAD desktop lane.
 ## Current model
 
 - transport: `service-first` through `tools/cad/yiacad_backend_client.py`
+- actions: registry-backed from `specs/contracts/yiacad_action_registry.json`
 - product surface: `yiacad-desktop`
 - integrated actions:
-  - `board-review`
-  - `erc-drc-assist`
-  - `bom-footprint-audit`
+  - `kicad-erc-drc`
+  - `bom-review`
   - `ecad-mcad-sync`
+  - `status`
 
 ## Install in local KiCad
 
@@ -34,3 +35,4 @@ This links the plugin into:
 
 - This plugin is the YiACAD working surface used to move quickly on KiCad integration.
 - This plugin is independent and remains under YiACAD control as the canonical KiCad integration surface.
+- Context discovery prefers explicit KiCad runtime hints when available and falls back to project path inference otherwise.

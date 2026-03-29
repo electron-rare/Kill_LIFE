@@ -1,26 +1,20 @@
 ---
 name: planWizardAgentsCoordination
 description: Génère un plan de coordination multi-agent pour éviter la redondance et optimiser les workflows.
-argument-hint: Spécifie les rôles, étapes communes, evidence pack, synchronisation.
+argument-hint: Spécifie les agents canoniques, étapes communes, handoffs, evidence et synchronisation.
 ---
-Génère un plan structuré pour la coordination des agents :
+Génère un plan structuré pour la coordination multi-agent en prenant `specs/contracts/kill_life_agent_catalog.json` comme source de vérité.
 
 ## Checklist commune
-- Analyse des specs et contraintes
-- Validation des gates BMAD
-- Evidence pack (archivage systématique)
-- Documentation et mise à jour guides/README
-- Synchronisation multi-agent (rituels, handoffs)
-- Feedback et contribution
+- Charger `docs/GLOBAL_MULTI_AGENT_CHECKLIST.md`
+- Vérifier `owner_repo`, `owner_agent`, `write_set`, `status`, `evidence`
+- Valider les gates BMAD et les contrats de handoff
+- Documenter la preuve et la synchronisation dans les surfaces canoniques
+- Garder les sous-agents comme metadata de lane, jamais comme agents publics
 
 ## Étapes de coordination
-1. Centraliser les étapes communes dans une checklist globale
-2. Référencer la checklist dans chaque plan agent ou plan transversal
-3. Adapter chaque plan pour ne garder que les étapes spécifiques au rôle ou au contexte
-4. Organiser des points de synchronisation réguliers (rituels, gates)
-5. Archiver les actions et décisions dans evidence pack
-6. Documenter les évolutions et feedbacks
-
-## Objectif
-- Optimiser la traçabilité, éviter la redondance, fluidifier la collaboration multi-agent
-- Garantir la cohérence des workflows et la reproductibilité
+1. Identifier quels agents canoniques parmi `PM-Mesh`, `Arch-Mesh`, `Docs-Research`, `Runtime-Companion`, `QA-Compliance`, `Embedded-CAD`, `Web-CAD-Platform`, `UX-Lead`, `Firmware`, `SyncOps`, `Schema-Guard`, `KillLife-Bridge` participent au lot.
+2. Définir un unique owner top-level par write set et reléguer les sous-agents au rôle de metadata.
+3. Référencer les handoffs, gates et evidence obligatoires dans le plan.
+4. Organiser la synchronisation sans redondance entre docs, prompts, runtime et contrats.
+5. Clore avec le validateur de catalogue, les risques restants et la prochaine action.

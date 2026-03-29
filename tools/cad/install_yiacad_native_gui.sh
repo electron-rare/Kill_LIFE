@@ -37,6 +37,7 @@ status() {
   printf 'ROOT_DIR=%s\n' "$ROOT_DIR"
   printf 'KICAD_PLUGIN_DIR=%s\n' "$KICAD_PLUGIN_DIR"
   printf 'FREECAD_MOD_DIR=%s\n' "$FREECAD_MOD_DIR"
+  printf 'TRANSPORT=service-first via %s\n' "${ROOT_DIR}/tools/cad/yiacad_backend_client.py"
   printf 'KICAD_LINK=%s\n' "$(link_target "${KICAD_PLUGIN_DIR}/yiacad_kicad_plugin")"
   printf 'FREECAD_LINK=%s\n' "$(link_target "${FREECAD_MOD_DIR}/YiACADWorkbench")"
 }

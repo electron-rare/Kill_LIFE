@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kill-life.dev/specs/contracts/yiacad_action_registry.schema.json",
+  "title": "YiACAD Action Registry",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "component",
+    "actions"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "yiacad-action-registry/v1"
+    },
+    "component": {
+      "const": "yiacad-action-registry"
+    },
+    "description": {
+      "type": "string"
+    },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "transport_command",
+          "action_id",
+          "display_name",
+          "description",
+          "supported_surfaces",
+          "required_inputs",
+          "accepted_inputs",
+          "engine_families",
+          "produced_artifacts",
+          "default_next_steps",
+          "native_handler"
+        ],
+        "properties": {
+          "transport_command": {
+            "type": "string",
+            "minLength": 1
+          },
+          "action_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "display_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "supported_surfaces": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required_inputs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "accepted_inputs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "engine_families": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "produced_artifacts": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "default_next_steps": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "intent_aliases": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "native_handler": {
+            "type": "string",
+            "pattern": "^command_[a-z0-9_]+$"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

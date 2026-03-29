@@ -18,6 +18,7 @@ FUSION_STATUS = ROOT / "artifacts" / "cad-fusion" / "yiacad-fusion-last-status.m
 KICAD_APP_CLI = Path("/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli")
 FREECAD_APP_CMD = Path("/Applications/FreeCAD.app/Contents/MacOS/FreeCADCmd")
 FREECAD_APP_GUI = Path("/Applications/FreeCAD.app/Contents/MacOS/FreeCAD")
+COMMAND_TIMEOUT_SEC = 2.0
 ENGINE_BASELINE = {
     "kicad": ">=10.0",
     "freecad": ">=1.1",
@@ -80,8 +81,12 @@ def version_gte(detected: str | None, minimum: str | None) -> bool | None:
     return padded_detected >= minimum_tuple
 
 
-def command_output(command: list[str]) -> tuple[int, str]:
-    proc = subprocess.run(command, text=True, capture_output=True)
+def command_output(command: list[str], timeout_sec: float = COMMAND_TIMEOUT_SEC) -> tuple[int, str]:
+    try:
+        proc = subprocess.run(command, text=True, capture_output=True, timeout=timeout_sec)
+    except subprocess.TimeoutExpired:
+        rendered = " ".join(command)
+        return (124, f"command timed out after {timeout_sec:.1f}s: {rendered}")
     combined = "\n".join(part.strip() for part in (proc.stdout, proc.stderr) if part.strip()).strip()
     return proc.returncode, combined
 
@@ -110,16 +115,20 @@ def bundle_version(binary: str | None) -> str | None:
     return None
 
 
-def probe_engine_version(binary: str | None, probes: list[list[str]]) -> str | None:
-    if not binary:
-        return None
-    for probe in probes:
-        rc, text = command_output([binary, *probe])
-        if rc == 0 and text:
-            match = re.search(r"(\d+(?:\.\d+){0,2})", text)
-            if match:
-                return match.group(1)
-    return bundle_version(binary)
+def probe_engine_version(
+    probe_binary: str | None,
+    probes: list[list[str]],
+    *,
+    bundle_binary: str | None = None,
+) -> str | None:
+    if probe_binary:
+        for probe in probes:
+            rc, text = command_output([probe_binary, *probe])
+            if rc == 0 and text:
+                match = re.search(r"(\d+(?:\.\d+){0,2})", text)
+                if match:
+                    return match.group(1)
+    return bundle_version(bundle_binary or probe_binary)
 
 
 def engine_entry(
@@ -128,9 +137,11 @@ def engine_entry(
     binary: str | None,
     required_version: str | None,
     probes: list[list[str]],
+    bundle_binary: str | None = None,
 ) -> dict:
-    detected_version = probe_engine_version(binary, probes)
-    if not binary:
+    reported_binary = binary or bundle_binary
+    detected_version = probe_engine_version(binary, probes, bundle_binary=bundle_binary)
+    if not reported_binary:
         status = "blocked"
         reason = "missing-binary"
     elif required_version and required_version != "installed":
@@ -143,20 +154,20 @@ def engine_entry(
             reason = "version-unresolved"
         else:
             status = "done"
-            reason = "ready"
+            reason = "ready" if binary else "bundle-ready"
     elif detected_version is None:
         status = "degraded"
         reason = "version-unresolved"
     else:
         status = "done"
-        reason = "ready"
+        reason = "ready" if binary else "bundle-ready"
     return {
         "name": name,
         "integrated": True,
-        "binary": binary,
+        "binary": reported_binary,
         "required_version": required_version,
         "detected_version": detected_version,
-        "available": binary is not None,
+        "available": reported_binary is not None,
         "status": status,
         "reason": reason,
     }
@@ -164,7 +175,8 @@ def engine_entry(
 
 def detect_integrated_engines() -> dict:
     kicad_binary = resolve_binary(KICAD_APP_CLI, "kicad-cli")
-    freecad_binary = resolve_binary(FREECAD_APP_CMD, FREECAD_APP_GUI, "FreeCADCmd", "freecadcmd", "FreeCAD")
+    freecad_binary = resolve_binary(FREECAD_APP_CMD, "FreeCADCmd", "freecadcmd")
+    freecad_bundle_binary = resolve_binary(FREECAD_APP_GUI, "FreeCAD")
     kibot_binary = resolve_binary("kibot")
     kiauto_binary = resolve_binary("pcbnew_do", "eeschema_do", "kicad2step_do", "kiauto")
     return {
@@ -179,6 +191,7 @@ def detect_integrated_engines() -> dict:
             binary=freecad_binary,
             required_version=ENGINE_BASELINE["freecad"],
             probes=[["--version"], ["-v"]],
+            bundle_binary=freecad_bundle_binary,
         ),
         "kibot": engine_entry(
             name="KiBot",

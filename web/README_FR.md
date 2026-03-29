@@ -36,9 +36,16 @@ Queue and workers:
 
 - GraphQL enqueues EDA jobs through Redis-backed `BullMQ`
 - `npm run worker:eda` consumes the queue and calls existing repo tools
+- le heartbeat worker est publie dans `web/project/.ci/worker-health.json`
 - `kicad-headless` utilise `tools/cad/yiacad_backend_client.py` en mode `service-first`
 - `kibot` passe maintenant par `tools/cad/yiacad_backend_client.py` et publie un package manufacturing YiACAD normalise
 - `kiauto-checks` passe maintenant par `tools/cad/yiacad_backend_client.py` et publie une sortie de validation YiACAD normalisee
+
+Ops probes:
+
+- `GET /api/ops/platform` expose `next-js`, `yjs-realtime`, `eda-queue` et `eda-worker`
+- `GET /api/ops/queue` distingue une mauvaise configuration `REDIS_URL` d'un Redis injoignable
+- `GET /api/ops/worker` publie le heartbeat worker, le dernier job et les etats stale ou absent
 
 Environment:
 

@@ -22,12 +22,15 @@ INTELLIGENCE_SCRIPT="${RUNTIME_GATEWAY_INTELLIGENCE_SCRIPT:-${ROOT_DIR}/tools/co
 MESH_SCRIPT="${RUNTIME_GATEWAY_MESH_SCRIPT:-${ROOT_DIR}/tools/cockpit/mesh_health_check.sh}"
 MASCARADE_SCRIPT="${RUNTIME_GATEWAY_MASCARADE_SCRIPT:-${ROOT_DIR}/tools/cockpit/mascarade_runtime_health.sh}"
 LANGFUSE_SCRIPT="${RUNTIME_GATEWAY_LANGFUSE_SCRIPT:-${ROOT_DIR}/tools/cockpit/langfuse_health.sh}"
+INFRA_VPS_SCRIPT="${RUNTIME_GATEWAY_INFRA_VPS_SCRIPT:-${ROOT_DIR}/tools/cockpit/infra_vps_healthcheck.sh}"
 LANGFUSE_REPORT="${ROOT_DIR}/artifacts/ops/langfuse_health/latest.json"
 INFRA_VPS_REPORT="${ROOT_DIR}/artifacts/cockpit/infra_vps_healthcheck_latest.json"
 INTELLIGENCE_TIMEOUT_SEC="${RUNTIME_GATEWAY_INTELLIGENCE_TIMEOUT_SEC:-15}"
 MESH_TIMEOUT_SEC="${RUNTIME_GATEWAY_MESH_TIMEOUT_SEC:-15}"
 MASCARADE_TIMEOUT_SEC="${RUNTIME_GATEWAY_MASCARADE_TIMEOUT_SEC:-15}"
 LANGFUSE_TIMEOUT_SEC="${RUNTIME_GATEWAY_LANGFUSE_TIMEOUT_SEC:-10}"
+INFRA_VPS_TIMEOUT_SEC="${RUNTIME_GATEWAY_INFRA_VPS_TIMEOUT_SEC:-20}"
+INFRA_VPS_MAX_AGE_SEC="${RUNTIME_GATEWAY_INFRA_VPS_MAX_AGE_SEC:-1800}"
 
 usage() {
   cat <<'EOF'
@@ -41,6 +44,8 @@ Options:
   --intelligence-report <path>
   --mesh-report <path>
   --mascarade-report <path>
+  --langfuse-report <path>
+  --infra-vps-report <path>
   -h, --help
 EOF
 }
@@ -130,6 +135,13 @@ def fallback(reason: str, detail: str) -> dict[str, object]:
                 "langfuse_url": "unknown",
             }
         )
+    elif label == "infra_vps":
+        payload.update(
+            {
+                "component": "infra-vps-healthcheck",
+                "services": [],
+            }
+        )
     return payload
 
 
@@ -201,6 +213,37 @@ refresh_sources() {
   run_refresh_probe langfuse "${LANGFUSE_TIMEOUT_SEC}" "${langfuse_out}" "${LOAD_PROFILE}" \
     bash "${LANGFUSE_SCRIPT}" --json
   LANGFUSE_REPORT="${langfuse_out}"
+}
+
+ensure_infra_vps_live_report() {
+  local refresh_needed=0
+  if [[ ! -f "${INFRA_VPS_REPORT}" ]]; then
+    refresh_needed=1
+  else
+    local age
+    age="$(python3 - "${INFRA_VPS_REPORT}" <<'PY'
+from __future__ import annotations
+
+import os
+import sys
+import time
+
+path = sys.argv[1]
+print(int(time.time() - os.path.getmtime(path)))
+PY
+)"
+    if [[ "${age}" -gt "${INFRA_VPS_MAX_AGE_SEC}" ]]; then
+      refresh_needed=1
+    fi
+  fi
+
+  if [[ "${refresh_needed}" -eq 1 ]]; then
+    local infra_out="${ARTIFACT_DIR}/infra_vps-${STAMP}.json"
+    log_line "INFO" "refreshing infra VPS health"
+    run_refresh_probe infra_vps "${INFRA_VPS_TIMEOUT_SEC}" "${infra_out}" "${LOAD_PROFILE}" \
+      bash "${INFRA_VPS_SCRIPT}" --json
+    INFRA_VPS_REPORT="${infra_out}"
+  fi
 }
 
 emit_status_json() {
@@ -413,16 +456,24 @@ def build_web_platform_surface(ia_payload: dict[str, object] | None) -> tuple[di
     next_steps: list[str] = []
     for probe_name, probe_data in probes.items():
         if probe_data.get("status") != "up":
-            degraded.append(f"web-{probe_name}-down")
+            reason = str(probe_data.get("reason") or "").strip().lower().replace("_", "-")
+            degraded.append(f"web-{probe_name}-{reason or 'down'}")
     if not probes:
         degraded.append("web-platform-no-probes")
         next_steps.append("Run intelligence_tui.sh --action memory --json to populate web platform health probes.")
     if any(p.get("status") != "up" for p in probes.values()):
-        next_steps.append("Check that Next.js (port 3000), Yjs realtime (port 1234), and Redis (port 6379) are running.")
+        next_steps.append("Check that Next.js (port 3000), Yjs realtime (port 1234), Redis (port 6379), and the EDA worker are running.")
     queue_depth = None
     queue_probe = probes.get("queue") or {}
     if "depth" in queue_probe:
         queue_depth = queue_probe["depth"]
+    if queue_probe.get("reason") == "redis-env-missing":
+        next_steps.append("Set REDIS_URL in web/.env or web/.env.local before starting Next.js and the EDA worker.")
+    elif queue_probe.get("reason") == "redis-unreachable":
+        next_steps.append("Start Redis with `docker compose -f web/compose.dev.yml up -d redis` or point REDIS_URL to a live instance.")
+    worker_probe = probes.get("worker") or {}
+    if worker_probe.get("reason") == "worker-absent":
+        next_steps.append("Start the EDA worker with `cd web && npm run worker:eda` once Redis is available.")
     surface = {
         "status": status,
         "summary_short": compact(
@@ -989,6 +1040,10 @@ while [ "$#" -gt 0 ]; do
       LANGFUSE_REPORT="${2:-}"
       shift 2
       ;;
+    --infra-vps-report)
+      INFRA_VPS_REPORT="${2:-}"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -1008,6 +1063,8 @@ fi
 if [ "${REFRESH}" -eq 1 ]; then
   refresh_sources
 fi
+
+ensure_infra_vps_live_report
 
 case "${ACTION}" in
   status)

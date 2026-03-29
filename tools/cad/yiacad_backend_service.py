@@ -13,6 +13,8 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from kill_life.yiacad_action_registry import get_yiacad_action, yiacad_action_id, yiacad_action_inputs
+
 try:
     import yiacad_native_ops as native_ops
     from yiacad_backend import (
@@ -76,45 +78,8 @@ def uiux_contract_from_failure(
 
 def build_args(command: str, payload: dict) -> argparse.Namespace:
     common = {"command": command, "json_output": True, "surface": payload.get("surface", "yiacad-api")}
-    if command == "status":
-        return argparse.Namespace(**common)
-    if command == "kicad-erc-drc":
-        return argparse.Namespace(
-            **common,
-            source_path=payload.get("source_path", ""),
-            board=payload.get("board", ""),
-            schematic=payload.get("schematic", ""),
-        )
-    if command == "bom-review":
-        return argparse.Namespace(
-            **common,
-            source_path=payload.get("source_path", ""),
-            schematic=payload.get("schematic", ""),
-        )
-    if command == "ecad-mcad-sync":
-        return argparse.Namespace(
-            **common,
-            source_path=payload.get("source_path", ""),
-            board=payload.get("board", ""),
-            schematic=payload.get("schematic", ""),
-            freecad_document=payload.get("freecad_document", ""),
-        )
-    if command == "manufacturing-package":
-        return argparse.Namespace(
-            **common,
-            source_path=payload.get("source_path", ""),
-            board=payload.get("board", ""),
-            schematic=payload.get("schematic", ""),
-            kibot_config=payload.get("kibot_config", ""),
-        )
-    if command == "kiauto-checks":
-        return argparse.Namespace(
-            **common,
-            source_path=payload.get("source_path", ""),
-            board=payload.get("board", ""),
-            schematic=payload.get("schematic", ""),
-        )
-    raise KeyError(f"Unsupported YiACAD command: {command}")
+    common.update({name: payload.get(name, "") for name in yiacad_action_inputs(command)})
+    return argparse.Namespace(**common)
 
 
 def latest_context_payload() -> dict | None:
@@ -151,15 +116,8 @@ def latest_artifacts_payload() -> dict:
 
 
 def dispatch_command(command: str, payload: dict) -> tuple[int, dict]:
-    mapping = {
-        "status": native_ops.command_status,
-        "kicad-erc-drc": native_ops.command_kicad_erc_drc,
-        "bom-review": native_ops.command_bom_review,
-        "ecad-mcad-sync": native_ops.command_ecad_mcad_sync,
-        "manufacturing-package": native_ops.command_manufacturing_package,
-        "kiauto-checks": native_ops.command_kiauto_checks,
-    }
-    handler = mapping[command]
+    entry = get_yiacad_action(command)
+    handler = getattr(native_ops, entry["native_handler"])
     args = build_args(command, payload)
     stdout = io.StringIO()
     with contextlib.redirect_stdout(stdout):
@@ -175,7 +133,7 @@ def dispatch_command(command: str, payload: dict) -> tuple[int, dict]:
             pass
     contract = build_uiux_output(
         surface=payload.get("surface", "yiacad-api"),
-        action=command,
+        action=yiacad_action_id(command),
         execution_mode="background",
         status="done" if rc == 0 else "blocked",
         severity="info" if rc == 0 else "error",

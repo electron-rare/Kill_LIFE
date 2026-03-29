@@ -18,6 +18,7 @@
       "match": "kill_life_memory",
       "consumer_layer": "MES",
       "owner_agent": "KillLife-Bridge",
+      "owner_subagent": "Artifact-Curator",
       "lot_refs": ["T-RE-261", "T-RE-262", "T-RE-267"],
       "purpose": "Canonical execution memory and resume continuity"
     },
@@ -38,56 +39,64 @@
     {
       "match": "mascarade_incident",
       "consumer_layer": "WMS",
-      "owner_agent": "Artifact-Curator",
+      "owner_agent": "KillLife-Bridge",
+      "owner_subagent": "Artifact-Curator",
       "lot_refs": ["T-RE-233", "T-RE-240", "T-RE-241", "T-RE-245"],
       "purpose": "Incident brief, registry, queue, and watch outputs"
     },
     {
       "match": "mascarade_watch",
       "consumer_layer": "WMS",
-      "owner_agent": "Artifact-Curator",
+      "owner_agent": "KillLife-Bridge",
+      "owner_subagent": "Artifact-Curator",
       "lot_refs": ["T-RE-250", "T-RE-252", "T-RE-257"],
       "purpose": "Short watchboard and history artifacts"
     },
     {
       "match": "mascarade_runtime_health",
       "consumer_layer": "DCS",
-      "owner_agent": "Runtime-Guard",
+      "owner_agent": "Runtime-Companion",
+      "owner_subagent": "Runtime-Guard",
       "lot_refs": ["T-RE-222", "T-RE-263"],
       "purpose": "Mascarade and Ollama runtime health"
     },
     {
       "match": "mascarade_agent_smoke",
       "consumer_layer": "DCS",
-      "owner_agent": "Runtime-Guard",
+      "owner_agent": "Runtime-Companion",
+      "owner_subagent": "Runtime-Guard",
       "lot_refs": ["T-RE-*"],
       "purpose": "Agent smoke checks and runtime reachability"
     },
     {
       "match": "mesh",
       "consumer_layer": "DCS",
-      "owner_agent": "Runtime-Guard",
+      "owner_agent": "Runtime-Companion",
+      "owner_subagent": "Runtime-Guard",
       "lot_refs": ["T-RE-*"],
       "purpose": "Mesh, dispatch, and runtime preflight"
     },
     {
       "match": "dataset",
       "consumer_layer": "WMS",
-      "owner_agent": "Dataset-Curator",
+      "owner_agent": "KillLife-Bridge",
+      "owner_subagent": "Dataset-Curator",
       "lot_refs": ["T-MA-015", "T-MS-002", "T-MS-003"],
       "purpose": "Dataset audit, preflight, and fine-tune staging"
     },
     {
       "match": "repo_state",
       "consumer_layer": "PLM",
-      "owner_agent": "PLM-Archivist",
+      "owner_agent": "Docs-Research",
+      "owner_subagent": "PLM-Archivist",
       "lot_refs": ["T-RE-*"],
       "purpose": "Repository coherence and state evidence"
     },
     {
       "match": "specs",
       "consumer_layer": "PLM",
-      "owner_agent": "PLM-Archivist",
+      "owner_agent": "Docs-Research",
+      "owner_subagent": "PLM-Archivist",
       "lot_refs": ["T-RE-*"],
       "purpose": "Specification-derived artifacts"
     },
@@ -101,7 +110,8 @@
   ],
   "defaults": {
     "consumer_layer": "WMS",
-    "owner_agent": "Artifact-Curator",
+    "owner_agent": "KillLife-Bridge",
+    "owner_subagent": "Artifact-Curator",
     "lot_refs": [],
     "purpose": "Unclassified artifact group"
   }

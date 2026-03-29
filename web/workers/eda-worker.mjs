@@ -11,8 +11,19 @@ const repoRoot = resolve(webRoot, "..");
 const ciRoot = resolve(webRoot, "project", ".ci");
 const runsFile = join(ciRoot, "runs.json");
 const artifactsFile = join(ciRoot, "artifacts.json");
+const workerHealthFile = join(ciRoot, "worker-health.json");
 const logsRoot = join(ciRoot, "logs");
 const queueName = process.env.EDA_QUEUE_NAME ?? "yiacad-eda";
+const workerState = {
+  queueName,
+  running: false,
+  updatedAt: null,
+  currentJobId: null,
+  currentJobName: null,
+  lastJobId: null,
+  lastJobMs: null,
+  lastStatus: null
+};
 
 function pipelineEngine(pipeline) {
   switch (pipeline) {
@@ -60,6 +71,11 @@ async function ensureCiFiles() {
       await writeFile(path, emptyValue, "utf8");
     }
   }
+}
+
+async function persistWorkerHealth(patch = {}) {
+  Object.assign(workerState, patch, { updatedAt: new Date().toISOString() });
+  await writeFile(workerHealthFile, JSON.stringify(workerState, null, 2), "utf8");
 }
 
 async function readJson(path, fallback) {
@@ -309,11 +325,19 @@ async function processStepExport(job, logPrefix) {
 }
 
 await ensureCiFiles();
+await persistWorkerHealth({ running: false, lastStatus: "starting" });
 
 const worker = new Worker(
   queueName,
   async (job) => {
     const logPrefix = resolve(logsRoot, `${job.id}-${job.name}`);
+    const startedAt = Date.now();
+    await persistWorkerHealth({
+      running: true,
+      currentJobId: job.id,
+      currentJobName: job.name,
+      lastStatus: "running"
+    });
     await updateRun(job.id, {
       status: "running",
       engine: pipelineEngine(job.name),
@@ -344,6 +368,14 @@ const worker = new Worker(
       artifactCount: result.artifactCount,
       completedAt: new Date().toISOString()
     });
+    await persistWorkerHealth({
+      running: true,
+      currentJobId: null,
+      currentJobName: null,
+      lastJobId: String(job.id),
+      lastJobMs: Date.now() - startedAt,
+      lastStatus: result.status
+    });
     return result;
   },
   {
@@ -366,8 +398,21 @@ worker.on("failed", async (job, error) => {
     error?.stack || error?.message || "worker failed",
     "utf8"
   );
+  await persistWorkerHealth({
+    running: true,
+    currentJobId: null,
+    currentJobName: null,
+    lastJobId: String(job.id),
+    lastJobMs: null,
+    lastStatus: "failed"
+  });
 });
 
 worker.on("ready", () => {
+  void persistWorkerHealth({ running: true, lastStatus: "ready" });
   console.log(`EDA worker ready on queue ${queueName}`);
 });
+
+setInterval(() => {
+  void persistWorkerHealth({ running: true });
+}, 30_000);

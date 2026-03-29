@@ -278,3 +278,20 @@ flowchart TD
   - `bash tools/cockpit/refonte_tui.sh --action status`
   - `bash tools/cockpit/refonte_tui.sh --action mesh-preflight`
   - `bash tools/cockpit/refonte_tui.sh --action mcp-check`
+
+## Flux dedie PR review automation (2026-03-29)
+
+```mermaid
+flowchart TD
+  A[PR ouverte sur yiacad] --> B[Web-CAD-Platform: PR-Review-Orchestrator]
+  B --> C[Gate S2: Playwright + BullMQ check]
+  C --> D{Gate S2 pass?}
+  D -->|KO| E[ai:hold + correction lot]
+  D -->|OK| F[Evidence: web/project/.ci/]
+  F --> G[summary_short.schema.json valide]
+  G --> H[artifacts/cockpit/intelligence_program/]
+  H --> I[QA-Compliance: validate_specs.py --strict]
+  I --> J[Schema-Guard: yiacad_uiux_output.schema.json]
+  J --> K[Handoff: operator_lane_evidence]
+  K --> L[Close lot + memoire]
+```

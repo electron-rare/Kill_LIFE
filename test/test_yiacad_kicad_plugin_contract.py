@@ -33,6 +33,19 @@ class YiACADKiCadPluginContractTest(unittest.TestCase):
             self.assertEqual(payload["board"], str(board))
             self.assertEqual(payload["schematic"], str(schematic))
 
+    def test_common_exposes_registry_backed_actions_and_runtime_discovery(self) -> None:
+        common = importlib.import_module("yiacad_kicad_plugin._common")
+        actions = common.available_actions()
+        commands = {entry["transport_command"] for entry in actions}
+        self.assertIn("kicad-erc-drc", commands)
+        self.assertIn("bom-review", commands)
+
+        board = type("Board", (), {"GetFileName": lambda self: "/tmp/demo.kicad_pcb"})()
+        pcbnew = type("PcbNew", (), {"GetBoard": staticmethod(lambda: board)})
+        source_path, backend = common.resolve_kicad_source_path(pcbnew, {"KICAD_IPC_PROJECT_PATH": ""})
+        self.assertEqual(source_path, "/tmp/demo.kicad_pcb")
+        self.assertIn(backend, {"pcbnew-runtime", "kicad-python-runtime"})
+
     def test_action_module_imports_without_kicad_runtime(self) -> None:
         module = importlib.import_module("yiacad_kicad_plugin.yiacad_action")
         message = module._result_message(

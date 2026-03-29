@@ -48,6 +48,7 @@ build_snapshot_json() {
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime
@@ -167,12 +168,14 @@ def parse_all_open_tasks(text: str) -> list[str]:
 
 
 def web_platform_health() -> dict[str, object]:
-    """Probe Next.js, Yjs realtime server, and Redis/BullMQ queue.
+    """Probe Next.js, Yjs realtime server, Redis/BullMQ queue, and the EDA worker.
 
     Primary: calls /api/ops/platform on the running Next.js app (T-AI-323).
     Fallback: direct socket probes when the app is not running.
     """
     import json
+    import socket
+    import urllib.parse
     import urllib.request
 
     platform_url = "http://localhost:3000/api/ops/platform"
@@ -187,9 +190,10 @@ def web_platform_health() -> dict[str, object]:
                 "nextjs":   probes.get("next-js", {"status": "unknown"}),
                 "realtime": probes.get("yjs-realtime", {"status": "unknown"}),
                 "queue":    probes.get("eda-queue", {"status": "unknown"}),
+                "worker":   probes.get("eda-worker", {"status": "unknown"}),
             },
             "up_count": data.get("up_count", 0),
-            "total":    data.get("total", 3),
+            "total":    data.get("total", 4),
             "source":   "platform-api",
         }
     except Exception:
@@ -197,29 +201,91 @@ def web_platform_health() -> dict[str, object]:
 
     # --- Fallback: direct probes (app not running) ---
     probes: dict[str, object] = {}
+    web_root = root / "web"
 
     try:
         req = urllib.request.urlopen("http://localhost:3000/", timeout=3)
-        probes["nextjs"] = {"status": "up", "http_status": req.status}
+        probes["nextjs"] = {"status": "up", "http_status": req.status, "reason": "nextjs-ready"}
     except Exception as exc:
-        probes["nextjs"] = {"status": "down", "error": str(exc)[:120]}
+        probes["nextjs"] = {"status": "down", "error": str(exc)[:120], "reason": "nextjs-absent"}
 
     try:
         req = urllib.request.urlopen("http://localhost:1234/", timeout=3)
-        probes["realtime"] = {"status": "up", "http_status": req.status}
+        probes["realtime"] = {"status": "up", "http_status": req.status, "reason": "yjs-ready"}
     except Exception as exc:
-        probes["realtime"] = {"status": "down", "error": str(exc)[:120]}
+        probes["realtime"] = {"status": "down", "error": str(exc)[:120], "reason": "yjs-absent"}
 
-    try:
-        import socket
-        sock = socket.create_connection(("127.0.0.1", 6379), timeout=2)
-        sock.sendall(b"LLEN bull:yiacad-eda:wait\r\n")
-        data = sock.recv(256).decode("utf-8", errors="replace").strip()
-        sock.close()
-        depth = int(data[1:]) if data.startswith(":") else None
-        probes["queue"] = {"status": "up", "queue_name": "yiacad-eda", "depth": depth}
-    except Exception as exc:
-        probes["queue"] = {"status": "down", "error": str(exc)[:120]}
+    redis_url = ""
+    for candidate in (
+        web_root / ".env.local",
+        web_root / ".env.development.local",
+        web_root / ".env",
+    ):
+        if not candidate.exists():
+            continue
+        for raw_line in candidate.read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
+            if line.startswith("REDIS_URL="):
+                redis_url = line.split("=", 1)[1].strip()
+                break
+        if redis_url:
+            break
+
+    if not redis_url:
+        probes["queue"] = {
+            "status": "down",
+            "reason": "redis-env-missing",
+            "detail": "REDIS_URL is not configured in web/.env*.",
+        }
+    else:
+        parsed = urllib.parse.urlparse(redis_url)
+        host = parsed.hostname or "127.0.0.1"
+        port = parsed.port or 6379
+        queue_name = os.environ.get("EDA_QUEUE_NAME") or "yiacad-eda"
+        try:
+            sock = socket.create_connection((host, port), timeout=2)
+            sock.sendall(f"LLEN bull:{queue_name}:wait\r\n".encode("utf-8"))
+            data = sock.recv(256).decode("utf-8", errors="replace").strip()
+            sock.close()
+            depth = int(data[1:]) if data.startswith(":") else None
+            probes["queue"] = {
+                "status": "up",
+                "queue_name": queue_name,
+                "depth": depth,
+                "reason": "redis-ready",
+            }
+        except Exception as exc:
+            probes["queue"] = {
+                "status": "down",
+                "error": str(exc)[:120],
+                "reason": "redis-unreachable",
+                "detail": f"{host}:{port}",
+            }
+
+    worker_health = web_root / "project" / ".ci" / "worker-health.json"
+    if not worker_health.exists():
+        probes["worker"] = {
+            "status": "down",
+            "reason": "worker-absent",
+        }
+    else:
+        try:
+            payload = json.loads(worker_health.read_text(encoding="utf-8"))
+            updated_at = payload.get("updatedAt")
+            reason = payload.get("lastStatus") or "worker-running"
+            probes["worker"] = {
+                "status": "up" if payload.get("running") else "degraded",
+                "reason": reason,
+                "updated_at": updated_at,
+                "last_job_id": payload.get("lastJobId"),
+                "last_job_ms": payload.get("lastJobMs"),
+            }
+        except Exception as exc:
+            probes["worker"] = {
+                "status": "down",
+                "reason": "worker-health-unreadable",
+                "error": str(exc)[:120],
+            }
 
     up_count = sum(1 for p in probes.values() if isinstance(p, dict) and p.get("status") == "up")
     total = len(probes)
@@ -702,8 +768,8 @@ add_lane(
 )
 add_lane(
     "Contracts",
-    "Mesh-Contracts",
-    "Contract-View",
+    "Schema-Guard",
+    "Catalog-Validator",
     [
         ("summary-short-schema", (root / "specs" / "contracts" / "summary_short.schema.json").exists()),
         ("runtime-gateway-schema", (root / "specs" / "contracts" / "runtime_mcp_ia_gateway.schema.json").exists()),
@@ -748,8 +814,8 @@ add_lane(
 )
 add_lane(
     "Extensions-Consumption",
-    "Studio-Product",
-    "Context-Builder",
+    "KillLife-Bridge",
+    "Schema-Consumer",
     [
         ("studio-governance", (studio_root / "src" / "governance.ts").exists()),
         ("mesh-governance", (mesh_root / "src" / "governance.ts").exists()),

@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://electron-rare.local/specs/contracts/agent_catalog.schema.json",
+  "title": "Kill_LIFE Agent Catalog",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "updated_at",
+    "repo",
+    "agents",
+    "legacy_runtime_aliases"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "const": "kill-life-agent-catalog/v1"
+    },
+    "updated_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "repo": {
+      "type": "string",
+      "const": "Kill_LIFE"
+    },
+    "agents": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/agent"
+      }
+    },
+    "legacy_runtime_aliases": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "$defs": {
+    "agent": {
+      "type": "object",
+      "required": [
+        "id",
+        "slug",
+        "display_name",
+        "purpose",
+        "owner_repo",
+        "agent_doc",
+        "github_agent_doc",
+        "start_prompt",
+        "plan_wizard_prompt",
+        "write_set_roots",
+        "rituals",
+        "gates",
+        "handoff_contracts",
+        "evidence_paths",
+        "subagents",
+        "public_api_enabled"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner_repo": {
+          "type": "string",
+          "const": "Kill_LIFE"
+        },
+        "agent_doc": {
+          "type": "string",
+          "minLength": 1
+        },
+        "github_agent_doc": {
+          "type": "string",
+          "minLength": 1
+        },
+        "start_prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "plan_wizard_prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "write_set_roots": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "rituals": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "gates": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "handoff_contracts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "evidence_paths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "subagents": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/subagent"
+          }
+        },
+        "public_api_enabled": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "subagent": {
+      "type": "object",
+      "required": [
+        "id",
+        "purpose"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

@@ -2,13 +2,16 @@ from __future__ import annotations
 
 from ._common import (
     append_session_message,
+    available_actions,
     clear_session,
     fetch_status_payload,
     load_session,
     open_path,
     remember_session_state,
     repo_root,
+    resolve_kicad_source_path,
     run_intent,
+    selection_summary,
 )
 
 try:
@@ -19,29 +22,7 @@ except Exception:  # pragma: no cover
     wx = None
 
 
-INTENTS = [
-    "board-review",
-    "erc-drc-assist",
-    "bom-footprint-audit",
-    "ecad-mcad-sync",
-]
-
-
-def _board_path() -> str:
-    if pcbnew is None:
-        return ""
-    try:
-        board = pcbnew.GetBoard()
-        if board is None:
-            return ""
-        return board.GetFileName() or ""
-    except Exception:
-        return ""
-
-
-def _selection_summary() -> list[str]:
-    path = _board_path()
-    return [path] if path else []
+REGISTRY_ACTIONS = [entry for entry in available_actions() if entry["transport_command"] != "status"]
 
 
 def _result_message(payload: dict) -> str:
@@ -94,11 +75,15 @@ if wx is not None:
             panel = wx.Panel(self)
             sizer = wx.BoxSizer(wx.VERTICAL)
             session = load_session()
-            default_source = _board_path() or session.get("last_source_path") or ""
+            default_source, _source_backend = resolve_kicad_source_path(pcbnew)
+            default_source = default_source or session.get("last_source_path") or ""
+            self.actions = list(REGISTRY_ACTIONS)
 
-            self.intent = wx.Choice(panel, choices=INTENTS)
-            if session.get("last_intent") in INTENTS:
-                self.intent.SetStringSelection(session["last_intent"])
+            self.intent = wx.Choice(panel, choices=[entry["display_name"] for entry in self.actions])
+            last_intent = session.get("last_intent")
+            commands = [entry["transport_command"] for entry in self.actions]
+            if last_intent in commands:
+                self.intent.SetSelection(commands.index(last_intent))
             else:
                 self.intent.SetSelection(0)
             self.source = wx.TextCtrl(panel, value=default_source, style=wx.TE_READONLY)
@@ -110,7 +95,7 @@ if wx is not None:
             self.transcript = wx.TextCtrl(panel, style=wx.TE_MULTILINE | wx.TE_READONLY)
             self.refresh_transcript()
 
-            sizer.Add(wx.StaticText(panel, label="Intent"), 0, wx.ALL, 8)
+            sizer.Add(wx.StaticText(panel, label="Action"), 0, wx.ALL, 8)
             sizer.Add(self.intent, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 8)
             sizer.Add(wx.StaticText(panel, label="Board / source path"), 0, wx.ALL, 8)
             sizer.Add(self.source, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 8)
@@ -139,8 +124,9 @@ if wx is not None:
             panel.SetSizer(sizer)
 
         def persist_state(self) -> None:
+            command = self.actions[self.intent.GetSelection()]["transport_command"]
             remember_session_state(
-                self.intent.GetStringSelection(),
+                command,
                 self.prompt.GetValue().strip(),
                 self.source.GetValue().strip(),
             )
@@ -152,26 +138,27 @@ if wx is not None:
         def on_run(self, _event) -> None:
             prompt = self.prompt.GetValue().strip()
             source_path = self.source.GetValue().strip()
-            intent = self.intent.GetStringSelection()
+            action = self.actions[self.intent.GetSelection()]
+            command = action["transport_command"]
             self.persist_state()
             append_session_message(
                 "user",
                 prompt or "(no additional task context provided)",
-                intent=intent,
+                intent=command,
                 source_path=source_path,
             )
             payload = run_intent(
                 "yiacad-desktop",
-                intent,
+                command,
                 prompt,
                 source_path,
-                _selection_summary(),
+                selection_summary(source_path),
             )
             result_text = _result_message(payload)
             append_session_message(
                 "assistant",
                 result_text,
-                intent=intent,
+                intent=command,
                 source_path=source_path,
                 status=str(payload.get("status") or ""),
             )

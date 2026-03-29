@@ -72,7 +72,7 @@ Le positionnement retenu pour cette passe de consolidation est:
 - **Spec-first** : Chaque évolution commence par une définition claire dans `specs/` ([Spec Generator FX](https://www.youtube.com/watch?v=9bZkp7q19f0)).
   > _Schaeffer : Les agents du pipeline écoutent le bruit des specs comme une symphonie de sons trouvés._
 - **Injection de standards** : Standards versionnés et profils injectés (Agent OS).
-- **BMAD / BMAD-METHOD** : Agents par rôles (PM, Architecte, Firmware, QA, Doc, HW), rituels, gates, handoffs ([agents/](agents/), [bmad/](bmad/)).
+- **Catalogue agents 2026** : 12 agents top-level pilotés par contrat avec write sets, rituels, gates, prompts et handoffs définis ([agents/](agents/), [specs/contracts/kill_life_agent_catalog.json](specs/contracts/kill_life_agent_catalog.json)).
 - **Tool-first** : Scripts reproductibles ([tools/](tools/)), evidence pack canonique dans `docs/evidence/` et expose en artifact CI.
 - **Pipeline hardware/firmware** : Bulk edits, exports, tests, conformité, snapshots.
 - **CAD headless** : KiCad 10 first + FreeCAD + OpenSCAD via MCP, conteneurisés.
@@ -85,7 +85,7 @@ Le positionnement retenu pour cette passe de consolidation est:
   <img src="docs/assets/agents_bmad_generated.png" alt="Schéma des agents BMAD" width="400" />
 </div>
 
-> « La réponse à la question ultime de la vie, de l'univers et du développement embarqué IA : 42 specs, 7 agents, et un pipeline qui ne panique jamais. »
+> « La réponse à la question ultime de la vie, de l'univers et du développement embarqué IA : 42 specs, 12 agents, et un pipeline qui ne panique jamais. »
 > — Le README qui ne panique jamais
 > <img src="docs/assets/badge_42_generated.gif" alt="42" width="42" style="vertical-align:middle;" />
 
@@ -120,7 +120,7 @@ flowchart TD
   Gate --> Evidence[Evidence Pack]
   Evidence --> CI[22 workflows CI/CD]
   CI --> Deploy[Déploiement multi-cible]
-  PR --> Agents[6 Agents PM Archi FW QA Doc HW]
+  PR --> Agents[12 agents canoniques]
   Agents --> Specs[specs/ — 21 specs]
   Agents --> Firmware[firmware/ PlatformIO]
   Agents --> Hardware[hardware/ KiCad]
@@ -162,7 +162,7 @@ Kill_LIFE/
 ├── hardware/                    # Assets hardware et blocs KiCad
 ├── specs/                       # 21 specs et tâches canoniques (00_intake → 04_tasks + MCP/ZeroClaw/CAD)
 ├── workflows/                   # Workflows JSON canoniques + templates + schéma
-├── agents/                      # 6 agents spécialisés (PM, Archi, FW, QA, Doc, HW)
+├── agents/                      # 12 agents top-level backés par le catalogue
 ├── bmad/                        # Gates (S0, S1), rituels (kickoff), templates (handoff, status)
 ├── compliance/                  # Profils réglementaires, standards catalog, evidence
 ├── standards/                   # Standards globaux versionnés
@@ -178,8 +178,8 @@ Kill_LIFE/
 ├── docs/                        # Docs opérateur, bridge, plans, workflows
 ├── test/                        # Tests Python (stable + MCP)
 ├── .github/
-│   ├── agents/                  # 6 définitions agents GitHub
-│   ├── prompts/                 # 37 prompts (plan_wizard_*, start_*, Eureka_*)
+│   ├── agents/                  # 12 définitions agents GitHub
+│   ├── prompts/                 # Prompts start/plan backés par le catalogue + prompts partagés
 │   └── workflows/               # 22 workflows CI/CD
 ├── KIKIFOU/                     # Diagnostic, diagramme, mapping, recommandations
 ├── mcp.json                     # 7 serveurs MCP configurés
@@ -255,18 +255,24 @@ Contraintes : [`specs/constraints.yaml`](specs/constraints.yaml) — source de v
 
 ### Agents & prompts
 
-6 agents spécialisés dans [`agents/`](agents/) et [`.github/agents/`](.github/agents/) :
+Le catalogue canonique 2026 est défini dans [`specs/contracts/kill_life_agent_catalog.json`](specs/contracts/kill_life_agent_catalog.json) puis reflété dans [`agents/`](agents/) et [`.github/agents/`](.github/agents/).
 
 | Agent | Rôle |
 |---|---|
-| `pm_agent` | Gestion de projet, planning, backlog |
-| `architect_agent` | Architecture système, ADR |
-| `firmware_agent` | Code embarqué PlatformIO |
-| `hw_schematic_agent` | Schémas KiCad, bulk edits |
-| `qa_agent` | Tests, qualité, evidence packs |
-| `doc_agent` | Documentation, onboarding |
+| `PM-Mesh` | intake, planification, priorisation, gouvernance mesh |
+| `Arch-Mesh` | architecture, ADR, frontières de contrat |
+| `Docs-Research` | docs canoniques, navigation, recherche, narration catalogue |
+| `Runtime-Companion` | runtime IA, alignement MCP, provider bridges |
+| `QA-Compliance` | tests, schémas, gates release, evidence |
+| `Embedded-CAD` | KiCad, FreeCAD, lanes CAD/fabrication |
+| `Web-CAD-Platform` | Next.js, GraphQL, realtime, workers, review |
+| `UX-Lead` | UX YiACAD, shell natif, recherche design |
+| `Firmware` | implémentation et validation PlatformIO |
+| `SyncOps` | cockpit, logs, SSH, incidents, opérations mesh |
+| `Schema-Guard` | schémas de contrat et validation structurelle |
+| `KillLife-Bridge` | workflows et evidence bridge tri-repo |
 
-37 prompts dans [`.github/prompts/`](.github/prompts/) couvrent : brainstorming, spécification, coordination agents, CI/CD, compliance, troubleshooting, release, bulk edit HW, et les prompts de démarrage (`start_*`) et d'idéation (`Eureka_*`).
+Chaque agent canonique possède maintenant un `start_<agent>.prompt.md` et un `plan_wizard_<agent>.prompt.md`, tandis que [`.github/prompts/plan_wizard_agents_management.prompt.md`](.github/prompts/plan_wizard_agents_management.prompt.md) et [`.github/prompts/plan_wizard_agents_coordination.prompt.md`](.github/prompts/plan_wizard_agents_coordination.prompt.md) restent partagés pour l'orchestration et la checklist globale.
 
 ### BMAD (gates & rituels)
 
@@ -467,9 +473,9 @@ Les workflows éditables par `crazy_life` vivent dans [`workflows/`](workflows/)
 
 1. Rédige la spec dans `specs/`.
 2. Ouvre une issue avec le label `ai:spec`.
-3. L'agent PM/Architecte génère le plan et l'architecture.
-4. L'agent Firmware implémente le code dans `firmware/`.
-5. L'agent QA ajoute des tests Unity.
+3. `PM-Mesh` et `Arch-Mesh` génèrent le plan et l'architecture.
+4. `Firmware` implémente le code dans `firmware/`.
+5. `QA-Compliance` ajoute les tests Unity et la validation contractuelle.
 6. Evidence pack généré automatiquement.
 
 <div align="center" style="margin: 16px 0;">
@@ -479,7 +485,7 @@ Les workflows éditables par `crazy_life` vivent dans [`workflows/`](workflows/)
 ### 2. Bulk Edit Hardware KiCad
 
 1. Ouvre une issue `type:systems` + `scope:hardware`, puis ajoute `ai:plan` (ou `ai:impl` si le batch est déjà cadré).
-2. L'agent HW effectue un bulk edit via `tools/hw/schops`.
+2. `Embedded-CAD` effectue le bulk edit via `tools/hw/schops`.
 3. Exporte ERC/DRC, BOM, netlist.
 4. Snapshot avant/après dans `artifacts/hw/<timestamp>/`.
 
@@ -489,9 +495,9 @@ Les workflows éditables par `crazy_life` vivent dans [`workflows/`](workflows/)
 
 ### 3. Documentation & Conformité
 
-1. Ouvre une issue avec le label `ai:docs` ou `ai:qa`.
-2. L'agent Doc met à jour `docs/` et le README.
-3. L'agent QA valide le profil de conformité et génère le rapport, avec relais doc si nécessaire.
+1. Ouvre une issue avec `ai:plan` puis route le write set vers l'owner canonique du catalogue.
+2. `Docs-Research` met à jour `docs/`, `README.md` et `README_FR.md`.
+3. `QA-Compliance` valide le profil de conformité et génère le rapport, avec relais doc si nécessaire.
 
 <div align="center" style="margin: 16px 0;">
   <img src="docs/assets/gate_validation_generated.png" alt="Gate Validation" width="200" />

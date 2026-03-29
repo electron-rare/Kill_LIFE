@@ -1,152 +1,242 @@
 from __future__ import annotations
 
 import json
-import os
 import subprocess
-from pathlib import Path
 
-import FreeCAD  # type: ignore
-import FreeCADGui  # type: ignore
+try:
+    import FreeCAD  # type: ignore
+except Exception:  # pragma: no cover
+    FreeCAD = None
+
+try:
+    import FreeCADGui  # type: ignore
+except Exception:  # pragma: no cover
+    FreeCADGui = None
 
 try:
     from PySide2 import QtWidgets  # type: ignore
 except Exception:  # pragma: no cover
-    from PySide import QtGui as QtWidgets  # type: ignore
+    try:
+        from PySide import QtGui as QtWidgets  # type: ignore
+    except Exception:  # pragma: no cover
+        QtWidgets = None
+
+from ._adapter import available_registry_actions, current_document_path, selection_summary
+from ._common import (
+    append_session_message,
+    backend_client_script,
+    clear_session,
+    fetch_status_payload,
+    load_session,
+    open_path,
+    remember_session_state,
+    repo_root,
+    run_intent,
+)
 
 
-def _candidate_roots() -> list[Path]:
-    candidates: list[Path] = []
-    if os.environ.get("KILL_LIFE_ROOT"):
-        candidates.append(Path(os.environ["KILL_LIFE_ROOT"]).expanduser())
-    here = Path(__file__).resolve()
-    candidates.extend(here.parents)
-    return candidates
+ACTION_ENTRIES = [entry for entry in available_registry_actions() if entry["transport_command"] != "status"]
 
 
-def repo_root() -> Path:
-    for candidate in _candidate_roots():
-        bridge = candidate / "tools" / "cad" / "yiacad_ai_bridge.py"
-        if bridge.exists():
-            return candidate
-    raise RuntimeError("Unable to locate Kill_LIFE root for YiACAD bridge")
+def _result_message(payload: dict) -> str:
+    lines = [
+        f"Status: {payload.get('status', 'unknown')}",
+        f"Summary: {payload.get('summary', '(no summary)')}",
+    ]
+    degraded_reasons = payload.get("degraded_reasons") or []
+    next_steps = payload.get("next_steps") or []
+    if degraded_reasons:
+        lines.append("")
+        lines.append("Degraded reasons:")
+        lines.extend(f"- {item}" for item in degraded_reasons[:4])
+    if next_steps:
+        lines.append("")
+        lines.append("Next steps:")
+        lines.extend(f"- {item}" for item in next_steps[:4])
+    return "\n".join(lines)
 
 
-def bridge_script() -> Path:
-    return repo_root() / "tools" / "cad" / "yiacad_ai_bridge.py"
+def _transcript_text(session: dict) -> str:
+    messages = session.get("messages") or []
+    if not messages:
+        return "No YiACAD session history yet."
+    chunks: list[str] = []
+    for item in messages:
+        stamp = item.get("created_at") or "unknown-time"
+        role = str(item.get("role") or "assistant").upper()
+        intent = item.get("intent") or ""
+        source_path = item.get("source_path") or ""
+        status = item.get("status") or ""
+        header = f"[{stamp}] {role}"
+        if intent:
+            header += f" | {intent}"
+        if status:
+            header += f" | {status}"
+        chunks.append(header)
+        if source_path:
+            chunks.append(f"source: {source_path}")
+        chunks.append(str(item.get("content") or ""))
+        chunks.append("")
+    return "\n".join(chunks).strip()
 
 
-def run_bridge(args: list[str]) -> dict:
+def run_native_json_action(command: str, *args: str) -> dict:
     proc = subprocess.run(
-        ["python3", str(bridge_script()), *args],
+        ["python3", str(backend_client_script()), "--surface", "yiacad-desktop", "--json-output", command, *args],
         cwd=repo_root(),
         text=True,
         capture_output=True,
         check=False,
         timeout=30,
     )
-    if proc.returncode != 0:
-        raise RuntimeError(proc.stderr.strip() or proc.stdout.strip() or "YiACAD bridge failed")
+    if proc.returncode != 0 and not proc.stdout.strip():
+        raise RuntimeError(proc.stderr.strip() or "YiACAD backend client failed")
     return json.loads(proc.stdout.strip() or "{}")
 
 
-def current_document_path() -> str:
-    doc = FreeCAD.ActiveDocument
-    if doc is None:
-        return ""
-    return str(getattr(doc, "FileName", "") or "")
-
-
-def selection_summary() -> list[str]:
-    selected = []
-    for item in FreeCADGui.Selection.getSelectionEx():
-        if getattr(item, "ObjectName", None):
-            selected.append(str(item.ObjectName))
-    return selected
-
-
-def _status_summary() -> str:
-    payload = run_bridge(["status"])
-    lines = payload.get("yiacad_status_excerpt") or []
-    latest_request = payload.get("latest_request") or "(none)"
-    excerpt = "\n".join(lines[:8]) if lines else "No YiACAD status snapshot yet."
-    return f"Latest request:\n{latest_request}\n\nStatus:\n{excerpt}"
-
-
 def show_status_message() -> None:
-    QtWidgets.QMessageBox.information(None, "YiACAD Status", _status_summary())
+    if QtWidgets is None:
+        raise RuntimeError("QtWidgets is unavailable in the current FreeCAD runtime")
+    payload = fetch_status_payload(current_document_path(FreeCAD))
+    QtWidgets.QMessageBox.information(None, "YiACAD Status", _result_message(payload))
 
 
 def open_artifacts() -> None:
-    subprocess.Popen(["open", str(repo_root() / "artifacts")])
+    open_path(repo_root() / "artifacts")
 
 
-class YiACADDialog(QtWidgets.QDialog):
-    def __init__(self) -> None:
-        super().__init__(None)
-        self.setWindowTitle("YiACAD AI for FreeCAD")
-        self.resize(560, 420)
+if QtWidgets is not None:
 
-        layout = QtWidgets.QVBoxLayout(self)
+    class YiACADDialog(QtWidgets.QDialog):
+        def __init__(self) -> None:
+            super().__init__(None)
+            self.setWindowTitle("YiACAD AI for FreeCAD")
+            self.resize(720, 560)
 
-        self.intent = QtWidgets.QComboBox(self)
-        self.intent.addItems(
-            [
-                "model-assist",
-                "parametric-refactor",
-                "step-export-review",
-                "ecad-mcad-sync",
-            ]
-        )
-        self.source = QtWidgets.QLineEdit(self)
-        self.source.setReadOnly(True)
-        self.source.setText(current_document_path())
-        self.prompt = QtWidgets.QPlainTextEdit(self)
-        self.prompt.setPlainText("Describe the FreeCAD task to queue for YiACAD.")
+            layout = QtWidgets.QVBoxLayout(self)
+            session = load_session()
+            default_source = current_document_path(FreeCAD) or session.get("last_source_path") or ""
+            self.actions = list(ACTION_ENTRIES)
 
-        layout.addWidget(QtWidgets.QLabel("Intent", self))
-        layout.addWidget(self.intent)
-        layout.addWidget(QtWidgets.QLabel("Document / source path", self))
-        layout.addWidget(self.source)
-        layout.addWidget(QtWidgets.QLabel("Prompt", self))
-        layout.addWidget(self.prompt)
+            self.intent = QtWidgets.QComboBox(self)
+            self.intent.addItems([entry["display_name"] for entry in self.actions])
+            commands = [entry["transport_command"] for entry in self.actions]
+            if session.get("last_intent") in commands:
+                self.intent.setCurrentIndex(commands.index(session["last_intent"]))
+            elif self.actions:
+                self.intent.setCurrentIndex(0)
 
-        button_row = QtWidgets.QHBoxLayout()
-        queue_button = QtWidgets.QPushButton("Queue AI Request", self)
-        status_button = QtWidgets.QPushButton("YiACAD Status", self)
-        artifacts_button = QtWidgets.QPushButton("Open Artifacts", self)
-        close_button = QtWidgets.QPushButton("Close", self)
+            self.source = QtWidgets.QLineEdit(self)
+            self.source.setReadOnly(True)
+            self.source.setText(default_source)
+            self.prompt = QtWidgets.QPlainTextEdit(self)
+            self.prompt.setPlainText(
+                session.get("last_prompt") or "Describe the FreeCAD task context for YiACAD. The action run remains deterministic."
+            )
+            self.transcript = QtWidgets.QPlainTextEdit(self)
+            self.transcript.setReadOnly(True)
+            self.refresh_transcript()
 
-        queue_button.clicked.connect(self.on_queue)
-        status_button.clicked.connect(lambda: show_status_message())
-        artifacts_button.clicked.connect(lambda: open_artifacts())
-        close_button.clicked.connect(self.close)
+            layout.addWidget(QtWidgets.QLabel("Action", self))
+            layout.addWidget(self.intent)
+            layout.addWidget(QtWidgets.QLabel("Document / source path", self))
+            layout.addWidget(self.source)
+            layout.addWidget(QtWidgets.QLabel("Transcript", self))
+            layout.addWidget(self.transcript)
+            layout.addWidget(QtWidgets.QLabel("Task context", self))
+            layout.addWidget(self.prompt)
 
-        for button in (queue_button, status_button, artifacts_button, close_button):
-            button_row.addWidget(button)
+            button_row = QtWidgets.QHBoxLayout()
+            run_button = QtWidgets.QPushButton("Run YiACAD Action", self)
+            status_button = QtWidgets.QPushButton("YiACAD Status", self)
+            artifacts_button = QtWidgets.QPushButton("Open Artifacts", self)
+            clear_button = QtWidgets.QPushButton("Clear Session", self)
+            close_button = QtWidgets.QPushButton("Close", self)
 
-        layout.addLayout(button_row)
+            run_button.clicked.connect(self.on_run)
+            status_button.clicked.connect(self.on_status)
+            artifacts_button.clicked.connect(self.on_artifacts)
+            clear_button.clicked.connect(self.on_clear)
+            close_button.clicked.connect(self.close)
 
-    def on_queue(self) -> None:
-        payload = run_bridge(
-            [
-                "request",
-                "--surface",
-                "freecad",
-                "--intent",
-                self.intent.currentText(),
-                "--prompt",
+            for button in (run_button, status_button, artifacts_button, clear_button, close_button):
+                button_row.addWidget(button)
+
+            layout.addLayout(button_row)
+
+        def persist_state(self) -> None:
+            command = self.actions[self.intent.currentIndex()]["transport_command"]
+            remember_session_state(
+                command,
                 self.prompt.toPlainText().strip(),
-                "--source-path",
                 self.source.text().strip(),
-                "--selection-json",
-                json.dumps(selection_summary(), ensure_ascii=True),
-            ]
-        )
-        QtWidgets.QMessageBox.information(
-            self,
-            "YiACAD",
-            f"Queued request:\n{payload.get('request_path', '')}",
-        )
+            )
+
+        def refresh_transcript(self) -> None:
+            self.transcript.setPlainText(_transcript_text(load_session()))
+            cursor = self.transcript.textCursor()
+            cursor.movePosition(cursor.End)
+            self.transcript.setTextCursor(cursor)
+
+        def on_run(self) -> None:
+            if not self.actions:
+                return
+            prompt = self.prompt.toPlainText().strip()
+            source_path = self.source.text().strip()
+            command = self.actions[self.intent.currentIndex()]["transport_command"]
+            self.persist_state()
+            append_session_message(
+                "user",
+                prompt or "(no additional task context provided)",
+                intent=command,
+                source_path=source_path,
+            )
+            payload = run_intent(
+                "yiacad-desktop",
+                command,
+                prompt,
+                source_path,
+                selection_summary(FreeCADGui),
+            )
+            result_text = _result_message(payload)
+            append_session_message(
+                "assistant",
+                result_text,
+                intent=command,
+                source_path=source_path,
+                status=str(payload.get("status") or ""),
+            )
+            self.refresh_transcript()
+            QtWidgets.QMessageBox.information(self, "YiACAD", result_text)
+
+        def on_status(self) -> None:
+            source_path = self.source.text().strip()
+            self.persist_state()
+            payload = fetch_status_payload(source_path)
+            result_text = _result_message(payload)
+            append_session_message(
+                "assistant",
+                result_text,
+                intent="status",
+                source_path=source_path,
+                status=str(payload.get("status") or ""),
+            )
+            self.refresh_transcript()
+            QtWidgets.QMessageBox.information(self, "YiACAD Status", result_text)
+
+        def on_artifacts(self) -> None:
+            self.persist_state()
+            open_artifacts()
+
+        def on_clear(self) -> None:
+            clear_session()
+            self.refresh_transcript()
+
+else:
+
+    class YiACADDialog:  # pragma: no cover
+        def exec_(self) -> None:
+            raise RuntimeError("QtWidgets is unavailable in the current FreeCAD runtime")
 
 
 def show_dialog() -> None:

@@ -362,8 +362,9 @@ LOTS: tuple[Lot, ...] = (
             "docs/plans/18_todo_enchainement_autonome_des_lots_utiles.md",
         ),
         owner_repo="Kill_LIFE",
-        owner_agent="CAD-Fusion",
-        owner_team="CAD-Fusion",
+        owner_agent="Embedded-CAD",
+        owner_subagent="CAD-Fusion",
+        owner_team="Embedded-CAD",
         dependencies=("cad-mcp-host",),
         rollback_plan=(
             "Geler la branche `kill-life-ai-native` et revenir au mode container-only (`tools/hw/cad_stack.sh`).",

@@ -13,7 +13,7 @@
       "kind": "saas-eda-fast-fab",
       "status": "evaluate-fast-fab",
       "owner_agent": "Embedded-CAD",
-      "sub_agent": "HW-BOM",
+      "owner_subagent": "HW-BOM",
       "inputs": ["schematic", "kicad-import", "altium-import"],
       "outputs": ["gerber", "odb++", "kicad", "altium", "bom"],
       "strengths": [
@@ -41,8 +41,8 @@
       "name": "Quilter",
       "kind": "physics-driven-routing-engine",
       "status": "canary-route",
-      "owner_agent": "CAD-Bridge",
-      "sub_agent": "CAD-Smoke",
+      "owner_agent": "Embedded-CAD",
+      "owner_subagent": "CAD-Bridge",
       "inputs": ["schematic", "board-file", "project-file"],
       "outputs": ["same-cad-format", "layout-candidates", "constraint-review"],
       "strengths": [
@@ -71,8 +71,8 @@
       "name": "kicad-happy",
       "kind": "open-source-claude-skills",
       "status": "adopt-patterns",
-      "owner_agent": "HW-BOM",
-      "sub_agent": "Forge",
+      "owner_agent": "Embedded-CAD",
+      "owner_subagent": "HW-BOM",
       "inputs": ["kicad-sch", "kicad-pcb", "gerbers", "bom"],
       "outputs": ["reviews", "pricing", "supplier-orders", "jlcpcb-order-files"],
       "strengths": [

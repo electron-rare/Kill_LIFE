@@ -1,51 +1,71 @@
-# Kill_LIFE - Code Review Instructions
+# Kill_LIFE Workspace Instructions
 
 ## Scope
 
-This workspace instruction is review-only by default.
-Prioritize defect discovery over implementation unless explicitly requested.
+Kill_LIFE is the control plane repo for spec-first governance, cockpit operations, runtime/MCP health, YiACAD web/CAD integration, firmware, and hardware evidence.
+Use these instructions for all work in this repository.
 
-## Review Priorities
+## Canonical Entry Points
 
-1. Behavioral regressions and broken user-visible flows.
-2. Contract/schema drift across `specs/contracts/`, backend outputs, and web consumers.
-3. Runtime and CI gate risks (missing env assumptions, flaky paths, weak failure handling).
-4. Security/safety risks (unsafe shell usage, secret exposure, destructive defaults).
-5. Missing or weak tests for changed behavior.
+- Product and consolidation context: `README.md`
+- Operator navigation: `docs/index.md`
+- Build, test, and architecture reference: `CLAUDE.md`
+- Runbooks: `RUNBOOK.md` and `docs/RUNBOOK.md`
+- Spec-first source of truth: `specs/README.md`
+- Cockpit and TUI entry points: `tools/cockpit/README.md`
 
-## Review Method
+## Build And Test
 
-- Start with changed files, then trace impacted call sites and consumers.
-- Validate `status/degraded/blocked`, `degraded_reasons`, `engine_status`, and artifact paths consistency.
-- Favor concrete findings with file and line references over broad summaries.
-- If no issue is found, state that explicitly and list residual risk/test gaps.
-
-## Required Checks
-
-- Specs chain alignment when behavior changes:
-	- `specs/00_intake.md -> specs/01_spec.md -> specs/02_arch.md -> specs/03_plan.md -> specs/04_tasks.md`
-- Contract compatibility:
-	- `specs/contracts/*.schema.json`
-	- `specs/contracts/examples/*.json`
-- Evidence/log discipline:
-	- outputs under `artifacts/` and `docs/evidence/`
-
-## Canonical Commands (When Verifying)
+Prefer the repo commands already documented in `CLAUDE.md`. Default validation commands are:
 
 - `bash tools/bootstrap_python_env.sh`
 - `bash tools/test_python.sh --suite stable`
 - `python3 tools/validate_specs.py --strict`
 - `ruff check .`
 
+Use domain-specific commands when relevant:
+
+- Web: `cd web && npm install`, `cd web && npm run build`, `cd web && npx playwright test`
+- Firmware: `cd firmware && pio run -e esp32s3_waveshare`, `cd firmware && pio test -e native`
+- Hardware: `make hw SCHEM=hardware/esp32_minimal/esp32_minimal.kicad_sch`, `bash tools/hw/hw_export.sh`
+- Runtime and cockpit: `bash tools/cockpit/runtime_ai_gateway.sh --action status --refresh --json`
+
+## Architecture
+
+Key boundaries:
+
+- `specs/` is the source of truth: `00_intake -> 01_spec -> 02_arch -> 03_plan -> 04_tasks`
+- `kill_life/` contains the Python control-plane and server logic
+- `tools/cockpit/` is the canonical operator and runtime surface
+- `web/` is the YiACAD Next.js frontend and worker surface
+- `firmware/` is the PlatformIO firmware project
+- `hardware/` contains KiCad schematics and manufacturing sources
+- `specs/contracts/` defines runtime and artifact contracts that consumers rely on
+
 ## Conventions
 
-- Specs/docs mostly French; code/comments remain English.
-- Python target 3.12+, line length 120, `ruff` style.
-- Keep review comments scoped and actionable; avoid unrelated refactors.
+- Specs and docs are mostly French; code and comments stay in English.
+- Preserve the existing `ready`, `degraded`, `blocked` status discipline when touching runtime, cockpit, or evidence outputs.
+- Keep artifact paths stable and consumable by operators; prefer `artifacts/` and `docs/evidence/`.
+- When behavior changes, check whether related specs, contracts, examples, and runbooks also need updates.
+- Prefer link-out to existing docs instead of duplicating long operational guidance in code comments or instructions.
 
-## References
+## Common Pitfalls
 
-- `README.md`
-- `CLAUDE.md`
-- `docs/index.md`
-- `RUNBOOK.md`
+- This repo may already be dirty; do not revert unrelated user changes.
+- Many workflows depend on generated JSON or evidence artifacts; avoid changing field names or paths casually.
+- The web, CAD, and cockpit surfaces share contracts indirectly through `specs/contracts/`; validate those links before closing a task.
+- For execution-heavy tasks, prefer explicit `--json` outputs and operator-facing evidence.
+
+## Area-Specific Guidance
+
+Use the specialized instruction files when your change touches those areas:
+
+- `.github/instructions/web.instructions.md` for `web/`
+- `.github/instructions/firmware.instructions.md` for `firmware/`
+- `.github/instructions/cad.instructions.md` for CAD and hardware tooling
+- `.github/instructions/ops.instructions.md` for cockpit, evidence, and workflows
+
+## Review Default
+
+Unless explicitly asked to implement, default to a review mindset in this workspace: focus on behavioral regressions, contract drift, runtime risks, security issues, and missing tests.

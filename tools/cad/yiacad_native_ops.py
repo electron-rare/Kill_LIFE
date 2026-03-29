@@ -15,6 +15,13 @@ import time
 from pathlib import Path
 from typing import Iterable
 
+from kill_life.yiacad_action_registry import (
+    INPUT_ARGUMENTS,
+    yiacad_action_id,
+    yiacad_actions,
+    yiacad_action_inputs,
+)
+
 try:
     from yiacad_backend import (
         artifact_entry,
@@ -230,7 +237,14 @@ def print_contract_or_fallback(args: argparse.Namespace, payload: dict, fallback
         print(str(fallback))
 
 
+def add_registry_arguments(parser: argparse.ArgumentParser, command: str) -> None:
+    for name in yiacad_action_inputs(command):
+        spec = INPUT_ARGUMENTS[name]
+        parser.add_argument(spec["flag"], default="", help=spec["help"])
+
+
 def command_status(args: argparse.Namespace) -> int:
+    action_id = yiacad_action_id("status")
     engine_status = detect_integrated_engines()
     degraded_reasons = collect_engine_reasons(engine_status)
     lines = ["# YiACAD Native Status", ""]
@@ -250,7 +264,7 @@ def command_status(args: argparse.Namespace) -> int:
     severity = "info" if status == "done" else "warning"
     output_payload = build_uiux_output(
         surface=requested_surface(args, "tui"),
-        action="status.surface",
+        action=action_id,
         execution_mode="batch",
         status=status,
         severity=severity,
@@ -279,6 +293,7 @@ def command_status(args: argparse.Namespace) -> int:
 
 
 def command_kicad_erc_drc(args: argparse.Namespace) -> int:
+    action_id = yiacad_action_id("kicad-erc-drc")
     started_at = time.time()
     board = Path(args.board).expanduser().resolve() if args.board else guess_board_from_source(args.source_path)
     schematic = (
@@ -312,7 +327,7 @@ def command_kicad_erc_drc(args: argparse.Namespace) -> int:
             run_dir=run_dir,
             context_path=context_path,
             surface=surface,
-            action="review.erc_drc",
+            action=action_id,
             summary="YiACAD could not start KiCad review because the KiCad runtime baseline is not met.",
             details="Install KiCad 10+ with the YiACAD AI layer available to the local runtime, then rerun the review.",
             context_ref=context["context_ref"],
@@ -333,7 +348,7 @@ def command_kicad_erc_drc(args: argparse.Namespace) -> int:
         payload["error"] = "No KiCad board or schematic could be resolved."
         output_payload = build_uiux_output(
             surface=surface,
-            action="review.erc_drc",
+            action=action_id,
             execution_mode="batch",
             status="blocked",
             severity="error",
@@ -445,7 +460,7 @@ def command_kicad_erc_drc(args: argparse.Namespace) -> int:
             artifacts.append(artifact_entry(path, "log", label))
     output_payload = build_uiux_output(
         surface=surface,
-        action="review.erc_drc",
+        action=action_id,
         execution_mode="batch",
         status=status,
         severity=severity,
@@ -466,6 +481,7 @@ def command_kicad_erc_drc(args: argparse.Namespace) -> int:
 
 
 def command_bom_review(args: argparse.Namespace) -> int:
+    action_id = yiacad_action_id("bom-review")
     started_at = time.time()
     schematic = (
         Path(args.schematic).expanduser().resolve() if args.schematic else guess_schematic_from_source(args.source_path)
@@ -489,7 +505,7 @@ def command_bom_review(args: argparse.Namespace) -> int:
             run_dir=run_dir,
             context_path=context_path,
             surface=surface,
-            action="review.bom",
+            action=action_id,
             summary="YiACAD could not start BOM review because the KiCad runtime baseline is not met.",
             details="Install or upgrade KiCad 10+ before running YiACAD BOM review.",
             context_ref=context["context_ref"],
@@ -514,7 +530,7 @@ def command_bom_review(args: argparse.Namespace) -> int:
         }
         output_payload = build_uiux_output(
             surface=surface,
-            action="review.bom",
+            action=action_id,
             execution_mode="batch",
             status="blocked",
             severity="error",
@@ -613,7 +629,7 @@ def command_bom_review(args: argparse.Namespace) -> int:
             artifacts.append(artifact_entry(path, "log", label))
     output_payload = build_uiux_output(
         surface=surface,
-        action="review.bom",
+        action=action_id,
         execution_mode="batch",
         status=status,
         severity=severity,
@@ -667,6 +683,7 @@ def export_freecad_document(document_path: Path, output_path: Path, run_dir: Pat
 
 
 def command_ecad_mcad_sync(args: argparse.Namespace) -> int:
+    action_id = yiacad_action_id("ecad-mcad-sync")
     started_at = time.time()
     board = Path(args.board).expanduser().resolve() if args.board else guess_board_from_source(args.source_path)
     schematic = (
@@ -698,7 +715,7 @@ def command_ecad_mcad_sync(args: argparse.Namespace) -> int:
             run_dir=run_dir,
             context_path=context_path,
             surface=surface,
-            action="sync.ecad_mcad",
+            action=action_id,
             summary="YiACAD could not export the ECAD side because the KiCad runtime baseline is not met.",
             details="Install or upgrade KiCad 10+ before running ECAD/MCAD sync with board exports.",
             context_ref=context["context_ref"],
@@ -719,7 +736,7 @@ def command_ecad_mcad_sync(args: argparse.Namespace) -> int:
             run_dir=run_dir,
             context_path=context_path,
             surface=surface,
-            action="sync.ecad_mcad",
+            action=action_id,
             summary="YiACAD could not export the MCAD side because the FreeCAD runtime baseline is not met.",
             details="Install or upgrade FreeCAD 1.1+ before running ECAD/MCAD sync with MCAD exports.",
             context_ref=context["context_ref"],
@@ -821,7 +838,7 @@ def command_ecad_mcad_sync(args: argparse.Namespace) -> int:
         artifacts.append(artifact_entry(step_path, "export", f"STEP export: {step_path.name}"))
     output_payload = build_uiux_output(
         surface=surface,
-        action="sync.ecad_mcad",
+        action=action_id,
         execution_mode="batch",
         status=status,
         severity=severity,
@@ -842,6 +859,7 @@ def command_ecad_mcad_sync(args: argparse.Namespace) -> int:
 
 
 def command_manufacturing_package(args: argparse.Namespace) -> int:
+    action_id = yiacad_action_id("manufacturing-package")
     started_at = time.time()
     board = Path(args.board).expanduser().resolve() if args.board else guess_board_from_source(args.source_path)
     schematic = (
@@ -878,7 +896,7 @@ def command_manufacturing_package(args: argparse.Namespace) -> int:
             run_dir=run_dir,
             context_path=context_path,
             surface=surface,
-            action="manufacturing.export",
+            action=action_id,
             summary="YiACAD could not build a manufacturing package because no KiCad inputs were resolved.",
             details="Provide --board, --schematic or a valid --source-path with KiCad project files present.",
             context_ref=context["context_ref"],
@@ -900,7 +918,7 @@ def command_manufacturing_package(args: argparse.Namespace) -> int:
             run_dir=run_dir,
             context_path=context_path,
             surface=surface,
-            action="manufacturing.export",
+            action=action_id,
             summary="YiACAD could not build a manufacturing package because the KiCad runtime baseline is not met.",
             details="Install or upgrade KiCad 10+ before running YiACAD manufacturing export.",
             context_ref=context["context_ref"],
@@ -1034,7 +1052,7 @@ def command_manufacturing_package(args: argparse.Namespace) -> int:
 
     output_payload = build_uiux_output(
         surface=surface,
-        action="manufacturing.export",
+        action=action_id,
         execution_mode="batch",
         status=status,
         severity=severity,
@@ -1055,6 +1073,7 @@ def command_manufacturing_package(args: argparse.Namespace) -> int:
 
 
 def command_kiauto_checks(args: argparse.Namespace) -> int:
+    action_id = yiacad_action_id("kiauto-checks")
     started_at = time.time()
     board = Path(args.board).expanduser().resolve() if args.board else guess_board_from_source(args.source_path)
     schematic = (
@@ -1089,7 +1108,7 @@ def command_kiauto_checks(args: argparse.Namespace) -> int:
             run_dir=run_dir,
             context_path=context_path,
             surface=surface,
-            action="manufacturing.validate",
+            action=action_id,
             summary="YiACAD could not run KiAuto checks because no board was resolved.",
             details="Provide --board or a valid --source-path with a .kicad_pcb present.",
             context_ref=context["context_ref"],
@@ -1111,7 +1130,7 @@ def command_kiauto_checks(args: argparse.Namespace) -> int:
             run_dir=run_dir,
             context_path=context_path,
             surface=surface,
-            action="manufacturing.validate",
+            action=action_id,
             summary="YiACAD could not run KiAuto checks because the KiCad or KiAuto runtime baseline is not met.",
             details="Install KiCad 10+ and a working KiAuto runtime before rerunning manufacturing validation.",
             context_ref=context["context_ref"],
@@ -1164,7 +1183,7 @@ def command_kiauto_checks(args: argparse.Namespace) -> int:
     ]
     output_payload = build_uiux_output(
         surface=surface,
-        action="manufacturing.validate",
+        action=action_id,
         execution_mode="batch",
         status=status,
         severity=severity,
@@ -1198,48 +1217,22 @@ def build_parser() -> argparse.ArgumentParser:
         default="",
         help="Canonical YiACAD client surface override (e.g. yiacad-web, yiacad-desktop, tui)",
     )
-
-    status = subparsers.add_parser("status", parents=[common], help="Show YiACAD fusion and native surface status")
-    status.set_defaults(func=command_status)
-
-    erc_drc = subparsers.add_parser("kicad-erc-drc", parents=[common], help="Run KiCad ERC and DRC reports")
-    erc_drc.add_argument("--source-path", default="", help="Any project path to infer KiCad files from")
-    erc_drc.add_argument("--board", default="", help="Path to .kicad_pcb")
-    erc_drc.add_argument("--schematic", default="", help="Path to .kicad_sch")
-    erc_drc.set_defaults(func=command_kicad_erc_drc)
-
-    bom = subparsers.add_parser("bom-review", parents=[common], help="Export and summarize a KiCad BOM")
-    bom.add_argument("--source-path", default="", help="Any project path to infer schematic from")
-    bom.add_argument("--schematic", default="", help="Path to .kicad_sch")
-    bom.set_defaults(func=command_bom_review)
-
-    sync = subparsers.add_parser("ecad-mcad-sync", parents=[common], help="Export KiCad and FreeCAD STEP artifacts for sync")
-    sync.add_argument("--source-path", default="", help="Any project path to infer paired files from")
-    sync.add_argument("--board", default="", help="Path to .kicad_pcb")
-    sync.add_argument("--schematic", default="", help="Path to .kicad_sch")
-    sync.add_argument("--freecad-document", default="", help="Path to .FCStd")
-    sync.set_defaults(func=command_ecad_mcad_sync)
-
-    package = subparsers.add_parser(
-        "manufacturing-package",
-        parents=[common],
-        help="Build a YiACAD manufacturing package with KiBot/fab outputs",
-    )
-    package.add_argument("--source-path", default="", help="Any project path to infer KiCad files from")
-    package.add_argument("--board", default="", help="Path to .kicad_pcb")
-    package.add_argument("--schematic", default="", help="Path to .kicad_sch")
-    package.add_argument("--kibot-config", default="", help="Optional path to a KiBot config for direct exports")
-    package.set_defaults(func=command_manufacturing_package)
-
-    kiauto = subparsers.add_parser(
-        "kiauto-checks",
-        parents=[common],
-        help="Run YiACAD KiAuto runtime checks",
-    )
-    kiauto.add_argument("--source-path", default="", help="Any project path to infer KiCad files from")
-    kiauto.add_argument("--board", default="", help="Path to .kicad_pcb")
-    kiauto.add_argument("--schematic", default="", help="Path to .kicad_sch")
-    kiauto.set_defaults(func=command_kiauto_checks)
+    handlers = {
+        "status": command_status,
+        "kicad-erc-drc": command_kicad_erc_drc,
+        "bom-review": command_bom_review,
+        "ecad-mcad-sync": command_ecad_mcad_sync,
+        "manufacturing-package": command_manufacturing_package,
+        "kiauto-checks": command_kiauto_checks,
+    }
+    for entry in yiacad_actions():
+        subparser = subparsers.add_parser(
+            entry["transport_command"],
+            parents=[common],
+            help=entry["description"],
+        )
+        add_registry_arguments(subparser, entry["transport_command"])
+        subparser.set_defaults(func=handlers[entry["transport_command"]])
 
     return parser
 
