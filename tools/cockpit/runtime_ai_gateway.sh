@@ -318,6 +318,51 @@ def collect_next_steps(payload: dict[str, object] | None) -> list[str]:
     return []
 
 
+def prioritize_next_steps(steps: list[str]) -> list[str]:
+    prioritized: list[str] = []
+    markers = (
+        "REDIS_URL",
+        "docker compose -f web/compose.dev.yml up -d redis",
+        "npm run worker:eda",
+        "Next.js (port 3000), Yjs realtime (port 1234), Redis (port 6379), and the EDA worker",
+    )
+    for marker in markers:
+        for step in steps:
+            if marker in step and step not in prioritized:
+                prioritized.append(step)
+    for step in steps:
+        if step not in prioritized:
+            prioritized.append(step)
+    return prioritized
+
+
+def infer_probe_reason(probe_name: str, probe_data: dict[str, object]) -> str:
+    reason = str(probe_data.get("reason") or "").strip().lower().replace("_", "-")
+    if reason:
+        return reason
+    status = str(probe_data.get("status") or "").strip().lower()
+    detail = str(probe_data.get("detail") or probe_data.get("error") or "").strip().lower()
+    if probe_name == "nextjs":
+        return "nextjs-ready" if status == "up" else "nextjs-absent"
+    if probe_name == "realtime":
+        return "yjs-ready" if status == "up" else "yjs-absent"
+    if probe_name == "queue":
+        if "redis_url is not configured" in detail:
+            return "redis-env-missing"
+        if detail:
+            return "redis-unreachable"
+        return "redis-ready" if status == "up" else "redis-unreachable"
+    if probe_name == "worker":
+        if status == "up":
+            return "worker-running"
+        if "stale" in detail:
+            return "worker-stale"
+        if status == "degraded":
+            return "worker-idle"
+        return "worker-absent"
+    return "down" if status == "down" else "degraded"
+
+
 def compact(value: object, max_len: int = 220) -> str:
     text = " ".join(str(value or "").split())
     if not text:
@@ -456,7 +501,7 @@ def build_web_platform_surface(ia_payload: dict[str, object] | None) -> tuple[di
     next_steps: list[str] = []
     for probe_name, probe_data in probes.items():
         if probe_data.get("status") != "up":
-            reason = str(probe_data.get("reason") or "").strip().lower().replace("_", "-")
+            reason = infer_probe_reason(probe_name, probe_data)
             degraded.append(f"web-{probe_name}-{reason or 'down'}")
     if not probes:
         degraded.append("web-platform-no-probes")
@@ -467,12 +512,14 @@ def build_web_platform_surface(ia_payload: dict[str, object] | None) -> tuple[di
     queue_probe = probes.get("queue") or {}
     if "depth" in queue_probe:
         queue_depth = queue_probe["depth"]
-    if queue_probe.get("reason") == "redis-env-missing":
+    queue_reason = infer_probe_reason("queue", queue_probe)
+    if queue_reason == "redis-env-missing":
         next_steps.append("Set REDIS_URL in web/.env or web/.env.local before starting Next.js and the EDA worker.")
-    elif queue_probe.get("reason") == "redis-unreachable":
+    elif queue_reason == "redis-unreachable":
         next_steps.append("Start Redis with `docker compose -f web/compose.dev.yml up -d redis` or point REDIS_URL to a live instance.")
     worker_probe = probes.get("worker") or {}
-    if worker_probe.get("reason") == "worker-absent":
+    worker_reason = infer_probe_reason("worker", worker_probe)
+    if worker_reason == "worker-absent":
         next_steps.append("Start the EDA worker with `cd web && npm run worker:eda` once Redis is available.")
     surface = {
         "status": status,
@@ -802,6 +849,8 @@ for step in infra_vps_next:
 for item in listify(infra_vps_surface.get("evidence")):
     if item not in evidence:
         evidence.append(item)
+
+next_steps = prioritize_next_steps(next_steps)
 
 summary_short = compact(
     f"runtime={runtime_surface['status']} ({runtime_surface['summary_short']}) | "

@@ -15,6 +15,10 @@ import time
 from pathlib import Path
 from typing import Iterable
 
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from kill_life.yiacad_action_registry import (
     INPUT_ARGUMENTS,
     yiacad_action_id,
@@ -46,9 +50,6 @@ except ImportError:
         write_context_record,
         write_uiux_output,
     )
-
-
-ROOT = Path(__file__).resolve().parents[2]
 ARTIFACTS_ROOT = ROOT / "artifacts" / "cad-ai-native"
 FUSION_STATUS = ROOT / "artifacts" / "cad-fusion" / "yiacad-fusion-last-status.md"
 

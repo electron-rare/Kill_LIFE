@@ -178,23 +178,58 @@ def web_platform_health() -> dict[str, object]:
     import urllib.parse
     import urllib.request
 
+    def normalize_probe(name: str, probe: object) -> dict[str, object]:
+        payload = dict(probe) if isinstance(probe, dict) else {}
+        status = str(payload.get("status") or "unknown").strip().lower()
+        if status not in {"up", "degraded", "down"}:
+            status = "down"
+        reason = str(payload.get("reason") or "").strip().lower().replace("_", "-")
+        detail = str(payload.get("detail") or payload.get("error") or "").strip().lower()
+
+        if not reason:
+            if name == "nextjs":
+                reason = "nextjs-ready" if status == "up" else "nextjs-absent"
+            elif name == "realtime":
+                reason = "yjs-ready" if status == "up" else "yjs-absent"
+            elif name == "queue":
+                if "redis_url is not configured" in detail:
+                    reason = "redis-env-missing"
+                elif detail:
+                    reason = "redis-unreachable"
+                else:
+                    reason = "redis-ready" if status == "up" else "redis-unreachable"
+            elif name == "worker":
+                if status == "up":
+                    reason = "worker-running"
+                elif "stale" in detail:
+                    reason = "worker-stale"
+                else:
+                    reason = "worker-absent"
+        payload["status"] = status
+        if reason:
+            payload["reason"] = reason
+        return payload
+
     platform_url = "http://localhost:3000/api/ops/platform"
     try:
         req = urllib.request.urlopen(platform_url, timeout=4)
         data = json.loads(req.read())
-        # Normalise probe keys for downstream consumers
-        probes = data.get("probes", {})
+        raw_probes = data.get("probes", {})
+        probes = {
+            "nextjs": normalize_probe("nextjs", raw_probes.get("next-js", {"status": "unknown"})),
+            "realtime": normalize_probe("realtime", raw_probes.get("yjs-realtime", {"status": "unknown"})),
+            "queue": normalize_probe("queue", raw_probes.get("eda-queue", {"status": "unknown"})),
+            "worker": normalize_probe("worker", raw_probes.get("eda-worker", {"status": "unknown"})),
+        }
+        up_count = sum(1 for probe in probes.values() if probe.get("status") == "up")
+        total = len(probes)
+        overall = "up" if up_count == total else ("down" if up_count == 0 else "degraded")
         return {
-            "status": data.get("status", "unknown"),
-            "probes": {
-                "nextjs":   probes.get("next-js", {"status": "unknown"}),
-                "realtime": probes.get("yjs-realtime", {"status": "unknown"}),
-                "queue":    probes.get("eda-queue", {"status": "unknown"}),
-                "worker":   probes.get("eda-worker", {"status": "unknown"}),
-            },
-            "up_count": data.get("up_count", 0),
-            "total":    data.get("total", 4),
-            "source":   "platform-api",
+            "status": overall,
+            "probes": probes,
+            "up_count": up_count,
+            "total": total,
+            "source": "platform-api",
         }
     except Exception:
         pass  # fall through to direct probes
