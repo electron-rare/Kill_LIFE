@@ -69,15 +69,6 @@ jobs:
           echo "Found PCBs:"
           echo "${PCBS:-<none>}"
 
-          # Also check tools/cad proof fixtures
-          PROOF_PCBS=$(find tools/cad -name "*.kicad_pcb" 2>/dev/null | sort || true)
-          if [[ -n "$PROOF_PCBS" ]]; then
-            echo ""
-            echo "Found proof-fixture PCBs:"
-            echo "$PROOF_PCBS"
-            PCBS=$(printf "%s\n%s" "$PCBS" "$PROOF_PCBS" | sed '/^$/d')
-          fi
-
           # Export for later steps
           {
             echo "schematics<<EOFSCH"
