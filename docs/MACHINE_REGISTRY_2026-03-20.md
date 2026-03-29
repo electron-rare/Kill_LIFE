@@ -1,6 +1,6 @@
 # Registre machine/capacite — Kill_LIFE
 
-Date: `2026-03-20`
+Date: `2026-03-29`
 Source de verite machine-readable:
 
 - `specs/contracts/machine_registry.mesh.json`
@@ -25,27 +25,29 @@ Objectif: publier un registre unique pour les roles, ports, priorites et restric
 ## Ordre canonique actuel
 
 1. `tower` -> `clems@192.168.0.120`
-2. `kxkm` -> `kxkm@kxkm-ai`
-3. `cils` -> `cils@100.126.225.111`
-4. `local`
-5. `root-reserve` -> `root@192.168.0.119`
+2. `photon` -> `root@192.168.0.119`
+3. `kxkm-ai` -> `kxkm@100.87.54.119`
+4. `grosmac` -> `electron@100.80.178.42`
+5. `cils` -> `cisl@100.126.225.111`
 
 ## Regles operatoires encodees
 
-- `cils` reste en quota et ne porte que `Kill_LIFE` en critique.
-- `photon-safe` garde `cils` atteignable, mais sans charge applicative non essentielle.
-- `root-reserve` reste une reserve stricte et ne remonte pas devant `local` en fonctionnement nominal.
+- `tower` reste le noeud principal de collaboration, data plane et observabilite.
+- `photon` doit rester edge minimal et ne pas devenir un fourre-tout applicatif.
+- `kxkm-ai` porte l'inference GPU, le CAD headless et les traitements IA lourds.
+- `grosmac` est un poste operateur local et un point de validation de proximite, pas un coeur de production.
+- `cils` reste une reserve legacy et ne doit pas remonter en hebergement nominal.
 
 ## CLI cockpit associee
 
 - `bash tools/cockpit/machine_registry.sh --action summary --json`
 - `bash tools/cockpit/machine_registry.sh --action list`
-- `bash tools/cockpit/machine_registry.sh --action show --machine cils --json`
+- `bash tools/cockpit/machine_registry.sh --action show --machine photon --json`
 - `bash tools/cockpit/machine_registry.sh --action clean-logs --days 14`
 
 ## Suite prevue
 
-- `mesh_sync_preflight.sh` consomme maintenant ce registre pour les roles, ports, priorites, placement et la reserve runtime
-- `ssh_healthcheck.sh` charge maintenant ses cibles SSH directement depuis le registre et ignore automatiquement l'entree `local` (port `0`)
-- `run_alignment_daily.sh` capture maintenant un resume JSON du registre et l'embarque dans ses artefacts/JSON de synthese
-- externaliser ensuite les derniers candidats de chemins repo pour eliminer le drift restant cote preflight
+- `mesh_sync_preflight.sh` doit consommer ce registre pour les roles, ports, priorites, placement et la reserve runtime
+- `ssh_healthcheck.sh` doit charger ses cibles SSH directement depuis le registre et ignorer automatiquement les entrees non applicables
+- le workflow `.github/workflows/mesh_contracts.yml` doit valider ce registre pour bloquer toute derive
+- le runbook multi-machine reference ce registre comme source de verite operatoire

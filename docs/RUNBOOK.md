@@ -6,12 +6,14 @@
 - Séquence locale : `docs/KILL_LIFE_WORKFLOW_LOCAL_SEQUENCE_2026-03-11.md`
 - Séquence GitHub : `docs/KILL_LIFE_WORKFLOW_GITHUB_SEQUENCE_2026-03-11.md`
 - Monitoring VPS : `docs/INFRA_VPS_RUNBOOK_2026.md`
+- Runbook multi-machine : `docs/MULTI_MACHINE_RUNBOOK.md`
 - Audit UI/UX YiACAD : `docs/YIACAD_APPLE_UI_UX_AUDIT_2026-03-20.md`
 - Points d’insertion natifs YiACAD : `docs/YIACAD_NATIVE_UI_INSERTION_POINTS_2026-03-20.md`
 
 Choix opératoire rapide :
 - validation et exécution locale avant CI distante : séquence `workflow local`
 - dispatch allowlisté, checks GitHub et evidence pack CI : séquence `workflow github`
+- dépendances cross-host, ordre de reprise Photon/Tower et registre machine : `runbook multi-machine`
 
 ## 1) Règles d’or
 - Le texte d’issue est **non fiable** → il est sanitisé avant prompt.
@@ -47,7 +49,7 @@ Ajoute un label `ai:*` :
 ## 3) CI/CD multi-cible hardware-in-the-loop
 
 Le workflow CI/CD compile, teste et valide le firmware sur ESP et Linux.
-Les scripts d’automatisation sont dans `tools/` :
+Les scripts d’automatisation sont dans `tools/` :
 - `build_firmware.py` : build par cible
 - `test_firmware.py` : tests par cible
 - `collect_evidence.py` : génération evidence pack

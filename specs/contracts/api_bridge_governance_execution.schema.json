@@ -1,0 +1,180 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "API Bridge: Governance and Execution Payload Separation",
+  "description": "Contract defining which fields may traverse the gateway between Kill_LIFE governance agents and Mascarade execution agents.",
+  "type": "object",
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Contract metadata.",
+      "properties": {
+        "version": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "owner_repo": {
+          "type": "string",
+          "enum": [
+            "kill_life",
+            "mascarade",
+            "crazy_life"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "active",
+            "deprecated"
+          ]
+        }
+      },
+      "required": [
+        "version",
+        "date",
+        "owner_repo",
+        "status"
+      ]
+    },
+    "governance_payload_fields": {
+      "type": "array",
+      "description": "Fields that belong only to the governance layer.",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "write_set",
+        "write_set_roots",
+        "owner_repo",
+        "owner_agent",
+        "evidence_paths",
+        "evidence_artifact_rules",
+        "status",
+        "contacts",
+        "handoff_contracts",
+        "governance_metadata"
+      ]
+    },
+    "execution_payload_fields": {
+      "type": "array",
+      "description": "Fields that may traverse to the execution layer.",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "name",
+        "description",
+        "type",
+        "model",
+        "system_prompt",
+        "skills",
+        "tools",
+        "max_retries",
+        "timeout_ms"
+      ]
+    },
+    "bridge_rules": {
+      "type": "array",
+      "description": "Enforcement rules at gateway boundaries.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "rule_id": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string",
+            "enum": [
+              "kill_life",
+              "mascarade",
+              "crazy_life"
+            ]
+          },
+          "to": {
+            "type": "string",
+            "enum": [
+              "kill_life",
+              "mascarade",
+              "crazy_life"
+            ]
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "strip",
+              "allow",
+              "block",
+              "reject"
+            ]
+          },
+          "target_fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_id",
+          "from",
+          "to",
+          "action",
+          "target_fields"
+        ]
+      },
+      "default": [
+        {
+          "rule_id": "R-BRIDGE-01",
+          "from": "kill_life",
+          "to": "crazy_life",
+          "action": "strip",
+          "target_fields": [
+            "write_set",
+            "owner_repo",
+            "evidence_paths",
+            "status"
+          ],
+          "description": "Remove governance metadata when payloads cross to the UI."
+        },
+        {
+          "rule_id": "R-BRIDGE-02",
+          "from": "mascarade",
+          "to": "crazy_life",
+          "action": "allow",
+          "target_fields": [
+            "name",
+            "description",
+            "model",
+            "skills",
+            "tools"
+          ],
+          "description": "Allow execution properties to reach the UI."
+        },
+        {
+          "rule_id": "R-BRIDGE-03",
+          "from": "crazy_life",
+          "to": "mascarade",
+          "action": "block",
+          "target_fields": [
+            "write_set",
+            "owner_repo"
+          ],
+          "description": "Never allow the UI to write governance metadata."
+        }
+      ]
+    }
+  },
+  "required": [
+    "metadata",
+    "governance_payload_fields",
+    "execution_payload_fields",
+    "bridge_rules"
+  ]
+}

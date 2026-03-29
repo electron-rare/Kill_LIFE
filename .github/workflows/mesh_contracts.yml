@@ -59,6 +59,10 @@ jobs:
         run: |
           mkdir -p artifacts/ci
           python3 tools/specs/mesh_contract_check.py \
+            --schema specs/contracts/machine_registry.schema.json \
+            --instance specs/contracts/machine_registry.mesh.json \
+            | tee artifacts/ci/machine_registry_contract.json
+          python3 tools/specs/mesh_contract_check.py \
             --schema specs/contracts/agent_handoff.schema.json \
             --instance specs/contracts/examples/agent_handoff.mesh.json \
             | tee artifacts/ci/agent_handoff_contract.json
